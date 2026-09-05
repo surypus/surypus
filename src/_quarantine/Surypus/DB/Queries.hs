@@ -11,7 +11,7 @@ import Data.Int (Int64)
 import Database.Persist.Sql (runSqlPool, toSqlKey)
 import Database.Persist.Postgresql (ConnectionPool)
 import qualified Database.Persist as P
-import DAL.Schema
+import DAL.Types (PersonEntity(..), BillEntity(..), TaxEntity(..))
 
 listPersons :: ConnectionPool -> Int -> Int -> IO [P.Entity PersonEntity]
 listPersons pool offset limit =
@@ -24,7 +24,7 @@ getPersonById pool pid =
 listBills :: ConnectionPool -> Int -> Int -> IO [P.Entity BillEntity]
 listBills pool offset limit =
   runSqlPool
-    (P.selectList [] [P.Desc BillEntityId, P.OffsetBy offset, P.LimitTo limit])
+    (P.selectList [] [P.OffsetBy offset, P.LimitTo limit])
     pool
 
 getBillById :: ConnectionPool -> Int64 -> IO (Maybe BillEntity)

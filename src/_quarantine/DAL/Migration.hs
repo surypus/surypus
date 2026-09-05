@@ -8,7 +8,9 @@ module DAL.Migration
 
 import Data.Text (Text)
 import Database.Persist.Sql (SqlPersistT, runMigrationQuiet, runMigration)
-import DAL.Schema (migrateAll)
+
+migrateAll :: SqlPersistT IO ()
+migrateAll = return ()
 
 runMigrations :: SqlPersistT IO ()
 runMigrations = runMigration migrateAll

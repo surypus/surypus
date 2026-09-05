@@ -23,24 +23,23 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup Stack
-        uses: haskell-actions/setup@v2
-        with:
-          enable-stack: true
-          stack-version: 'latest'
-
       - name: Cache Stack dependencies
         uses: actions/cache@v4
         with:
           path: ~/.stack
-          key: ${{ runner.os }}-stack-${{ hashFiles('stack.yaml.lock') }}
+          key: ${{ runner.os }}-stack-${{ hashFiles('stack.yaml') }}
           restore-keys: |
             ${{ runner.os }}-stack-
 
+      - name: Setup Stack and GHC
+        run: |
+          curl -sSL https://get.haskellstack.org/ | sh -s - -f
+          stack setup --no-nix
+
       - name: Build library and tests
         run: |
-          stack build --test --no-run-tests --no-haddock-deps
+          stack --no-nix build --test --no-run-tests --no-haddock-deps
 
       - name: Run tests
         run: |
-          stack test --test-arguments --color
+          stack --no-nix test --test-arguments --color
