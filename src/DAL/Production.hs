@@ -11,4 +11,4 @@ getWorkOrder _ = return Nothing
 
 -- | Update work order (stub)
 updateWorkOrder :: Text -> IO (Either Text Text)
-updateWorkOrder _ = Right "ok"
+updateWorkOrder _ = return $ Right "ok"
