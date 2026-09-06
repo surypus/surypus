@@ -1,7 +1,10 @@
--- | Finance Domain - Re-exports all Finance modules
-module DomainFinance where
+-- | Finance Domain - Re-exports core Finance modules
+module DomainFinance
+  ( module Finance.Accounting
+  , module Finance.Bill
+  , module Finance.Tax
+  ) where
 
-import Finance.Account
-import Finance.Ledger
-import Finance.Journal
-import Finance.Types
+import Finance.Accounting
+import Finance.Bill
+import Finance.Tax
