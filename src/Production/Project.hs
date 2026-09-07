@@ -3,7 +3,7 @@ module Production.Project where
 
 import Data.Int (Int64)
 import Data.Text (Text)
-import Data.Time (UTCTime, getCurrentTime)
+import Data.Time.Clock (UTCTime, getCurrentTime)
 
 -- | Project
 data Project = Project
