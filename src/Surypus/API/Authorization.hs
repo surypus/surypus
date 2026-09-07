@@ -9,7 +9,8 @@ module Surypus.API.Authorization
   , permissionToText
   ) where
 
-import Prelude hiding (Read)
+import Prelude
+import qualified Prelude as P (Read)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Map.Strict (Map)
