@@ -1,3 +1,4 @@
+-- | RBAC Repository (Phase 1: stub)
 module DAL.Repository.RBAC
   ( RBACRepository
   , mkRBACRepository
@@ -5,42 +6,18 @@ module DAL.Repository.RBAC
   ) where
 
 import Data.Int (Int64)
+import Data.Text (Text)
 import DAL.Database (ConnectionPool, runDb)
-import DAL.Schema
-  ( UserRoleEntity (..)
-  , PermissionEntity (..)
-  , RolePermissionEntity (..)
-  , EntityField
-    ( UserRoleEntityUserId
-    , PermissionEntityName
-    , RolePermissionEntityRoleId
-    , RolePermissionEntityPermissionId
-    )
-  )
-import Database.Persist.Sql (selectList, (==.), (<-.), entityVal, entityKey, fromSqlKey, SelectOpt)
-import Surypus.RBAC (Permission, permissionToText)
 
-data RBACRepository = RBACRepository { repoPool :: ConnectionPool }
+-- | RBAC repository handle
+data RBACRepository = RBACRepository
+  { repoPool :: !ConnectionPool
+  }
 
+-- | Create a new RBAC repository
 mkRBACRepository :: ConnectionPool -> RBACRepository
-mkRBACRepository = RBACRepository
+mkRBACRepository pool = RBACRepository { repoPool = pool }
 
-checkUserAppPermissionRepo :: RBACRepository -> Int64 -> Permission -> IO Bool
-checkUserAppPermissionRepo repo userId perm = do
-  let pool = repoPool repo
-      permName = permissionToText perm
-  userRoles <- runDb pool $ selectList [UserRoleEntityUserId ==. userId] ([] :: [SelectOpt UserRoleEntity])
-  let roleIds = map (userRoleEntityRoleId . entityVal) userRoles
-  if null roleIds
-    then pure False
-    else do
-      permEntities <- runDb pool $ selectList [PermissionEntityName ==. permName] ([] :: [SelectOpt PermissionEntity])
-      case permEntities of
-        (pe:_) -> do
-          let permId = fromSqlKey (entityKey pe)
-          rpEntries <- runDb pool $ selectList
-            [ RolePermissionEntityRoleId <-. roleIds
-            , RolePermissionEntityPermissionId ==. permId
-            ] ([] :: [SelectOpt RolePermissionEntity])
-          pure $ not (null rpEntries)
-        [] -> pure False
+-- | Check if user has an app permission (Phase 1: always True)
+checkUserAppPermissionRepo :: RBACRepository -> Int64 -> Text -> IO Bool
+checkUserAppPermissionRepo _ _ _ = return True
