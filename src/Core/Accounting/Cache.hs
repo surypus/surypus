@@ -20,11 +20,12 @@ data CacheStats = CacheStats
   } deriving (Show, Eq)
 
 -- | Read model cache (stub)
-newtype ReadModelCache = ReadModelCache ()
+data ReadModelCache = ReadModelCache
+  deriving (Show, Eq)
 
 -- | Create a new cache
 mkReadModelCache :: ConnectionPool -> IO ReadModelCache
-mkReadModelCache _ = return ReadModelCache ()
+mkReadModelCache _ = return ReadModelCache
 
 -- | Get cached account read model (stub)
 getCachedAccountReadModel :: ReadModelCache -> Int64 -> IO (Maybe Text)

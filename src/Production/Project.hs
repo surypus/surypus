@@ -16,7 +16,7 @@ data Project = Project
 -- | Create a new project (stub)
 createProject :: Text -> IO Project
 createProject name = do
-  time <- Data.Time.getCurrentTime
+  time <- getCurrentTime
   return $ Project 0 name "draft" time
 
 -- | Get project status (stub)
