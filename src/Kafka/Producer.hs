@@ -1,12 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
+-- | Kafka Producer (Phase 1: stub)
 module Kafka.Producer where
 
-import EventBus
-import Control.Monad.IO.Class (liftIO)
 import Data.Text (Text)
-import qualified Data.Text as T
-import Data.Aeson ((.=), object)
-import qualified Data.Aeson as Aeson
 import Data.Int (Int64)
 
 -- | Kafka producer configuration
@@ -16,27 +12,19 @@ data KafkaConfig = KafkaConfig
   , kcTopic :: Text
   } deriving (Eq, Show)
 
--- | Kafka producer state
+-- | Kafka producer state (stub)
 data KafkaProducer = KafkaProducer
-  { kpConfig :: KafkaConfig
-  , kpConnected :: Bool
+  { producerConfig :: KafkaConfig
   }
 
--- | Create Kafka producer (stub - would use kafka-client library)
-newKafkaProducer :: KafkaConfig -> IO (Either Text KafkaProducer)
-newKafkaProducer config = do
-  -- TODO: Connect to Kafka brokers
-  return $ Right $ KafkaProducer config False
+-- | Create a new Kafka producer (stub)
+newKafkaProducer :: KafkaConfig -> IO KafkaProducer
+newKafkaProducer config = return (KafkaProducer config)
 
--- | Produce message to Kafka topic
-produceMessage :: KafkaProducer -> Text -> Aeson.Value -> IO (Either Text ())
-produceMessage producer topic value = do
-  -- TODO: Send to Kafka
-  putStrLn $ "Would send to " ++ T.unpack topic ++ ": " ++ show value
-  return $ Right ()
+-- | Send a message to Kafka (stub)
+sendMessage :: KafkaProducer -> Text -> Text -> IO (Either String ())
+sendMessage _ _ _ = return (Right ())
 
--- | Publish domain event to Kafka
-publishToKafka :: KafkaProducer -> DomainEvent -> IO (Either Text ())
-publishToKafka producer event = 
-  let topic = "surypus-events"
-  in produceMessage producer topic (Aeson.object ["type" .= deType event])
+-- | Close the Kafka producer (stub)
+closeProducer :: KafkaProducer -> IO ()
+closeProducer _ = return ()

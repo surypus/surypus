@@ -2,8 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveAnyClass #-}
 
--- | Integration Health Monitoring
--- Phase 20-3: Health monitoring for external integrations
+-- | Integration Health Monitoring (Phase 1: stub)
 module Integration.Health
   ( HealthStatus(..)
   , IntegrationHealth(..)
@@ -20,13 +19,6 @@ import GHC.Generics (Generic)
 import Data.Time (UTCTime, getCurrentTime)
 import DAL.ORMPool (ConnectionPool)
 import DAL.Types (QueryResult(..))
-
--- ============================================================================
--- HEALTH STATUS TYPES
--- ============================================================================
-
--- HEALTH STATUS TYPES
--- ============================================================================
 
 -- | Health status enumeration
 data HealthStatus = Healthy | Degraded | Failed
@@ -47,22 +39,15 @@ data IntegrationHealth = IntegrationHealth
 instance ToJSON IntegrationHealth
 instance FromJSON IntegrationHealth
 
--- ============================================================================
--- HEALTH RECORDING FUNCTIONS
--- ============================================================================
-
 -- | Record successful integration execution
 recordSuccess :: ConnectionPool -> Text -> Text -> IO (QueryResult ())
 recordSuccess _pool _tenantId _adapterType = do
   return $ QuerySuccess ()
 
+-- | Record failed integration execution
 recordFailure :: ConnectionPool -> Text -> Text -> Maybe Text -> IO (QueryResult ())
 recordFailure _pool _tenantId _adapterType _errorMessage = do
   return $ QuerySuccess ()
-
--- ============================================================================
--- HEALTH QUERY FUNCTIONS
--- ============================================================================
 
 -- | Get health status for a specific adapter
 getHealthStatus :: ConnectionPool -> Text -> Text -> IO (QueryResult IntegrationHealth)
@@ -82,13 +67,9 @@ checkHealthThreshold health threshold =
   ihFailureCount health >= threshold &&
   ihStatus health `elem` [Degraded, Failed]
 
--- ============================================================================
--- HELPER FUNCTIONS
--- ============================================================================
-
 -- | Parse status string to HealthStatus
 parseStatus :: Text -> HealthStatus
 parseStatus "healthy" = Healthy
 parseStatus "degraded" = Degraded
 parseStatus "failed" = Failed
-parseStatus _ = Degraded  -- Default to degraded for unknown status
+parseStatus _ = Degraded
