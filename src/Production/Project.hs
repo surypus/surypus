@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 -- | Project module - Project management (Phase 1: stub)
 module Production.Project
   ( Project(..)
@@ -19,12 +20,7 @@ data Project = Project
 
 -- | Create a new project (stub)
 createProject :: Text -> IO Project
-createProject name = return $ Project
-  { prjId = 0
-  , prjName = name
-  , prjStatus = "draft"
-  , prjCreatedAt = 0
-  }
+createProject name = pure $ Project 0 name "draft" 0
 
 -- | Get project status (stub)
 getProjectStatus :: Project -> Text
