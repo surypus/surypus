@@ -3,21 +3,18 @@ module Production.Project where
 
 import Data.Int (Int64)
 import Data.Text (Text)
-import Data.Time.Clock (UTCTime, getCurrentTime)
 
 -- | Project
 data Project = Project
   { prjId :: !Int64
   , prjName :: !Text
   , prjStatus :: !Text
-  , prjCreatedAt :: !UTCTime
+  , prjCreatedAt :: !Int64
   } deriving (Show, Eq)
 
 -- | Create a new project (stub)
 createProject :: Text -> IO Project
-createProject name = do
-  time <- getCurrentTime
-  return $ Project 0 name "draft" time
+createProject name = return $ Project 0 name "draft" 0
 
 -- | Get project status (stub)
 getProjectStatus :: Project -> Text
