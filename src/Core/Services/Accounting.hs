@@ -20,6 +20,18 @@ data AccountingEvent = AccountingEvent
   , accountingEventType :: !Text
   } deriving (Show, Eq)
 
+-- | Transaction (stub)
+data Transaction = Transaction
+  { transactionId :: !Int64
+  , transactionEntries :: ![Entry]
+  } deriving (Show, Eq)
+
+-- | Entry (stub)
+data Entry = Entry
+  { entryId :: !Int64
+  , entryAmount :: !Double
+  } deriving (Show, Eq)
+
 -- | Validate transaction (stub)
 validateTransaction :: Transaction -> Either Text Transaction
 validateTransaction tx = Right tx
