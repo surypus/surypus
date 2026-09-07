@@ -1,41 +1,38 @@
-{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
+-- | Surypus API Persons (Phase 1: stub)
+module Surypus.API.Persons
+  ( listPersons
+  , createPerson
+  , getPerson
+  , updatePerson
+  , deletePerson
+  , searchPersons
+  ) where
 
-module Surypus.API.Persons (
-    listPersons,
-    createPerson,
-    getPerson,
-    updatePerson,
-    deletePerson,
-    searchPersons,
-)
-where
-
-import DAL.Pool (ConnectionPool)
-import qualified DAL.Mutations as Mut
-import qualified DAL.QueriesORM as ORM
-import DAL.Types (MutationResult (..), Person (..), PersonInput (..), QueryResult (..))
+import DAL.Types (Person(..), QueryResult(..))
 import Data.Int (Int64)
-import qualified Data.Text as T
+import Data.Text (Text)
 
-listPersons :: ConnectionPool -> Maybe String -> Maybe String -> Maybe Int -> Maybe Int -> Maybe Int -> IO (QueryResult [Person])
-listPersons pool _ _ _ _ _ = ORM.getPersons pool
+-- | List persons (stub)
+listPersons :: Int64 -> Maybe Text -> Maybe Text -> Maybe Int -> Maybe Int -> Maybe Int -> IO (QueryResult [Person])
+listPersons _ _ _ _ _ _ = return $ QueryResult [] 0
 
-createPerson :: ConnectionPool -> PersonInput -> IO (QueryResult MutationResult)
-createPerson = Mut.createPerson
+-- | Create person (stub)
+createPerson :: Person -> IO (QueryResult Int64)
+createPerson _ = return $ QueryResult [0] 1
 
-getPerson :: ConnectionPool -> Int64 -> IO (QueryResult Person)
-getPerson = ORM.getPersonById
+-- | Get person (stub)
+getPerson :: Int64 -> IO (QueryResult Person)
+getPerson _ = return $ QueryResult [] 0
 
-updatePerson :: ConnectionPool -> Int64 -> PersonInput -> IO (QueryResult MutationResult)
-updatePerson = Mut.updatePerson
+-- | Update person (stub)
+updatePerson :: Person -> IO (QueryResult ())
+updatePerson _ = return $ QueryResult [()] 1
 
-deletePerson :: ConnectionPool -> Int64 -> IO (QueryResult ())
-deletePerson pool pid = do
-    result <- Mut.deletePerson pool pid
-    case result of
-        QuerySuccess _ -> return $ QuerySuccess ()
-        QueryError err -> return $ QueryError err
+-- | Delete person (stub)
+deletePerson :: Int64 -> IO (QueryResult ())
+deletePerson _ = return $ QueryResult [()] 1
 
-searchPersons :: ConnectionPool -> String -> IO (QueryResult [Person])
-searchPersons pool query = ORM.searchPersons pool (T.pack query)
+-- | Search persons (stub)
+searchPersons :: Text -> IO (QueryResult [Person])
+searchPersons _ = return $ QueryResult [] 0
