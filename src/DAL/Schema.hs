@@ -226,6 +226,10 @@ data EntityField
   | EventStoreEntitySequenceNumber
   | EventStoreEntityOccurredAt
   | EventStoreEntityCreatedAt
+  | UserRoleEntityUserId
+  | UserRoleEntityRoleId
+  | PermissionEntityName
+  | PermissionEntityDescription
   | RolePermissionEntityRoleId
   | RolePermissionEntityPermissionId
   | AuditLogEntityUserId
