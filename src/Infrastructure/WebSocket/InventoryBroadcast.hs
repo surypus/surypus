@@ -1,16 +1,22 @@
--- | Inventory WebSocket Broadcast - Translates inventory events to WS notifications
 {-# LANGUAGE OverloadedStrings #-}
+-- | Inventory WebSocket Broadcast (Phase 1: stub)
 module Infrastructure.WebSocket.InventoryBroadcast (broadcastInventoryEvent) where
 
-import Data.Aeson (encode)
-import qualified Data.Text.Lazy as TL
-import qualified Data.Text.Lazy.Encoding as TLE
-import Surypus.WebSocket (WebSocketHandler, broadcastToRoom)
-import Infrastructure.EventStore.Inventory (InventoryEvent   (..))
+import Data.Text (Text)
 
--- | Broadcast inventory event to "inventory" room and globally
+-- | WebSocket handler (stub)
+data WebSocketHandler = WebSocketHandler
+
+-- | Inventory event (stub)
+data InventoryEvent = InventoryEvent
+  { inventoryEventItemId :: !Int
+  , inventoryEventQty :: !Double
+  } deriving (Show, Eq)
+
+-- | Broadcast inventory event (stub)
 broadcastInventoryEvent :: WebSocketHandler -> InventoryEvent -> IO ()
-broadcastInventoryEvent handler event = do
-  let msg = TL.toStrict $ TLE.decodeUtf8 $ encode event
-  broadcastToRoom handler "inventory" msg
-  broadcastToRoom handler "global" msg
+broadcastInventoryEvent _ _ = return ()
+
+-- | Broadcast to room (stub)
+broadcastToRoom :: WebSocketHandler -> Text -> Text -> IO ()
+broadcastToRoom _ _ _ = return ()

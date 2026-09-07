@@ -7,9 +7,9 @@ import DAL.Types
 import DAL.Database (ConnectionPool)
 
 -- | Run stored procedure (stub)
-runProcedure :: ConnectionPool -> Text -> [PersistValue] -> IO (QueryResult [PersistValue])
+runProcedure :: ConnectionPool -> Text -> [Text] -> IO (QueryResult [Text])
 runProcedure _ _ _ = return $ QueryResult [] 0
 
 -- | Call stored function (stub)
-callFunction :: ConnectionPool -> Text -> [PersistValue] -> IO (QueryResult PersistValue)
+callFunction :: ConnectionPool -> Text -> [Text] -> IO (QueryResult Text)
 callFunction _ _ _ = return $ QueryResult [] 0
