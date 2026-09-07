@@ -1,5 +1,2 @@
--- | Integration module - External integrations
+-- | Integration module - External integrations (Phase 1: stub)
 module Integration where
-
-import Integration.ImportExport
-import Integration.Sync
