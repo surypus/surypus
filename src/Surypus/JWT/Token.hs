@@ -12,17 +12,10 @@ import Data.Text.Encoding (encodeUtf8, decodeUtf8)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Base64.URL as B64U
-import qualified Data.ByteString.Char8 as BS
 import Data.Aeson (FromJSON, ToJSON, eitherDecode, encode)
 import GHC.Generics (Generic)
-import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Map
-import Data.Time.Clock (UTCTime, getCurrentTime, addUTCTime)
-import Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds, posixSecondsToUTCTime)
-import Crypto.Hash.Algorithms (SHA256(..))
-import Crypto.MAC.HMAC (HMAC, hmac, hmacDigest)
-import Data.ByteArray (convert)
-import qualified Data.ByteArray as BA
+import Data.Time.Clock (UTCTime, getCurrentTime)
+import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 
 -- | User claims embedded in JWT
 data UserClaims = UserClaims

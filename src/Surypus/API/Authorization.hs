@@ -6,8 +6,10 @@ module Surypus.API.Authorization
   , requiredPermissionForPathMethod
   , checkPermission
   , hasRole
+  , permissionToText
   ) where
 
+import Prelude hiding (Read)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Map.Strict (Map)

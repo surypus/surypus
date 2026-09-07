@@ -112,20 +112,14 @@ instance FromJSON Pagination
 instance ToJSON Pagination
 
 -- | Query result wrapper (Phase 1: stub)
-data QueryResult a = QueryResult
-  { queryResultData  :: ![a]
-  , queryResultTotal :: !Int
-  } deriving (Show, Eq, Generic)
-
-instance FromJSON a => FromJSON (QueryResult a)
-instance ToJSON a => ToJSON (QueryResult a)
-
--- | Query result wrapper (success or error)
 data QueryResult a
   = QueryResults ![a] !Int
   | QuerySuccess !a
   | QueryError !T.Text
   deriving (Show, Eq, Generic)
+
+instance FromJSON a => FromJSON (QueryResult a)
+instance ToJSON a => ToJSON (QueryResult a)
 
 -- | Person (Phase 1: stub)
 data Person = Person
