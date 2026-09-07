@@ -5,7 +5,7 @@
 # Single unified library project (no sub-packages)
 
 # Stage 1: Build environment
-FROM haskell:9.6.6 AS builder
+FROM haskell:9.14.1 AS builder
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
