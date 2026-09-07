@@ -42,24 +42,23 @@ instance FromJSON IntegrationHealth
 -- | Record successful integration execution
 recordSuccess :: ConnectionPool -> Text -> Text -> IO (QueryResult ())
 recordSuccess _pool _tenantId _adapterType = do
-  return $ QuerySuccess ()
+  return $ QueryResult [] 0
 
 -- | Record failed integration execution
 recordFailure :: ConnectionPool -> Text -> Text -> Maybe Text -> IO (QueryResult ())
 recordFailure _pool _tenantId _adapterType _errorMessage = do
-  return $ QuerySuccess ()
+  return $ QueryResult [] 0
 
 -- | Get health status for a specific adapter
 getHealthStatus :: ConnectionPool -> Text -> Text -> IO (QueryResult IntegrationHealth)
 getHealthStatus pool tenantId adapterType = do
   time <- Data.Time.getCurrentTime
-  return $ QuerySuccess $
-    IntegrationHealth tenantId adapterType Healthy 0 (Just time) Nothing Nothing time
+  return $ QueryResult [IntegrationHealth tenantId adapterType Healthy 0 (Just time) Nothing Nothing time] 1
 
 -- | Get all unhealthy integrations for alerting
 getUnhealthyIntegrations :: ConnectionPool -> Int -> IO (QueryResult [IntegrationHealth])
 getUnhealthyIntegrations pool minFailureCount = do
-  return $ QuerySuccess []
+  return $ QueryResult [] 0
 
 -- | Check if health status exceeds threshold
 checkHealthThreshold :: IntegrationHealth -> Int -> Bool

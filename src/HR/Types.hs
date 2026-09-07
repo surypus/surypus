@@ -79,7 +79,7 @@ mkSalarySummary charges = SalarySummary
   }
 
 -- | Make salary charge (stub)
-mkSalaryCharge :: Int64 -> Double -> SalaryCharge
+mkSalaryCharge :: Double -> Int64 -> SalaryCharge
 mkSalaryCharge amt id = SalaryCharge
   { salaryChargeId = id
   , salaryChargeAmount = amt

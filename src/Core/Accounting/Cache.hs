@@ -10,10 +10,10 @@ module Core.Accounting.Cache
   ) where
 
 import Data.Int (Int64)
-import Data.Time (UTCTime, getCurrentTime)
+import Data.Text (Text)
 import DAL.Database (ConnectionPool)
 
--- | Cache stats (stub)
+-- | Cache stats
 data CacheStats = CacheStats
   { cacheHits :: !Int
   , cacheMisses :: !Int
