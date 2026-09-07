@@ -121,6 +121,15 @@ data QueryResult a
 instance FromJSON a => FromJSON (QueryResult a)
 instance ToJSON a => ToJSON (QueryResult a)
 
+-- | Command result (success or error)
+data CommandResult a
+  = CommandSuccess !a
+  | CommandError !T.Text
+  deriving (Show, Eq, Generic)
+
+instance FromJSON a => FromJSON (CommandResult a)
+instance ToJSON a => ToJSON (CommandResult a)
+
 -- | Person (Phase 1: stub)
 data Person = Person
   { personId :: !Int
