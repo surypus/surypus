@@ -1,160 +1,89 @@
-{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
+-- | Surypus API Classifiers (Phase 1: stub)
+module Surypus.API.Classifiers
+  ( listOksm
+  , getOksm
+  , getOksmByCode
+  , listOkv
+  , getOkv
+  , listOkei
+  , getOkei
+  , listOkpd2
+  , getOkpd2
+  , listOkved2
+  , getOkved2
+  , listTnved
+  , getTnved
+  , listOkato
+  , getOkato
+  ) where
 
-module Surypus.API.Classifiers (
-    -- * All classifiers
-    listOksm,
-    getOksm,
-    getOksmByCode,
-    listOkv,
-    getOkv,
-    listOkei,
-    getOkei,
-    listOkpd2,
-    getOkpd2,
-    listOkved2,
-    getOkved2,
-    listTnved,
-    getTnved,
-    listOkato,
-    getOkato,
-    listOktmo,
-    getOktmo,
-    listOkof,
-    getOkof,
-    listOkp,
-    getOkp,
-    listOkdp,
-    getOkdp,
-    listOkso,
-    getOkso,
-    listOkun,
-    getOkun,
-    listOkud,
-    getOkud,
-    listOkfs,
-    getOkfs,
-    listOknpo,
-    getOknpo,
-) where
-
-import qualified DAL.Classifiers as C
-import DAL.Pool (ConnectionPool)
-import DAL.Types
-import Data.Int (Int64)
 import Data.Text (Text)
+import Data.Int (Int64)
 
--- OKSM
-listOksm :: ConnectionPool -> IO (QueryResult [OksmRecord])
-listOksm = C.getOksmAll
+-- | Classifier item
+data ClassifierItem = ClassifierItem
+  { classifierItemId :: !Int64
+  , classifierItemCode :: !Text
+  , classifierItemName :: !Text
+  } deriving (Show, Eq)
 
-getOksm :: ConnectionPool -> Int64 -> IO (QueryResult OksmRecord)
-getOksm = C.getOksmById
+-- | List OKSM (stub)
+listOksm :: IO [ClassifierItem]
+listOksm = return []
 
-getOksmByCode :: ConnectionPool -> Text -> IO (QueryResult OksmRecord)
-getOksmByCode = C.getOksmByCode
+-- | Get OKSM (stub)
+getOksm :: Int64 -> IO (Maybe ClassifierItem)
+getOksm _ = return Nothing
 
--- OKV
-listOkv :: ConnectionPool -> IO (QueryResult [OkvRecord])
-listOkv = C.getOkvAll
+-- | Get OKSM by code (stub)
+getOksmByCode :: Text -> IO (Maybe ClassifierItem)
+getOksmByCode _ = return Nothing
 
-getOkv :: ConnectionPool -> Int64 -> IO (QueryResult OkvRecord)
-getOkv = C.getOkvById
+-- | List OKV (stub)
+listOkv :: IO [ClassifierItem]
+listOkv = return []
 
--- OKEI
-listOkei :: ConnectionPool -> IO (QueryResult [OkeiRecord])
-listOkei = C.getOkeiAll
+-- | Get OKV (stub)
+getOkv :: Int64 -> IO (Maybe ClassifierItem)
+getOkv _ = return Nothing
 
-getOkei :: ConnectionPool -> Int64 -> IO (QueryResult OkeiRecord)
-getOkei = C.getOkeiById
+-- | List OKEI (stub)
+listOkei :: IO [ClassifierItem]
+listOkei = return []
 
--- OKPD2
-listOkpd2 :: ConnectionPool -> IO (QueryResult [Okpd2Record])
-listOkpd2 = C.getOkpd2All
+-- | Get OKEI (stub)
+getOkei :: Int64 -> IO (Maybe ClassifierItem)
+getOkei _ = return Nothing
 
-getOkpd2 :: ConnectionPool -> Int64 -> IO (QueryResult Okpd2Record)
-getOkpd2 = C.getOkpd2ById
+-- | List OKPD2 (stub)
+listOkpd2 :: IO [ClassifierItem]
+listOkpd2 = return []
 
--- OKVED2
-listOkved2 :: ConnectionPool -> IO (QueryResult [Okved2Record])
-listOkved2 = C.getOkved2All
+-- | Get OKPD2 (stub)
+getOkpd2 :: Int64 -> IO (Maybe ClassifierItem)
+getOkpd2 _ = return Nothing
 
-getOkved2 :: ConnectionPool -> Int64 -> IO (QueryResult Okved2Record)
-getOkved2 = C.getOkved2ById
+-- | List OKVED2 (stub)
+listOkved2 :: IO [ClassifierItem]
+listOkved2 = return []
 
--- TNVED
-listTnved :: ConnectionPool -> IO (QueryResult [TnvedRecord])
-listTnved = C.getTnvedAll
+-- | Get OKVED2 (stub)
+getOkved2 :: Int64 -> IO (Maybe ClassifierItem)
+getOkved2 _ = return Nothing
 
-getTnved :: ConnectionPool -> Int64 -> IO (QueryResult TnvedRecord)
-getTnved = C.getTnvedById
+-- | List TNVED (stub)
+listTnved :: IO [ClassifierItem]
+listTnved = return []
 
--- OKATO
-listOkato :: ConnectionPool -> IO (QueryResult [OkatoRecord])
-listOkato = C.getOkatoAll
+-- | Get TNVED (stub)
+getTnved :: Int64 -> IO (Maybe ClassifierItem)
+getTnved _ = return Nothing
 
-getOkato :: ConnectionPool -> Int64 -> IO (QueryResult OkatoRecord)
-getOkato = C.getOkatoById
+-- | List OKATO (stub)
+listOkato :: IO [ClassifierItem]
+listOkato = return []
 
--- OKTMO
-listOktmo :: ConnectionPool -> IO (QueryResult [OktmoRecord])
-listOktmo = C.getOktmoAll
-
-getOktmo :: ConnectionPool -> Int64 -> IO (QueryResult OktmoRecord)
-getOktmo = C.getOktmoById
-
--- OKOF
-listOkof :: ConnectionPool -> IO (QueryResult [OkofRecord])
-listOkof = C.getOkofAll
-
-getOkof :: ConnectionPool -> Int64 -> IO (QueryResult OkofRecord)
-getOkof = C.getOkofById
-
--- OKP
-listOkp :: ConnectionPool -> IO (QueryResult [OkpRecord])
-listOkp = C.getOkpAll
-
-getOkp :: ConnectionPool -> Int64 -> IO (QueryResult OkpRecord)
-getOkp = C.getOkpById
-
--- OKDP
-listOkdp :: ConnectionPool -> IO (QueryResult [OkdpRecord])
-listOkdp = C.getOkdpAll
-
-getOkdp :: ConnectionPool -> Int64 -> IO (QueryResult OkdpRecord)
-getOkdp = C.getOkdpById
-
--- OKSO
-listOkso :: ConnectionPool -> IO (QueryResult [OksoRecord])
-listOkso = C.getOksoAll
-
-getOkso :: ConnectionPool -> Int64 -> IO (QueryResult OksoRecord)
-getOkso = C.getOksoById
-
--- OKUN
-listOkun :: ConnectionPool -> IO (QueryResult [OkunRecord])
-listOkun = C.getOkunAll
-
-getOkun :: ConnectionPool -> Int64 -> IO (QueryResult OkunRecord)
-getOkun = C.getOkunById
-
--- OKUD
-listOkud :: ConnectionPool -> IO (QueryResult [OkudRecord])
-listOkud = C.getOkudAll
-
-getOkud :: ConnectionPool -> Int64 -> IO (QueryResult OkudRecord)
-getOkud = C.getOkudById
-
--- OKFS
-listOkfs :: ConnectionPool -> IO (QueryResult [OkfsRecord])
-listOkfs = C.getOkfsAll
-
-getOkfs :: ConnectionPool -> Int64 -> IO (QueryResult OkfsRecord)
-getOkfs = C.getOkfsById
-
--- OKNPO
-listOknpo :: ConnectionPool -> IO (QueryResult [OknpoRecord])
-listOknpo = C.getOknpoAll
-
-getOknpo :: ConnectionPool -> Int64 -> IO (QueryResult OknpoRecord)
-getOknpo = C.getOknpoById
+-- | Get OKATO (stub)
+getOkato :: Int64 -> IO (Maybe ClassifierItem)
+getOkato _ = return Nothing

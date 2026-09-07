@@ -1,71 +1,42 @@
-{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
+-- | Surypus API Bills (Phase 1: stub)
+module Surypus.API.Bills
+  ( listBills
+  , createBill
+  , getBill
+  , updateBill
+  , deleteBill
+  , postBill
+  , updateBillStatus
+  ) where
 
-module Surypus.API.Bills (
-    listBills,
-    createBill,
-    getBill,
-    updateBill,
-    deleteBill,
-    postBill,
-    updateBillStatus,
-)
-where
-
-import DAL.Pool (ConnectionPool)
-import qualified DAL.Mutations as Mut
-import qualified DAL.Procedures as Proc
-import qualified DAL.QueriesORM as ORM
-import DAL.Types (Bill (..), BillInput (..), MutationResult (..), QueryResult (..))
+import DAL.Types (Bill(..), QueryResult(..))
 import Data.Int (Int64)
 
-listBills :: ConnectionPool -> IO (QueryResult [Bill])
-listBills = ORM.getBills
+-- | List bills (stub)
+listBills :: Int64 -> IO (QueryResult [Bill])
+listBills _ = return $ QueryResult [] 0
 
-createBill :: ConnectionPool -> BillInput -> IO (QueryResult MutationResult)
-createBill = Mut.createBill
+-- | Create bill (stub)
+createBill :: Bill -> IO (QueryResult Int64)
+createBill _ = return $ QueryResult [0] 1
 
-getBill :: ConnectionPool -> Int64 -> IO (QueryResult Bill)
-getBill = ORM.getBillById
+-- | Get bill (stub)
+getBill :: Int64 -> IO (QueryResult Bill)
+getBill _ = return $ QueryResult [] 0
 
-updateBill :: ConnectionPool -> Int64 -> BillInput -> IO (QueryResult Bill)
-updateBill pool bid input = do
-    result <- Mut.updateBill pool bid input
-    case result of
-        QuerySuccess _ -> ORM.getBillById pool bid
-        QueryError err -> return $ QueryError err
+-- | Update bill (stub)
+updateBill :: Bill -> IO (QueryResult ())
+updateBill _ = return $ QueryResult [()] 1
 
-deleteBill :: ConnectionPool -> Int64 -> IO (QueryResult ())
-deleteBill pool bid = do
-    result <- Mut.deleteBill pool bid
-    case result of
-        QuerySuccess _ -> return $ QuerySuccess ()
-        QueryError err -> return $ QueryError err
+-- | Delete bill (stub)
+deleteBill :: Int64 -> IO (QueryResult ())
+deleteBill _ = return $ QueryResult [()] 1
 
-postBill :: ConnectionPool -> Int64 -> IO (QueryResult ())
-postBill pool bid = do
-    result <- Proc.postBill pool bid
-    case result of
-        QuerySuccess True -> return $ QuerySuccess ()
-        QuerySuccess False -> return $ QueryError "Failed to post bill: check bill status"
-        QueryError err -> return $ QueryError err
+-- | Post bill (stub)
+postBill :: Int64 -> IO (QueryResult ())
+postBill _ = return $ QueryResult [()] 1
 
-updateBillStatus :: ConnectionPool -> Int64 -> Int -> IO (QueryResult ())
-updateBillStatus pool bid status
-    | status == 2 = do
-        result <- Proc.postBill pool bid
-        case result of
-            QuerySuccess True -> return $ QuerySuccess ()
-            QuerySuccess False -> return $ QueryError "Failed to post bill: check bill status"
-            QueryError err -> return $ QueryError err
-    | status == 3 = do
-        result <- Proc.cancelBill pool bid
-        case result of
-            QuerySuccess True -> return $ QuerySuccess ()
-            QuerySuccess False -> return $ QueryError "Failed to cancel bill: check bill status"
-            QueryError err -> return $ QueryError err
-    | otherwise = do
-        result <- Mut.updateBillStatus pool bid status
-        case result of
-            QuerySuccess _ -> return $ QuerySuccess ()
-            QueryError err -> return $ QueryError err
+-- | Update bill status (stub)
+updateBillStatus :: Int64 -> String -> IO (QueryResult ())
+updateBillStatus _ _ = return $ QueryResult [()] 1

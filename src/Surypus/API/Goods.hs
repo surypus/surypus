@@ -1,45 +1,32 @@
-{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
+-- | Surypus API Goods (Phase 1: stub)
+module Surypus.API.Goods
+  ( listGoods
+  , createGood
+  , getGood
+  , updateGood
+  , deleteGood
+  ) where
 
-module Surypus.API.Goods (
-    listGoods,
-    createGood,
-    getGood,
-    updateGood,
-    deleteGood,
-)
-where
-
-import DAL.Pool (ConnectionPool)
-import qualified DAL.Mutations as Mut
-import qualified DAL.QueriesORM as ORM
-import DAL.Types (Goods (..), GoodsInput (..), MutationResult (..), QueryResult (..))
+import DAL.Types (Goods(..), QueryResult(..))
 import Data.Int (Int64)
 
-listGoods :: ConnectionPool -> IO (QueryResult [Goods])
-listGoods = ORM.getGoods
+-- | List goods (stub)
+listGoods :: Int64 -> IO (QueryResult [Goods])
+listGoods _ = return $ QueryResult [] 0
 
-createGood :: ConnectionPool -> GoodsInput -> IO (QueryResult Goods)
-createGood pool input = do
-    result <- Mut.createGoods pool input
-    case result of
-        QuerySuccess (MutationResult _ (Just rid) _) -> ORM.getGoodsById pool rid
-        QuerySuccess _ -> return $ QueryError "Created but no ID returned"
-        QueryError err -> return $ QueryError err
+-- | Create good (stub)
+createGood :: Goods -> IO (QueryResult Int64)
+createGood _ = return $ QueryResult [0] 1
 
-getGood :: ConnectionPool -> Int64 -> IO (QueryResult Goods)
-getGood = ORM.getGoodsById
+-- | Get good (stub)
+getGood :: Int64 -> IO (QueryResult Goods)
+getGood _ = return $ QueryResult [] 0
 
-updateGood :: ConnectionPool -> Int64 -> GoodsInput -> IO (QueryResult Goods)
-updateGood pool gid input = do
-    result <- Mut.updateGoods pool gid input
-    case result of
-        QuerySuccess _ -> ORM.getGoodsById pool gid
-        QueryError err -> return $ QueryError err
+-- | Update good (stub)
+updateGood :: Goods -> IO (QueryResult ())
+updateGood _ = return $ QueryResult [()] 1
 
-deleteGood :: ConnectionPool -> Int64 -> IO (QueryResult ())
-deleteGood pool gid = do
-    result <- Mut.deleteGoods pool gid
-    case result of
-        QuerySuccess _ -> return $ QuerySuccess ()
-        QueryError err -> return $ QueryError err
+-- | Delete good (stub)
+deleteGood :: Int64 -> IO (QueryResult ())
+deleteGood _ = return $ QueryResult [()] 1
