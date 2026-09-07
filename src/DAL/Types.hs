@@ -117,6 +117,12 @@ data QueryResult a = QueryResult
   , queryResultTotal :: !Int
   } deriving (Show, Eq, Generic)
 
+-- | Query result with success/error
+data QueryResult a
+  = QuerySuccess !a
+  | QueryError !T.Text
+  deriving (Show, Eq, Generic)
+
 instance FromJSON a => FromJSON (QueryResult a)
 instance ToJSON a => ToJSON (QueryResult a)
 

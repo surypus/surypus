@@ -1,11 +1,14 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 -- | Authentication and authorization middleware for Servant
 module Surypus.API.AuthMiddleware
-  ( withAuthzResolverAdvanced,
-  )
-where
+  ( withAuthzResolverAdvanced
+  , withAuthzResolver
+  , AuthResult(..)
+  , authenticateRequest
+  ) where
 
 import Data.Int (Int64)
 import Data.Text (Text)
@@ -13,44 +16,74 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Types (status401, status403)
 import Network.Wai (Application, requestHeaders, rawPathInfo, requestMethod, responseLBS)
-import Surypus.API.Authorization (requiredPermissionForPathMethod)
-import Surypus.JWT.Token (UserClaims(..), verifyToken)
+import Surypus.API.Authorization (requiredPermissionForPathMethod, checkPermission)
+import Surypus.JWT.Token (UserClaims(..), verifyToken, SecretKey, defaultSecretKey)
+import Data.ByteString (ByteString)
+import qualified Data.ByteString.Char8 as BS
+
+-- | Authentication result
+data AuthResult
+  = Authenticated !UserClaims
+  | AuthFailed !Text
+  | AuthSkipped
+  deriving (Show, Eq)
+
+-- | Extract JWT token from Authorization header
+extractToken :: ByteString -> Maybe Text
+extractToken authHeader = do
+  let prefix = "Bearer "
+  if prefix `BS.isPrefixOf` authHeader
+    then Just $ TE.decodeUtf8 $ BS.drop (length prefix) authHeader
+    else Nothing
+
+-- | Authenticate a request
+authenticateRequest :: SecretKey -> ByteString -> ByteString -> IO AuthResult
+authenticateRequest secret path method = do
+  let mToken = extractToken method
+  case mToken of
+    Nothing -> return $ AuthFailed "Missing or invalid Authorization header"
+    Just token -> do
+      result <- verifyToken secret token
+      case result of
+        Left err -> return $ AuthFailed err
+        Right claims -> return $ Authenticated claims
 
 -- | Apply RBAC authorization middleware.
 -- Skips auth for public paths; otherwise verifies JWT and checks permission.
--- The checkPermission function should be wired with a real RBAC store.
-withAuthzResolverAdvanced ::
-  -- | Public paths (no auth required)
-  [Text] ->
-  -- | Permission checker: userId -> requiredPermission -> IO Bool
-  (Int64 -> Text -> IO Bool) ->
-  -- | Inner application
-  Application ->
-  -- | Secured application
-  Application
-withAuthzResolverAdvanced publicPaths checkPermission app req respond = do
-  let path = TE.decodeUtf8 (rawPathInfo req)
-      authHeader = lookup "Authorization" (requestHeaders req)
-  if path `elem` publicPaths
-    then app req respond
-    else case authHeader of
-      Nothing ->
-        respond $ responseLBS status401 [("Content-Type", "text/plain")] "Unauthorized: missing Authorization header"
-      Just hdr -> do
-        let hdrStr = TE.decodeUtf8 hdr
-        case T.stripPrefix "Bearer " hdrStr of
-          Nothing ->
-            respond $ responseLBS status401 [("Content-Type", "text/plain")] "Unauthorized: invalid Authorization header format"
-          Just token ->
-            verifyToken token >>= \case
-              Left _ ->
-                respond $ responseLBS status401 [("Content-Type", "text/plain")] "Unauthorized: invalid or expired token"
-              Right claims -> do
-                let mPerm = requiredPermissionForPathMethod (requestMethod req) path
-                case mPerm of
-                  Nothing -> app req respond
-                  Just perm -> do
-                    allowed <- checkPermission (ucUserId claims) perm
-                    if allowed
-                      then app req respond
-                      else respond $ responseLBS status403 [("Content-Type", "text/plain")] "Forbidden: insufficient permissions"
+withAuthzResolverAdvanced :: [Text] -> (Int64 -> Text -> IO Bool) -> Application -> Application
+withAuthzResolverAdvanced publicPaths checkPerm app request respond = do
+  let path = TE.decodeUtf8 (rawPathInfo request)
+      method = TE.decodeUtf8 (requestMethod request)
+      headers = requestHeaders request
+
+  -- Check if path is public
+  if any (`T.isPrefixOf` path) publicPaths
+    then app request respond
+    else do
+      -- Find Authorization header
+      let mAuthHeader = lookup "Authorization" headers
+      case mAuthHeader of
+        Nothing -> respond $ responseLBS status401 [("Content-Type", "application/json")] "{\"error\":\"Unauthorized\"}"
+        Just authHeader -> do
+          let mToken = extractToken authHeader
+          case mToken of
+            Nothing -> respond $ responseLBS status401 [("Content-Type", "application/json")] "{\"error\":\"Invalid token format\"}"
+            Just token -> do
+              result <- verifyToken defaultSecretKey token
+              case result of
+                Left err -> respond $ responseLBS status401 [("Content-Type", "application/json")] $ BS.pack $ "{\"error\":\"" ++ T.unpack err ++ "\"}"
+                Right claims -> do
+                  let mRequiredPerm = requiredPermissionForPathMethod path method
+                  case mRequiredPerm of
+                    Nothing -> app request respond
+                    Just perm -> do
+                      let userId = claimsUserId claims
+                          userRoles = claimsRoles claims
+                      hasPerm <- checkPerm userId (Surypus.API.Authorization.permissionToText perm)
+                      if hasPerm || checkPermission userRoles perm
+                        then app request respond
+                        else respond $ responseLBS status403 [("Content-Type", "application/json")] "{\"error\":\"Forbidden\"}"
+
+-- | Simple auth middleware with default secret key
+withAuthzResolver :: [Text] -> Application -> Application
+withAuthzResolver publicPaths app = withAuthzResolverAdvanced publicPaths (\_ _ -> return False) app

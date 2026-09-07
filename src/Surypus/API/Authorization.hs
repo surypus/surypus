@@ -1,185 +1,139 @@
--- | API Authorization helpers
 {-# LANGUAGE OverloadedStrings #-}
+-- | Authorization and permission checking
 module Surypus.API.Authorization
-  ( requiredPermissionForPathMethod,
-    normalizeResourcePath,
-  )
-where
+  ( Permission(..)
+  , Resource(..)
+  , requiredPermissionForPathMethod
+  , checkPermission
+  , hasRole
+  ) where
 
 import Data.Text (Text)
 import qualified Data.Text as T
-import Network.HTTP.Types (Method, methodGet, methodPost, methodPut, methodDelete)
+import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map
+import Data.List (isPrefixOf)
 
--- | Normalize resource path for RBAC matching
-normalizeResourcePath :: Text -> Text
-normalizeResourcePath path =
-  let path' = T.stripStart path
-      stripped = fromMaybe path' (T.stripPrefix "/api/v1/" path')
-      normalized = T.dropWhileEnd (== '/') stripped
-   in normalized
-  where
-    fromMaybe def Nothing = def
-    fromMaybe _ (Just x) = x
+-- | Permission for a specific resource
+data Permission
+  = Read !Resource
+  | Write !Resource
+  | Create !Resource
+  | Delete !Resource
+  | Admin !Resource
+  | Execute !Resource
+  deriving (Show, Eq)
 
--- | Map HTTP method + path to required permission
-requiredPermissionForPathMethod :: Method -> Text -> Maybe Text
-requiredPermissionForPathMethod method path =
-  let normalized = normalizeResourcePath path
-      segments = T.splitOn "/" normalized
-      isGet = method == methodGet
-      isPost = method == methodPost
-      isPut = method == methodPut
-      isDelete = method == methodDelete
-   in case segments of
-        ["person"] ->
-          Just $ case () of
-            _ | isGet -> "person:read"
-              | isPost -> "person:write"
-              | isPut -> "person:write"
-              | isDelete -> "person:delete"
-              | otherwise -> "person:read"
-        ["persons"] ->
-          Just "person:read"
-        ["person", _id] ->
-          Just $ case () of
-            _ | isGet -> "person:read"
-              | isPut -> "person:write"
-              | isDelete -> "person:delete"
-              | otherwise -> "person:read"
-        ["person", _id, "search"] ->
-          Just "person:read"
-        ["goods"] ->
-          Just $ case () of
-            _ | isGet -> "goods:read"
-              | isPost -> "goods:write"
-              | otherwise -> "goods:read"
-        ["goods", _id] ->
-          Just $ case () of
-            _ | isGet -> "goods:read"
-              | isPut -> "goods:write"
-              | isDelete -> "goods:delete"
-              | otherwise -> "goods:read"
-        ["goods", "search"] ->
-          Just "goods:read"
-        ["bill"] ->
-          Just $ case () of
-            _ | isGet -> "bill:read"
-              | isPost -> "bill:write"
-              | otherwise -> "bill:read"
-        ["bill", _id, "status"] ->
-          Just "bill:post"
-        ["bill", _id] ->
-          Just $ case () of
-            _ | isGet -> "bill:read"
-              | isPut -> "bill:write"
-              | isDelete -> "bill:delete"
-              | otherwise -> "bill:read"
-        ["bills"] ->
-          Just $ case () of
-            _ | isGet -> "bill:read"
-              | isPost -> "bill:write"
-              | otherwise -> "bill:read"
-        ["bills", _id] ->
-          Just $ case () of
-            _ | isGet -> "bill:read"
-              | isDelete -> "bill:delete"
-              | otherwise -> "bill:read"
-        ["bills", _id, "status"] ->
-          Just "bill:post"
-        ["bill-templates"] ->
-          Just $ case () of
-            _ | isGet -> "bill:read"
-              | isPost -> "bill:write"
-              | otherwise -> "bill:read"
-        ["bill-templates", _id] ->
-          Just $ case () of
-            _ | isDelete -> "bill:delete"
-              | otherwise -> "bill:read"
-        ["payment"] ->
-          Just $ case () of
-            _ | isGet -> "payment:read"
-              | isPost -> "payment:write"
-              | isPut -> "payment:write"
-              | isDelete -> "payment:delete"
-              | otherwise -> "payment:read"
-        ["payments"] ->
-          Just $ case () of
-            _ | isGet -> "payment:read"
-              | isPost -> "payment:write"
-              | otherwise -> "payment:read"
-        ["payments", "aging"] ->
-          Just "payment:read"
-        ["payments", _id] ->
-          Just $ case () of
-            _ | isGet -> "payment:read"
-              | isPut -> "payment:write"
-              | isDelete -> "payment:delete"
-              | otherwise -> "payment:read"
-        ["location"] ->
-          Just $ case () of
-            _ | isGet -> "location:read"
-              | isPost -> "location:write"
-              | isPut -> "location:write"
-              | isDelete -> "location:delete"
-              | otherwise -> "location:read"
-        ["locations"] ->
-          Just "location:read"
-        ["location", _id] ->
-          Just $ case () of
-            _ | isGet -> "location:read"
-              | isPut -> "location:write"
-              | isDelete -> "location:delete"
-              | otherwise -> "location:read"
-        ["stock"] -> Just "stock:read"
-        ["stock", "summary"] -> Just "stock:read"
-        ["stock", "valuation"] -> Just "stock:read"
-        ["stock", "movements"] -> Just $ case () of
-          _ | isGet -> "stock:read"
-            | isPost -> "stock:write"
-            | otherwise -> "stock:read"
-        ["stock", "movements", "goods", _gid] -> Just "stock:read"
-        ["stock", _gid, _lid] -> Just "stock:read"
-        ["stock", "bygoods", _gid] -> Just "stock:read"
-        ["goods", "low-stock"] -> Just "stock:read"
-        ["accounting"] ->
-          Just $ case () of
-            _ | isGet -> "accounting:read"
-              | isPost -> "accounting:write"
-              | otherwise -> "accounting:read"
-        ["accounting", "accounts"] ->
-          Just $ case () of
-            _ | isGet -> "accounting:read"
-              | isPost -> "accounting:write"
-              | otherwise -> "accounting:read"
-        ["accounting", "accounts", _id] ->
-          Just $ case () of
-            _ | isGet -> "accounting:read"
-              | isPut -> "accounting:write"
-              | isDelete -> "accounting:write"
-              | otherwise -> "accounting:read"
-        ["accounting", "entries"] ->
-          Just $ case () of
-            _ | isGet -> "accounting:read"
-              | isPost -> "accounting:write"
-              | otherwise -> "accounting:read"
-        ["accounting", "entries", _id] ->
-          Just $ case () of
-            _ | isGet -> "accounting:read"
-              | isPut -> "accounting:write"
-              | isDelete -> "accounting:write"
-              | otherwise -> "accounting:read"
-        ["accounting", "balance-history"] -> Just "accounting:read"
-        ["payroll"] -> Just "payroll:read"
-        ["payroll", "employees"] -> Just "payroll:read"
-        ["payroll", "employees", _id] -> Just "payroll:read"
-        ["payroll", "salaries"] -> Just "payroll:read"
-        ["payroll", "salaries", _id] -> Just "payroll:read"
-        ["reports"] -> Just "reports:read"
-        ["reports", "templates"] -> Just "reports:read"
-        ["reports", "jrxml", _name] -> Just "reports:read"
-        ["users"] -> Just "users:read"
-        ["roles"] -> Just "users:read"
-        ["grants"] -> Just "users:read"
-        ["audit"] -> Just "admin:access"
-        ["dashboard"] -> Just "reports:read"
-        _ -> Nothing
+-- | Protected resource
+data Resource
+  = Persons
+  | Goods
+  | Bills
+  | Orders
+  | Reports
+  | Settings
+  | Users
+  | Inventory
+  | Production
+  | Finance
+  | CRM
+  | All
+  deriving (Show, Eq)
+
+-- | Convert permission to text
+permissionToText :: Permission -> Text
+permissionToText = \case
+  Read r    -> "read:" <> resourceToText r
+  Write r   -> "write:" <> resourceToText r
+  Create r  -> "create:" <> resourceToText r
+  Delete r  -> "delete:" <> resourceToText r
+  Admin r   -> "admin:" <> resourceToText r
+  Execute r -> "execute:" <> resourceToText r
+
+resourceToText :: Resource -> Text
+resourceToText = \case
+  Persons    -> "persons"
+  Goods      -> "goods"
+  Bills      -> "bills"
+  Orders     -> "orders"
+  Reports    -> "reports"
+  Settings   -> "settings"
+  Users      -> "users"
+  Inventory  -> "inventory"
+  Production -> "production"
+  Finance    -> "finance"
+  CRM        -> "crm"
+  All        -> "*"
+
+-- | Parse permission from text
+parsePermission :: Text -> Maybe Permission
+parsePermission t = case T.breakOn ":" t of
+  ("read",    r) -> Read    <$> parseResource (T.drop 1 r)
+  ("write",   r) -> Write   <$> parseResource (T.drop 1 r)
+  ("create",  r) -> Create  <$> parseResource (T.drop 1 r)
+  ("delete",  r) -> Delete  <$> parseResource (T.drop 1 r)
+  ("admin",   r) -> Admin   <$> parseResource (T.drop 1 r)
+  ("execute", r) -> Execute <$> parseResource (T.drop 1 r)
+  _ -> Nothing
+
+parseResource :: Text -> Maybe Resource
+parseResource = \case
+  "persons"    -> Just Persons
+  "goods"      -> Just Goods
+  "bills"      -> Just Bills
+  "orders"     -> Just Orders
+  "reports"    -> Just Reports
+  "settings"   -> Just Settings
+  "users"      -> Just Users
+  "inventory"  -> Just Inventory
+  "production" -> Just Production
+  "finance"    -> Just Finance
+  "crm"        -> Just CRM
+  "*"          -> Just All
+  _            -> Nothing
+
+-- | Determine required permission for a given path and method
+requiredPermissionForPathMethod :: Text -> Text -> Maybe Permission
+requiredPermissionForPathMethod path method
+  | "/api/persons"    `T.isPrefixOf` path = Just $ methodToPermission method Persons
+  | "/api/goods"      `T.isPrefixOf` path = Just $ methodToPermission method Goods
+  | "/api/bills"      `T.isPrefixOf` path = Just $ methodToPermission method Bills
+  | "/api/orders"     `T.isPrefixOf` path = Just $ methodToPermission method Orders
+  | "/api/reports"    `T.isPrefixOf` path = Just $ methodToPermission method Reports
+  | "/api/settings"   `T.isPrefixOf` path = Just $ methodToPermission method Settings
+  | "/api/users"      `T.isPrefixOf` path = Just $ methodToPermission method Users
+  | "/api/inventory"  `T.isPrefixOf` path = Just $ methodToPermission method Inventory
+  | "/api/production" `T.isPrefixOf` path = Just $ methodToPermission method Production
+  | "/api/finance"    `T.isPrefixOf` path = Just $ methodToPermission method Finance
+  | "/api/crm"        `T.isPrefixOf` path = Just $ methodToPermission method CRM
+  | "/api/admin"      `T.isPrefixOf` path = Just $ Admin All
+  | otherwise = Nothing
+
+methodToPermission :: Text -> Resource -> Permission
+methodToPermission "GET"    = Read
+methodToPermission "HEAD"   = Read
+methodToPermission "POST"   = Create
+methodToPermission "PUT"    = Write
+methodToPermission "PATCH"  = Write
+methodToPermission "DELETE" = Delete
+methodToPermission _        = Execute
+
+-- | Check if user has a specific permission
+checkPermission :: [Text] -> Permission -> Bool
+checkPermission userRoles perm =
+  let permText = permissionToText perm
+      requiredRoles = getRequiredRoles perm
+  in any (`elem` userRoles) requiredRoles || permText `elem` userRoles
+
+getRequiredRoles :: Permission -> [Text]
+getRequiredRoles = \case
+  Read _    -> ["reader", "editor", "admin"]
+  Write _   -> ["editor", "admin"]
+  Create _  -> ["editor", "admin"]
+  Delete _  -> ["admin"]
+  Admin _   -> ["admin"]
+  Execute _ -> ["executor", "admin"]
+
+-- | Check if user has a specific role
+hasRole :: [Text] -> Text -> Bool
+hasRole roles role = role `elem` roles
