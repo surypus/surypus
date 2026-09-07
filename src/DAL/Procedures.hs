@@ -19,6 +19,7 @@ import Database.Persist.Sql
   , PersistValue(..)
   , Single(..)
   , Entity(..)
+  , PersistEntity(..)
   , fromSqlKey
   , toSqlKey
   , SqlPersistT
