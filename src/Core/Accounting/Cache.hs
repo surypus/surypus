@@ -1,6 +1,6 @@
 -- | Cached Read Model - In-memory TTL cache (Phase 1: stub)
 module Core.Accounting.Cache
-  ( ReadModelCache
+  ( ReadModelCache(..)
   , mkReadModelCache
   , getCachedAccountReadModel
   , getCachedBalance
