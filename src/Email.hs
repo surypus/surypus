@@ -2,7 +2,7 @@
 -- | Email module - configurable email sending
 -- Phase 1: file-based backend for development/testing
 -- Production: replace sendEmailImpl with SMTP via mime-mail/smtp-mail
-module Infrastructure.Email
+module Email
   ( EmailConfig(..)
   , loadEmailConfig
   , sendEmail
