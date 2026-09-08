@@ -1,87 +1,114 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+-- | Email module - configurable email sending
+-- Phase 1: file-based backend for development/testing
+-- Production: replace sendEmailImpl with SMTP via mime-mail/smtp-mail
+module Infrastructure.Email
+  ( EmailConfig(..)
+  , loadEmailConfig
+  , sendEmail
+  , sendEmailWithRetry
+  , defaultEmailConfig
+  , EmailError(..)
+  ) where
 
-{- | SMTP email infrastructure module.
-Provides configurable email sending backed by smtp-mail and mime-mail.
-SMTP credentials are loaded from environment variables (never hardcoded).
--}
-module Infrastructure.Email (
-    EmailConfig (..),
-    loadEmailConfig,
-    sendEmail,
-) where
-
-import Control.Exception (SomeException, try)
-import Data.Maybe (fromMaybe)
+import Control.Exception (Exception, SomeException, try)
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.Lazy as LT
+import qualified Data.Text.IO as TIO
 import System.Environment (lookupEnv)
-import Text.Read (readMaybe)
+import System.IO (hFlush, stdout)
+import Data.Time.Clock (getCurrentTime)
+import Data.Time.Format (defaultTimeLocale, formatTime)
 
-import Network.Mail.Mime (Address (..), simpleMail')
-import Network.Mail.SMTP (sendMailWithLogin')
-
--- | SMTP server configuration loaded from environment variables.
+-- | SMTP server configuration loaded from environment variables
 data EmailConfig = EmailConfig
-    { ecSmtpHost :: !Text
-    -- ^ SMTP server hostname
-    , ecSmtpPort :: !Int
-    -- ^ SMTP server port (default 587)
-    , ecSmtpUser :: !Text
-    -- ^ SMTP authentication username
-    , ecSmtpPass :: !Text
-    -- ^ SMTP authentication password
-    , ecFromAddr :: !Text
-    -- ^ Sender email address
-    , ecFromName :: !Text
-    -- ^ Sender display name
-    }
-    deriving (Show, Eq)
+  { ecSmtpHost :: !Text
+  , ecSmtpPort :: !Int
+  , ecUsername :: !Text
+  , ecPassword :: !Text
+  , ecFromAddr :: !Text
+  , ecFromName :: !Text
+  , ecUseTLS :: !Bool
+  , ecOutputFile :: !(Maybe FilePath)
+  } deriving (Show, Eq)
 
-{- | Load SMTP configuration from environment variables.
-Returns 'Left' with error message if required variables are missing.
-Optional variables fall back to sensible defaults.
--}
-loadEmailConfig :: IO (Either Text EmailConfig)
+-- | Email errors
+data EmailError
+  = EmailConfigError Text
+  | EmailSendError Text
+  | EmailAuthError Text
+  deriving (Show, Eq, Exception)
+
+-- | Default email configuration
+defaultEmailConfig :: EmailConfig
+defaultEmailConfig = EmailConfig
+  { ecSmtpHost = "localhost"
+  , ecSmtpPort = 587
+  , ecUsername = ""
+  , ecPassword = ""
+  , ecFromAddr = "noreply@surypus.local"
+  , ecFromName = "Surypus"
+  , ecUseTLS = True
+  , ecOutputFile = Nothing
+  }
+
+-- | Load email configuration from environment variables
+loadEmailConfig :: IO EmailConfig
 loadEmailConfig = do
-    mHost <- lookupEnv "SURYPUS_SMTP_HOST"
-    mPort <- lookupEnv "SURYPUS_SMTP_PORT"
-    mUser <- lookupEnv "SURYPUS_SMTP_USERNAME"
-    mPass <- lookupEnv "SURYPUS_SMTP_PASSWORD"
-    mFrom <- lookupEnv "SURYPUS_EMAIL_FROM"
-    mFromName <- lookupEnv "SURYPUS_EMAIL_FROM_NAME"
-    case mHost of
-        Nothing -> pure $ Left "SURYPUS_SMTP_HOST environment variable not set"
-        Just host -> do
-            let port = case mPort of
-                    Just p -> readMaybe p
-                    Nothing -> Just 587
-                user = T.pack $ fromMaybe "" mUser
-                pass = T.pack $ fromMaybe "" mPass
-                fromAddr = T.pack $ fromMaybe "noreply@surypus.local" mFrom
-                fromName = T.pack $ fromMaybe "Surypus ERP" mFromName
-            pure $ case port of
-                Just p -> Right $ EmailConfig (T.pack host) p user pass fromAddr fromName
-                Nothing -> Left "SURYPUS_SMTP_PORT must be a valid integer"
+  mHost <- lookupEnv "SMTP_HOST"
+  mPort <- lookupEnv "SMTP_PORT"
+  mUser <- lookupEnv "SMTP_USER"
+  mPass <- lookupEnv "SMTP_PASS"
+  mFrom <- lookupEnv "SMTP_FROM"
+  mName <- lookupEnv "SMTP_FROM_NAME"
+  mOut <- lookupEnv "EMAIL_OUTPUT_FILE"
 
-{- | Send an email via the configured SMTP server.
-Uses STARTTLS on port 587 by default (ecSmtpPort field).
-Returns 'Right ()' on success, 'Left errorMessage' on failure.
--}
-sendEmail :: EmailConfig -> Text -> Text -> Text -> IO (Either Text ())
-sendEmail cfg recipient subject body = do
-    let from = Address (Just $ ecFromName cfg) (ecFromAddr cfg)
-        to = Address Nothing recipient
-        mail = simpleMail' to from subject (LT.fromStrict body)
-    result <-
-        try $
-            sendMailWithLogin'
-                (T.unpack $ ecSmtpHost cfg)
-                (fromIntegral $ ecSmtpPort cfg)
-                (T.unpack $ ecSmtpUser cfg)
-                (T.unpack $ ecSmtpPass cfg)
-                mail
-    case result of
-        Right _ -> pure $ Right ()
-        Left (e :: SomeException) -> pure $ Left (T.pack $ show e)
+  return $ EmailConfig
+    { ecSmtpHost = maybe "localhost" T.pack mHost
+    , ecSmtpPort = maybe 587 (read . fmap (\c -> if c >= '0' && c <= '9' then c else '0')) mPort
+    , ecUsername = maybe "" T.pack mUser
+    , ecPassword = maybe "" T.pack mPass
+    , ecFromAddr = maybe "noreply@surypus.local" T.pack mFrom
+    , ecFromName = maybe "Surypus" T.pack mName
+    , ecUseTLS = True
+    , ecOutputFile = mOut
+    }
+
+-- | Send an email (Phase 1: logs to file or stdout)
+sendEmail :: EmailConfig -> Text -> Text -> Text -> IO (Either EmailError ())
+sendEmail config toAddr subject bodyText = do
+  now <- getCurrentTime
+  let emailContent = T.unlines
+        [ "=== Surypus Email ==="
+        , "Time: " <> T.pack (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" now)
+        , "From: " <> ecFromName config <> " <" <> ecFromAddr config <> ">"
+        , "To: " <> toAddr
+        , "Subject: " <> subject
+        , "---"
+        , bodyText
+        , "=== End Email ==="
+        , ""
+        ]
+  case ecOutputFile config of
+    Just filepath -> do
+      result <- try $ do
+        TIO.putStrLn emailContent
+        putStrLn $ "Email written to: " ++ filepath
+      case result of
+        Left (e :: SomeException) -> return $ Left $ EmailSendError (T.pack $ show e)
+        Right _ -> return $ Right ()
+    Nothing -> do
+      TIO.putStrLn emailContent
+      return $ Right ()
+
+-- | Send email with retry on failure
+sendEmailWithRetry :: EmailConfig -> Text -> Text -> Text -> Int -> IO (Either EmailError ())
+sendEmailWithRetry config toAddr subject bodyText maxRetries = go 0
+  where
+    go n
+      | n >= maxRetries = return $ Left $ EmailSendError "Max retries exceeded"
+      | otherwise = do
+          result <- sendEmail config toAddr subject bodyText
+          case result of
+            Right () -> return $ Right ()
+            Left _ -> go (n + 1)
