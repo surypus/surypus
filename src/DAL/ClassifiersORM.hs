@@ -90,7 +90,7 @@ parseClassifier (id':code:name:desc:parent:_) =
     , classifierItemDescription = persistToMaybeText desc
     , classifierItemParentId = persistToMaybeInt64 parent
     }
-parseClassifier _ = ClassifierItem 0 "" "" Nothing Nothing
+parseClassifier _ = ClassifierItem 0 T.empty T.empty Nothing Nothing
 
 -- | Unwrap Single values
 unwrapSingle :: Single a -> a
@@ -101,8 +101,7 @@ getAllClassifiers :: ConnectionPool -> Text -> IO [ClassifierItem]
 getAllClassifiers pool table = do
   let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " ORDER BY id"
   rows <- runDb pool $ rawSql sql [] :: IO [Single PersistValue]
-  return $ map (parseClassifier . unwrapOne) rows
-  where unwrapOne x = [unwrapSingle x]
+  return $ map (parseClassifier . (:[]) . unwrapSingle) rows
 
 getClassifierById :: ConnectionPool -> Text -> Int64 -> IO (Maybe ClassifierItem)
 getClassifierById pool table id' = do
