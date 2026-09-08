@@ -85,14 +85,14 @@ newBroadcaster = do
 subscribe :: Broadcaster -> BroadcastCallback -> IO Int
 subscribe broadcaster callback = do
   sid <- readTVarIO (bcNextId broadcaster)
-  modifyTVar' (bcSubscribers broadcaster) $ M.insert sid callback
-  modifyTVar' (bcNextId broadcaster) (+1)
+  atomically $ modifyTVar' (bcSubscribers broadcaster) $ M.insert sid callback
+  atomically $ modifyTVar' (bcNextId broadcaster) (+1)
   return sid
 
 -- | Unsubscribe from events
 unsubscribe :: Broadcaster -> Int -> IO ()
 unsubscribe broadcaster sid = do
-  modifyTVar' (bcSubscribers broadcaster) $ M.delete sid
+  atomically $ modifyTVar' (bcSubscribers broadcaster) $ M.delete sid
 
 -- | Append an event to the event store
 appendEvent :: ConnectionPool -> Event -> IO (Either Text ())

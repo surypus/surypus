@@ -41,6 +41,7 @@ module DAL.ClassifiersORM
 
 import Data.Int (Int64)
 import Data.Text (Text)
+import qualified Data.Text as T
 import Database.Persist.Sql (rawSql, Single(..), PersistValue(..))
 import Database.Persist.Postgresql (ConnectionPool)
 import DAL.Database (ConnectionPool, runDb)
