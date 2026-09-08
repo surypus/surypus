@@ -25,49 +25,46 @@ data ClassifierItem = ClassifierItem
   , classifierItemParentId :: !(Maybe Int64)
   } deriving (Show, Eq)
 
-persistToInt64 :: PersistValue -> Int64
-persistToInt64 (PersistInt64 n) = n
-persistToInt64 (PersistDouble n) = round n
-persistToInt64 _ = 0
+toItemId :: PersistValue -> Int64
+toItemId (PersistInt64 n) = n
+toItemId _ = 0
 
-persistToText :: PersistValue -> Text
-persistToText (PersistText t) = t
-persistToText (PersistInt64 n) = T.pack $ show n
-persistToText (PersistDouble n) = T.pack $ show n
-persistToText _ = T.empty
+toItemText :: PersistValue -> Text
+toItemText (PersistText t) = t
+toItemText (PersistInt64 n) = T.pack $ show n
+toItemText _ = T.empty
 
-persistToMaybeText :: PersistValue -> Maybe Text
-persistToMaybeText PersistNull = Nothing
-persistToMaybeText v = Just $ persistToText v
+toItemMaybeText :: PersistValue -> Maybe Text
+toItemMaybeText PersistNull = Nothing
+toItemMaybeText v = Just $ toItemText v
 
-persistToMaybeInt64 :: PersistValue -> Maybe Int64
-persistToMaybeInt64 PersistNull = Nothing
-persistToMaybeInt64 (PersistInt64 n) = Just n
-persistToMaybeInt64 (PersistDouble n) = Just $ round n
-persistToMaybeInt64 _ = Nothing
+toItemMaybeInt64 :: PersistValue -> Maybe Int64
+toItemMaybeInt64 PersistNull = Nothing
+toItemMaybeInt64 (PersistInt64 n) = Just n
+toItemMaybeInt64 _ = Nothing
 
-parseClassifier :: PersistValue -> PersistValue -> PersistValue -> PersistValue -> PersistValue -> ClassifierItem
-parseClassifier id' code name desc parent =
-  ClassifierItem
-    { classifierItemId = persistToInt64 id'
-    , classifierItemCode = persistToText code
-    , classifierItemName = persistToText name
-    , classifierItemDescription = persistToMaybeText desc
-    , classifierItemParentId = persistToMaybeInt64 parent
-    }
+parseRow :: [PersistValue] -> ClassifierItem
+parseRow (id':code:name:desc:parent:_) = ClassifierItem
+  { classifierItemId = toItemId id'
+  , classifierItemCode = toItemText code
+  , classifierItemName = toItemText name
+  , classifierItemDescription = toItemMaybeText desc
+  , classifierItemParentId = toItemMaybeInt64 parent
+  }
+parseRow _ = ClassifierItem 0 T.empty T.empty Nothing Nothing
 
 getAllClassifiers :: ConnectionPool -> Text -> IO [ClassifierItem]
 getAllClassifiers pool table = do
   let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " ORDER BY id"
   rows <- runDb pool $ rawSql sql [] :: IO [Single PersistValue]
-  return $ map (\(Single a : Single b : Single c : Single d : Single e : _) -> parseClassifier a b c d e) rows
+  return $ map (parseRow . (\(Single v) -> [v])) rows
 
 getClassifierById :: ConnectionPool -> Text -> Int64 -> IO (Maybe ClassifierItem)
 getClassifierById pool table id' = do
   let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " WHERE id = ?"
   rows <- runDb pool $ rawSql sql [PersistInt64 id'] :: IO [Single PersistValue]
   case rows of
-    (Single a : Single b : Single c : Single d : Single e : _) : _ -> return $ Just $ parseClassifier a b c d e
+    (Single v : _) -> return $ Just $ parseRow [v]
     _ -> return Nothing
 
 getClassifierByCode :: ConnectionPool -> Text -> Text -> IO (Maybe ClassifierItem)
@@ -75,14 +72,14 @@ getClassifierByCode pool table code = do
   let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " WHERE code = ?"
   rows <- runDb pool $ rawSql sql [PersistText code] :: IO [Single PersistValue]
   case rows of
-    (Single a : Single b : Single c : Single d : Single e : _) : _ -> return $ Just $ parseClassifier a b c d e
+    (Single v : _) -> return $ Just $ parseRow [v]
     _ -> return Nothing
 
 getClassifierByParent :: ConnectionPool -> Text -> Int64 -> IO [ClassifierItem]
 getClassifierByParent pool table parent = do
   let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " WHERE parent_id = ?"
   rows <- runDb pool $ rawSql sql [PersistInt64 parent] :: IO [Single PersistValue]
-  return $ map (\(Single a : Single b : Single c : Single d : Single e : _) -> parseClassifier a b c d e) rows
+  return $ map (parseRow . (\(Single v) -> [v])) rows
 
 getOksmAll = getAllClassifiers "oksm"
 getOksmById = getClassifierById "oksm"
