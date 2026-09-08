@@ -13,6 +13,7 @@ module DAL.Types where
 
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Int (Int64)
+import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time (Day, UTCTime)
 import GHC.Generics (Generic)
