@@ -61,6 +61,7 @@ import Data.Text (Text)
 import Data.Time (Day, UTCTime, getCurrentTime)
 import Database.Persist.Sql (rawSql, rawExecute, Single(..), PersistValue(..))
 import Database.Persist.Postgresql (ConnectionPool)
+import DAL.Database (ConnectionPool, runDb)
 import DAL.Schema
 import DAL.Types
 import DAL.Conversion

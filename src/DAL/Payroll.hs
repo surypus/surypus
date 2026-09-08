@@ -14,6 +14,7 @@ import Data.Text (Text)
 import Data.Time (Day, UTCTime, getCurrentTime)
 import Database.Persist.Sql (toSqlKey, rawSql, rawExecute, Single(..), PersistValue(..), PersistDay)
 import Database.Persist.Postgresql (ConnectionPool)
+import DAL.Database (ConnectionPool, runDb)
 import DAL.Conversion
 import DAL.Schema
 import DAL.Types
