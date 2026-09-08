@@ -190,7 +190,7 @@ dequeueJob pool config = do
   rows <- runDb pool $ rawSql sql [PersistText "worker-1", PersistUTCTime now]
   case rows of
     (Single id : Single typ : Single status : Single payload : Single priority : Single retryCount : Single maxRetries : Single createdAt : Single scheduledAt : Single processedAt : Single completedAt : Single err : Single result : _) -> do
-      let mJob = textToJob (T.unpack $ persistToText id) (T.unpack $ persistToText typ) (T.unpack $ persistToText status) (T.unpack $ persistToText payload) (T.unpack $ persistToText priority) (T.unpack $ persistToText retryCount) (T.unpack $ persistToText maxRetries) (T.unpack $ persistToText createdAt) (T.unpack $ persistToText scheduledAt) (T.unpack $ persistToText processedAt) (T.unpack $ persistToText completedAt) (T.unpack $ persistToText err) (T.unpack $ persistToText result)
+      let mJob = textToJob (persistToText id) (persistToText typ) (persistToText status) (persistToText payload) (persistToText priority) (persistToText retryCount) (persistToText maxRetries) (persistToText createdAt) (persistToText scheduledAt) (persistToText processedAt) (persistToText completedAt) (persistToText err) (persistToText result)
       return mJob
     _ -> return Nothing
 
@@ -227,7 +227,7 @@ getJob pool jobId = do
   rows <- runDb pool $ rawSql sql [PersistText jobId]
   case rows of
     (Single id : Single typ : Single status : Single payload : Single priority : Single retryCount : Single maxRetries : Single createdAt : Single scheduledAt : Single processedAt : Single completedAt : Single err : Single result : _) -> do
-      let mJob = textToJob (T.unpack $ persistToText id) (T.unpack $ persistToText typ) (T.unpack $ persistToText status) (T.unpack $ persistToText payload) (T.unpack $ persistToText priority) (T.unpack $ persistToText retryCount) (T.unpack $ persistToText maxRetries) (T.unpack $ persistToText createdAt) (T.unpack $ persistToText scheduledAt) (T.unpack $ persistToText processedAt) (T.unpack $ persistToText completedAt) (T.unpack $ persistToText err) (T.unpack $ persistToText result)
+      let mJob = textToJob (persistToText id) (persistToText typ) (persistToText status) (persistToText payload) (persistToText priority) (persistToText retryCount) (persistToText maxRetries) (persistToText createdAt) (persistToText scheduledAt) (persistToText processedAt) (persistToText completedAt) (persistToText err) (persistToText result)
       return mJob
     _ -> return Nothing
 
