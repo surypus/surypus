@@ -41,6 +41,19 @@ import Control.Concurrent (threadDelay)
 import DAL.Database (ConnectionPool, runDb)
 import Database.Persist.Sql (rawSql, rawExecute, Single(..), PersistValue(..))
 
+-- | Extract Int64 from PersistValue
+persistToInt64 :: PersistValue -> Int64
+persistToInt64 (PersistInt64 n) = n
+persistToInt64 (PersistDouble n) = round n
+persistToInt64 _ = 0
+
+-- | Extract Text from PersistValue
+persistToText :: PersistValue -> Text
+persistToText (PersistText t) = t
+persistToText (PersistInt64 n) = T.pack $ show n
+persistToText (PersistDouble n) = T.pack $ show n
+persistToText _ = ""
+
 -- | Job status
 data JobStatus = JobPending | JobProcessing | JobCompleted | JobFailed | JobDeadLetter
   deriving (Show, Eq, Generic, Read)

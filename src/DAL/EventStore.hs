@@ -38,6 +38,8 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time (UTCTime, getCurrentTime, parseTimeM, defaultTimeLocale)
 import Database.Persist.Sql (rawSql, rawExecute, Single(..), PersistValue(..))
+import GHC.Generics (Generic)
+import Data.Maybe (fromMaybe)
 
 -- | Extract Int64 from PersistValue
 persistToInt64 :: PersistValue -> Int64
@@ -56,7 +58,6 @@ persistToText _ = ""
 persistToMaybeText :: PersistValue -> Maybe Text
 persistToMaybeText PersistNull = Nothing
 persistToMaybeText v = Just $ persistToText v
-import GHC.Generics (Generic)
 
 currentEventSchemaVersion :: Int
 currentEventSchemaVersion = 1
