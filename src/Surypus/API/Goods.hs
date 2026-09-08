@@ -13,7 +13,7 @@ import Data.Int (Int64)
 
 -- | List goods (stub)
 listGoods :: Int64 -> IO (QueryResult [Goods])
-listGoods _ = return $ QueryResult [] 0
+listGoods _ = return $ QueryResults [] 0
 
 -- | Create good (stub)
 createGood :: Goods -> IO (QueryResult Int64)
@@ -21,7 +21,7 @@ createGood _ = return $ QueryResult [0] 1
 
 -- | Get good (stub)
 getGood :: Int64 -> IO (QueryResult Goods)
-getGood _ = return $ QueryResult [] 0
+getGood _ = return $ QueryResults [] 0
 
 -- | Update good (stub)
 updateGood :: Goods -> IO (QueryResult ())

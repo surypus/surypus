@@ -23,7 +23,7 @@ createBill _ = return $ QueryResult [0] 1
 
 -- | Get bill (stub)
 getBill :: Int64 -> IO (QueryResult Bill)
-getBill _ = return $ QueryResult [] 0
+getBill _ = return $ QueryResults [] 0
 
 -- | Update bill (stub)
 updateBill :: Bill -> IO (QueryResult ())
