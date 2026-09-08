@@ -55,15 +55,40 @@ data ClassifierItem = ClassifierItem
   , classifierItemParentId :: !(Maybe Int64)
   } deriving (Show, Eq)
 
+-- | Extract Int64 from PersistValue
+persistToInt64 :: PersistValue -> Int64
+persistToInt64 (PersistInt64 n) = n
+persistToInt64 (PersistDouble n) = round n
+persistToInt64 _ = 0
+
+-- | Extract Text from PersistValue
+persistToText :: PersistValue -> Text
+persistToText (PersistText t) = t
+persistToText (PersistInt64 n) = T.pack $ show n
+persistToText (PersistDouble n) = T.pack $ show n
+persistToText _ = ""
+
+-- | Extract Maybe Text from PersistValue
+persistToMaybeText :: PersistValue -> Maybe Text
+persistToMaybeText PersistNull = Nothing
+persistToMaybeText v = Just $ persistToText v
+
+-- | Extract Maybe Int64 from PersistValue
+persistToMaybeInt64 :: PersistValue -> Maybe Int64
+persistToMaybeInt64 PersistNull = Nothing
+persistToMaybeInt64 (PersistInt64 n) = Just n
+persistToMaybeInt64 (PersistDouble n) = Just $ round n
+persistToMaybeInt64 _ = Nothing
+
 -- | Parse classifier from database row
-parseClassifier :: [PersistValue] -> ClassifierItem
+parseClassifier :: [Single] -> ClassifierItem
 parseClassifier (Single id' : Single code : Single name : Single desc : Single parent : _) =
   ClassifierItem
-    { classifierItemId = read $ show id'
-    , classifierItemCode = T.pack $ show code
-    , classifierItemName = T.pack $ show name
-    , classifierItemDescription = if T.null (T.pack $ show desc) then Nothing else Just (T.pack $ show desc)
-    , classifierItemParentId = if T.null (T.pack $ show parent) then Nothing else Just (read $ show parent)
+    { classifierItemId = persistToInt64 id'
+    , classifierItemCode = persistToText code
+    , classifierItemName = persistToText name
+    , classifierItemDescription = persistToMaybeText desc
+    , classifierItemParentId = persistToMaybeInt64 parent
     }
 parseClassifier _ = ClassifierItem 0 "" "" Nothing Nothing
 
