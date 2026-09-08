@@ -27,7 +27,7 @@ module DAL.EventStore
 import Control.Concurrent.STM
 import Control.Monad (foldM)
 import DAL.Database (ConnectionPool, runDb)
-import Data.Aeson (Value, encode, decode)
+import Data.Aeson (Value(..), encode, decode, object, String(..))
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
 import Data.Int (Int64)
