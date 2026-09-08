@@ -28,7 +28,7 @@ import Data.Aeson (FromJSON, ToJSON)
 import Data.Int (Int64)
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Time (UTCTime)
+import Data.Time (UTCTime, Day)
 import Data.Yaml (Value)
 import GHC.Generics (Generic)
 
