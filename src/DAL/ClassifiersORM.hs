@@ -66,7 +66,7 @@ persistToText :: PersistValue -> Text
 persistToText (PersistText t) = t
 persistToText (PersistInt64 n) = T.pack $ show n
 persistToText (PersistDouble n) = T.pack $ show n
-persistToText _ = ""
+persistToText _ = T.empty
 
 -- | Extract Maybe Text from PersistValue
 persistToMaybeText :: PersistValue -> Maybe Text
