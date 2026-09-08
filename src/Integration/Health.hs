@@ -131,7 +131,7 @@ getHealthStatus pool tenantId adapterType = do
 
 -- | Get all unhealthy integrations for alerting
 getUnhealthyIntegrations :: ConnectionPool -> Int -> IO (CommandResult [IntegrationHealth])
-getHealthStatus pool minFailureCount = do
+getUnhealthyIntegrations pool minFailureCount = do
   let sql = "SELECT tenant_id, adapter_type, status, failure_count, last_success, last_failure, error_message, last_checked \
             \FROM integration_health WHERE failure_count >= ? OR status IN ('degraded', 'failed') \
             \ORDER BY failure_count DESC"

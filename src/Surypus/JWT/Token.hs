@@ -1,87 +1,148 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
--- | JWT Token verification (Surypus flavor)
-module Surypus.JWT.Token
-  ( UserClaims(..)
-  , verifyToken
-  , createToken
-  ) where
+{-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -Wno-deprecations #-}
 
+{- | JWT token generation and verification using jose-0.10
+Provides cryptographically signed JWTs using HS256 (HMAC-SHA256)
+-}
+module Surypus.JWT.Token (
+    generateToken,
+    verifyToken,
+    UserClaims (..),
+) where
+
+import Control.Exception (throwIO)
+import Control.Lens ((&), (?~), (^.))
+import Crypto.JOSE.Compact (encodeCompact)
+import Crypto.JOSE.JWA.JWS (Alg (..))
+import Crypto.JOSE.JWK (fromOctets)
+import Crypto.JOSE.JWS (newJWSHeader)
+import Crypto.JWT (
+    JWTError,
+    NumericDate (..),
+    SignedJWT,
+    addClaim,
+    claimExp,
+    claimIat,
+    decodeCompact,
+    defaultJWTValidationSettings,
+    emptyClaimsSet,
+    runJOSE,
+    signClaims,
+    unregisteredClaims,
+    verifyClaims,
+ )
+import Data.Aeson (Value (..), toJSON)
+import Data.ByteString.Lazy qualified as LBS
+import Data.Int (Int64)
+import Data.Map qualified as Map
+import Data.Maybe (fromMaybe)
 import Data.Text (Text)
-import qualified Data.Text as T
-import Data.Text.Encoding (encodeUtf8, decodeUtf8)
-import Data.ByteString (ByteString)
-import qualified Data.ByteString.Lazy as BL
-import qualified Data.ByteString.Base64.URL as B64U
-import Data.Aeson (FromJSON, ToJSON, eitherDecode, encode)
-import GHC.Generics (Generic)
-import Data.Time.Clock (UTCTime, getCurrentTime)
-import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
+import Data.Text qualified as T
+import Data.Text.Encoding qualified as TE
+import Data.Time.Clock (addUTCTime, getCurrentTime)
+import DAL.Types (User (..))
+import DAL.Pool (ConnectionPool)
+import System.Environment (lookupEnv)
+import Text.Read (readMaybe)
 
--- | User claims embedded in JWT
+-- | User claims extracted from a valid JWT
 data UserClaims = UserClaims
-  { claimsUserId :: !Int
-  , claimsUsername :: !Text
-  , claimsEmail :: !(Maybe Text)
-  , claimsRoles :: ![Text]
-  , claimsExpiry :: !Int64
-  , claimsIssuedAt :: !Int64
-  } deriving (Show, Eq, Generic)
+    { ucUserId :: !Int64
+    , ucUsername :: !Text
+    , ucRoles :: ![Text]
+    , ucTenantId :: !(Maybe Int64)
+    }
+    deriving (Show, Eq)
 
-instance FromJSON UserClaims
-instance ToJSON UserClaims
+{- | Get the JWT signing key from SURYPUS_JWT_SECRET env var.
+Fails with a clear error if the environment variable is not set.
+-}
+getSigningKey :: IO LBS.ByteString
+getSigningKey = do
+    mbSecret <- lookupEnv "SURYPUS_JWT_SECRET"
+    case mbSecret of
+        Nothing -> error "FATAL: SURYPUS_JWT_SECRET environment variable is not set. Set it to a secure random string before starting the server."
+        Just s -> pure $ LBS.fromStrict $ TE.encodeUtf8 $ T.pack s
 
--- | Simple HMAC-SHA256 JWT implementation
-newtype SecretKey = SecretKey ByteString
+{- | Generate a signed JWT token for the given user
+The Pool parameter is reserved for future use (e.g., token revocation DB checks)
+-}
+generateToken :: ConnectionPool -> User -> IO Text
+generateToken _pool user = do
+    now <- getCurrentTime
+    let uid = T.pack $ show $ userId user
+        realTenantId = userTenantId user
+    secret <- getSigningKey
+    result <- runJOSE @JWTError $ do
+        let jwk = fromOctets secret
+            header = newJWSHeader ((), HS256)
+            claims =
+                addClaim "sub" (toJSON uid) $
+                    addClaim "name" (toJSON $ userName user) $
+                        addClaim "role" (toJSON ([] :: [Text])) $
+                            addClaim "tenant_id" (Number (fromIntegral realTenantId)) $
+                                addClaim "aud" (toJSON ("surypus-api" :: Text)) $
+                                    emptyClaimsSet
+                                        & claimIat ?~ NumericDate now
+                                        & claimExp ?~ NumericDate (addUTCTime 3600 now)
+        signClaims jwk header claims
+    case result of
+        Left jwtErr -> throwIO $ userError $ "JWT signing failed: " ++ show jwtErr
+        Right signedJWT ->
+            pure $ TE.decodeUtf8 $ LBS.toStrict $ encodeCompact signedJWT
 
--- | Get default secret key (in production, this should come from environment/config)
-defaultSecretKey :: SecretKey
-defaultSecretKey = SecretKey "surypus-default-secret-key-change-in-production"
-
--- | Create a JWT token for the given claims
-createToken :: SecretKey -> UserClaims -> IO Text
-createToken (SecretKey secret) claims = do
-  let header = BL.toStrict $ encode $ object
-        [ "typ" .= ("JWT" :: Text)
-        , "alg" .= ("HS256" :: Text)
-        ]
-      payload = BL.toStrict $ encode claims
-      headerB64 = B64U.encode header
-      payloadB64 = B64U.encode payload
-      signingInput = headerB64 <> "." <> payloadB64
-      signature = hmacSign secret signingInput
-      signatureB64 = B64U.encode signature
-  return $ signingInput <> "." <> signatureB64
-
--- | Verify a JWT token and extract claims
-verifyToken :: SecretKey -> Text -> IO (Either Text UserClaims)
-verifyToken secret token = do
-  let parts = T.splitOn "." token
-  case parts of
-    [headerB64, payloadB64, signatureB64] -> do
-      let signingInput = headerB64 <> "." <> payloadB64
-          expectedSig = hmacSign (case secret of SecretKey k -> k) (encodeUtf8 signingInput)
-          expectedB64 = B64U.encode expectedSig
-      if signatureB64 /= expectedB64
-        then return $ Left "Invalid signature"
-        else case B64U.decode (encodeUtf8 payloadB64) of
-          Left err -> return $ Left $ "Decode error: " <> T.pack err
-          Right payload -> case eitherDecode (BL.fromStrict payload) of
-            Left err -> return $ Left $ "JSON error: " <> T.pack err
-            Right claims -> do
-              now <- getCurrentTime
-              let expiry = posixSecondsToUTCTime (fromIntegral (claimsExpiry claims) / 1000)
-              if now > expiry
-                then return $ Left "Token expired"
-                else return $ Right claims
-    _ -> return $ Left "Invalid token format"
-
--- | HMAC-SHA256 signing
-hmacSign :: ByteString -> ByteString -> ByteString
-hmacSign key msg = convert (hmac key msg :: HMAC SHA256)
-
--- | Helper for JSON object construction
-object :: [Text] -> Text
-object pairs = T.intercalate "," pairs
-
-(.=) :: Text -> Text -> Text
-k .= v = k <> ":" <> v
+-- | Verify and decode a JWT token, returning user claims on success
+verifyToken :: Text -> IO (Either String UserClaims)
+verifyToken tokenStr = do
+    let tokenBs = LBS.fromStrict $ TE.encodeUtf8 tokenStr
+    secret <- getSigningKey
+    result <- runJOSE @JWTError $ do
+        let jwk = fromOctets secret
+            -- IN PRODUCTION: replace (const True) with actual audience/issuer validation:
+            -- let expectedAudience = "surypus-api"
+            --     config = defaultJWTValidationSettings (== expectedAudience)
+            config = defaultJWTValidationSettings (== "surypus-api")
+        jwt <- decodeCompact tokenBs
+        verifyClaims config jwk (jwt :: SignedJWT)
+    case result of
+        Left jwtErr -> pure $ Left $ show jwtErr
+        Right claimsSet -> do
+            let custClaims = claimsSet ^. unregisteredClaims
+                lookupClaim :: Text -> Maybe Value
+                lookupClaim key = Map.lookup key custClaims
+                mbUid =
+                    lookupClaim "sub" >>= \case
+                        String s -> Just s
+                        _ -> Nothing
+                mbName =
+                    lookupClaim "name" >>= \case
+                        String s -> Just s
+                        _ -> Nothing
+                mbRole =
+                    lookupClaim "role" >>= \case
+                        String s -> Just $ T.splitOn "," s
+                        _ -> Nothing
+                mbTenantId =
+                    lookupClaim "tenant_id" >>= \case
+                        Number n -> Just (round n)
+                        String s -> case readMaybe (T.unpack s) of
+                            Just tid -> Just tid
+                            Nothing -> Nothing
+                        _ -> Nothing
+            case mbUid of
+                Just uid -> case readMaybe (T.unpack uid) of
+                    Just uidInt ->
+                        pure $
+                            Right $
+                                UserClaims
+                                    { ucUserId = uidInt
+                                    , ucUsername = fromMaybe "" mbName
+                                    , ucRoles = fromMaybe [] mbRole
+                                    , ucTenantId = mbTenantId
+                                    }
+                    Nothing -> pure $ Left "Invalid token: sub claim is not a valid integer"
+                _ -> pure $ Left "Invalid token: missing or invalid sub claim"
