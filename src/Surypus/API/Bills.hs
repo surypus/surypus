@@ -15,7 +15,7 @@ import Data.Int (Int64)
 
 -- | List bills (stub)
 listBills :: Int64 -> IO (QueryResult [Bill])
-listBills _ = return $ QueryResult [] 0
+listBills _ = return $ QueryResults [] 0
 
 -- | Create bill (stub)
 createBill :: Bill -> IO (QueryResult Int64)

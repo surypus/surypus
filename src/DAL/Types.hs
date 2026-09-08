@@ -111,11 +111,11 @@ data Pagination = Pagination
 instance FromJSON Pagination
 instance ToJSON Pagination
 
--- | Query result wrapper (Phase 1: stub)
+-- | Query result with multiple constructors
 data QueryResult a
-  = QueryResults ![a] !Int
-  | QuerySuccess !a
+  = QuerySuccess !a
   | QueryError !T.Text
+  | QueryResults ![a] !Int
   deriving (Show, Eq, Generic)
 
 instance FromJSON a => FromJSON (QueryResult a)
