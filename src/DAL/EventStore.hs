@@ -2,60 +2,31 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
+-- | Event Store - PostgreSQL-backed event sourcing
 module DAL.EventStore
-   ( Event (..),
-     Snapshot (..),
-     Broadcaster,
-     currentEventSchemaVersion,
-     appendEvent,
-     appendEventBroadcast,
-     getEvents,
-     getEventsFrom,
-     replayAccount,
-     getLatestSequence,
-     saveSnapshot,
-     getLatestSnapshot,
-     replayFromSnapshot,
-     upgradeEvent,
-     newBroadcaster,
-     subscribe,
-     unsubscribe,
+   ( Event (..)
+     , Snapshot (..)
+     , Broadcaster
+     , currentEventSchemaVersion
+     , appendEvent
+     , appendEventBroadcast
+     , getEvents
+     , getEventsFrom
+     , replayAccount
+     , getLatestSequence
+     , saveSnapshot
+     , getLatestSnapshot
+     , replayFromSnapshot
+     , upgradeEvent
+     , newBroadcaster
+     , subscribe
+     , unsubscribe
    )
    where
 
 import Control.Concurrent.STM
 import Control.Monad (foldM)
 import DAL.Database (ConnectionPool, runDb)
-import DAL.Schema
-  ( EventStoreEntity (..),
-    EventSnapshotEntity (..),
-    AccountingEventEntity (..),
-    EntityField
-      ( EventStoreEntityAggregateId
-      , EventStoreEntityAggregateType
-      , EventStoreEntityEventType
-      , EventStoreEntityEventVersion
-      , EventStoreEntityEventSchemaVersion
-      , EventStoreEntityEventData
-      , EventStoreEntityEventMetadata
-      , EventStoreEntitySequenceNumber
-      , EventStoreEntityOccurredAt
-      , EventStoreEntityCreatedAt
-      , EventSnapshotEntitySnapshotAggregateId
-      , EventSnapshotEntitySnapshotAggregateType
-      , EventSnapshotEntitySnapshotVersion
-      , AccountingEventEntityEventId
-      , AccountingEventEntityAggregateId
-      , AccountingEventEntityAggregateType
-      , AccountingEventEntityEventType
-      , AccountingEventEntityEventVersion
-      , AccountingEventEntityEventData
-      , AccountingEventEntityMetadata
-      , AccountingEventEntitySequenceNumber
-      , AccountingEventEntityOccurredAt
-      , AccountingEventEntityCreatedAt
-      ),
-  )
 import Data.Aeson (Value, encode, decode)
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
@@ -63,10 +34,10 @@ import Data.Int (Int64)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time (UTCTime, getCurrentTime)
-import Database.Persist.Sql (insert, selectList, selectFirst, (==.), (>=.), entityVal)
-import Database.Persist.Types (SelectOpt (Desc, Asc))
+import Database.Persist.Sql (rawSql, rawExecute, Single(..), PersistValue(..))
 import GHC.Generics (Generic)
 
 currentEventSchemaVersion :: Int
@@ -101,173 +72,175 @@ data Broadcaster = Broadcaster
   , bcNextId      :: TVar Int
   }
 
-type BroadcastCallback = Int64 -> Text -> Text -> Value -> IO ()
+type BroadcastCallback = Event -> IO ()
 
+-- | Create a new broadcaster
 newBroadcaster :: IO Broadcaster
 newBroadcaster = do
   subs <- newTVarIO M.empty
-  nid <- newTVarIO 0
-  pure $ Broadcaster subs nid
+  nextId <- newTVarIO 0
+  return $ Broadcaster subs nextId
 
+-- | Subscribe to events
 subscribe :: Broadcaster -> BroadcastCallback -> IO Int
-subscribe bc cb = atomically $ do
-  n <- readTVar (bcNextId bc)
-  writeTVar (bcNextId bc) (n + 1)
-  modifyTVar' (bcSubscribers bc) (M.insert n cb)
-  pure n
+subscribe broadcaster callback = do
+  sid <- readTVarIO (bcNextId broadcaster)
+  modifyTVar' (bcSubscribers broadcaster) $ M.insert sid callback
+  modifyTVar' (bcNextId broadcaster) (+1)
+  return sid
 
+-- | Unsubscribe from events
 unsubscribe :: Broadcaster -> Int -> IO ()
-unsubscribe bc n = atomically $
-  modifyTVar' (bcSubscribers bc) (M.delete n)
+unsubscribe broadcaster sid = do
+  modifyTVar' (bcSubscribers broadcaster) $ M.delete sid
 
-broadcastEvent :: Broadcaster -> Int64 -> Text -> Text -> Value -> IO ()
-broadcastEvent bc aggId aggType evType evData = do
-  subs <- atomically $ readTVar (bcSubscribers bc)
-  mapM_ (\cb -> cb aggId aggType evType evData) (M.elems subs)
-
-decodeJSON :: Text -> Value
-decodeJSON txt = case decode (LBS.fromStrict $ TE.encodeUtf8 txt) of
-  Just v  -> v
-  Nothing -> error "Invalid JSON in database"
-
-encodeJSON :: Value -> Text
-encodeJSON v = TE.decodeUtf8 $ LBS.toStrict $ encode v
-
-decodeMaybeJSON :: Maybe Text -> Maybe Value
-decodeMaybeJSON Nothing   = Nothing
-decodeMaybeJSON (Just t) = case decode (LBS.fromStrict $ TE.encodeUtf8 t) of
-  Just v  -> Just v
-  Nothing -> Nothing
-
-entityToEvent :: EventStoreEntity -> Event
-entityToEvent entity =
-  Event
-    { eventAggregateId    = eventStoreEntityAggregateId entity
-    , eventAggregateType  = eventStoreEntityAggregateType entity
-    , eventEventType      = eventStoreEntityEventType entity
-    , eventEventVersion   = eventStoreEntityEventVersion entity
-    , eventSchemaVersion  = eventStoreEntityEventSchemaVersion entity
-    , eventEventData      = decodeJSON (eventStoreEntityEventData entity)
-    , eventEventMetadata  = decodeMaybeJSON (eventStoreEntityEventMetadata entity)
-    , eventSequenceNumber = eventStoreEntitySequenceNumber entity
-    , eventOccurredAt     = eventStoreEntityOccurredAt entity
-    , eventCreatedAt      = eventStoreEntityCreatedAt entity
-    }
-
-entityToSnapshot :: EventSnapshotEntity -> Snapshot
-entityToSnapshot entity =
-  Snapshot
-    { snapAggregateId   = eventSnapshotEntitySnapshotAggregateId entity
-    , snapAggregateType = eventSnapshotEntitySnapshotAggregateType entity
-    , snapVersion       = eventSnapshotEntitySnapshotVersion entity
-    , snapLastSeq       = eventSnapshotEntitySnapshotLastSeq entity
-    , snapData          = eventSnapshotEntitySnapshotData entity
-    , snapCreatedAt     = eventSnapshotEntitySnapshotCreatedAt entity
-    }
-
-getLatestSequence :: ConnectionPool -> Int64 -> Text -> IO (Either Text (Maybe Int64))
-getLatestSequence pool aggId aggType = do
-  result <- runDb pool $ selectFirst
-    [ EventStoreEntityAggregateId ==. aggId
-    , EventStoreEntityAggregateType ==. aggType
-    ] [Desc EventStoreEntitySequenceNumber]
-  pure $ Right $ fmap (eventStoreEntitySequenceNumber . entityVal) result
-
-appendEvent :: ConnectionPool -> Int64 -> Text -> Text -> Int -> Int -> Value -> Maybe Value -> Int64 -> IO (Either Text ())
-appendEvent pool aggId aggType evType evVer evSchemaVer evData evMeta seqNum = do
+-- | Append an event to the event store
+appendEvent :: ConnectionPool -> Event -> IO (Either Text ())
+appendEvent pool event = do
   now <- getCurrentTime
-  let entity = EventStoreEntity
-        { eventStoreEntityAggregateId       = aggId
-        , eventStoreEntityAggregateType     = aggType
-        , eventStoreEntityEventType         = evType
-        , eventStoreEntityEventVersion      = evVer
-        , eventStoreEntityEventSchemaVersion = evSchemaVer
-        , eventStoreEntityEventData         = encodeJSON evData
-        , eventStoreEntityEventMetadata     = fmap encodeJSON evMeta
-        , eventStoreEntitySequenceNumber    = seqNum
-        , eventStoreEntityOccurredAt        = now
-        , eventStoreEntityCreatedAt         = now
-        }
-  runDb pool $ insert entity
-  pure $ Right ()
+  let sql = "INSERT INTO event_store (\
+            \  aggregate_id, aggregate_type, event_type, event_version, \
+            \  event_schema_version, event_data, event_metadata, \
+            \  sequence_number, occurred_at, created_at) \
+            \VALUES (?, ?, ?, ?, ?, ?::jsonb, ?::jsonb, ?, ?, ?)"
+  result <- runDb pool $ rawExecute sql
+    [ PersistInt64 (eventAggregateId event)
+    , PersistText (eventAggregateType event)
+    , PersistText (eventEventType event)
+    , PersistInt64 (fromIntegral $ eventEventVersion event)
+    , PersistInt64 (fromIntegral $ eventSchemaVersion event)
+    , PersistText (T.pack $ show $ eventEventData event)
+    , maybe PersistNull (PersistText . T.pack . show) (eventEventMetadata event)
+    , PersistInt64 (eventSequenceNumber event)
+    , PersistUTCTime (eventOccurredAt event)
+    , PersistUTCTime now
+    ]
+  return $ Right ()
 
-appendEventBroadcast :: ConnectionPool -> Broadcaster -> Int64 -> Text -> Text -> Int -> Int -> Value -> Maybe Value -> Int64 -> Text -> IO (Either Text ())
-appendEventBroadcast pool broadcaster aggId aggType evType evVer evSchemaVer evData evMeta seqNum _room = do
-  result <- appendEvent pool aggId aggType evType evVer evSchemaVer evData evMeta seqNum
-  broadcastEvent broadcaster aggId aggType evType evData
-  pure result
+-- | Append event and broadcast to subscribers
+appendEventBroadcast :: Broadcaster -> ConnectionPool -> Event -> IO (Either Text ())
+appendEventBroadcast broadcaster pool event = do
+  result <- appendEvent pool event
+  case result of
+    Right () -> do
+      subs <- readTVarIO (bcSubscribers broadcaster)
+      mapM_ (\cb -> cb event) (M.elems subs)
+      return $ Right ()
+    Left err -> return $ Left err
 
+-- | Get events for an aggregate
 getEvents :: ConnectionPool -> Int64 -> Text -> IO (Either Text [Event])
 getEvents pool aggId aggType = do
-  result <- runDb pool $ selectList
-    [ EventStoreEntityAggregateId ==. aggId
-    , EventStoreEntityAggregateType ==. aggType
-    ] [Asc EventStoreEntitySequenceNumber]
-  pure $ Right $ map (entityToEvent . entityVal) result
+  let sql = "SELECT aggregate_id, aggregate_type, event_type, event_version, \
+            \  event_schema_version, event_data, event_metadata, \
+            \  sequence_number, occurred_at, created_at \
+            \FROM event_store WHERE aggregate_id = ? AND aggregate_type = ? \
+            \ORDER BY sequence_number ASC"
+  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType]
+  return $ Right $ map parseEvent rows
 
+-- | Get events from a specific sequence number
 getEventsFrom :: ConnectionPool -> Int64 -> Text -> Int64 -> IO (Either Text [Event])
-getEventsFrom pool aggId aggType seqFrom = do
-  result <- runDb pool $ selectList
-    [ EventStoreEntityAggregateId ==. aggId
-    , EventStoreEntityAggregateType ==. aggType
-    , EventStoreEntitySequenceNumber >=. seqFrom
-    ] [Asc EventStoreEntitySequenceNumber]
-  pure $ Right $ map (entityToEvent . entityVal) result
+getEventsFrom pool aggId aggType fromSeq = do
+  let sql = "SELECT aggregate_id, aggregate_type, event_type, event_version, \
+            \  event_schema_version, event_data, event_metadata, \
+            \  sequence_number, occurred_at, created_at \
+            \FROM event_store WHERE aggregate_id = ? AND aggregate_type = ? \
+            \  AND sequence_number >= ? \
+            \ORDER BY sequence_number ASC"
+  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType, PersistInt64 fromSeq]
+  return $ Right $ map parseEvent rows
 
-replayAccount :: ConnectionPool -> Int64 -> IO (Either Text [Event])
-replayAccount pool accountId = do
-  result <- runDb pool $ selectList
-    [ EventStoreEntityAggregateId ==. accountId
-    ] [Asc EventStoreEntitySequenceNumber]
-  pure $ Right $ map (entityToEvent . entityVal) result
+-- | Replay events for an aggregate
+replayAccount :: ConnectionPool -> Int64 -> Text -> IO (Either Text [Event])
+replayAccount pool aggId aggType = getEvents pool aggId aggType
 
--- | Save a snapshot for an aggregate at a given version
-saveSnapshot :: ConnectionPool -> Int64 -> Text -> Int -> Int64 -> Text -> IO (Either Text ())
-saveSnapshot pool aggId aggType version lastSeq snapData = do
-  now <- getCurrentTime
-  let entity = EventSnapshotEntity
-        { eventSnapshotEntitySnapshotAggregateId   = aggId
-        , eventSnapshotEntitySnapshotAggregateType = aggType
-        , eventSnapshotEntitySnapshotVersion       = version
-        , eventSnapshotEntitySnapshotLastSeq        = lastSeq
-        , eventSnapshotEntitySnapshotData          = snapData
-        , eventSnapshotEntitySnapshotCreatedAt     = now
-        }
-  runDb pool $ insert entity
-  pure $ Right ()
+-- | Get latest sequence number for an aggregate
+getLatestSequence :: ConnectionPool -> Int64 -> Text -> IO (Either Text (Maybe Int64))
+getLatestSequence pool aggId aggType = do
+  let sql = "SELECT MAX(sequence_number) FROM event_store WHERE aggregate_id = ? AND aggregate_type = ?"
+  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType]
+  case rows of
+    (Single (PersistInt64 n) : _) -> return $ Right $ Just n
+    (Single PersistNull : _) -> return $ Right Nothing
+    _ -> return $ Right Nothing
 
--- | Get the latest snapshot for an aggregate
+-- | Save a snapshot
+saveSnapshot :: ConnectionPool -> Snapshot -> IO (Either Text ())
+saveSnapshot pool snap = do
+  let sql = "INSERT INTO event_snapshots (\
+            \  aggregate_id, aggregate_type, version, last_seq, snapshot_data, created_at) \
+            \VALUES (?, ?, ?, ?, ?, ?) \
+            \ON CONFLICT (aggregate_id, aggregate_type, version) DO UPDATE SET \
+            \  last_seq = EXCLUDED.last_seq, snapshot_data = EXCLUDED.snapshot_data, created_at = EXCLUDED.created_at"
+  result <- runDb pool $ rawExecute sql
+    [ PersistInt64 (snapAggregateId snap)
+    , PersistText (snapAggregateType snap)
+    , PersistInt64 (fromIntegral $ snapVersion snap)
+    , PersistInt64 (snapLastSeq snap)
+    , PersistText (snapData snap)
+    , PersistUTCTime (snapCreatedAt snap)
+    ]
+  return $ Right ()
+
+-- | Get latest snapshot for an aggregate
 getLatestSnapshot :: ConnectionPool -> Int64 -> Text -> IO (Either Text (Maybe Snapshot))
 getLatestSnapshot pool aggId aggType = do
-  result <- runDb pool $ selectFirst
-    [ EventSnapshotEntitySnapshotAggregateId ==. aggId
-    , EventSnapshotEntitySnapshotAggregateType ==. aggType
-    ] [Desc EventSnapshotEntitySnapshotVersion]
-  pure $ Right $ fmap (entityToSnapshot . entityVal) result
+  let sql = "SELECT aggregate_id, aggregate_type, version, last_seq, snapshot_data, created_at \
+            \FROM event_snapshots WHERE aggregate_id = ? AND aggregate_type = ? \
+            \ORDER BY version DESC LIMIT 1"
+  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType]
+  case rows of
+    (Single id' : Single typ : Single ver : Single lastSeq : Single data' : Single createdAt : _) -> do
+      mSnap <- parseSnapshot (T.pack $ show id') (T.pack $ show typ) (T.pack $ show ver) (T.pack $ show lastSeq) (T.pack $ show data') (T.pack $ show createdAt)
+      return $ Right mSnap
+    _ -> return $ Right Nothing
 
--- | Replay events from the latest snapshot version
--- Falls back to full replay if no snapshot exists
+-- | Replay from snapshot
 replayFromSnapshot :: ConnectionPool -> Int64 -> Text -> IO (Either Text [Event])
 replayFromSnapshot pool aggId aggType = do
-  snapResult <- getLatestSnapshot pool aggId aggType
-  case snapResult of
-    Left err -> pure (Left err)
-    Right Nothing -> getEvents pool aggId aggType
+  mSnap <- getLatestSnapshot pool aggId aggType
+  case mSnap of
     Right (Just snap) -> getEventsFrom pool aggId aggType (snapLastSeq snap + 1)
+    Right Nothing -> getEvents pool aggId aggType
+    Left err -> return $ Left err
 
--- | Upgrade event payload from one schema version to the current version
--- Returns Left if the version is newer than current (downgrade not supported)
-upgradeEvent :: Int -> BS.ByteString -> Either String BS.ByteString
-upgradeEvent fromVersion payload
-  | fromVersion == currentEventSchemaVersion = Right payload
-  | fromVersion < currentEventSchemaVersion = upgradeToLatest fromVersion payload
-  | otherwise = Left $ "Event schema version " ++ show fromVersion
-                    ++ " is newer than current " ++ show currentEventSchemaVersion
-                    ++ " (downgrade not supported)"
+-- | Upgrade event to new schema version
+upgradeEvent :: Event -> Int -> Event
+upgradeEvent event newVersion = event { eventSchemaVersion = newVersion }
 
-upgradeToLatest :: Int -> BS.ByteString -> Either String BS.ByteString
-upgradeToLatest fromVersion payload =
-  foldM upgradeStep payload [fromVersion .. currentEventSchemaVersion - 1]
+-- | Parse event from database row
+parseEvent :: [PersistValue] -> Event
+parseEvent (Single id' : Single typ : Single evType : Single evVer : Single evSchemaVer : Single evData : Single evMeta : Single seqNum : Single occurredAt : Single createdAt : _) =
+  Event
+    { eventAggregateId = read $ T.unpack $ T.pack $ show id'
+    , eventAggregateType = T.pack $ show typ
+    , eventEventType = T.pack $ show evType
+    , eventEventVersion = read $ T.unpack $ T.pack $ show evVer
+    , eventSchemaVersion = read $ T.unpack $ T.pack $ show evSchemaVer
+    , eventEventData = object ["raw" .= T.pack (show evData)]
+    , eventEventMetadata = if T.null (T.pack $ show evMeta) then Nothing else Just $ object ["raw" .= T.pack (show evMeta)]
+    , eventSequenceNumber = read $ T.unpack $ T.pack $ show seqNum
+    , eventOccurredAt = read $ T.unpack $ T.pack $ show occurredAt
+    , eventCreatedAt = read $ T.unpack $ T.pack $ show createdAt
+    }
+parseEvent _ = Event 0 "" "" 0 0 (object []) Nothing 0 (read "1970-01-01 00:00:00 UTC") (read "1970-01-01 00:00:00 UTC")
 
-upgradeStep :: BS.ByteString -> Int -> Either String BS.ByteString
-upgradeStep payload _ = Right payload
+-- | Parse snapshot from text fields
+parseSnapshot :: Text -> Text -> Text -> Text -> Text -> Text -> IO (Maybe Snapshot)
+parseSnapshot id' typ ver lastSeq data' createdAt = do
+  mId <- readMaybe (T.unpack id')
+  mVer <- readMaybe (T.unpack ver)
+  mLastSeq <- readMaybe (T.unpack lastSeq)
+  mCreatedAt <- readMaybe (T.unpack createdAt)
+  return $ Snapshot mId (T.unpack typ) mVer mLastSeq (T.pack $ T.unpack data') mCreatedAt
+
+-- | Safe readMaybe
+readMaybe :: Read a => String -> Maybe a
+readMaybe s = case reads s of
+  [(x, "")] -> Just x
+  _ -> Nothing
+
+-- | Helper for JSON object construction
+object :: [Text] -> Value
+object pairs = Data.Aeson.object $ map (\t -> ("field", Data.Aeson.String t)) pairs

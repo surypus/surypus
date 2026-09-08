@@ -1,22 +1,14 @@
--- ============================================================================
--- SURYPUS REDIS JOB QUEUE
--- US-4: Redis streams-based job queue with retry and dead letter support
--- ============================================================================
-
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
+-- | PostgreSQL-backed job queue with retry and dead letter support
 module DAL.Queue
-  ( -- * Types
-    Job(..)
+  ( Job(..)
   , JobStatus(..)
   , JobType(..)
   , JobResult(..)
   , QueueConfig(..)
-  , RedisQueue
-
-    -- * Queue Operations
   , initializeQueue
   , enqueueJob
   , dequeueJob
@@ -24,13 +16,9 @@ module DAL.Queue
   , failJob
   , getJob
   , getJobStatus
-
-    -- * Worker
   , runWorker
   , runWorkerPool
   , processJob
-
-    -- * Utils
   , generateJobId
   , defaultQueueConfig
   ) where
@@ -38,10 +26,8 @@ module DAL.Queue
 import Data.Int (Int64)
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 import Data.Time (UTCTime, getCurrentTime, addUTCTime, diffUTCTime)
 import Data.Aeson (ToJSON, FromJSON, encode, decode, Value, object, (.=))
-import qualified Data.Aeson.KeyMap as KM
 import qualified Data.ByteString.Lazy as BL
 import Data.UUID (UUID)
 import qualified Data.UUID as UUID
@@ -52,242 +38,340 @@ import Control.Exception (try, SomeException)
 import qualified Data.Map.Strict as Map
 import Data.Map.Strict (Map)
 import Control.Concurrent (threadDelay)
-
-import Database.Redis
-  ( Redis, checkedConnect, checkedDisconnect, runRedis
-  , set, get, del, sadd, smembers, srem, hset, hget, hdel
-  , xadd, xrange, xread, Connection, PortID(PortNumber), Hostname, Port
-  )
-
--- ============================================================================
--- TYPES
--- ============================================================================
-
--- | Job types supported by the queue
-data JobType
-  = JobReportGenerate
-  | JobDataExport
-  | JobDataImport
-  | JobNotificationSend
-  | JobCleanupOldData
-  | JobSyncExternal
-  deriving (Show, Eq, Generic, ToJSON, FromJSON)
+import DAL.Database (ConnectionPool, runDb)
+import Database.Persist.Sql (rawSql, rawExecute, Single(..), PersistValue(..))
 
 -- | Job status
-data JobStatus = Pending | Processing | Completed | Failed deriving (Show, Eq, Generic, ToJSON, FromJSON)
+data JobStatus = JobPending | JobProcessing | JobCompleted | JobFailed | JobDeadLetter
+  deriving (Show, Eq, Generic, Read)
 
--- | Job record
-data Job = Job
-  { jobId :: Text
-  , jobType :: JobType
-  , jobPayload :: Value
-  , jobPriority :: Int
-  , jobMaxRetries :: Int
-  , jobRetryDelay :: Int
-  , jobTenantId :: Int64
-  , jobStatus :: JobStatus
-  , jobCreatedAt :: UTCTime
-  , jobStartedAt :: Maybe UTCTime
-  , jobCompletedAt :: Maybe UTCTime
-  , jobFailedAt :: Maybe UTCTime
-  , jobAttempt :: Int
-  , jobError :: Maybe Text
-  } deriving (Show, Eq, Generic, ToJSON, FromJSON)
+instance ToJSON JobStatus
+instance FromJSON JobStatus
+
+-- | Job type
+data JobType
+  = BillPosting
+  | InventoryReceipt
+  | InventoryIssue
+  | ReportGeneration
+  | DataExport
+  | DataImport
+  | EmailNotification
+  | CustomJob Text
+  deriving (Show, Eq, Generic)
+
+instance ToJSON JobType
+instance FromJSON JobType
 
 -- | Job result
-data JobResult = JobSuccess | JobRetry | JobDeadLetter deriving (Show, Eq)
+data JobResult = JobResult
+  { jobResultStatus :: !JobStatus
+  , jobResultData :: !(Maybe Value)
+  , jobResultError :: !(Maybe Text)
+  , jobResultCompletedAt :: !(Maybe UTCTime)
+  } deriving (Show, Eq, Generic)
+
+instance ToJSON JobResult
+instance FromJSON JobResult
+
+-- | Job
+data Job = Job
+  { jobId :: !Text
+  , jobType :: !JobType
+  , jobStatus :: !JobStatus
+  , jobPayload :: !Value
+  , jobPriority :: !Int
+  , jobRetryCount :: !Int
+  , jobMaxRetries :: !Int
+  , jobCreatedAt :: !UTCTime
+  , jobScheduledAt :: !(Maybe UTCTime)
+  , jobProcessedAt :: !(Maybe UTCTime)
+  , jobCompletedAt :: !(Maybe UTCTime)
+  , jobError :: !(Maybe Text)
+  , jobResult :: !(Maybe JobResult)
+  } deriving (Show, Eq, Generic)
+
+instance ToJSON Job
+instance FromJSON Job
 
 -- | Queue configuration
 data QueueConfig = QueueConfig
-  { qcHost :: Text
-  , qcPort :: Int
-  , qcDatabase :: Int
-  , qcDefaultTTL :: Int
-  , qcWorkerCount :: Int
-  } deriving (Show, Eq, Generic)
+  { queueName :: !Text
+  , queueMaxRetries :: !Int
+  , queueRetryDelayMs :: !Int
+  , queueWorkerCount :: !Int
+  , queuePollIntervalMs :: !Int
+  } deriving (Show, Eq)
 
--- | Redis queue wrapper
-data RedisQueue = RedisQueue
-  { rqConnection :: Connection
-  , rqConfig :: QueueConfig
-  }
-
--- ============================================================================
--- DEFAULTS
--- ============================================================================
-
+-- | Default queue configuration
 defaultQueueConfig :: QueueConfig
 defaultQueueConfig = QueueConfig
-  { qcHost = "127.0.0.1"
-  , qcPort = 6379
-  , qcDatabase = 0
-  , qcDefaultTTL = 3600
-  , qcWorkerCount = 2
+  { queueName = "default"
+  , queueMaxRetries = 3
+  , queueRetryDelayMs = 1000
+  , queueWorkerCount = 4
+  , queuePollIntervalMs = 100
   }
 
--- ============================================================================
--- QUEUE OPERATIONS
--- ============================================================================
-
--- | Initialize Redis queue
-initializeQueue :: QueueConfig -> IO RedisQueue
-initializeQueue config = do
-  let hostname = "127.0.0.1" :: Hostname
-      portNum = 6379 :: Port
-      redisPort = PortNumber portNum
-  conn <- checkedConnect redisPort hostname
-  pure $ RedisQueue conn config
-
--- | Generate unique job ID
+-- | Generate a new job ID
 generateJobId :: IO Text
 generateJobId = do
   uuid <- nextRandom
-  pure $ T.pack $ UUID.toString uuid
+  return $ T.pack $ UUID.toString uuid
 
--- | Enqueue a job
-enqueueJob :: RedisQueue -> Job -> IO ()
-enqueueJob queue job = do
-  let streamKey = "queue:pending"
-      jobId = jobId job
-      payload = BL.toStrict $ encode job
-  runRedis (rqConnection queue) $ void $ xadd (TE.encodeUtf8 streamKey) jobId [("job", payload)]
-
--- | Dequeue a job (pop from pending, push to processing)
-dequeueJob :: RedisQueue -> IO (Maybe Job)
-dequeueJob queue = do
-  -- Read from pending stream
-  result <- runRedis (rqConnection queue) $ do
-    entries <- xrange (TE.encodeUtf8 "queue:pending") (Just "-") (Just "+")
-    case entries of
-      [] -> return Nothing
-      ((jobId, fields):_) -> do
-        -- Extract job data
-        let jobData = lookup "job" fields
-        case jobData of
-          Nothing -> return Nothing
-          Just bs -> case decode (BL.fromStrict bs) of
-            Nothing -> return Nothing
-            Just job -> return (Just job)
-  case result of
-    Nothing -> return Nothing
-    Just job -> do
-      -- Remove from pending
-      let jobIdToDel = TE.encodeUtf8 (jobId job)
-      runRedis (rqConnection queue) $ void $ xadd (TE.encodeUtf8 "queue:pending:xack") jobIdToDel []
-      return result
-
--- | Complete a job
-completeJob :: RedisQueue -> Text -> IO ()
-completeJob queue jobId = do
-  runRedis (rqConnection queue) $ do
-    void $ del [TE.encodeUtf8 ("job:" <> jobId)]
-    void $ xadd (TE.encodeUtf8 "queue:completed") jobId []
-
--- | Fail a job (increment attempt, requeue or dead letter)
-failJob :: RedisQueue -> Job -> Text -> IO JobResult
-failJob queue job errMsg = do
-  let currentAttempt = jobAttempt job + 1
-  if currentAttempt >= jobMaxRetries job
-    then do
-      -- Move to dead letter
-      runRedis (rqConnection queue) $ void $ xadd (TE.encodeUtf8 "queue:dead_letter") (jobId job) []
-      return JobDeadLetter
-    else do
-      -- Requeue with incremented attempt
-      let requeuedJob = job { jobAttempt = currentAttempt, jobError = Just errMsg }
-          requeuePayload = BL.toStrict $ encode requeuedJob
-      runRedis (rqConnection queue) $ void $ xadd (TE.encodeUtf8 "queue:pending") (jobId job) [("job", requeuePayload)]
-      -- Add delay
-      now <- getCurrentTime
-      let delaySec = fromIntegral (jobRetryDelay job * (2 ^ currentAttempt)) :: Int
-      return JobRetry
-
--- | Get job by ID
-getJob :: RedisQueue -> Text -> IO (Maybe Job)
-getJob queue jid = do
-  result <- runRedis (rqConnection queue) $ do
-    val <- hget (TE.encodeUtf8 ("job:" <> jid)) "data"
-    case val of
-      Nothing -> return Nothing
-      Just bs -> case decode (BL.fromStrict bs) of
-        Nothing -> return Nothing
-        Just job -> return (Just job)
-
--- | Get job status
-getJobStatus :: RedisQueue -> Text -> IO JobStatus
-getJobStatus queue jid = do
-  result <- runRedis (rqConnection queue) $ do
-    val <- hget (TE.encodeUtf8 ("job:" <> jid)) "status"
-    case val of
-      Nothing -> return (Pending :: JobStatus)
-      Just bs -> case decode (BL.fromStrict bs) of
-        Nothing -> return Pending
-        Just status -> return status
-
--- ============================================================================
--- WORKER
--- ============================================================================
-
--- | Process a single job
-processJob :: Job -> IO (Either Text JobResult)
-processJob job = do
-  result <- try $ case jobType job of
-    JobReportGenerate -> processReportJob job
-    JobDataExport -> processDataExportJob job
-    JobDataImport -> processDataImportJob job
-    JobNotificationSend -> processNotificationJob job
-    JobCleanupOldData -> processCleanupJob job
-    JobSyncExternal -> processSyncJob job
-  case result of
-    Left (e :: SomeException) -> return $ Left (T.pack $ show e)
-    Right r -> return $ Right r
-
--- | Run a single worker
-runWorker :: RedisQueue -> IO ()
-runWorker queue = do
-  mj <- dequeueJob queue
-  case mj of
-    Nothing -> do
-      -- No jobs, wait
-      threadDelay 1000000
-    Just job -> do
-      procResult <- processJob job
-      case procResult of
-        Right JobSuccess -> completeJob queue (jobId job)
-        Right JobRetry -> return ()
-        Right JobDeadLetter -> return ()
-        Left err -> failJob queue job err
-      runWorker queue
-
--- | Run worker pool
-runWorkerPool :: RedisQueue -> IO ()
-runWorkerPool queue = do
-  let workerCount = qcWorkerCount (rqConfig queue)
-  -- Start workers concurrently
+-- | Initialize queue (create table if not exists)
+initializeQueue :: ConnectionPool -> QueueConfig -> IO ()
+initializeQueue pool config = do
+  let sql = "CREATE TABLE IF NOT EXISTS job_queue (\
+            \  id UUID PRIMARY KEY,\
+            \  type TEXT NOT NULL,\
+            \  status TEXT NOT NULL DEFAULT 'pending',\
+            \  payload JSONB NOT NULL,\
+            \  priority INT NOT NULL DEFAULT 0,\
+            \  retry_count INT NOT NULL DEFAULT 0,\
+            \  max_retries INT NOT NULL DEFAULT 3,\
+            \  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),\
+            \  scheduled_at TIMESTAMPTZ,\
+            \  processed_at TIMESTAMPTZ,\
+            \  completed_at TIMESTAMPTZ,\
+            \  error TEXT,\
+            \  result JSONB,\
+            \  worker_id TEXT\
+            \)\
+            \  WITH (fillfactor=70);\
+            \
+            \CREATE INDEX IF NOT EXISTS idx_job_queue_status ON job_queue(status);\
+            \CREATE INDEX IF NOT EXISTS idx_job_queue_priority ON job_queue(priority DESC);\
+            \CREATE INDEX IF NOT EXISTS idx_job_queue_scheduled ON job_queue(scheduled_at);"
+  runDb pool $ rawExecute sql []
   return ()
 
+-- | Enqueue a new job
+enqueueJob :: ConnectionPool -> QueueConfig -> JobType -> Value -> Int -> IO Job
+enqueueJob pool config jobType payload priority = do
+  jobId <- generateJobId
+  now <- getCurrentTime
+  let job = Job
+        { jobId = jobId
+        , jobType = jobType
+        , jobStatus = JobPending
+        , jobPayload = payload
+        , jobPriority = priority
+        , jobRetryCount = 0
+        , jobMaxRetries = queueMaxRetries config
+        , jobCreatedAt = now
+        , jobScheduledAt = Nothing
+        , jobProcessedAt = Nothing
+        , jobCompletedAt = Nothing
+        , jobError = Nothing
+        , jobResult = Nothing
+        }
+  let sql = "INSERT INTO job_queue (id, type, status, payload, priority, retry_count, max_retries, created_at) \
+            \VALUES (?, ?, 'pending', ?::jsonb, ?, 0, ?, ?)"
+  runDb pool $ rawExecute sql
+    [ PersistText jobId
+    , PersistText (jobTypeToText jobType)
+    , PersistText (T.pack $ show payload)
+    , PersistInt64 (fromIntegral priority)
+    , PersistInt64 (fromIntegral $ queueMaxRetries config)
+    , PersistUTCTime now
+    ]
+  return job
+
+-- | Dequeue next available job
+dequeueJob :: ConnectionPool -> QueueConfig -> IO (Maybe Job)
+dequeueJob pool config = do
+  now <- getCurrentTime
+  let sql = "UPDATE job_queue SET status = 'processing', processed_at = NOW(), worker_id = ? \
+            \WHERE id = (\
+            \  SELECT id FROM job_queue \
+            \  WHERE status = 'pending' \
+            \  AND (scheduled_at IS NULL OR scheduled_at <= ?) \
+            \  ORDER BY priority DESC, created_at ASC \
+            \  LIMIT 1 \
+            \  FOR UPDATE SKIP LOCKED\
+            \)\
+            \RETURNING id, type, status, payload, priority, retry_count, max_retries, created_at, scheduled_at, processed_at, completed_at, error, result"
+  rows <- runDb pool $ rawSql sql [PersistText "worker-1", PersistUTCTime now]
+  case rows of
+    (Single id : Single typ : Single status : Single payload : Single priority : Single retryCount : Single maxRetries : Single createdAt : Single scheduledAt : Single processedAt : Single completedAt : Single err : Single result : _) -> do
+      let mJob = textToJob (T.pack $ show id) (T.pack $ show typ) (T.pack $ show status) (T.pack $ show payload) (T.pack $ show priority) (T.pack $ show retryCount) (T.pack $ show maxRetries) (T.pack $ show createdAt) (T.pack $ show scheduledAt) (T.pack $ show processedAt) (T.pack $ show completedAt) (T.pack $ show err) (T.pack $ show result)
+      return mJob
+    _ -> return Nothing
+
+-- | Mark job as completed
+completeJob :: ConnectionPool -> Text -> JobResult -> IO ()
+completeJob pool jobId result = do
+  now <- getCurrentTime
+  let sql = "UPDATE job_queue SET status = 'completed', completed_at = ?, result = ?::jsonb WHERE id = ?"
+  runDb pool $ rawExecute sql
+    [ PersistUTCTime now
+    , PersistText (T.pack $ show result)
+    , PersistText jobId
+    ]
+
+-- | Mark job as failed (with retry)
+failJob :: ConnectionPool -> QueueConfig -> Text -> Text -> IO ()
+failJob pool config jobId err = do
+  let sql = "UPDATE job_queue SET \
+            \  status = CASE WHEN retry_count >= max_retries THEN 'dead_letter' ELSE 'pending' END, \
+            \  error = ?, \
+            \  retry_count = retry_count + 1, \
+            \  scheduled_at = NOW() + (? * interval '1 millisecond') \
+            \WHERE id = ?"
+  runDb pool $ rawExecute sql
+    [ PersistText err
+    , PersistInt64 (fromIntegral $ queueRetryDelayMs config)
+    , PersistText jobId
+    ]
+
+-- | Get job by ID
+getJob :: ConnectionPool -> Text -> IO (Maybe Job)
+getJob pool jobId = do
+  let sql = "SELECT id, type, status, payload, priority, retry_count, max_retries, created_at, scheduled_at, processed_at, completed_at, error, result FROM job_queue WHERE id = ?"
+  rows <- runDb pool $ rawSql sql [PersistText jobId]
+  case rows of
+    (Single id : Single typ : Single status : Single payload : Single priority : Single retryCount : Single maxRetries : Single createdAt : Single scheduledAt : Single processedAt : Single completedAt : Single err : Single result : _) -> do
+      let mJob = textToJob (T.pack $ show id) (T.pack $ show typ) (T.pack $ show status) (T.pack $ show payload) (T.pack $ show priority) (T.pack $ show retryCount) (T.pack $ show maxRetries) (T.pack $ show createdAt) (T.pack $ show scheduledAt) (T.pack $ show processedAt) (T.pack $ show completedAt) (T.pack $ show err) (T.pack $ show result)
+      return mJob
+    _ -> return Nothing
+
+-- | Get job status
+getJobStatus :: ConnectionPool -> Text -> IO (Maybe JobStatus)
+getJobStatus pool jobId = do
+  let sql = "SELECT status FROM job_queue WHERE id = ?"
+  rows <- runDb pool $ rawSql sql [PersistText jobId]
+  case rows of
+    (Single status : _) -> return $ readMaybe $ T.unpack $ T.pack $ show status
+    _ -> return Nothing
+
+-- | Run a single worker iteration
+runWorker :: ConnectionPool -> QueueConfig -> (Job -> IO JobResult) -> IO ()
+runWorker pool config processJobFn = do
+  mJob <- dequeueJob pool config
+  case mJob of
+    Nothing -> threadDelay (queuePollIntervalMs config * 1000)
+    Just job -> do
+      result <- processJobFn job
+      case jobResultStatus result of
+        JobCompleted -> completeJob pool (jobId job) result
+        JobFailed -> failJob pool config (jobId job) (maybe "Unknown error" id $ jobResultError result)
+        _ -> failJob pool config (jobId job) "Invalid result status"
+
+-- | Run a pool of workers
+runWorkerPool :: ConnectionPool -> QueueConfig -> (Job -> IO JobResult) -> IO ()
+runWorkerPool pool config processJobFn = do
+  initializeQueue pool config
+  forM_ [1..queueWorkerCount config] $ \_ ->
+    runWorker pool config processJobFn
+
+-- | Process a job (placeholder - implement based on job type)
+processJob :: ConnectionPool -> Job -> IO JobResult
+processJob pool job = do
+  result <- try $ case jobType job of
+    BillPosting -> processBillPosting pool (jobPayload job)
+    InventoryReceipt -> processInventoryReceipt pool (jobPayload job)
+    InventoryIssue -> processInventoryIssue pool (jobPayload job)
+    ReportGeneration -> processReportGeneration pool (jobPayload job)
+    DataExport -> processDataExport pool (jobPayload job)
+    DataImport -> processDataImport pool (jobPayload job)
+    EmailNotification -> processEmailNotification pool (jobPayload job)
+    CustomJob name -> processCustomJob name pool (jobPayload job)
+  case result of
+    Left (e :: SomeException) -> return $ JobResult JobFailed Nothing (Just $ T.pack $ show e) Nothing
+    Right val -> return $ JobResult JobCompleted (Just val) Nothing Nothing
+
+-- | Process bill posting
+processBillPosting :: ConnectionPool -> Value -> IO Value
+processBillPosting pool payload = do
+  return $ object ["status" .= ("posted" :: Text), "payload" .= payload]
+
+-- | Process inventory receipt
+processInventoryReceipt :: ConnectionPool -> Value -> IO Value
+processInventoryReceipt pool payload = do
+  return $ object ["status" .= ("received" :: Text), "payload" .= payload]
+
+-- | Process inventory issue
+processInventoryIssue :: ConnectionPool -> Value -> IO Value
+processInventoryIssue pool payload = do
+  return $ object ["status" .= ("issued" :: Text), "payload" .= payload]
+
 -- | Process report generation
-processReportJob :: Job -> IO JobResult
-processReportJob job = do
-  -- Extract report type from payload
-  pure JobSuccess
+processReportGeneration :: ConnectionPool -> Value -> IO Value
+processReportGeneration pool payload = do
+  return $ object ["status" .= ("generated" :: Text), "payload" .= payload]
 
 -- | Process data export
-processDataExportJob :: Job -> IO JobResult
-processDataExportJob job = pure JobSuccess
+processDataExport :: ConnectionPool -> Value -> IO Value
+processDataExport pool payload = do
+  return $ object ["status" .= ("exported" :: Text), "payload" .= payload]
 
 -- | Process data import
-processDataImportJob :: Job -> IO JobResult
-processDataImportJob job = pure JobSuccess
+processDataImport :: ConnectionPool -> Value -> IO Value
+processDataImport pool payload = do
+  return $ object ["status" .= ("imported" :: Text), "payload" .= payload]
 
--- | Process notification
-processNotificationJob :: Job -> IO JobResult
-processNotificationJob job = pure JobSuccess
+-- | Process email notification
+processEmailNotification :: ConnectionPool -> Value -> IO Value
+processEmailNotification pool payload = do
+  return $ object ["status" .= ("sent" :: Text), "payload" .= payload]
 
--- | Process cleanup
-processCleanupJob :: Job -> IO JobResult
-processCleanupJob job = pure JobSuccess
+-- | Process custom job
+processCustomJob :: Text -> ConnectionPool -> Value -> IO Value
+processCustomJob name pool payload = do
+  return $ object ["status" .= ("completed" :: Text), "name" .= name, "payload" .= payload]
 
--- | Process sync
-processSyncJob :: Job -> IO JobResult
-processSyncJob job = pure JobSuccess
+-- | Convert job type to text
+jobTypeToText :: JobType -> Text
+jobTypeToText BillPosting = "bill_posting"
+jobTypeToText InventoryReceipt = "inventory_receipt"
+jobTypeToText InventoryIssue = "inventory_issue"
+jobTypeToText ReportGeneration = "report_generation"
+jobTypeToText DataExport = "data_export"
+jobTypeToText DataImport = "data_import"
+jobTypeToText EmailNotification = "email_notification"
+jobTypeToText (CustomJob name) = name
+
+-- | Parse job type from text
+textToJobType :: Text -> JobType
+textToJobType "bill_posting" = BillPosting
+textToJobType "inventory_receipt" = InventoryReceipt
+textToJobType "inventory_issue" = InventoryIssue
+textToJobType "report_generation" = ReportGeneration
+textToJobType "data_export" = DataExport
+textToJobType "data_import" = DataImport
+textToJobType "email_notification" = EmailNotification
+textToJobType name = CustomJob name
+
+-- | Helper to reconstruct job from text fields
+textToJob :: Text -> Text -> Text -> Text -> Text -> Text -> Text -> Text -> Text -> Text -> Text -> Text -> Text -> Maybe Job
+textToJob id' typ status payload priority retryCount maxRetries createdAt scheduledAt processedAt completedAt err result = do
+  mPriority <- readMaybe (T.unpack priority)
+  mRetryCount <- readMaybe (T.unpack retryCount)
+  mMaxRetries <- readMaybe (T.unpack maxRetries)
+  mCreatedAt <- readMaybe (T.unpack createdAt)
+  mScheduledAt <- if T.null scheduledAt then return Nothing else readMaybe (T.unpack scheduledAt)
+  mProcessedAt <- if T.null processedAt then return Nothing else readMaybe (T.unpack processedAt)
+  mCompletedAt <- if T.null completedAt then return Nothing else readMaybe (T.unpack completedAt)
+  mResult <- if T.null result then return Nothing else readMaybe (T.unpack result)
+  return Job
+    { jobId = id'
+    , jobType = textToJobType typ
+    , jobStatus = read (T.unpack status)
+    , jobPayload = object ["raw" .= payload]
+    , jobPriority = mPriority
+    , jobRetryCount = mRetryCount
+    , jobMaxRetries = mMaxRetries
+    , jobCreatedAt = mCreatedAt
+    , jobScheduledAt = mScheduledAt
+    , jobProcessedAt = mProcessedAt
+    , jobCompletedAt = mCompletedAt
+    , jobError = if T.null err then Nothing else Just err
+    , jobResult = mResult
+    }
+
+-- | Safe readMaybe
+readMaybe :: Read a => String -> Maybe a
+readMaybe s = case reads s of
+  [(x, "")] -> Just x
+  _ -> Nothing

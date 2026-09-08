@@ -22,6 +22,16 @@ module DAL.Schema
   , UserRoleEntity(..)
   , PermissionEntity(..)
   , RolePermissionEntity(..)
+  , Pagination(..)
+  , Person(..)
+  , Goods(..)
+  , Bill(..)
+  , BillLine(..)
+  , BillStatus(..)
+  , BillPostingResult(..)
+  , QueryResult(..)
+  , CommandResult(..)
+  , User(..)
   ) where
 
 import Data.Aeson (FromJSON, ToJSON)
