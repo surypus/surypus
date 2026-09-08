@@ -23,8 +23,6 @@ import Database.Persist.Sql
   , PersistInt64
   , fromSqlKey
   , toSqlKey
-  , SqlPersistT
-  , runSqlPool
   )
 
 -- | Run a stored procedure and return results

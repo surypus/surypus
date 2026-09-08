@@ -345,3 +345,136 @@ data RolePermissionEntity = RolePermissionEntity
 
 instance FromJSON RolePermissionEntity
 instance ToJSON RolePermissionEntity
+
+-- | Person entity (Phase 1: stub)
+data PersonEntity = PersonEntity
+  { personEntityId :: !Int64
+  , personEntityCode :: !Text
+  , personEntityName :: !Text
+  , personEntityInn :: !(Maybe Text)
+  , personEntityKpp :: !(Maybe Text)
+  , personEntityPersonType :: !(Maybe Text)
+  , personEntityStatus :: !(Maybe Text)
+  } deriving (Show, Generic)
+
+instance FromJSON PersonEntity
+instance ToJSON PersonEntity
+
+-- | Goods entity (Phase 1: stub)
+data GoodsEntity = GoodsEntity
+  { goodsEntityId :: !Int64
+  , goodsEntityCode :: !Text
+  , goodsEntityName :: !Text
+  , goodsEntityFullName :: !(Maybe Text)
+  , goodsEntityBarcode :: !(Maybe Text)
+  , goodsEntityUnitId :: !(Maybe Int64)
+  , goodsEntityCategoryId :: !(Maybe Int64)
+  , goodsEntityGoodsType :: !(Maybe Text)
+  , goodsEntityGoodsStatus :: !(Maybe Text)
+  , goodsEntityMinStock :: !(Maybe Double)
+  , goodsEntityMaxStock :: !(Maybe Double)
+  , goodsEntityWeight :: !(Maybe Double)
+  , goodsEntityVolume :: !(Maybe Double)
+  } deriving (Show, Generic)
+
+instance FromJSON GoodsEntity
+instance ToJSON GoodsEntity
+
+-- | Bill entity (Phase 1: stub)
+data BillEntity = BillEntity
+  { billEntityId :: !Int64
+  , billEntityBillNumber :: !(Maybe Text)
+  , billEntityBillDate :: !(Maybe UTCTime)
+  , billEntityCustomerId :: !(Maybe Int64)
+  , billEntityVendorId :: !(Maybe Int64)
+  , billEntityWarehouseId :: !(Maybe Int64)
+  , billEntityCurrencyId :: !(Maybe Int64)
+  , billEntityBillStatus :: !(Maybe Text)
+  , billEntityBillType :: !(Maybe Text)
+  , billEntitySubtotal :: !(Maybe Double)
+  , billEntityTaxAmount :: !(Maybe Double)
+  , billEntityTotalAmount :: !(Maybe Double)
+  , billEntityPaidAmount :: !(Maybe Double)
+  , billEntityNotes :: !(Maybe Text)
+  , billEntityCreatedAt :: !(Maybe UTCTime)
+  , billEntityUpdatedAt :: !(Maybe UTCTime)
+  } deriving (Show, Generic)
+
+instance FromJSON BillEntity
+instance ToJSON BillEntity
+
+-- | Bill line entity (Phase 1: stub)
+data BillLineEntity = BillLineEntity
+  { billLineEntityId :: !Int64
+  , billLineEntityBillId :: !Int64
+  , billLineEntityGoodsId :: !Int64
+  , billLineEntityQtty :: !Double
+  , billLineEntityPrice :: !Double
+  , billLineEntityDiscountAmount :: !Double
+  , billLineEntityAmount :: !Double
+  } deriving (Show, Generic)
+
+instance FromJSON BillLineEntity
+instance ToJSON BillLineEntity
+
+-- | Location entity (Phase 1: stub)
+data LocationEntity = LocationEntity
+  { locationEntityId :: !Int64
+  , locationEntityCode :: !Text
+  , locationEntityName :: !Text
+  } deriving (Show, Generic)
+
+instance FromJSON LocationEntity
+instance ToJSON LocationEntity
+
+-- | Lot entity (Phase 1: stub)
+data LotEntity = LotEntity
+  { lotEntityId :: !Int64
+  , lotEntityCode :: !Text
+  , lotEntityGoodsId :: !Int64
+  , lotEntityQuantity :: !Double
+  } deriving (Show, Generic)
+
+instance FromJSON LotEntity
+instance ToJSON LotEntity
+
+-- | Tenant entity (Phase 1: stub)
+data TenantEntity = TenantEntity
+  { tenantEntityId :: !Int64
+  , tenantEntityName :: !Text
+  } deriving (Show, Generic)
+
+instance FromJSON TenantEntity
+instance ToJSON TenantEntity
+
+-- | Tax entity (Phase 1: stub)
+data TaxEntity = TaxEntity
+  { taxEntityId :: !Int64
+  , taxEntityCode :: !Text
+  , taxEntityName :: !Text
+  , taxEntityRate :: !Double
+  } deriving (Show, Generic)
+
+instance FromJSON TaxEntity
+instance ToJSON TaxEntity
+
+-- | Currency entity (Phase 1: stub)
+data CurrencyEntity = CurrencyEntity
+  { currencyEntityId :: !Int64
+  , currencyEntityCode :: !Text
+  , currencyEntityName :: !Text
+  } deriving (Show, Generic)
+
+instance FromJSON CurrencyEntity
+instance ToJSON CurrencyEntity
+
+-- | Employee entity (Phase 1: stub)
+data EmployeeEntity = EmployeeEntity
+  { employeeEntityId :: !Int64
+  , employeeEntityCode :: !Text
+  , employeeEntityFirstName :: !Text
+  , employeeEntityLastName :: !(Maybe Text)
+  } deriving (Show, Generic)
+
+instance FromJSON EmployeeEntity
+instance ToJSON EmployeeEntity
