@@ -478,3 +478,45 @@ data EmployeeEntity = EmployeeEntity
 
 instance FromJSON EmployeeEntity
 instance ToJSON EmployeeEntity
+
+-- | Document type entity (Phase 1: stub)
+data DocumentTypeEntity = DocumentTypeEntity
+  { documentTypeEntityId :: !Int64
+  , documentTypeEntityCode :: !Text
+  , documentTypeEntityName :: !Text
+  , documentTypeEntityDescription :: !(Maybe Text)
+  } deriving (Show, Generic)
+
+instance FromJSON DocumentTypeEntity
+instance ToJSON DocumentTypeEntity
+
+-- | Order head entity (Phase 1: stub)
+data OrderHeadEntity = OrderHeadEntity
+  { orderHeadEntityId :: !Int64
+  , orderHeadEntityCode :: !Text
+  , orderHeadEntityName :: !Text
+  , orderHeadEntityDocDate :: !UTCTime
+  , orderHeadEntityPersonId :: !(Maybe Int64)
+  , orderHeadEntityLocationId :: !(Maybe Int64)
+  , orderHeadEntityDocType :: !(Maybe Text)
+  , orderHeadEntityTotal :: !(Maybe Double)
+  , orderHeadEntityDiscountAmount :: !(Maybe Double)
+  , orderHeadEntityTaxAmount :: !(Maybe Double)
+  } deriving (Show, Generic)
+
+instance FromJSON OrderHeadEntity
+instance ToJSON OrderHeadEntity
+
+-- | Goods price entity (Phase 1: stub)
+data GoodsPriceEntity = GoodsPriceEntity
+  { goodsPriceEntityId :: !Int64
+  , goodsPriceEntityGoodsId :: !Int64
+  , goodsPriceEntityPriceType :: !(Maybe Text)
+  , goodsPriceEntityPrice :: !Double
+  , goodsPriceEntityMinPrice :: !(Maybe Double)
+  , goodsPriceEntityStartDate :: !(Maybe UTCTime)
+  , goodsPriceEntityEndDate :: !(Maybe UTCTime)
+  } deriving (Show, Generic)
+
+instance FromJSON GoodsPriceEntity
+instance ToJSON GoodsPriceEntity
