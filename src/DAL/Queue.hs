@@ -235,7 +235,7 @@ getJob pool jobId = do
 getJobStatus :: ConnectionPool -> Text -> IO (Maybe JobStatus)
 getJobStatus pool jobId = do
   let sql = "SELECT status FROM job_queue WHERE id = ?"
-  rows <- runDb pool $ rawSql sql [PersistText jobId]
+  rows <- runDb pool $ rawSql sql [PersistText jobId] :: IO [Single PersistValue]
   case rows of
     (Single status : _) -> return $ readMaybe (T.unpack $ persistToText status)
     _ -> return Nothing

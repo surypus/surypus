@@ -94,32 +94,32 @@ parseClassifier _ = ClassifierItem 0 "" "" Nothing Nothing
 
 -- | Generic classifier query helpers
 getAllClassifiers :: ConnectionPool -> Text -> IO [ClassifierItem]
-getAllClassifiers pool table =
+getAllClassifiers pool table = do
   let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " ORDER BY id"
-  in do rows <- runDb pool $ rawSql sql []
-        return $ map parseClassifier rows
+  rows <- runDb pool $ rawSql sql [] :: IO [Single PersistValue]
+  return $ map parseClassifier rows
 
 getClassifierById :: ConnectionPool -> Text -> Int64 -> IO (Maybe ClassifierItem)
-getClassifierById pool table id' =
+getClassifierById pool table id' = do
   let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " WHERE id = ?"
-  in do rows <- runDb pool $ rawSql sql [PersistInt64 id']
-        case rows of
-          (row : _) -> return $ Just $ parseClassifier row
-          _ -> return Nothing
+  rows <- runDb pool $ rawSql sql [PersistInt64 id'] :: IO [Single PersistValue]
+  case rows of
+    (row : _) -> return $ Just $ parseClassifier row
+    _ -> return Nothing
 
 getClassifierByCode :: ConnectionPool -> Text -> Text -> IO (Maybe ClassifierItem)
-getClassifierByCode pool table code =
+getClassifierByCode pool table code = do
   let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " WHERE code = ?"
-  in do rows <- runDb pool $ rawSql sql [PersistText code]
-        case rows of
-          (row : _) -> return $ Just $ parseClassifier row
-          _ -> return Nothing
+  rows <- runDb pool $ rawSql sql [PersistText code] :: IO [Single PersistValue]
+  case rows of
+    (row : _) -> return $ Just $ parseClassifier row
+    _ -> return Nothing
 
 getClassifierByParent :: ConnectionPool -> Text -> Int64 -> IO [ClassifierItem]
-getClassifierByParent pool table parent =
+getClassifierByParent pool table parent = do
   let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " WHERE parent_id = ?"
-  in do rows <- runDb pool $ rawSql sql [PersistInt64 parent]
-        return $ map parseClassifier rows
+  rows <- runDb pool $ rawSql sql [PersistInt64 parent] :: IO [Single PersistValue]
+  return $ map parseClassifier rows
 
 -- OKSM
 getOksmAll = getAllClassifiers "oksm"
