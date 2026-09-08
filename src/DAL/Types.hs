@@ -13,7 +13,7 @@ module DAL.Types where
 
 import Data.Aeson (FromJSON, ToJSON)
 import qualified Data.Text as T
-import Data.Time (Day)
+import Data.Time (Day, UTCTime)
 import GHC.Generics (Generic)
 
 -- Generated from dsl/schema.yaml
