@@ -59,7 +59,7 @@ import Control.Monad.IO.Class (liftIO)
 import Data.Int (Int64)
 import Data.Text (Text)
 import Data.Time (Day, UTCTime, getCurrentTime)
-import Database.Persist.Sql (rawSql, rawExecute, PersistValue(..))
+import Database.Persist.Sql (rawSql, rawExecute, Single(..), PersistValue(..), PersistDay)
 import Database.Persist.Postgresql (ConnectionPool)
 import DAL.Schema
 import DAL.Types
