@@ -20,6 +20,7 @@ import Database.Persist.Sql
   , Single(..)
   , Entity(..)
   , PersistEntity(..)
+  , PersistInt64
   , fromSqlKey
   , toSqlKey
   )

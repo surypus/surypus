@@ -81,7 +81,7 @@ persistToMaybeInt64 (PersistDouble n) = Just $ round n
 persistToMaybeInt64 _ = Nothing
 
 -- | Parse classifier from database row
-parseClassifier :: [Single] -> ClassifierItem
+parseClassifier :: [Single PersistValue] -> ClassifierItem
 parseClassifier (Single id' : Single code : Single name : Single desc : Single parent : _) =
   ClassifierItem
     { classifierItemId = persistToInt64 id'

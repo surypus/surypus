@@ -237,7 +237,7 @@ getJobStatus pool jobId = do
   let sql = "SELECT status FROM job_queue WHERE id = ?"
   rows <- runDb pool $ rawSql sql [PersistText jobId]
   case rows of
-    (Single status : _) -> return $ readMaybe $ T.unpack $ T.pack $ show status
+    (Single status : _) -> return $ readMaybe (T.unpack $ persistToText status)
     _ -> return Nothing
 
 -- | Run a single worker iteration

@@ -229,7 +229,7 @@ upgradeEvent :: Event -> Int -> Event
 upgradeEvent event newVersion = event { eventSchemaVersion = newVersion }
 
 -- | Parse event from database row
-parseEvent :: [Single] -> Event
+parseEvent :: [Single PersistValue] -> Event
 parseEvent (Single id' : Single typ : Single evType : Single evVer : Single evSchemaVer : Single evData : Single evMeta : Single seqNum : Single occurredAt : Single createdAt : _) =
   Event
     { eventAggregateId = persistToInt64 id'
