@@ -520,3 +520,29 @@ data GoodsPriceEntity = GoodsPriceEntity
 
 instance FromJSON GoodsPriceEntity
 instance ToJSON GoodsPriceEntity
+
+-- | Payroll result entity (Phase 1: stub)
+data PayrollResultEntity = PayrollResultEntity
+  { payrollResultEntityId :: !Int64
+  , payrollResultEntityTenantId :: !Int64
+  , payrollResultEntityPeriod :: !Day
+  , payrollResultEntityEmployeeId :: !Int64
+  , payrollResultEntityGross :: !Double
+  , payrollResultEntityDeductions :: !Double
+  , payrollResultEntityNet :: !Double
+  , payrollResultEntityIncomeTax :: !Double
+  , payrollResultEntitySocialTax :: !Double
+  , payrollResultEntityAdvance :: !Double
+  , payrollResultEntityBonus :: !Double
+  , payrollResultEntityVacationPay :: !Double
+  , payrollResultEntitySickPay :: !Double
+  , payrollResultEntityTotalToPay :: !Double
+  , payrollResultEntityCurrency :: !Text
+  , payrollResultEntityVersion :: !Int
+  , payrollResultEntityCreatedBy :: !(Maybe Int64)
+  , payrollResultEntityCreatedAt :: !UTCTime
+  , payrollResultEntityUpdatedAt :: !UTCTime
+  } deriving (Show, Generic)
+
+instance FromJSON PayrollResultEntity
+instance ToJSON PayrollResultEntity
