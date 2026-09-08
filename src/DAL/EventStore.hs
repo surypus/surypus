@@ -36,8 +36,26 @@ import qualified Data.Map.Strict as M
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import Data.Time (UTCTime, getCurrentTime)
+import Data.Time (UTCTime, getCurrentTime, parseTimeM, defaultTimeLocale)
 import Database.Persist.Sql (rawSql, rawExecute, Single(..), PersistValue(..))
+
+-- | Extract Int64 from PersistValue
+persistToInt64 :: PersistValue -> Int64
+persistToInt64 (PersistInt64 n) = n
+persistToInt64 (PersistDouble n) = round n
+persistToInt64 _ = 0
+
+-- | Extract Text from PersistValue
+persistToText :: PersistValue -> Text
+persistToText (PersistText t) = t
+persistToText (PersistInt64 n) = T.pack $ show n
+persistToText (PersistDouble n) = T.pack $ show n
+persistToText _ = ""
+
+-- | Extract Maybe Text from PersistValue
+persistToMaybeText :: PersistValue -> Maybe Text
+persistToMaybeText PersistNull = Nothing
+persistToMaybeText v = Just $ persistToText v
 import GHC.Generics (Generic)
 
 currentEventSchemaVersion :: Int
@@ -210,19 +228,19 @@ upgradeEvent :: Event -> Int -> Event
 upgradeEvent event newVersion = event { eventSchemaVersion = newVersion }
 
 -- | Parse event from database row
-parseEvent :: [PersistValue] -> Event
+parseEvent :: [Single] -> Event
 parseEvent (Single id' : Single typ : Single evType : Single evVer : Single evSchemaVer : Single evData : Single evMeta : Single seqNum : Single occurredAt : Single createdAt : _) =
   Event
-    { eventAggregateId = read $ T.unpack $ T.pack $ show id'
-    , eventAggregateType = T.pack $ show typ
-    , eventEventType = T.pack $ show evType
-    , eventEventVersion = read $ T.unpack $ T.pack $ show evVer
-    , eventSchemaVersion = read $ T.unpack $ T.pack $ show evSchemaVer
-    , eventEventData = Data.Aeson.object ["raw" .= T.pack (show evData)]
-    , eventEventMetadata = if T.null (T.pack $ show evMeta) then Nothing else Just $ Data.Aeson.object ["raw" .= T.pack (show evMeta)]
-    , eventSequenceNumber = read $ T.unpack $ T.pack $ show seqNum
-    , eventOccurredAt = read $ T.unpack $ T.pack $ show occurredAt
-    , eventCreatedAt = read $ T.unpack $ T.pack $ show createdAt
+    { eventAggregateId = persistToInt64 id'
+    , eventAggregateType = persistToText typ
+    , eventEventType = persistToText evType
+    , eventEventVersion = persistToInt64 evVer
+    , eventSchemaVersion = persistToInt64 evSchemaVer
+    , eventEventData = Data.Aeson.object ["raw" .= persistToText evData]
+    , eventEventMetadata = persistToMaybeText evMeta >>= \t -> Just $ Data.Aeson.object ["raw" .= t]
+    , eventSequenceNumber = persistToInt64 seqNum
+    , eventOccurredAt = fromMaybe (read "1970-01-01 00:00:00 UTC") $ parseTimeM True defaultTimeLocale "%Y-%m-%d %H:%M:%S" (T.unpack $ persistToText occurredAt)
+    , eventCreatedAt = fromMaybe (read "1970-01-01 00:00:00 UTC") $ parseTimeM True defaultTimeLocale "%Y-%m-%d %H:%M:%S" (T.unpack $ persistToText createdAt)
     }
 parseEvent _ = Event 0 "" "" 0 0 (Data.Aeson.object []) Nothing 0 (read "1970-01-01 00:00:00 UTC") (read "1970-01-01 00:00:00 UTC")
 
