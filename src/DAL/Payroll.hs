@@ -12,7 +12,7 @@ module DAL.Payroll
 import Data.Int (Int64)
 import Data.Text (Text)
 import Data.Time (Day, UTCTime, getCurrentTime)
-import Database.Persist.Sql (toSqlKey, rawSql, rawExecute, Single(..), PersistValue(..))
+import Database.Persist.Sql (toSqlKey, rawSql, rawExecute, Single(..), PersistValue(..), PersistDay)
 import Database.Persist.Postgresql (ConnectionPool)
 import DAL.Conversion
 import DAL.Schema
