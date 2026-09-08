@@ -60,6 +60,7 @@ import Data.Int (Int64)
 import Data.Text (Text)
 import Data.Time (Day, UTCTime, getCurrentTime)
 import Database.Persist.Sql (rawSql, rawExecute, Single(..), PersistValue(..))
+import Database.Persist (PersistDay)
 import Database.Persist.Postgresql (ConnectionPool)
 import DAL.Database (ConnectionPool, runDb)
 import DAL.Schema

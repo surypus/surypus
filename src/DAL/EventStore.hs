@@ -218,13 +218,13 @@ parseEvent (Single id' : Single typ : Single evType : Single evVer : Single evSc
     , eventEventType = T.pack $ show evType
     , eventEventVersion = read $ T.unpack $ T.pack $ show evVer
     , eventSchemaVersion = read $ T.unpack $ T.pack $ show evSchemaVer
-    , eventEventData = object ["raw" .= T.pack (show evData)]
-    , eventEventMetadata = if T.null (T.pack $ show evMeta) then Nothing else Just $ object ["raw" .= T.pack (show evMeta)]
+    , eventEventData = Data.Aeson.object ["raw" .= T.pack (show evData)]
+    , eventEventMetadata = if T.null (T.pack $ show evMeta) then Nothing else Just $ Data.Aeson.object ["raw" .= T.pack (show evMeta)]
     , eventSequenceNumber = read $ T.unpack $ T.pack $ show seqNum
     , eventOccurredAt = read $ T.unpack $ T.pack $ show occurredAt
     , eventCreatedAt = read $ T.unpack $ T.pack $ show createdAt
     }
-parseEvent _ = Event 0 "" "" 0 0 (object []) Nothing 0 (read "1970-01-01 00:00:00 UTC") (read "1970-01-01 00:00:00 UTC")
+parseEvent _ = Event 0 "" "" 0 0 (Data.Aeson.object []) Nothing 0 (read "1970-01-01 00:00:00 UTC") (read "1970-01-01 00:00:00 UTC")
 
 -- | Parse snapshot from text fields
 parseSnapshot :: Text -> Text -> Text -> Text -> Text -> Text -> IO (Maybe Snapshot)
@@ -240,7 +240,3 @@ readMaybe :: Read a => String -> Maybe a
 readMaybe s = case reads s of
   [(x, "")] -> Just x
   _ -> Nothing
-
--- | Helper for JSON object construction
-object :: [Text] -> Value
-object pairs = Data.Aeson.object $ map (\t -> ("field", Data.Aeson.String t)) pairs

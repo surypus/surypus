@@ -122,31 +122,10 @@ generateJobId = do
 -- | Initialize queue (create table if not exists)
 initializeQueue :: ConnectionPool -> QueueConfig -> IO ()
 initializeQueue pool config = do
-  let sql = "CREATE TABLE IF NOT EXISTS job_queue (\
-            \  id UUID PRIMARY KEY,\
-            \  type TEXT NOT NULL,\
-            \  status TEXT NOT NULL DEFAULT 'pending',\
-            \  payload JSONB NOT NULL,\
-            \  priority INT NOT NULL DEFAULT 0,\
-            \  retry_count INT NOT NULL DEFAULT 0,\
-            \  max_retries INT NOT NULL DEFAULT 3,\
-            \  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),\
-            \  scheduled_at TIMESTAMPTZ,\
-            \  processed_at TIMESTAMPTZ,\
-            \  completed_at TIMESTAMPTZ,\
-            \  error TEXT,\
-            \  result JSONB,\
-            \  worker_id TEXT\
-            \)\
-            \  WITH (fillfactor=70);\
-            \
-            \CREATE INDEX IF NOT EXISTS idx_job_queue_status ON job_queue(status);\
-            \CREATE INDEX IF NOT EXISTS idx_job_queue_priority ON job_queue(priority DESC);\
-            \CREATE INDEX IF NOT EXISTS idx_job_queue_scheduled ON job_queue(scheduled_at);"
   runDb pool $ rawExecute "CREATE TABLE IF NOT EXISTS job_queue (id UUID PRIMARY KEY, type TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending', payload JSONB NOT NULL, priority INT NOT NULL DEFAULT 0, retry_count INT NOT NULL DEFAULT 0, max_retries INT NOT NULL DEFAULT 3, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), scheduled_at TIMESTAMPTZ, processed_at TIMESTAMPTZ, completed_at TIMESTAMPTZ, error TEXT, result JSONB, worker_id TEXT) WITH (fillfactor=70)" []
-runDb pool $ rawExecute "CREATE INDEX IF NOT EXISTS idx_job_queue_status ON job_queue(status)" []
-runDb pool $ rawExecute "CREATE INDEX IF NOT EXISTS idx_job_queue_priority ON job_queue(priority DESC)" []
-runDb pool $ rawExecute "CREATE INDEX IF NOT EXISTS idx_job_queue_scheduled ON job_queue(scheduled_at)" []
+  runDb pool $ rawExecute "CREATE INDEX IF NOT EXISTS idx_job_queue_status ON job_queue(status)" []
+  runDb pool $ rawExecute "CREATE INDEX IF NOT EXISTS idx_job_queue_priority ON job_queue(priority DESC)" []
+  runDb pool $ rawExecute "CREATE INDEX IF NOT EXISTS idx_job_queue_scheduled ON job_queue(scheduled_at)" []
   return ()
 
 -- | Enqueue a new job

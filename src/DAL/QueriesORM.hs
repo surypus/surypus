@@ -25,7 +25,7 @@ module DAL.QueriesORM
 import Data.Int (Int64)
 import Data.Text (Text)
 import qualified Data.Text as T
-import Database.Persist.Sql (toSqlKey, rawSql, Single(..), PersistValue(..), Key, Entity(..), unKey)
+import Database.Persist.Sql (toSqlKey, rawSql, Single(..), PersistValue(..), Key, Entity(..), fromSqlKey)
 import Database.Persist.Postgresql (ConnectionPool)
 import DAL.Schema
 import DAL.Types
@@ -58,7 +58,7 @@ currencyKey n = toSqlKey n
 
 -- | Convert key to Int64
 keyToInt :: Key a -> Int64
-keyToInt = fromIntegral . unKey
+keyToInt = fromIntegral . fromSqlKey
 
 -- | ILIKE helper for raw SQL
 ilike :: Text -> Text -> Text
