@@ -46,8 +46,8 @@ persistToMaybeInt64 (PersistInt64 n) = Just n
 persistToMaybeInt64 (PersistDouble n) = Just $ round n
 persistToMaybeInt64 _ = Nothing
 
-parseClassifier :: [Single PersistValue] -> ClassifierItem
-parseClassifier (Single id' : Single code : Single name : Single desc : Single parent : _) =
+parseClassifier :: PersistValue -> PersistValue -> PersistValue -> PersistValue -> PersistValue -> ClassifierItem
+parseClassifier id' code name desc parent =
   ClassifierItem
     { classifierItemId = persistToInt64 id'
     , classifierItemCode = persistToText code
@@ -55,20 +55,19 @@ parseClassifier (Single id' : Single code : Single name : Single desc : Single p
     , classifierItemDescription = persistToMaybeText desc
     , classifierItemParentId = persistToMaybeInt64 parent
     }
-parseClassifier _ = ClassifierItem 0 T.empty T.empty Nothing Nothing
 
 getAllClassifiers :: ConnectionPool -> Text -> IO [ClassifierItem]
 getAllClassifiers pool table = do
   let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " ORDER BY id"
   rows <- runDb pool $ rawSql sql [] :: IO [Single PersistValue]
-  return $ map parseClassifier rows
+  return $ map (\(Single a : Single b : Single c : Single d : Single e : _) -> parseClassifier a b c d e) rows
 
 getClassifierById :: ConnectionPool -> Text -> Int64 -> IO (Maybe ClassifierItem)
 getClassifierById pool table id' = do
   let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " WHERE id = ?"
   rows <- runDb pool $ rawSql sql [PersistInt64 id'] :: IO [Single PersistValue]
   case rows of
-    (row : _) -> return $ Just $ parseClassifier row
+    (Single a : Single b : Single c : Single d : Single e : _) : _ -> return $ Just $ parseClassifier a b c d e
     _ -> return Nothing
 
 getClassifierByCode :: ConnectionPool -> Text -> Text -> IO (Maybe ClassifierItem)
@@ -76,14 +75,14 @@ getClassifierByCode pool table code = do
   let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " WHERE code = ?"
   rows <- runDb pool $ rawSql sql [PersistText code] :: IO [Single PersistValue]
   case rows of
-    (row : _) -> return $ Just $ parseClassifier row
+    (Single a : Single b : Single c : Single d : Single e : _) : _ -> return $ Just $ parseClassifier a b c d e
     _ -> return Nothing
 
 getClassifierByParent :: ConnectionPool -> Text -> Int64 -> IO [ClassifierItem]
 getClassifierByParent pool table parent = do
   let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " WHERE parent_id = ?"
   rows <- runDb pool $ rawSql sql [PersistInt64 parent] :: IO [Single PersistValue]
-  return $ map parseClassifier rows
+  return $ map (\(Single a : Single b : Single c : Single d : Single e : _) -> parseClassifier a b c d e) rows
 
 getOksmAll = getAllClassifiers "oksm"
 getOksmById = getClassifierById "oksm"
