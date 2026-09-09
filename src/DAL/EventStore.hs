@@ -37,6 +37,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time (UTCTime, getCurrentTime, parseTimeM, defaultTimeLocale)
+import Data.Time.Format (defaultTimeLocale, parseTimeM)
 import Database.Persist.Sql (rawSql, rawExecute, Single(..), PersistValue(..))
 import GHC.Generics (Generic)
 import Data.Maybe (fromMaybe)
@@ -243,7 +244,7 @@ parseEvent (Single id' : Single typ : Single evType : Single evVer : Single evSc
     , eventOccurredAt = undefined :: UTCTime
     , eventCreatedAt = undefined :: UTCTime
     }
-parseEvent _ = Event 0 "" "" 0 0 (Data.Aeson.object []) Nothing 0 (read "1970-01-01 00:00:00 UTC") (read "1970-01-01 00:00:00 UTC")
+parseEvent _ = Event 0 T.empty T.empty 0 0 (Data.Aeson.object []) Nothing 0 (read "1970-01-01 00:00:00" :: UTCTime) (read "1970-01-01 00:00:00" :: UTCTime)
 
 -- | Parse snapshot from text fields
 parseSnapshot :: Text -> Text -> Text -> Text -> Text -> Text -> Maybe Snapshot
