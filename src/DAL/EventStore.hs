@@ -240,8 +240,8 @@ parseEvent (Single id' : Single typ : Single evType : Single evVer : Single evSc
     , eventEventData = Data.Aeson.object ["raw" .= persistToText evData]
     , eventEventMetadata = persistToMaybeText evMeta >>= \t -> Just $ Data.Aeson.object ["raw" .= t]
     , eventSequenceNumber = persistToInt64 seqNum
-    , eventOccurredAt = read "1970-01-01 00:00:00 UTC"
-    , eventCreatedAt = read "1970-01-01 00:00:00 UTC"
+    , eventOccurredAt = undefined :: UTCTime
+    , eventCreatedAt = undefined :: UTCTime
     }
 parseEvent _ = Event 0 "" "" 0 0 (Data.Aeson.object []) Nothing 0 (read "1970-01-01 00:00:00 UTC") (read "1970-01-01 00:00:00 UTC")
 
