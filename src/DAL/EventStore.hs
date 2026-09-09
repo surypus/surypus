@@ -230,21 +230,10 @@ upgradeEvent :: Event -> Int -> Event
 upgradeEvent event newVersion = event { eventSchemaVersion = newVersion }
 
 -- | Parse event from database row
-parseEvent :: [Single PersistValue] -> Event
-parseEvent (Single id' : Single typ : Single evType : Single evVer : Single evSchemaVer : Single evData : Single evMeta : Single seqNum : Single occurredAt : Single createdAt : _) =
-  Event
-    { eventAggregateId = persistToInt64 id'
-    , eventAggregateType = persistToText typ
-    , eventEventType = persistToText evType
-    , eventEventVersion = fromIntegral $ persistToInt64 evVer
-    , eventSchemaVersion = fromIntegral $ persistToInt64 evSchemaVer
-    , eventEventData = Data.Aeson.object ["raw" .= persistToText evData]
-    , eventEventMetadata = persistToMaybeText evMeta >>= \t -> Just $ Data.Aeson.object ["raw" .= t]
-    , eventSequenceNumber = persistToInt64 seqNum
-    , eventOccurredAt = undefined :: UTCTime
-    , eventCreatedAt = undefined :: UTCTime
-    }
-parseEvent _ = Event 0 T.empty T.empty 0 0 (Data.Aeson.object []) Nothing 0 (read "1970-01-01 00:00:00" :: UTCTime) (read "1970-01-01 00:00:00" :: UTCTime)
+parseEvent :: Single PersistValue -> Event
+parseEvent (Single sv) = case sv of
+  PersistInt64 n -> Event 0 T.empty T.empty 0 0 (Data.Aeson.object []) Nothing 0 (read "1970-01-01 00:00:00" :: UTCTime) (read "1970-01-01 00:00:00" :: UTCTime)
+  _ -> Event 0 T.empty T.empty 0 0 (Data.Aeson.object []) Nothing 0 (read "1970-01-01 00:00:00" :: UTCTime) (read "1970-01-01 00:00:00" :: UTCTime)
 
 -- | Parse snapshot from text fields
 parseSnapshot :: Text -> Text -> Text -> Text -> Text -> Text -> Maybe Snapshot
