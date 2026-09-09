@@ -246,7 +246,7 @@ parseEvent (Single id' : Single typ : Single evType : Single evVer : Single evSc
 parseEvent _ = Event 0 "" "" 0 0 (Data.Aeson.object []) Nothing 0 (read "1970-01-01 00:00:00 UTC") (read "1970-01-01 00:00:00 UTC")
 
 -- | Parse snapshot from text fields
-parseSnapshot :: Text -> Text -> Text -> Text -> Text -> Text -> IO (Maybe Snapshot)
+parseSnapshot :: Text -> Text -> Text -> Text -> Text -> Text -> Maybe Snapshot
 parseSnapshot id' typ ver lastSeq data' createdAt = do
   mId <- readMaybe (T.unpack id')
   mVer <- readMaybe (T.unpack ver)
