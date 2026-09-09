@@ -3,8 +3,6 @@ module Core.Accounting.RedisCache where
 import Data.Text (Text)
 import Data.Time (NominalDiffTime)
 import GHC.Generics (Generic)
-import Core.Accounting.Cache (ReadModelCache)
-import qualified Core.Accounting.ReadModel as RM
 
 data RedisCacheConfig = RedisCacheConfig
   { rccHost :: Text
@@ -25,8 +23,5 @@ defaultRedisCacheConfig = RedisCacheConfig
   , rccMaxConnections = 10
   }
 
-createRedisCache :: RedisCacheConfig -> IO (ReadModelCache RM.AccountReadModel)
-createRedisCache _ = return ReadModelCache
-  { getCachedAccountReadModel = \_ -> return Nothing
-  , invalidateCache = \_ -> return ()
-  }
+createRedisCache :: RedisCacheConfig -> IO ()
+createRedisCache _ = return ()
