@@ -156,7 +156,7 @@ getEvents pool aggId aggType = do
             \  sequence_number, occurred_at, created_at \
             \FROM event_store WHERE aggregate_id = ? AND aggregate_type = ? \
             \ORDER BY sequence_number ASC"
-  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType]
+  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType] :: IO [Single PersistValue]
   return $ Right $ map parseEvent rows
 
 -- | Get events from a specific sequence number
@@ -179,7 +179,7 @@ replayAccount pool aggId aggType = getEvents pool aggId aggType
 getLatestSequence :: ConnectionPool -> Int64 -> Text -> IO (Either Text (Maybe Int64))
 getLatestSequence pool aggId aggType = do
   let sql = "SELECT MAX(sequence_number) FROM event_store WHERE aggregate_id = ? AND aggregate_type = ?"
-  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType]
+  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType] :: IO [Single PersistValue]
   case rows of
     (Single (PersistInt64 n) : _) -> return $ Right $ Just n
     (Single PersistNull : _) -> return $ Right Nothing
@@ -209,7 +209,7 @@ getLatestSnapshot pool aggId aggType = do
   let sql = "SELECT aggregate_id, aggregate_type, version, last_seq, snapshot_data, created_at \
             \FROM event_snapshots WHERE aggregate_id = ? AND aggregate_type = ? \
             \ORDER BY version DESC LIMIT 1"
-  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType]
+  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType] :: IO [Single PersistValue]
   case rows of
     (Single id' : Single typ : Single ver : Single lastSeq : Single data' : Single createdAt : _) -> do
       let mSnap = parseSnapshot (T.pack $ show id') (T.pack $ show typ) (T.pack $ show ver) (T.pack $ show lastSeq) (T.pack $ show data') (T.pack $ show createdAt)
