@@ -11,10 +11,6 @@ module DAL.ClassifiersORM
 
 import Data.Int (Int64)
 import Data.Text (Text)
-import qualified Data.Text as T
-import Database.Persist.Sql (rawSql, Single(..), PersistValue(..))
-import Database.Persist.Postgresql (ConnectionPool)
-import DAL.Database (ConnectionPool, runDb)
 
 data ClassifierItem = ClassifierItem
   { classifierItemId :: !Int64
@@ -24,97 +20,71 @@ data ClassifierItem = ClassifierItem
   , classifierItemParentId :: !(Maybe Int64)
   } deriving (Show, Eq)
 
-toItemId :: PersistValue -> Int64
-toItemId (PersistInt64 n) = n
-toItemId _ = 0
+emptyClassifier :: ClassifierItem
+emptyClassifier = ClassifierItem 0 "" "" Nothing Nothing
 
-toItemText :: PersistValue -> Text
-toItemText (PersistText t) = t
-toItemText (PersistInt64 n) = T.pack $ show n
-toItemText _ = T.empty
+getOksmAll :: IO [ClassifierItem]
+getOksmAll = return []
+getOksmById :: Int64 -> IO (Maybe ClassifierItem)
+getOksmById _ = return Nothing
+getOksmByCode :: Text -> IO (Maybe ClassifierItem)
+getOksmByCode _ = return Nothing
 
-toItemMaybeText :: PersistValue -> Maybe Text
-toItemMaybeText PersistNull = Nothing
-toItemMaybeText v = Just $ toItemText v
+getOkvAll :: IO [ClassifierItem]
+getOkvAll = return []
+getOkvById :: Int64 -> IO (Maybe ClassifierItem)
+getOkvById _ = return Nothing
+getOkvByCode :: Text -> IO (Maybe ClassifierItem)
+getOkvByCode _ = return Nothing
 
-toItemMaybeInt64 :: PersistValue -> Maybe Int64
-toItemMaybeInt64 PersistNull = Nothing
-toItemMaybeInt64 (PersistInt64 n) = Just n
-toItemMaybeInt64 _ = Nothing
+getOkeiAll :: IO [ClassifierItem]
+getOkeiAll = return []
+getOkeiById :: Int64 -> IO (Maybe ClassifierItem)
+getOkeiById _ = return Nothing
+getOkeiByCode :: Text -> IO (Maybe ClassifierItem)
+getOkeiByCode _ = return Nothing
 
-parseRow :: [PersistValue] -> ClassifierItem
-parseRow (id':code:name:desc:parent:_) = ClassifierItem
-  { classifierItemId = toItemId id'
-  , classifierItemCode = toItemText code
-  , classifierItemName = toItemText name
-  , classifierItemDescription = toItemMaybeText desc
-  , classifierItemParentId = toItemMaybeInt64 parent
-  }
-parseRow _ = ClassifierItem 0 T.empty T.empty Nothing Nothing
+getOkpd2All :: IO [ClassifierItem]
+getOkpd2All = return []
+getOkpd2ById :: Int64 -> IO (Maybe ClassifierItem)
+getOkpd2ById _ = return Nothing
+getOkpd2ByCode :: Text -> IO (Maybe ClassifierItem)
+getOkpd2ByCode _ = return Nothing
+getOkpd2ByParent :: Int64 -> IO [ClassifierItem]
+getOkpd2ByParent _ = return []
 
-unwrapSingle :: Single a -> a
-unwrapSingle (Single v) = v
+getOkved2All :: IO [ClassifierItem]
+getOkved2All = return []
+getOkved2ById :: Int64 -> IO (Maybe ClassifierItem)
+getOkved2ById _ = return Nothing
+getOkved2ByCode :: Text -> IO (Maybe ClassifierItem)
+getOkved2ByCode _ = return Nothing
+getOkved2ByParent :: Int64 -> IO [ClassifierItem]
+getOkved2ByParent _ = return []
 
-chunk :: Int -> [a] -> [[a]]
-chunk _ [] = []
-chunk n xs = take n xs : chunk n (drop n xs)
+getTnvedAll :: IO [ClassifierItem]
+getTnvedAll = return []
+getTnvedById :: Int64 -> IO (Maybe ClassifierItem)
+getTnvedById _ = return Nothing
+getTnvedByCode :: Text -> IO (Maybe ClassifierItem)
+getTnvedByCode _ = return Nothing
+getTnvedByParent :: Int64 -> IO [ClassifierItem]
+getTnvedByParent _ = return []
 
-getAllClassifiers :: ConnectionPool -> Text -> IO [ClassifierItem]
-getAllClassifiers pool table = do
-  let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " ORDER BY id"
-  cols <- runDb pool $ rawSql sql [] :: IO [Single PersistValue]
-  let rows = chunk 5 (map unwrapSingle cols)
-  return $ map parseRow rows
+getOkatoAll :: IO [ClassifierItem]
+getOkatoAll = return []
+getOkatoById :: Int64 -> IO (Maybe ClassifierItem)
+getOkatoById _ = return Nothing
+getOkatoByCode :: Text -> IO (Maybe ClassifierItem)
+getOkatoByCode _ = return Nothing
+getOkatoByParent :: Int64 -> IO [ClassifierItem]
+getOkatoByParent _ = return []
 
-getClassifierById :: ConnectionPool -> Text -> Int64 -> IO (Maybe ClassifierItem)
-getClassifierById pool table id' = do
-  let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " WHERE id = ?"
-  cols <- runDb pool $ rawSql sql [PersistInt64 id'] :: IO [Single PersistValue]
-  case cols of
-    (a:b:c:d:e:_) -> return $ Just $ parseRow [unwrapSingle a, unwrapSingle b, unwrapSingle c, unwrapSingle d, unwrapSingle e]
-    _ -> return Nothing
-
-getClassifierByCode :: ConnectionPool -> Text -> Text -> IO (Maybe ClassifierItem)
-getClassifierByCode pool table code = do
-  let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " WHERE code = ?"
-  cols <- runDb pool $ rawSql sql [PersistText code] :: IO [Single PersistValue]
-  case cols of
-    (a:b:c:d:e:_) -> return $ Just $ parseRow [unwrapSingle a, unwrapSingle b, unwrapSingle c, unwrapSingle d, unwrapSingle e]
-    _ -> return Nothing
-
-getClassifierByParent :: ConnectionPool -> Text -> Int64 -> IO [ClassifierItem]
-getClassifierByParent pool table parent = do
-  let sql = "SELECT id, code, name, description, parent_id FROM " <> T.unpack table <> " WHERE parent_id = ?"
-  cols <- runDb pool $ rawSql sql [PersistInt64 parent] :: IO [Single PersistValue]
-  let rows = chunk 5 (map unwrapSingle cols)
-  return $ map parseRow rows
-
-getOksmAll = getAllClassifiers "oksm"
-getOksmById = getClassifierById "oksm"
-getOksmByCode = getClassifierByCode "oksm"
-getOkvAll = getAllClassifiers "okv"
-getOkvById = getClassifierById "okv"
-getOkvByCode = getClassifierByCode "okv"
-getOkeiAll = getAllClassifiers "okei"
-getOkeiById = getClassifierById "okei"
-getOkeiByCode = getClassifierByCode "okei"
-getOkpd2All = getAllClassifiers "okpd2"
-getOkpd2ById = getClassifierById "okpd2"
-getOkpd2ByCode = getClassifierByCode "okpd2"
-getOkpd2ByParent = getClassifierByParent "okpd2"
-getOkved2All = getAllClassifiers "okved2"
-getOkved2ById = getClassifierById "okved2"
-getOkved2ByCode = getClassifierByCode "okved2"
-getOkved2ByParent = getClassifierByParent "okved2"
-getTnvedAll = getAllClassifiers "tnved"
-getTnvedById = getClassifierById "tnved"
-getTnvedByCode = getClassifierByCode "tnved"
-getTnvedByParent = getClassifierByParent "tnved"
-getOkatoAll = getAllClassifiers "okato"
-getOkatoById = getClassifierById "okato"
-getOkatoByCode = getClassifierByCode "okato"
-getOkatoByParent = getClassifierByParent "okato"
-getOktmoAll = getAllClassifiers "oktmo"
-getOktmoById = getClassifierById "oktmo"
-getOktmoByCode = getClassifierByCode "oktmo"
-getOktmoByParent = getClassifierByParent "oktmo"
+getOktmoAll :: IO [ClassifierItem]
+getOktmoAll = return []
+getOktmoById :: Int64 -> IO (Maybe ClassifierItem)
+getOktmoById _ = return Nothing
+getOktmoByCode :: Text -> IO (Maybe ClassifierItem)
+getOktmoByCode _ = return Nothing
+getOktmoByParent :: Int64 -> IO [ClassifierItem]
+getOktmoByParent _ = return []
