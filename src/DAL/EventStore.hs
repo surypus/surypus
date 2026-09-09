@@ -211,7 +211,7 @@ getLatestSnapshot pool aggId aggType = do
   rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType]
   case rows of
     (Single id' : Single typ : Single ver : Single lastSeq : Single data' : Single createdAt : _) -> do
-      mSnap <- parseSnapshot (T.pack $ show id') (T.pack $ show typ) (T.pack $ show ver) (T.pack $ show lastSeq) (T.pack $ show data') (T.pack $ show createdAt)
+      let mSnap = parseSnapshot (T.pack $ show id') (T.pack $ show typ) (T.pack $ show ver) (T.pack $ show lastSeq) (T.pack $ show data') (T.pack $ show createdAt)
       return $ Right mSnap
     _ -> return $ Right Nothing
 
