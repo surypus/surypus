@@ -11,6 +11,7 @@ module DAL.ClassifiersORM
 
 import Data.Int (Int64)
 import Data.Text (Text)
+import qualified Data.Text as T
 
 data ClassifierItem = ClassifierItem
   { classifierItemId :: !Int64
