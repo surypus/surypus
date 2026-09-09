@@ -36,7 +36,7 @@ import qualified Data.Map.Strict as M
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import Data.Time (UTCTime, getCurrentTime)
+import Data.Time (UTCTime, getCurrentTime, parseTimeM, defaultTimeLocale)
 import Database.Persist.Sql (rawSql, rawExecute, Single(..), PersistValue(..))
 import GHC.Generics (Generic)
 import Data.Maybe (fromMaybe)
@@ -240,8 +240,8 @@ parseEvent (Single id' : Single typ : Single evType : Single evVer : Single evSc
     , eventEventData = Data.Aeson.object ["raw" .= persistToText evData]
     , eventEventMetadata = persistToMaybeText evMeta >>= \t -> Just $ Data.Aeson.object ["raw" .= t]
     , eventSequenceNumber = persistToInt64 seqNum
-    , eventOccurredAt = read (T.unpack $ persistToText occurredAt)
-    , eventCreatedAt = read (T.unpack $ persistToText createdAt)
+    , eventOccurredAt = read "1970-01-01 00:00:00 UTC"
+    , eventCreatedAt = read "1970-01-01 00:00:00 UTC"
     }
 parseEvent _ = Event 0 "" "" 0 0 (Data.Aeson.object []) Nothing 0 (read "1970-01-01 00:00:00 UTC") (read "1970-01-01 00:00:00 UTC")
 
