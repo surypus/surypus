@@ -11,6 +11,7 @@ module DAL.ClassifiersORM
 
 import Data.Int (Int64)
 import Data.Text (Text)
+import qualified Data.Text as T
 
 data ClassifierItem = ClassifierItem
   { classifierItemId :: !Int64
@@ -21,7 +22,7 @@ data ClassifierItem = ClassifierItem
   } deriving (Show, Eq)
 
 emptyClassifier :: ClassifierItem
-emptyClassifier = ClassifierItem 0 "" "" Nothing Nothing
+emptyClassifier = ClassifierItem 0 T.empty T.empty Nothing Nothing
 
 getOksmAll :: IO [ClassifierItem]
 getOksmAll = return []

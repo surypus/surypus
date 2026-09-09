@@ -248,12 +248,8 @@ parseEvent _ = Event 0 T.empty T.empty 0 0 (Data.Aeson.object []) Nothing 0 (rea
 
 -- | Parse snapshot from text fields
 parseSnapshot :: Text -> Text -> Text -> Text -> Text -> Text -> Maybe Snapshot
-parseSnapshot id' typ ver lastSeq data' createdAt = do
-  mId <- readMaybe (T.unpack id')
-  mVer <- readMaybe (T.unpack ver)
-  mLastSeq <- readMaybe (T.unpack lastSeq)
-  mCreatedAt <- readMaybe (T.unpack createdAt)
-  return $ Snapshot mId (T.unpack typ) mVer mLastSeq (T.pack $ T.unpack data') mCreatedAt
+parseSnapshot id' typ ver lastSeq data' createdAt =
+  Snapshot <$> readMaybe (T.unpack id') <*> pure (T.unpack typ) <*> readMaybe (T.unpack ver) <*> readMaybe (T.unpack lastSeq) <*> pure (T.pack $ T.unpack data') <*> readMaybe (T.unpack createdAt)
 
 -- | Safe readMaybe
 readMaybe :: Read a => String -> Maybe a
