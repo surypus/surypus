@@ -235,8 +235,8 @@ parseEvent (Single id' : Single typ : Single evType : Single evVer : Single evSc
     { eventAggregateId = persistToInt64 id'
     , eventAggregateType = persistToText typ
     , eventEventType = persistToText evType
-    , eventEventVersion = persistToInt64 evVer
-    , eventSchemaVersion = persistToInt64 evSchemaVer
+    , eventEventVersion = fromIntegral $ persistToInt64 evVer
+    , eventSchemaVersion = fromIntegral $ persistToInt64 evSchemaVer
     , eventEventData = Data.Aeson.object ["raw" .= persistToText evData]
     , eventEventMetadata = persistToMaybeText evMeta >>= \t -> Just $ Data.Aeson.object ["raw" .= t]
     , eventSequenceNumber = persistToInt64 seqNum
