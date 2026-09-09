@@ -36,8 +36,8 @@ import qualified Data.Map.Strict as M
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import Data.Time (UTCTime, getCurrentTime, parseTimeM, defaultTimeLocale)
-import Data.Time.Format (defaultTimeLocale, parseTimeM)
+import Data.Time (UTCTime, getCurrentTime)
+import Data.Time.Format (parseTimeM, defaultTimeLocale)
 import Database.Persist.Sql (rawSql, rawExecute, Single(..), PersistValue(..))
 import GHC.Generics (Generic)
 import Data.Maybe (fromMaybe)
@@ -213,7 +213,9 @@ getLatestSnapshot pool aggId aggType = do
   case rows of
     (Single id' : Single typ : Single ver : Single lastSeq : Single data' : Single createdAt : _) -> do
       let mSnap = parseSnapshot (T.pack $ show id') (T.pack $ show typ) (T.pack $ show ver) (T.pack $ show lastSeq) (T.pack $ show data') (T.pack $ show createdAt)
-      return $ Right mSnap
+      return $ case mSnap of
+        Just snap -> Right (Just snap)
+        Nothing -> Right Nothing
     _ -> return $ Right Nothing
 
 -- | Replay from snapshot
