@@ -1,14 +1,13 @@
 module Core.Accounting.RedisCache where
 
 import Data.Text (Text)
-import Data.Time (NominalDiffTime)
 import GHC.Generics (Generic)
 
 data RedisCacheConfig = RedisCacheConfig
   { rccHost :: Text
   , rccPort :: Int
   , rccDatabase :: Int
-  , rccDefaultTTL :: NominalDiffTime
+  , rccDefaultTTL :: Int
   , rccEventStreamName :: Text
   , rccMaxConnections :: Int
   } deriving (Show, Eq, Generic)
