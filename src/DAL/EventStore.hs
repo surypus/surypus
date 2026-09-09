@@ -213,7 +213,7 @@ getLatestSnapshot pool aggId aggType = do
   case rows of
     (Single id' : Single typ : Single ver : Single lastSeq : Single data' : Single createdAt : _) -> do
       let mSnap = parseSnapshot (T.pack $ show id') (T.pack $ show typ) (T.pack $ show ver) (T.pack $ show lastSeq) (T.pack $ show data') (T.pack $ show createdAt)
-      return $ Right (Just mSnap)
+      return $ Right mSnap
     _ -> return $ Right Nothing
 
 -- | Replay from snapshot
