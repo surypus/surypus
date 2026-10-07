@@ -52,7 +52,7 @@ enqueueJob :: JobQueue -> Job -> IO ()
 enqueueJob (JobQueue config prefix _) job = do
   conn <- checkedConnect config
   let queueName = TE.encodeUtf8 (prefix <> ":jobs")
-      jobValue = encode job
+      jobValue = Aeson.encode job
   runRedis conn $ lpush queueName [toStrict jobValue]
   return ()
  

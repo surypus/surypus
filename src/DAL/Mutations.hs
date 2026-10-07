@@ -172,10 +172,34 @@ deleteAccPlan :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
 deleteAccPlan = DAL.MutationsORM.deleteAccPlan
 
 createAccTurn :: ConnectionPool -> AccTurnInput -> IO (QueryResult MutationResult)
-createAccTurn = DAL.MutationsORM.createAccTurn
+createAccTurn pool input = do
+  let turn = AccTurn
+        { accTurnId = 0
+        , accTurnDebitAccount = T.pack (show (atiDbtAccId input))
+        , accTurnCreditAccount = T.pack (show (atiCrdAccId input))
+        , accTurnAmount = atiAmount input
+        , accTurnDescription = atiDescription input
+        }
+  result <- DAL.MutationsORM.createAccTurn pool turn
+  return $ case result of
+    QuerySuccess _ -> QuerySuccess (MutationResult True Nothing "AccTurn created")
+    QueryError e   -> QueryError e
+    QueryResults _ _ -> QueryError "Unexpected result"
 
 updateAccTurn :: ConnectionPool -> Int64 -> AccTurnInput -> IO (QueryResult MutationResult)
-updateAccTurn = DAL.MutationsORM.updateAccTurn
+updateAccTurn pool tid input = do
+  let turn = AccTurn
+        { accTurnId = tid
+        , accTurnDebitAccount = T.pack (show (atiDbtAccId input))
+        , accTurnCreditAccount = T.pack (show (atiCrdAccId input))
+        , accTurnAmount = atiAmount input
+        , accTurnDescription = atiDescription input
+        }
+  result <- DAL.MutationsORM.updateAccTurn pool turn
+  return $ case result of
+    QuerySuccess _ -> QuerySuccess (MutationResult True (Just tid) "AccTurn updated")
+    QueryError e   -> QueryError e
+    QueryResults _ _ -> QueryError "Unexpected result"
 
 deleteAccTurn :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
 deleteAccTurn = DAL.MutationsORM.deleteAccTurn

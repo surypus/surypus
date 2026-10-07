@@ -27,13 +27,13 @@ listBills pool offset limit =
     (P.selectList [] [P.OffsetBy offset, P.LimitTo limit])
     pool
 
-getBillById :: ConnectionPool -> Int64 -> IO (Maybe BillEntity)
+getBillById :: ConnectionPool -> Int64 -> IO (Maybe (P.Entity BillEntity))
 getBillById pool bid =
   runSqlPool (P.get (toSqlKey bid)) pool
 
 listTaxRates :: ConnectionPool -> IO [P.Entity TaxEntity]
 listTaxRates = runSqlPool (P.selectList [] [])
 
-getTaxRateById :: ConnectionPool -> Int64 -> IO (Maybe TaxEntity)
+getTaxRateById :: ConnectionPool -> Int64 -> IO (Maybe (P.Entity TaxEntity))
 getTaxRateById pool tid =
   runSqlPool (P.get (toSqlKey tid)) pool

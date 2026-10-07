@@ -76,6 +76,18 @@ bd ready
 - [x] Add integration tests for API endpoints
 - [x] Add database migration tests (config/migrations/)
 - [x] Add performance/load tests (Prometheus metrics)
+- [x] Add Surypus.ValidationSpec — comprehensive validation tests (2026-10-07)
+  - validateAccTurnInput: 9 unit tests + 1 QuickCheck property
+  - validatePersonInput: 3 unit tests
+  - validateINN: 5 unit tests + 1 QuickCheck property
+  - validateKPP: 3 unit tests + 1 QuickCheck property
+  - validateCurrencyInput: 3 unit tests
+  - validateGoodsInput: 2 unit tests
+  - validateLocationInput: 2 unit tests
+  - validatePaymentInput: 3 unit tests
+  - validatePriceInput: 3 unit tests
+  - validateTaxInput: 4 unit tests
+  - JSON roundtrip tests for AccTurnInput and MutationResult
 
 ### DevOps
 - [x] Add Docker configuration

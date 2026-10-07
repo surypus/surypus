@@ -10,6 +10,7 @@ import Data.Time.Calendar (fromGregorian)
 import qualified Finance.TaxSpec
 import qualified Finance.AccountingSpec
 import qualified Finance.BillSpec
+import qualified Surypus.ValidationSpec
 import DAL.Types
 
 main :: IO ()
@@ -17,6 +18,7 @@ main = hspec $ do
   Finance.TaxSpec.spec
   Finance.AccountingSpec.spec
   Finance.BillSpec.spec
+  Surypus.ValidationSpec.spec
 
   describe "DAL.Types JSON roundtrip" $ do
     it "Person roundtrip" $ do
@@ -38,6 +40,14 @@ main = hspec $ do
     it "Pagination roundtrip" $ do
       let p = Pagination 0 10
       A.decode (A.encode p) `shouldBe` Just p
+
+    it "AccTurnInput roundtrip" $ do
+      let input = AccTurnInput 1 2 100.0 (Just "Test")
+      A.decode (A.encode input) `shouldBe` Just input
+
+    it "MutationResult roundtrip" $ do
+      let mr = MutationResult True (Just 42) "Success"
+      A.decode (A.encode mr) `shouldBe` Just mr
 
   describe "Sanity" $ do
     it "True is True" $ do

@@ -45,10 +45,12 @@ stack test --test-arguments "--quickcheck"
 ```
 Surypus/test/
 ├── Test.hs              -- Main test suite
-├── Domain/
+├── Finance/
 │   ├── TaxSpec.hs       -- Tax calculation tests
 │   ├── AccountingSpec.hs
-│   └── InventorySpec.hs
+│   └── BillSpec.hs
+├── Surypus/
+│   └── ValidationSpec.hs -- Validation logic tests
 ├── Integration/
 │   ├── APISpec.hs       -- API endpoint tests
 │   ├── DatabaseSpec.hs  -- DB tests
