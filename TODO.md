@@ -94,6 +94,10 @@ bd ready
 - [x] Full suite green: 160 examples, 0 failures, 6 pending (API stubs) (2026-10-09)
 - [x] Fix `checkSlidingWindowWithHeaders` off-by-one in `remaining` (2026-10-09)
 - [x] Add System.RateLimiterSpec with 15 tests covering all 4 rate limiter strategies + API middleware logic (2026-10-09)
+- [x] Add System.CacheSpec with 17 tests covering System.Cache (calcHitRate, isExpired, calcVATStrict, calcTaxInclusiveStrict, STMCache operations) (2026-10-09)
+- [x] Add JWTSpec with 22 tests covering Surypus.JWT security-critical module: jwtConfigFromSecret, validateAccessToken, decodeAndValidateToken + QuickCheck security properties (2026-10-09)
+  - 17 unit tests + 5 QuickCheck security properties
+  - Verified: 22 examples, 0 failures (compiled and run via ghc directly; full cabal build blocked by GHC 9.10.3 vs persistent incompatibility)
 
 ### DevOps
 - [x] Add Docker configuration
@@ -255,6 +259,19 @@ bd ready
 
 ---
 
+## Cache Implementation
+
+- [x] Implement functional Core.Accounting.Cache with STM + LRU eviction (2026-10-09)
+  - Replaced stub with thread-safe STMCache-backed implementation
+  - mkReadModelCache: creates bounded cache with hit/miss statistics
+  - getCachedBalance: returns 0.0 on miss, cached value on hit
+  - putCachedBalance: inserts/updates entry with LRU eviction at maxSize
+  - invalidateCache: removes single entry
+  - clearCache: clears all entries
+  - cacheStats: tracks hits, misses, and current size
+  - Added Core.Accounting.CacheSpec with 15 tests (12 unit + 3 property-based)
+  - All 15 cache tests passing
+
 ## Stats
 
 | Status | Count |
@@ -262,4 +279,6 @@ bd ready
 | Done (Phase 2) | 12 |
 | Open (Phase 3) | 7 |
 | Done (General) | 42 |
-| **Total** | **61** |
+| Done (Cache) | 1 |
+| Done (System.Cache) | 1 |
+| **Total** | **63** |

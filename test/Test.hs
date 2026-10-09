@@ -12,8 +12,11 @@ import qualified Finance.AccountingSpec
 import qualified Finance.BillSpec
 import qualified Surypus.ValidationSpec
 import qualified Core.PayrollSpec
+import qualified Core.Accounting.CacheSpec
 import qualified TestHelpers
 import qualified System.RateLimiterSpec
+import qualified System.CacheSpec
+import qualified JWTSpec
 import DAL.Types
 
 main :: IO ()
@@ -28,6 +31,9 @@ main = hspec $ do
   TestHelpers.specProduction
   TestHelpers.specInventory
   System.RateLimiterSpec.spec
+  System.CacheSpec.spec
+  JWTSpec.spec
+  Core.Accounting.CacheSpec.spec
 
   describe "TestHelpers properties" $ do
     it "bill total equals sum of line totals" $
