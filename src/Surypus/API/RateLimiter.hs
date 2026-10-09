@@ -5,6 +5,8 @@ module Surypus.API.RateLimiter
   , initRateLimiter
   , rateLimiterMiddleware
   , defaultRateLimiterConfig
+  , checkSlidingWindow
+  , checkSlidingWindowWithHeaders
   ) where
 
 import Control.Concurrent.STM (TVar, atomically, newTVarIO, readTVar, writeTVar)
@@ -131,7 +133,7 @@ checkSlidingWindowWithHeaders var key limit windowSec = do
     m <- readTVar var
     let reqs = fromMaybe Seq.empty (M.lookup key m)
         valid = Seq.dropWhileL (\t -> diffUTCTime now t > windowSize) reqs
-        remaining = limit - Seq.length valid
+        remaining = limit - Seq.length valid - 1
         resetSec = windowSec
     if Seq.length valid < limit
       then do

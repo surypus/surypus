@@ -6,12 +6,12 @@
 
 - [ ] **TASK-019**: Implement real RBAC permission store (user_role, role_permission DB tables, replace stubs in `Surypus.RBAC`) — effort: **5 days**
 - [ ] **TASK-020**: Implement real JWT refresh token rotation (replace `"fake-refresh-token-"` prefix, revocation table) — effort: **3 days**
-- [ ] **TASK-008**: Fix `* 60` window bug in `System.RateLimiter.swCheck` — effort: **1 day**
+- [x] **TASK-008**: Fix `* 60` window bug in `System.RateLimiter.swCheck` — effort: **1 day** ✅ Fixed in commit 535588f2; verified by type-check + new System.RateLimiterSpec tests
 - [ ] **TASK-001**: Event snapshot table (`event_snapshot`, Persistent entity, migration, `saveSnapshot`/`getLatestSnapshot` API) — effort: **3 days**
 - [ ] **TASK-002**: Snapshot-based replay (load latest snapshot, replay only subsequent events) — effort: **2 days**
 - [ ] **TASK-003**: Event schema versioning (`event_schema_version`, versioned JSON envelope, forward-compat deserialization) — effort: **3 days**
 - [ ] **TASK-004**: Thread-safe broadcaster audit (remove any remaining `unsafePerformIO` in EventStore) — effort: **1 day**
-- [ ] **TASK-028**: Wire all 65+ existing test files into cabal test-suite — effort: **3 days**
+- [ ] **TASK-028**: Wire all 65+ existing test files into cabal test-suite — effort: **3 days** (partial: System.RateLimiterSpec added 2026-10-09; 62+ files remain)
 - [ ] **TASK-029**: Integration tests for v51.0 features (snapshots, multi-tenant, rate limits, WebSocket) — effort: **5 days**
 - [ ] **TASK-030**: Expand QuickCheck properties (accounting, stock, VAT invariants; multi-tenant isolation) — effort: **4 days**
 

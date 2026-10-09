@@ -11,6 +11,9 @@ import qualified Finance.TaxSpec
 import qualified Finance.AccountingSpec
 import qualified Finance.BillSpec
 import qualified Surypus.ValidationSpec
+import qualified Core.PayrollSpec
+import qualified TestHelpers
+import qualified System.RateLimiterSpec
 import DAL.Types
 
 main :: IO ()
@@ -19,6 +22,22 @@ main = hspec $ do
   Finance.AccountingSpec.spec
   Finance.BillSpec.spec
   Surypus.ValidationSpec.spec
+  Core.PayrollSpec.spec
+  TestHelpers.specBillLines
+  TestHelpers.specPayroll
+  TestHelpers.specProduction
+  TestHelpers.specInventory
+  System.RateLimiterSpec.spec
+
+  describe "TestHelpers properties" $ do
+    it "bill total equals sum of line totals" $
+      property TestHelpers.prop_bill_post_total_equals_sum_of_lines
+    it "salary amount is non-negative" $
+      property TestHelpers.prop_salary_amount_nonnegative
+    it "work order released never exceeds planned" $
+      property TestHelpers.prop_work_order_released_le_planned
+    it "bill line total is non-negative" $
+      property TestHelpers.prop_bill_line_total_nonnegative
 
   describe "DAL.Types JSON roundtrip" $ do
     it "Person roundtrip" $ do

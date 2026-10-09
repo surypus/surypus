@@ -48,11 +48,11 @@ test: test-unit test-integration ## Run all tests
 
 test-unit: ## Run unit tests (Haskell)
 	@echo "$(BLUE)Running unit tests...$(NC)"
-	stack test
+	cabal test surypus-test --test-show-details=always
 
 test-integration: ## Run integration tests (Haskell)
 	@echo "$(BLUE)Running integration tests...$(NC)"
-	stack test test/Integration/EventSourcingSpec.hs
+	cabal test surypus-test --test-show-details=always
 
 test-sql: ## Run SQL tests
 	@echo "$(BLUE)Running SQL tests...$(NC)"
