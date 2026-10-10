@@ -24,11 +24,10 @@ module DAL.QueriesORM
 
 import Data.Int (Int64)
 import Data.Text (Text)
-import Database.Persist.Sql (Entity(..), fromSqlKey)
-import qualified Data.Text as T
-import Database.Persist.Sql (toSqlKey, rawSql, Single(..), PersistValue(..), Key, Entity(..), fromSqlKey)
+import qualified Database.Persist.Sql as P (Entity(..), toSqlKey, rawSql, Single(..), PersistValue(..), Key)
 import Database.Persist.Postgresql (ConnectionPool)
-import DAL.Schema hiding (Entity)
+import DAL.Schema hiding (Entity, BillLineEntity, DocumentTypeEntity, OrderHeadEntity, GoodsPriceEntity, CurrencyEntity)
+import qualified DAL.Schema as S (BillLineEntity(..), DocumentTypeEntity(..), OrderHeadEntity(..), GoodsPriceEntity(..), CurrencyEntity(..), EmployeeEntity(..))
 import DAL.Types hiding (PersonEntity, BillEntity, TaxEntity)
 import DAL.Conversion
 
@@ -66,21 +65,21 @@ ilike :: Text -> Text -> Text
 ilike field val = field <> " ILIKE " <> val
 
 -- | Additional conversion functions needed
-billLineFromEntity :: Entity BillLineEntity -> BillLine
-billLineFromEntity (Entity lid e) = BillLine
-  { lineId = fromIntegral (fromSqlKey lid)
-  , lineBillId = billLineEntityBillId e
-  , lineGoodId = billLineEntityGoodsId e
-  , lineQtty = billLineEntityQtty e
-  , linePrice = billLineEntityPrice e
-  , lineDiscount = billLineEntityDiscountAmount e
-  , lineAmount = billLineEntityAmount e
+billLineFromEntity :: Int64 -> S.BillLineEntity -> BillLine
+billLineFromEntity lid e = BillLine
+  { lineId = lid
+  , lineBillId = S.billLineEntityBillId e
+  , lineGoodId = S.billLineEntityGoodsId e
+  , lineQtty = S.billLineEntityQtty e
+  , linePrice = S.billLineEntityPrice e
+  , lineDiscount = S.billLineEntityDiscountAmount e
+  , lineAmount = S.billLineEntityAmount e
   }
 
-employeeToDummyUser :: EmployeeEntity -> User
+employeeToDummyUser :: S.EmployeeEntity -> User
 employeeToDummyUser e = User
   { userId = 0
-  , userName = employeeEntityFirstName e <> maybe "" (" " <>) (employeeEntityLastName e)
+  , userName = S.employeeEntityFirstName e <> maybe "" (" " <>) (S.employeeEntityLastName e)
   , userPassword = Nothing
   , userEmail = Nothing
   , userPersonId = Nothing
@@ -88,42 +87,42 @@ employeeToDummyUser e = User
   , userTenantId = 0
   }
 
-documentTypeFromEntity :: Entity DocumentTypeEntity -> DocumentRegisterType
-documentTypeFromEntity (Entity tid e) = DocumentRegisterType
-  { drtId = fromIntegral (fromSqlKey tid)
-  , drtCode = documentTypeEntityCode e
-  , drtName = documentTypeEntityName e
-  , drtDescription = documentTypeEntityDescription e
+documentTypeFromEntity :: Int64 -> S.DocumentTypeEntity -> DocumentRegisterType
+documentTypeFromEntity tid e = DocumentRegisterType
+  { drtId = tid
+  , drtCode = S.documentTypeEntityCode e
+  , drtName = S.documentTypeEntityName e
+  , drtDescription = S.documentTypeEntityDescription e
   }
 
-orderFromEntity :: Entity OrderHeadEntity -> Order
-orderFromEntity (Entity oid e) = Order
-  { orderId = fromIntegral (fromSqlKey oid)
-  , orderCode = orderHeadEntityCode e
-  , orderName = orderHeadEntityName e
-  , orderDate = orderHeadEntityDocDate e
-  , orderPersonId = orderHeadEntityPersonId e
-  , orderLocationId = orderHeadEntityLocationId e
-  , orderType = orderHeadEntityDocType e
-  , orderTotal = orderHeadEntityTotal e
-  , orderDiscount = orderHeadEntityDiscountAmount e
-  , orderTax = orderHeadEntityTaxAmount e
+orderFromEntity :: Int64 -> S.OrderHeadEntity -> Order
+orderFromEntity oid e = Order
+  { orderId = oid
+  , orderCode = S.orderHeadEntityCode e
+  , orderName = S.orderHeadEntityName e
+  , orderDate = S.orderHeadEntityDocDate e
+  , orderPersonId = S.orderHeadEntityPersonId e
+  , orderLocationId = S.orderHeadEntityLocationId e
+  , orderType = S.orderHeadEntityDocType e
+  , orderTotal = S.orderHeadEntityTotal e
+  , orderDiscount = S.orderHeadEntityDiscountAmount e
+  , orderTax = S.orderHeadEntityTaxAmount e
   }
 
-goodsPriceFromEntity :: Entity GoodsPriceEntity -> GoodsPrice
-goodsPriceFromEntity (Entity gid e) = GoodsPrice
-  { goodsPriceId = fromIntegral (fromSqlKey gid)
-  , goodsPriceGoodsId = goodsPriceEntityGoodsId e
-  , goodsPriceType = goodsPriceEntityPriceType e
-  , goodsPricePrice = goodsPriceEntityPrice e
-  , goodsPriceMinPrice = goodsPriceEntityMinPrice e
-  , goodsPriceStartDate = goodsPriceEntityStartDate e
-  , goodsPriceEndDate = goodsPriceEntityEndDate e
+goodsPriceFromEntity :: Int64 -> S.GoodsPriceEntity -> GoodsPrice
+goodsPriceFromEntity gid e = GoodsPrice
+  { goodsPriceId = gid
+  , goodsPriceGoodsId = S.goodsPriceEntityGoodsId e
+  , goodsPriceType = S.goodsPriceEntityPriceType e
+  , goodsPricePrice = S.goodsPriceEntityPrice e
+  , goodsPriceMinPrice = S.goodsPriceEntityMinPrice e
+  , goodsPriceStartDate = S.goodsPriceEntityStartDate e
+  , goodsPriceEndDate = S.goodsPriceEntityEndDate e
   }
 
-currencyFromEntity :: Entity CurrencyEntity -> Currency
-currencyFromEntity (Entity cid e) = Currency
-  { currencyId = fromIntegral (fromSqlKey cid)
-  , currencyCode = currencyEntityCode e
-  , currencyName = currencyEntityName e
+currencyFromEntity :: Int64 -> S.CurrencyEntity -> Currency
+currencyFromEntity cid e = Currency
+  { currencyId = cid
+  , currencyCode = S.currencyEntityCode e
+  , currencyName = S.currencyEntityName e
   }

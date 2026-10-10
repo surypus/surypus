@@ -11,7 +11,7 @@ module Surypus.API.BillTemplates
   ) where
 
 import Control.Monad.IO.Class (liftIO)
-import DAL.Pool (ConnectionPool)
+import DAL.ORMPool (ConnectionPool)
 import DAL.Types (MutationResult(..), QueryResult(..))
 import Data.Aeson (ToJSON, FromJSON, decode, encode)
 import Data.Int (Int64)
@@ -23,7 +23,7 @@ import GHC.Generics (Generic)
 import Database.Persist.Sql (runSqlPool, toSqlKey)
 import qualified Database.Persist as P
 import Database.Esqueleto.Experimental
-import DAL.Schema (ReportTemplateEntity(..))
+import Surypus.DB.Schema (ReportTemplateEntity(..), ReportTemplateEntityId, ReportTemplateEntityReportType)
 import DAL.Conversion
 import Database.Persist.Sql (fromSqlKey, Key)
 

@@ -23,7 +23,10 @@ import Database.Persist.Sql
   , PersistEntity(..)
   , fromSqlKey
   , toSqlKey
+  , SqlPersistT
   )
+import Database.Persist.SqlBackend (SqlBackend)
+import Database.Persist.Class (RawSql)
 
 -- | Run a stored procedure and return results
 -- Example: runProcedure pool "calculate_balance" ["account_id"]

@@ -10,9 +10,11 @@ import Data.Text (Text)
 import Data.Time (Day)
 import Database.Esqueleto.Experimental
 import Database.Persist.Sql (ConnectionPool, Entity, runSqlPool, toSqlKey, rawSql)
-import DAL.Schema
+import DAL.Schema hiding (TaxEntity)
 import DAL.Types
 import DAL.Conversion
+import Surypus.DB.Schema (ReportTemplateEntity(..), PaymentEntity(..), AccPlanEntity(..), SalaryEntity(..), CurrencyEntity(..), ReportTemplateEntityId, ReportTemplateEntityReportType, PaymentEntityId, PaymentEntityDate, PaymentEntityBillId, PaymentEntityPayStatus, AccPlanEntityId, SalaryEntityId, SalaryEntityEmployeeId, SalaryEntityDate, CurrencyEntityId, TaxEntityId)
+import Surypus.API.BillTemplates (BillTemplateInfo(..))
 import qualified DAL.QueriesORM as ORM
 
 -- | Delegated functions (forwarded to DAL.QueriesORM)
@@ -101,11 +103,32 @@ getOrders = ORM.getOrders
 getGoodsPrices :: ConnectionPool -> IO (QueryResult [GoodsPrice])
 getGoodsPrices = ORM.getGoodsPrices
 
-getReports :: ConnectionPool -> IO (QueryResult [ReportTemplate])
-getReports = ORM.getReports
+getReports :: ConnectionPool -> IO (QueryResult [BillTemplateInfo])
+getReports pool = do
+    result <- liftIO $ runSqlPool
+        (select $ do
+            r <- from $ table @ReportTemplateEntity
+            orderBy [asc $ r ^. ReportTemplateEntityId]
+            return r
+        ) pool
+    return $ QuerySuccess (map reportTemplateFromEntity result)
 
 getCurrencies :: ConnectionPool -> IO (QueryResult [Currency])
-getCurrencies = ORM.getCurrencies
+getCurrencies pool = do
+    entities <- liftIO $ runSqlPool
+        (select $ do
+            c <- from $ table @CurrencyEntity
+            orderBy [asc $ c ^. CurrencyEntityId]
+            return c
+        ) pool
+    return $ QuerySuccess (map currencyFromEntity entities)
+
+currencyFromEntity :: Entity CurrencyEntity -> Currency
+currencyFromEntity (P.Entity _ e) = Currency
+  { currencyId = 0
+  , currencyCode = currencyEntityCode e
+  , currencyName = currencyEntityName e
+  }
 
 -- | Functions without ORM equivalents — inline esqueleto
 
@@ -120,6 +143,13 @@ getPaymentById pool pid = do
     return $ case result of
         (entity:_) -> QuerySuccess (paymentFromEntity entity)
         _ -> QueryError "Not Found"
+
+reportTemplateFromEntity :: Entity ReportTemplateEntity -> BillTemplateInfo
+reportTemplateFromEntity (P.Entity rid e) = BillTemplateInfo
+  { btiId = fromIntegral (fromSqlKey rid)
+  , btiName = reportTemplateEntityName e
+  , btiContent = reportTemplateEntityContent e
+  }
 
 getTaxById :: ConnectionPool -> Int64 -> IO (QueryResult Tax)
 getTaxById pool tid = do
@@ -168,7 +198,7 @@ getSalaryByEmployee pool eid = do
         ) pool
     return $ QuerySuccess (map salaryFromEntity entities)
 
-getReportById :: ConnectionPool -> Int64 -> IO (QueryResult ReportTemplate)
+getReportById :: ConnectionPool -> Int64 -> IO (QueryResult BillTemplateInfo)
 getReportById pool rid = do
     result <- liftIO $ runSqlPool
         (select $ do
@@ -177,7 +207,7 @@ getReportById pool rid = do
             return r
         ) pool
     return $ case result of
-        (entity:_) -> QuerySuccess (ORM.reportTemplateFromEntity entity)
+        (entity:_) -> QuerySuccess (reportTemplateFromEntity entity)
         _ -> QueryError "Not Found"
 
 getPaymentsByBill :: ConnectionPool -> Int64 -> IO (QueryResult [Payment])

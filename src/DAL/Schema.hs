@@ -36,7 +36,6 @@ module DAL.Schema
   , OrderHeadEntity(..)
   , GoodsPriceEntity(..)
   , PayrollResultEntity(..)
-  , ReportTemplateEntity(..)
   ) where
 
 import Data.Aeson (FromJSON, ToJSON)
@@ -561,16 +560,3 @@ data PayrollResultEntity = PayrollResultEntity
 
 instance FromJSON PayrollResultEntity
 instance ToJSON PayrollResultEntity
-
--- | Report template entity (Phase 1: stub)
-data ReportTemplateEntity = ReportTemplateEntity
-  { reportTemplateEntityId      :: !Int64
-  , reportTemplateEntityCode    :: !Text
-  , reportTemplateEntityName    :: !Text
-  , reportTemplateEntityReportType :: !Int
-  , reportTemplateEntityContent :: !Text
-  , reportTemplateEntityFormat  :: !Text
-  } deriving (Show, Generic)
-
-instance FromJSON ReportTemplateEntity
-instance ToJSON ReportTemplateEntity

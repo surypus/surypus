@@ -111,15 +111,19 @@ getHealthStatus pool tenantId adapterType = do
           mFailCount = case failCount of
                         PersistInt64 n -> fromIntegral n
                         _ -> 0
+          unwrapText (Single pv) = case pv of PersistText t -> t; _ -> ""
+          unwrapMaybeUTCTime (Single pv) = case pv of PersistUTCTime t -> Just t; PersistNull -> Nothing; _ -> Nothing
+          unwrapUTCTime (Single pv) = case pv of PersistUTCTime t -> t; _ -> read "1970-01-01 00:00:00 UTC"
+          unwrapMaybeText (Single pv) = case pv of PersistText t -> Just t; PersistNull -> Nothing; _ -> Nothing
       return $ CommandSuccess $ IntegrationHealth
-        { ihTenantId = tid
-        , ihAdapterType = atype
+        { ihTenantId = unwrapText tid
+        , ihAdapterType = unwrapText atype
         , ihStatus = mStatus
         , ihFailureCount = mFailCount
-        , ihLastSuccess = lastSuccess
-        , ihLastFailure = lastFailure
-        , ihErrorMessage = errMsg
-        , ihLastChecked = lastChecked
+        , ihLastSuccess = unwrapMaybeUTCTime lastSuccess
+        , ihLastFailure = unwrapMaybeUTCTime lastFailure
+        , ihErrorMessage = unwrapMaybeText errMsg
+        , ihLastChecked = unwrapUTCTime lastChecked
         }
     _ -> do
       now <- getCurrentTime
@@ -152,15 +156,19 @@ parseHealthRow (Single tid : Single atype : Single status : Single failCount : S
       mFailCount = case failCount of
                     PersistInt64 n -> fromIntegral n
                     _ -> 0
+      unwrapText pv = case pv of PersistText t -> t; _ -> ""
+      unwrapMaybeUTCTime pv = case pv of PersistUTCTime t -> Just t; PersistNull -> Nothing; _ -> Nothing
+      unwrapUTCTime pv = case pv of PersistUTCTime t -> t; _ -> read "1970-01-01 00:00:00 UTC"
+      unwrapMaybeText pv = case pv of PersistText t -> Just t; PersistNull -> Nothing; _ -> Nothing
   in IntegrationHealth
-    { ihTenantId = tid
-    , ihAdapterType = atype
+    { ihTenantId = unwrapText tid
+    , ihAdapterType = unwrapText atype
     , ihStatus = mStatus
     , ihFailureCount = mFailCount
-    , ihLastSuccess = lastSuccess
-    , ihLastFailure = lastFailure
-    , ihErrorMessage = errMsg
-    , ihLastChecked = lastChecked
+    , ihLastSuccess = unwrapMaybeUTCTime lastSuccess
+    , ihLastFailure = unwrapMaybeUTCTime lastFailure
+    , ihErrorMessage = unwrapMaybeText errMsg
+    , ihLastChecked = unwrapUTCTime lastChecked
     }
 parseHealthRow _ = IntegrationHealth "" "" Healthy 0 Nothing Nothing Nothing (read "1970-01-01 00:00:00 UTC")
 

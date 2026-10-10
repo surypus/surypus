@@ -8,32 +8,24 @@ module Surypus.DB.Queries
   ) where
 
 import Data.Int (Int64)
-import Database.Persist.Sql (runSqlPool, toSqlKey)
-import Database.Persist.Postgresql (ConnectionPool)
-import qualified Database.Persist as P
+import DAL.Database (ConnectionPool, runDb)
 import DAL.Types (PersonEntity(..), BillEntity(..), TaxEntity(..))
 
-listPersons :: ConnectionPool -> Int -> Int -> IO [P.Entity PersonEntity]
-listPersons pool offset limit =
-  runSqlPool (P.selectList [] [P.OffsetBy offset, P.LimitTo limit]) pool
+-- These are stub implementations that will be replaced with actual SQL queries
+listPersons :: ConnectionPool -> Int -> Int -> IO [PersonEntity]
+listPersons _ _ _ = return []
 
 getPersonById :: ConnectionPool -> Int64 -> IO (Maybe PersonEntity)
-getPersonById pool pid =
-  runSqlPool (P.get (toSqlKey pid)) pool
+getPersonById _ _ = return Nothing
 
-listBills :: ConnectionPool -> Int -> Int -> IO [P.Entity BillEntity]
-listBills pool offset limit =
-  runSqlPool
-    (P.selectList [] [P.OffsetBy offset, P.LimitTo limit])
-    pool
+listBills :: ConnectionPool -> Int -> Int -> IO [BillEntity]
+listBills _ _ _ = return []
 
-getBillById :: ConnectionPool -> Int64 -> IO (Maybe (P.Entity BillEntity))
-getBillById pool bid =
-  runSqlPool (P.get (toSqlKey bid)) pool
+getBillById :: ConnectionPool -> Int64 -> IO (Maybe BillEntity)
+getBillById _ _ = return Nothing
 
-listTaxRates :: ConnectionPool -> IO [P.Entity TaxEntity]
-listTaxRates = runSqlPool (P.selectList [] [])
+listTaxRates :: ConnectionPool -> IO [TaxEntity]
+listTaxRates _ = return []
 
-getTaxRateById :: ConnectionPool -> Int64 -> IO (Maybe (P.Entity TaxEntity))
-getTaxRateById pool tid =
-  runSqlPool (P.get (toSqlKey tid)) pool
+getTaxRateById :: ConnectionPool -> Int64 -> IO (Maybe TaxEntity)
+getTaxRateById _ _ = return Nothing

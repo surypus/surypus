@@ -9,6 +9,6 @@ spec :: Spec
 spec = do
   describe "Config" $ do
     it "has default values" $ do
-      let RuntimeConfig{ rcLogLevel = lvl, rcMaxWorkers = w } = CFG.defaultConfig
-      lvl `shouldBe` T.pack "INFO"
-      w `shouldBe` 4
+      let cfg = CFG.defaultConfig
+      CFG.rcLogLevel cfg `shouldBe` T.pack "INFO"
+      CFG.rcMaxWorkers cfg `shouldBe` 4

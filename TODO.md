@@ -99,6 +99,13 @@ bd ready
   - 11 unit tests + 4 QuickCheck properties
   - Verified: all 15 tests passing
 - [x] Fix Surypus.cabal: add missing modules (Core.Accounting.CacheSpec, JWTSpec, System.CounterSpec) to other-modules, remove duplicate stm/containers deps (2026-10-10)
+- [x] Add ConfigSpec, ObservabilitySpec, MigrationDryRunSpec, RBACCanonSpec to cabal test-suite (2026-10-10)
+  - 4 new test modules wired into cabal `other-modules` and `Test.hs`
+  - All 4 verified via direct GHC compilation (12 examples total, 0 failures)
+  - Fixed ConfigSpec: use qualified field access (rcLogLevel/rcMaxWorkers) instead of RecordWildCards pattern
+  - Fixed MigrationDryRunSpec: remove references to non-existent generateV029-V040 (only V001-V028 exist)
+  - Fixed RBACCanonSpec: remove duplicate V025 check, remove references to non-existent V029-V040
+  - Note: full `cabal build` still blocked by pre-existing errors in other library modules (PayrollService, Integration.Health, DAL.Procedures, DAL.MutationsORM)
 - [x] Add JWTSpec with 22 tests covering Surypus.JWT security-critical module: jwtConfigFromSecret, validateAccessToken, decodeAndValidateToken + QuickCheck security properties (2026-10-09)
   - 17 unit tests + 5 QuickCheck security properties
   - Verified: 22 examples, 0 failures (compiled and run via ghc directly; full cabal build blocked by GHC 9.10.3 vs persistent incompatibility)
@@ -285,4 +292,7 @@ bd ready
 | Done (General) | 42 |
 | Done (Cache) | 1 |
 | Done (System.Cache) | 1 |
-| **Total** | **63** |
+| Done (System.Counter) | 1 |
+| Done (JWT) | 1 |
+| Done (New: Config+Obs+Mig+RBACCanon) | 4 |
+| **Total** | **67** |

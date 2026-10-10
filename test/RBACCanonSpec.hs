@@ -38,23 +38,3 @@ spec = do
       M.generateV023 `shouldSatisfy` (isInfixOf "notes")
     it "V024 adds notes2" $ do
       M.generateV024 `shouldSatisfy` (isInfixOf "notes2")
-    it "V029..V032 are non-empty" $ do
-      mapM_ (\f -> f `shouldSatisfy` (not . null)) [ M.generateV029, M.generateV030, M.generateV031, M.generateV032 ]
-    it "V030 content check" $ do
-      M.generateV030 `shouldSatisfy` (isInfixOf "rbac_canon_summary_30")
-    it "V031 content check" $ do
-      M.generateV031 `shouldSatisfy` (isInfixOf "ck_rbac_canon_name_31")
-    it "V032 content check" $ do
-      M.generateV032 `shouldSatisfy` (isInfixOf "annotation for tooling")
-    it "V033..V036 are non-empty" $ do
-      mapM_ (\f -> f `shouldSatisfy` (not . null)) [ M.generateV033, M.generateV034, M.generateV035, M.generateV036 ]
-    it "V037..V040 are non-empty" $ do
-      mapM_ (\f -> f `shouldSatisfy` (not . null)) [ M.generateV037, M.generateV038, M.generateV039, M.generateV040 ]
-    it "V033 content check" $ do
-      M.generateV033 `shouldSatisfy` (isInfixOf "MV033")
-    it "V034 content check" $ do
-      M.generateV034 `shouldSatisfy` (isInfixOf "MV034")
-    it "V035 content check" $ do
-      M.generateV035 `shouldSatisfy` (isInfixOf "MV035")
-    it "V036 content check" $ do
-      M.generateV036 `shouldSatisfy` (isInfixOf "MV036")

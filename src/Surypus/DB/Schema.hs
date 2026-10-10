@@ -28,7 +28,7 @@ import Database.Persist.Sql (SqlBackend, runMigration, runSqlConn)
 import Database.Persist.TH
 
 -- Re-export existing DAL schema entities
-import DAL.Schema
+import DAL.Schema hiding (CurrencyEntity(..))
 
 -- | New core entity: Audit trail entry
 share [mkPersist sqlSettings, mkMigrate "migrateCore"] [persistLowerCase|
@@ -48,6 +48,62 @@ TaxRateOverride sql=tax_rate_override
   rate Double
   effectiveFrom Day
   effectiveTo Day Maybe
+  createdAt UTCTime default=CURRENT_TIMESTAMP
+  deriving Show Eq
+
+PaymentEntity sql=payment
+  billId Int64
+  amount Double
+  date UTCTime
+  payStatus Int
+  method Text
+  deriving Show Eq
+
+AccPlanEntity sql=acc_plan
+  code Text
+  name Text
+  accType Int
+  deriving Show Eq
+
+SalaryEntity sql=salary
+  employeeId Int64
+  amount Double
+  date UTCTime
+  period Day
+  deriving Show Eq
+
+UserEntity sql=user
+  username Text
+  passwordHash Text
+  personId Int64 Maybe
+  status Text
+  tenantId Int64
+  deriving Show Eq
+
+ReportTemplateEntity sql=report_template
+  code Text
+  name Text
+  reportType Int
+  content Text
+  format Text
+  deriving Show Eq
+
+CurrencyEntity sql=currency
+  code Text
+  name Text
+  deriving Show Eq
+
+StockEntity sql=stock
+  goodsId Int64
+  locationId Int64
+  qtty Double
+  deriving Show Eq
+
+StockMovementEntity sql=stock_movement
+  goodsId Int64
+  warehouseId Int64
+  stockType Text
+  qty Double
   createdAt UTCTime default=CURRENT_TIMESTAMP
   deriving Show Eq
 |]

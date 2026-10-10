@@ -28,7 +28,7 @@ import Database.Persist.Postgresql (ConnectionPool)
 import Core.Payroll.Calculation
 import DAL.Payroll (savePayrollResult)
 import DAL.EventStore (appendEvent, currentEventSchemaVersion)
-import DAL.Types (QueryResult(..), PayrollResult(..))
+import DAL.Types (QueryResult(..))
 
 -- | Payroll calculation request
 data PayrollRequest = PayrollRequest

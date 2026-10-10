@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE RecordWildCards #-}
 
 -- | DAL MutationsORM - raw SQL mutations for Surypus
 module DAL.MutationsORM
@@ -69,10 +70,10 @@ import DAL.Conversion
 
 -- Disambiguate personType/personStatus (exist on both Person and PersonEntity)
 personType_ :: Person -> Maybe Int
-personType_ p = DAL.Types.personType p
+personType_ Person{..} = personType
 
 personStatus_ :: Person -> Maybe Int
-personStatus_ p = DAL.Types.personStatus p
+personStatus_ Person{..} = personStatus
 
 -- | Create a person
 createPerson :: ConnectionPool -> Person -> IO (QueryResult Int64)
