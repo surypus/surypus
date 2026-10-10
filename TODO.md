@@ -106,6 +106,12 @@ bd ready
   - Fixed MigrationDryRunSpec: remove references to non-existent generateV029-V040 (only V001-V028 exist)
   - Fixed RBACCanonSpec: remove duplicate V025 check, remove references to non-existent V029-V040
   - Note: full `cabal build` still blocked by pre-existing errors in other library modules (PayrollService, Integration.Health, DAL.Procedures, DAL.MutationsORM)
+- [x] Fix committed conflict markers in Surypus.cabal, README.md, stack.yaml (accidentally committed in f4dd61bf "docs: rebuild mkdocs site"); restored from 9ecd00d4 + kept 2 intended changes (2026-10-11)
+  - Removed non-existent `Shared.Export.Exporter` from exposed-modules
+  - Added all 18 wired test modules to test-suite other-modules (was only 8)
+  - Created missing `test/System/SequenceSpec.hs` (11 tests: 7 unit + 4 QuickCheck properties)
+  - Restored README.md and stack.yaml from 9ecd00d4 (removed committed conflict markers)
+  - Verified via direct GHC compilation: **298 examples, 2 failures (pre-existing RateLimiter timing), 6 pending**
 - [x] Add JWTSpec with 22 tests covering Surypus.JWT security-critical module: jwtConfigFromSecret, validateAccessToken, decodeAndValidateToken + QuickCheck security properties (2026-10-09)
   - 17 unit tests + 5 QuickCheck security properties
   - Verified: 22 examples, 0 failures (compiled and run via ghc directly; full cabal build blocked by GHC 9.10.3 vs persistent incompatibility)
