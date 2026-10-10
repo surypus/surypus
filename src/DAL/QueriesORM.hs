@@ -24,41 +24,42 @@ module DAL.QueriesORM
 
 import Data.Int (Int64)
 import Data.Text (Text)
+import Database.Persist.Sql (Entity(..), fromSqlKey)
 import qualified Data.Text as T
 import Database.Persist.Sql (toSqlKey, rawSql, Single(..), PersistValue(..), Key, Entity(..), fromSqlKey)
 import Database.Persist.Postgresql (ConnectionPool)
-import DAL.Schema
-import DAL.Types
+import DAL.Schema hiding (Entity)
+import DAL.Types hiding (PersonEntity, BillEntity, TaxEntity)
 import DAL.Conversion
 
 -- | Key helpers
-personKey :: Int64 -> Key PersonEntity
-personKey n = toSqlKey n
+personKey :: Int64 -> Int64
+personKey = id
 
-goodsKey :: Int64 -> Key GoodsEntity
-goodsKey n = toSqlKey n
+goodsKey :: Int64 -> Int64
+goodsKey = id
 
-billKey :: Int64 -> Key BillEntity
-billKey n = toSqlKey n
+billKey :: Int64 -> Int64
+billKey = id
 
-locationKey :: Int64 -> Key LocationEntity
-locationKey n = toSqlKey n
+locationKey :: Int64 -> Int64
+locationKey = id
 
-lotKey :: Int64 -> Key LotEntity
-lotKey n = toSqlKey n
+lotKey :: Int64 -> Int64
+lotKey = id
 
-tenantKey :: Int64 -> Key TenantEntity
-tenantKey n = toSqlKey n
+tenantKey :: Int64 -> Int64
+tenantKey = id
 
-taxKey :: Int64 -> Key TaxEntity
-taxKey n = toSqlKey n
+taxKey :: Int64 -> Int64
+taxKey = id
 
-currencyKey :: Int64 -> Key CurrencyEntity
-currencyKey n = toSqlKey n
+currencyKey :: Int64 -> Int64
+currencyKey = id
 
 -- | Convert key to Int64
-keyToInt :: Key a -> Int64
-keyToInt = fromIntegral . fromSqlKey
+keyToInt :: Int64 -> Int64
+keyToInt = id
 
 -- | ILIKE helper for raw SQL
 ilike :: Text -> Text -> Text
@@ -67,7 +68,7 @@ ilike field val = field <> " ILIKE " <> val
 -- | Additional conversion functions needed
 billLineFromEntity :: Entity BillLineEntity -> BillLine
 billLineFromEntity (Entity lid e) = BillLine
-  { lineId = keyToInt lid
+  { lineId = fromIntegral (fromSqlKey lid)
   , lineBillId = billLineEntityBillId e
   , lineGoodId = billLineEntityGoodsId e
   , lineQtty = billLineEntityQtty e
@@ -89,7 +90,7 @@ employeeToDummyUser e = User
 
 documentTypeFromEntity :: Entity DocumentTypeEntity -> DocumentRegisterType
 documentTypeFromEntity (Entity tid e) = DocumentRegisterType
-  { drtId = keyToInt tid
+  { drtId = fromIntegral (fromSqlKey tid)
   , drtCode = documentTypeEntityCode e
   , drtName = documentTypeEntityName e
   , drtDescription = documentTypeEntityDescription e
@@ -97,7 +98,7 @@ documentTypeFromEntity (Entity tid e) = DocumentRegisterType
 
 orderFromEntity :: Entity OrderHeadEntity -> Order
 orderFromEntity (Entity oid e) = Order
-  { orderId = keyToInt oid
+  { orderId = fromIntegral (fromSqlKey oid)
   , orderCode = orderHeadEntityCode e
   , orderName = orderHeadEntityName e
   , orderDate = orderHeadEntityDocDate e
@@ -111,7 +112,7 @@ orderFromEntity (Entity oid e) = Order
 
 goodsPriceFromEntity :: Entity GoodsPriceEntity -> GoodsPrice
 goodsPriceFromEntity (Entity gid e) = GoodsPrice
-  { goodsPriceId = keyToInt gid
+  { goodsPriceId = fromIntegral (fromSqlKey gid)
   , goodsPriceGoodsId = goodsPriceEntityGoodsId e
   , goodsPriceType = goodsPriceEntityPriceType e
   , goodsPricePrice = goodsPriceEntityPrice e
@@ -122,7 +123,7 @@ goodsPriceFromEntity (Entity gid e) = GoodsPrice
 
 currencyFromEntity :: Entity CurrencyEntity -> Currency
 currencyFromEntity (Entity cid e) = Currency
-  { currencyId = keyToInt cid
+  { currencyId = fromIntegral (fromSqlKey cid)
   , currencyCode = currencyEntityCode e
   , currencyName = currencyEntityName e
   }

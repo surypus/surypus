@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
 -- | Authorization and permission checking
 module Surypus.API.Authorization
   ( Permission(..)

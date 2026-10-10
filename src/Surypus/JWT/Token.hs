@@ -12,6 +12,8 @@ module Surypus.JWT.Token (
     generateToken,
     verifyToken,
     UserClaims (..),
+    SecretKey,
+    defaultSecretKey,
 ) where
 
 import Control.Exception (throwIO)
@@ -48,6 +50,13 @@ import DAL.Types (User (..))
 import DAL.Pool (ConnectionPool)
 import System.Environment (lookupEnv)
 import Text.Read (readMaybe)
+
+-- | Secret key type alias for JWT signing
+type SecretKey = LBS.ByteString
+
+-- | Default secret key for development (DO NOT USE IN PRODUCTION)
+defaultSecretKey :: SecretKey
+defaultSecretKey = "surypus-dev-secret-key-change-in-production"
 
 -- | User claims extracted from a valid JWT
 data UserClaims = UserClaims

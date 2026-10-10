@@ -1,3 +1,4 @@
+
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
@@ -26,7 +27,6 @@ import Data.Int (Int64)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Text.Encoding (decodeUtf8, encodeUtf8)
-import qualified Data.Text as T
 import Data.Time.Clock (UTCTime)
 import Database.Persist.Sql (ConnectionPool, PersistValue (..), rawExecute, rawSql, runSqlPool, Single (..))
 
@@ -44,7 +44,7 @@ parseInstance (Single i, Single wn, Single st, Single cs, Single ctx, Single sa,
 
 parseWorkflow :: (Single Int64, Single Text, Single (Maybe Text), Single Text, Single Bool, Single Text) -> Workflow
 parseWorkflow (Single i, Single c, Single n, Single d, Single a, Single def) =
-    Workflow i c n d a def
+    Workflow i c n (Just d) a def
 
 listWorkflows :: ConnectionPool -> IO (QueryResult [Workflow])
 listWorkflows pool = do

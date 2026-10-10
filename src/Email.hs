@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 -- | Email module - configurable email sending
 -- Phase 1: file-based backend for development/testing
 -- Production: replace sendEmailImpl with SMTP via mime-mail/smtp-mail
@@ -37,7 +38,7 @@ data EmailError
   = EmailConfigError Text
   | EmailSendError Text
   | EmailAuthError Text
-  deriving (Show, Eq, Exception)
+  deriving (Show, Eq)
 
 -- | Default email configuration
 defaultEmailConfig :: EmailConfig

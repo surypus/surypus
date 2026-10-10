@@ -17,9 +17,9 @@ import Control.Monad.IO.Class (liftIO)
 import Data.Aeson (Value, object, (.=))
 import Data.Int (Int64)
 import Data.Text (Text)
-import Data.Time (Day)
+import Data.Time (Day, getCurrentTime)
 import DAL.DB
-import DAL.EventStore (appendEvent, currentEventSchemaVersion)
+import DAL.EventStore (Event(..), appendEvent, currentEventSchemaVersion)
 import DAL.Pool (ConnectionPool)
 import Finance.Types (AccTurn   (..))
 
@@ -202,7 +202,7 @@ emitBillPostedEvent pool correlationId bid billLines = do
             [ "goodsId" .= blGoodsId l
             , "qty"     .= blQty l
             , "price"   .= blPrice l
-            , "discount".= blDiscount l
+            , "discount" .= blDiscount l
             , "amount"  .= blAmount l
             ]) billLines
         ]
@@ -210,7 +210,20 @@ emitBillPostedEvent pool correlationId bid billLines = do
         [ "correlationId" .= correlationId
         , "source"        .= ("Service.BillService" :: Text)
         ]
-  result <- liftIO $ appendEvent pool bid "Bill" "BillPosted" 1 currentEventSchemaVersion evData (Just evMeta) bid
+  now <- getCurrentTime
+  let esEvent = DAL.EventStore.Event
+        { DAL.EventStore.eventAggregateId = bid
+        , DAL.EventStore.eventAggregateType = "Bill"
+        , DAL.EventStore.eventEventType = "BillPosted"
+        , DAL.EventStore.eventEventVersion = 1
+        , DAL.EventStore.eventSchemaVersion = currentEventSchemaVersion
+        , DAL.EventStore.eventEventData = evData
+        , DAL.EventStore.eventEventMetadata = Just evMeta
+        , DAL.EventStore.eventSequenceNumber = 1
+        , DAL.EventStore.eventOccurredAt = now
+        , DAL.EventStore.eventCreatedAt = now
+        }
+  result <- liftIO $ appendEvent pool esEvent
   case result of
     Left err -> pure (Left $ "Failed to emit BillPosted event: " <> err)
     Right _  -> pure (Right ())

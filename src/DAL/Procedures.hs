@@ -1,3 +1,4 @@
+
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 -- | DAL Procedures - Stored procedures and function calls
@@ -20,7 +21,6 @@ import Database.Persist.Sql
   , Single(..)
   , Entity(..)
   , PersistEntity(..)
-  , PersistInt64
   , fromSqlKey
   , toSqlKey
   )
@@ -29,23 +29,27 @@ import Database.Persist.Sql
 -- Example: runProcedure pool "calculate_balance" ["account_id"]
 runProcedure :: ConnectionPool -> Text -> [PersistValue] -> IO (CommandResult [PersistValue])
 runProcedure pool procName params = do
-  let sql = "CALL " <> T.unpack procName <> "(" <> paramsPlaceholder (length params) <> ")"
-  result <- runDb pool $ rawExecute sql params
-  return $ CommandSuccess [PersistInt64 (fromIntegral result)]
+  let sql = "CALL " <> procName <> "(" <> T.pack (paramsPlaceholder (length params)) <> ")"
+  _ <- runDb pool $ rawExecute sql params
+  return $ CommandSuccess []
+
+-- | Helper to create parameter placeholders for SQL
+paramsPlaceholder :: Int -> String
+paramsPlaceholder n = T.unpack $ T.intercalate ", " $ replicate n "?"
 
 -- | Call a database function and return the result
 callFunction :: ConnectionPool -> Text -> [PersistValue] -> IO (CommandResult PersistValue)
 callFunction pool funcName params = do
-  let sql = "SELECT " <> T.unpack funcName <> "(" <> paramsPlaceholder (length params) <> ")"
+  let sql = "SELECT " <> funcName <> "(" <> T.pack (paramsPlaceholder (length params)) <> ")"
   result <- runDb pool $ rawSql sql params :: IO [Single PersistValue]
   case result of
     (Single v : _) -> return $ CommandSuccess v
     _ -> return $ CommandSuccess PersistNull
 
 -- | Execute raw SQL and return entity results
-runRawSql :: (PersistEntity a) => ConnectionPool -> Text -> [PersistValue] -> IO (CommandResult [Entity a])
+runRawSql :: (PersistEntity a, PersistEntityBackend a ~ SqlBackend) => ConnectionPool -> Text -> [PersistValue] -> IO (CommandResult [Entity a])
 runRawSql pool sql params = do
-  result <- runDb pool $ rawSql sql params
+  result <- runDb pool $ (rawSql sql params :: SqlPersistT IO [Entity a])
   return $ CommandSuccess result
 
 -- | Execute raw SQL without results
@@ -53,7 +57,3 @@ executeSql :: ConnectionPool -> Text -> [PersistValue] -> IO (CommandResult Int6
 executeSql pool sql params = do
   result <- runDb pool $ rawExecute sql params
   return $ CommandSuccess (fromIntegral result)
-
--- | Create placeholder string (?, ?, ?)
-paramsPlaceholder :: Int -> String
-paramsPlaceholder n = T.unpack $ T.intercalate ", " $ replicate n "?"

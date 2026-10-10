@@ -138,15 +138,20 @@ appendInventoryEvent store event = do
       let nextSeq = case latestSeq of
             Nothing -> 1
             Just seq -> seq + 1
-      ES.appendEvent (iesPool store)
-        aggId
-        aggType
-        evType
-        1
-        1 -- schema version
-        (toJSON event)
-        Nothing
-        nextSeq
+      now <- getCurrentTime
+      let esEvent = ES.Event
+            { ES.eventAggregateId = aggId
+            , ES.eventAggregateType = aggType
+            , ES.eventEventType = evType
+            , ES.eventEventVersion = 1
+            , ES.eventSchemaVersion = 1
+            , ES.eventEventData = toJSON event
+            , ES.eventEventMetadata = Nothing
+            , ES.eventSequenceNumber = nextSeq
+            , ES.eventOccurredAt = now
+            , ES.eventCreatedAt = now
+            }
+      ES.appendEvent (iesPool store) esEvent
 
 -- | Read events for a goods item
 readInventoryEvents :: InventoryEventStore -> Int64 -> IO (Either Text [InventoryEvent])

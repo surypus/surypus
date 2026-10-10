@@ -1,3 +1,4 @@
+
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
@@ -12,7 +13,8 @@ module DAL.Payroll
 import Data.Int (Int64)
 import Data.Text (Text)
 import Data.Time (Day, UTCTime, getCurrentTime)
-import Database.Persist.Sql (toSqlKey, rawSql, rawExecute, Single(..), PersistValue(..))
+import Database.Persist.Sql (toSqlKey, rawSql, rawExecute, Single(..), PersistValue(..), Key(..))
+import qualified Data.Text as T
 import Database.Persist.Postgresql (ConnectionPool)
 import DAL.Database (ConnectionPool, runDb)
 import DAL.Conversion
@@ -110,7 +112,7 @@ getPayrollById pool id' = do
     _ -> return $ QuerySuccess Nothing
 
 -- | Parse payroll result from database row
-parsePayrollResult :: [PersistValue] -> PayrollResult
+parsePayrollResult :: [Single PersistValue] -> PayrollResult
 parsePayrollResult (Single id' : Single tenantId : Single period : Single employeeId : Single gross : Single deductions : Single net : Single incomeTax : Single socialTax : Single advance : Single bonus : Single vacationPay : Single sickPay : Single totalToPay : Single currency : Single version : Single createdBy : Single createdAt : Single updatedAt : _) =
   PayrollResult
     { payrollResultId = read $ show id'
@@ -129,7 +131,9 @@ parsePayrollResult (Single id' : Single tenantId : Single period : Single employ
     , payrollResultTotalToPay = read $ show totalToPay
     , payrollResultCurrency = T.pack $ show currency
     , payrollResultVersion = read $ show version
-    , payrollResultCreatedBy = if T.null (T.pack $ show createdBy) then Nothing else Just (T.pack $ show createdBy)
+    , payrollResultCreatedBy = case createdBy of
+                               PersistNull -> Nothing
+                               _ -> Just (fromIntegral createdBy)
     , payrollResultCreatedAt = read $ show createdAt
     , payrollResultUpdatedAt = read $ show updatedAt
     }

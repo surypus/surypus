@@ -1,4 +1,6 @@
+
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 -- | Integration Health Monitoring
 module Integration.Health
   ( HealthStatus(..)
@@ -13,7 +15,7 @@ module Integration.Health
 
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Aeson (ToJSON, FromJSON)
+import Data.Aeson (ToJSON, FromJSON, genericToJSON, genericParseJSON, defaultOptions)
 import GHC.Generics (Generic)
 import Data.Time (UTCTime, getCurrentTime)
 import DAL.ORMPool (ConnectionPool)
@@ -23,7 +25,10 @@ import Database.Persist.Sql (rawSql, rawExecute, Single(..), PersistValue(..))
 
 -- | Health status enumeration
 data HealthStatus = Healthy | Degraded | Failed
-  deriving (Show, Eq, Generic, ToJSON, FromJSON)
+  deriving (Show, Eq, Generic)
+
+instance ToJSON HealthStatus
+instance FromJSON HealthStatus
 
 -- | Integration health record
 data IntegrationHealth = IntegrationHealth

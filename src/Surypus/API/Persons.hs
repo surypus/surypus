@@ -1,3 +1,4 @@
+
 {-# LANGUAGE OverloadedStrings #-}
 -- | Surypus API Persons (Phase 1: stub)
 module Surypus.API.Persons
@@ -19,7 +20,7 @@ listPersons _ _ _ _ _ _ = return $ QueryResults [] 0
 
 -- | Create person (stub)
 createPerson :: Person -> IO (QueryResult Int64)
-createPerson _ = return $ QueryResult [0] 1
+createPerson _ = return $ QuerySuccess 0
 
 -- | Get person (stub)
 getPerson :: Int64 -> IO (QueryResult Person)
@@ -27,11 +28,11 @@ getPerson _ = return $ QueryResults [] 0
 
 -- | Update person (stub)
 updatePerson :: Person -> IO (QueryResult ())
-updatePerson _ = return $ QueryResult [()] 1
+updatePerson _ = return $ QuerySuccess ()
 
 -- | Delete person (stub)
 deletePerson :: Int64 -> IO (QueryResult ())
-deletePerson _ = return $ QueryResult [()] 1
+deletePerson _ = return $ QuerySuccess ()
 
 -- | Search persons (stub)
 searchPersons :: Text -> IO (QueryResult [Person])

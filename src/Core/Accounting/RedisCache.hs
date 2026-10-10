@@ -1,3 +1,7 @@
+{-# LANGUAGE DeriveGeneric #-}
+
+{-# LANGUAGE OverloadedStrings #-}
+
 module Core.Accounting.RedisCache where
 
 import Data.Text (Text)

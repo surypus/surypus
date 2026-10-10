@@ -16,7 +16,12 @@ import qualified Core.Accounting.CacheSpec
 import qualified TestHelpers
 import qualified System.RateLimiterSpec
 import qualified System.CacheSpec
+import qualified System.CounterSpec
 import qualified JWTSpec
+import qualified ConfigSpec
+import qualified ObservabilitySpec
+import qualified MigrationDryRunSpec
+import qualified RBACCanonSpec
 import DAL.Types
 
 main :: IO ()
@@ -32,8 +37,13 @@ main = hspec $ do
   TestHelpers.specInventory
   System.RateLimiterSpec.spec
   System.CacheSpec.spec
+  System.CounterSpec.spec
   JWTSpec.spec
   Core.Accounting.CacheSpec.spec
+  ConfigSpec.spec
+  ObservabilitySpec.spec
+  MigrationDryRunSpec.spec
+  RBACCanonSpec.spec
 
   describe "TestHelpers properties" $ do
     it "bill total equals sum of line totals" $

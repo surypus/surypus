@@ -60,12 +60,19 @@ import Data.Int (Int64)
 import Data.Text (Text)
 import Data.Time (Day, UTCTime, getCurrentTime)
 import Database.Persist.Sql (rawSql, rawExecute, Single(..), PersistValue(..))
-import Database.Persist (PersistDay)
+import Database.Persist (PersistValue(..))
 import Database.Persist.Postgresql (ConnectionPool)
 import DAL.Database (ConnectionPool, runDb)
 import DAL.Schema
 import DAL.Types
 import DAL.Conversion
+
+-- Disambiguate personType/personStatus (exist on both Person and PersonEntity)
+personType_ :: Person -> Maybe Int
+personType_ p = DAL.Types.personType p
+
+personStatus_ :: Person -> Maybe Int
+personStatus_ p = DAL.Types.personStatus p
 
 -- | Create a person
 createPerson :: ConnectionPool -> Person -> IO (QueryResult Int64)
@@ -75,10 +82,10 @@ createPerson pool person = do
   rows <- runDb pool $ rawSql sql
     [ PersistText (personCode person)
     , PersistText (personName person)
-    , maybe PersistNull PersistText (personInn person)
-    , maybe PersistNull PersistText (personKpp person)
-    , maybe PersistNull PersistText (personPersonType person)
-    , maybe PersistNull PersistText (personStatus person)
+    , maybe PersistNull PersistText (personINN person)
+    , maybe PersistNull PersistText (personKPP person)
+    , maybe PersistNull (PersistInt64 . fromIntegral) (personType_ person)
+    , maybe PersistNull (PersistInt64 . fromIntegral) (personStatus_ person)
     , PersistUTCTime now
     , PersistUTCTime now
     ]
@@ -94,10 +101,10 @@ updatePerson pool person = do
   runDb pool $ rawExecute sql
     [ PersistText (personCode person)
     , PersistText (personName person)
-    , maybe PersistNull PersistText (personInn person)
-    , maybe PersistNull PersistText (personKpp person)
-    , maybe PersistNull PersistText (personPersonType person)
-    , maybe PersistNull PersistText (personStatus person)
+    , maybe PersistNull PersistText (personINN person)
+    , maybe PersistNull PersistText (personKPP person)
+    , maybe PersistNull (PersistInt64 . fromIntegral) (personType_ person)
+    , maybe PersistNull (PersistInt64 . fromIntegral) (personStatus_ person)
     , PersistUTCTime now
     , PersistInt64 (personId person)
     ]
@@ -171,19 +178,18 @@ createBill pool bill = do
   now <- getCurrentTime
   let sql = "INSERT INTO bills (bill_number, bill_date, customer_id, vendor_id, warehouse_id, currency_id, bill_status, bill_type, subtotal, tax_amount, total_amount, paid_amount, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id"
   rows <- runDb pool $ rawSql sql
-    [ maybe PersistNull PersistText (billBillNumber bill)
-    , maybe PersistNull PersistUTCTime (billBillDate bill)
-    , maybe PersistNull PersistInt64 (billCustomerId bill)
-    , maybe PersistNull PersistInt64 (billVendorId bill)
-    , maybe PersistNull PersistInt64 (billWarehouseId bill)
-    , maybe PersistNull PersistInt64 (billCurrencyId bill)
-    , maybe PersistNull PersistText (billBillStatus bill)
-    , maybe PersistNull PersistText (billBillType bill)
-    , maybe PersistNull PersistDouble (billSubtotal bill)
-    , maybe PersistNull PersistDouble (billTaxAmount bill)
-    , maybe PersistNull PersistDouble (billTotalAmount bill)
-    , maybe PersistNull PersistDouble (billPaidAmount bill)
-    , maybe PersistNull PersistText (billNotes bill)
+    [ maybe PersistNull PersistText (billCode bill)
+    , maybe PersistNull PersistUTCTime (Just (billDate bill))
+    , maybe PersistNull (PersistInt64 . fromIntegral) (billPersonId bill)
+    , PersistInt64 0
+    , maybe PersistNull (PersistInt64 . fromIntegral) (billLocationId bill)
+    , PersistInt64 0
+    , maybe PersistNull PersistText (billStatus bill)
+    , maybe PersistNull PersistText (billType bill)
+    , maybe PersistNull PersistDouble (Just (billTotal bill))
+    , maybe PersistNull PersistDouble (Just (billTaxAmount bill))
+    , PersistDouble 0
+    , PersistNull
     , PersistUTCTime now
     , PersistUTCTime now
     ]
@@ -197,19 +203,18 @@ updateBill pool bill = do
   now <- getCurrentTime
   let sql = "UPDATE bills SET bill_number = ?, bill_date = ?, customer_id = ?, vendor_id = ?, warehouse_id = ?, currency_id = ?, bill_status = ?, bill_type = ?, subtotal = ?, tax_amount = ?, total_amount = ?, paid_amount = ?, notes = ?, updated_at = ? WHERE id = ?"
   runDb pool $ rawExecute sql
-    [ maybe PersistNull PersistText (billBillNumber bill)
-    , maybe PersistNull PersistUTCTime (billBillDate bill)
-    , maybe PersistNull PersistInt64 (billCustomerId bill)
-    , maybe PersistNull PersistInt64 (billVendorId bill)
-    , maybe PersistNull PersistInt64 (billWarehouseId bill)
-    , maybe PersistNull PersistInt64 (billCurrencyId bill)
-    , maybe PersistNull PersistText (billBillStatus bill)
-    , maybe PersistNull PersistText (billBillType bill)
-    , maybe PersistNull PersistDouble (billSubtotal bill)
-    , maybe PersistNull PersistDouble (billTaxAmount bill)
-    , maybe PersistNull PersistDouble (billTotalAmount bill)
-    , maybe PersistNull PersistDouble (billPaidAmount bill)
-    , maybe PersistNull PersistText (billNotes bill)
+    [ maybe PersistNull PersistText (billCode bill)
+    , maybe PersistNull PersistUTCTime (Just (billDate bill))
+    , maybe PersistNull (PersistInt64 . fromIntegral) (billPersonId bill)
+    , PersistInt64 0
+    , maybe PersistNull (PersistInt64 . fromIntegral) (billLocationId bill)
+    , PersistInt64 0
+    , maybe PersistNull PersistText (billStatus bill)
+    , maybe PersistNull PersistText (billType bill)
+    , maybe PersistNull PersistDouble (Just (billTotal bill))
+    , maybe PersistNull PersistDouble (Just (billTaxAmount bill))
+    , PersistDouble 0
+    , PersistNull
     , PersistUTCTime now
     , PersistInt64 (billId bill)
     ]

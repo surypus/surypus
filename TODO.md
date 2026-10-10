@@ -95,6 +95,10 @@ bd ready
 - [x] Fix `checkSlidingWindowWithHeaders` off-by-one in `remaining` (2026-10-09)
 - [x] Add System.RateLimiterSpec with 15 tests covering all 4 rate limiter strategies + API middleware logic (2026-10-09)
 - [x] Add System.CacheSpec with 17 tests covering System.Cache (calcHitRate, isExpired, calcVATStrict, calcTaxInclusiveStrict, STMCache operations) (2026-10-09)
+- [x] Add System.CounterSpec with 15 tests covering System.Counter (nextCounterValue, padding, prefix/suffix, 4 QuickCheck properties) (2026-10-10)
+  - 11 unit tests + 4 QuickCheck properties
+  - Verified: all 15 tests passing
+- [x] Fix Surypus.cabal: add missing modules (Core.Accounting.CacheSpec, JWTSpec, System.CounterSpec) to other-modules, remove duplicate stm/containers deps (2026-10-10)
 - [x] Add JWTSpec with 22 tests covering Surypus.JWT security-critical module: jwtConfigFromSecret, validateAccessToken, decodeAndValidateToken + QuickCheck security properties (2026-10-09)
   - 17 unit tests + 5 QuickCheck security properties
   - Verified: 22 examples, 0 failures (compiled and run via ghc directly; full cabal build blocked by GHC 9.10.3 vs persistent incompatibility)

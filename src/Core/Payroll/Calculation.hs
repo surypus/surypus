@@ -43,7 +43,9 @@ calcSocialTax salary
 -- | Calculate net salary (gross - income tax - social tax)
 {-@ calcNetSalaryFromGross :: gross:Decimal -> {v:NonNegDec | v <= gross} @-}
 calcNetSalaryFromGross :: Decimal -> Decimal
-calcNetSalaryFromGross gross = gross - calcIncomeTax gross
+calcNetSalaryFromGross gross
+  | gross <= 0 = 0
+  | otherwise  = gross - calcIncomeTax gross
 
 -- | Calculate vacation days between two dates
 calcVacationDays :: Day -> Day -> Int

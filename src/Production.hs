@@ -18,7 +18,7 @@ import Production.WorkOrder
 import Production.Activity
 import Production.Project hiding (Task, TaskStatus, TSInProgress, tskStatus, tskId, tskDescription)
 import Production.Task
-import Production.Service
+import Production.Service hiding (TechCard)
 import Production.ServiceManager
 -- import Production.Scheduling
 -- import Production.Queue

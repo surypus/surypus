@@ -1,6 +1,5 @@
-{-# LANGUAGE TypeApplications #-}
+
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 
 module DAL.Classifiers (
     getOksmAll, getOksmById, getOksmByCode,
@@ -24,387 +23,396 @@ module DAL.Classifiers (
 import Control.Monad.IO.Class (liftIO)
 import Data.Int (Int64)
 import Data.Text (Text)
-import Database.Esqueleto.Experimental
-import Database.Persist.Sql (runSqlPool, toSqlKey)
+import qualified Data.Text as T
+import Database.Persist.Sql (rawSql, Single(..), PersistValue(..))
 import Database.Persist.Postgresql (ConnectionPool)
+import DAL.Database (ConnectionPool, runDb)
 import DAL.Schema
 import DAL.Types
-import DAL.Conversion
+
+-- | Parse a classifier record from raw SQL rows
+parseClassifierRow :: [Single PersistValue] -> (Int64, Text, Text)
+parseClassifierRow (Single (PersistInt64 i) : Single (PersistText c) : Single (PersistText n) : _) = (i, c, n)
+parseClassifierRow _ = (0, "", "")
+
+-- | Parse a classifier record with parent from raw SQL rows
+parseClassifierRowParent :: [Single PersistValue] -> (Int64, Text, Text, Maybe Text)
+parseClassifierRowParent (Single (PersistInt64 i) : Single (PersistText c) : Single (PersistText n) : Single p : _) =
+  let parent = case p of PersistText t -> Just t; _ -> Nothing
+  in (i, c, n, parent)
+parseClassifierRowParent (Single (PersistInt64 i) : Single (PersistText c) : Single (PersistText n) : _) = (i, c, n, Nothing)
+parseClassifierRowParent _ = (0, "", "", Nothing)
 
 getOksmAll :: ConnectionPool -> IO (QueryResult [OksmRecord])
 getOksmAll pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OksmEntity; orderBy [asc $ r ^. OksmEntityCode]; return r) pool
-    return $ QuerySuccess (map oksmFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM oksm ORDER BY code") ([] :: [PersistValue])
+    let records = [OksmRecord i c n | r <- rows, let (i, c, n) = parseClassifierRow r]
+    return $ QuerySuccess records
 
 getOksmById :: ConnectionPool -> Int64 -> IO (QueryResult OksmRecord)
 getOksmById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OksmEntity; where_ $ r ^. OksmEntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (oksmFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM oksm WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n) = parseClassifierRow r in QuerySuccess (OksmRecord i c n)
+        _ -> QueryError "Not Found"
 
 getOksmByCode :: ConnectionPool -> Text -> IO (QueryResult OksmRecord)
 getOksmByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OksmEntity; where_ $ r ^. OksmEntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (oksmFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM oksm WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n) = parseClassifierRow r in QuerySuccess (OksmRecord i c n)
+        _ -> QueryError "Not Found"
 
 getOkvAll :: ConnectionPool -> IO (QueryResult [OkvRecord])
 getOkvAll pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkvEntity; orderBy [asc $ r ^. OkvEntityCode]; return r) pool
-    return $ QuerySuccess (map okvFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM okv ORDER BY code") []
+    let records = [OkvRecord i c n | r <- rows, let (i, c, n) = parseClassifierRow r]
+    return $ QuerySuccess records
 
 getOkvById :: ConnectionPool -> Int64 -> IO (QueryResult OkvRecord)
 getOkvById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkvEntity; where_ $ r ^. OkvEntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okvFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM okv WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n) = parseClassifierRow r in QuerySuccess (OkvRecord i c n)
+        _ -> QueryError "Not Found"
 
 getOkvByCode :: ConnectionPool -> Text -> IO (QueryResult OkvRecord)
 getOkvByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkvEntity; where_ $ r ^. OkvEntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okvFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM okv WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n) = parseClassifierRow r in QuerySuccess (OkvRecord i c n)
+        _ -> QueryError "Not Found"
 
 getOkeiAll :: ConnectionPool -> IO (QueryResult [OkeiRecord])
 getOkeiAll pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkeiEntity; orderBy [asc $ r ^. OkeiEntityCode]; return r) pool
-    return $ QuerySuccess (map okeiFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM okei ORDER BY code") []
+    let records = [OkeiRecord i c n | r <- rows, let (i, c, n) = parseClassifierRow r]
+    return $ QuerySuccess records
 
 getOkeiById :: ConnectionPool -> Int64 -> IO (QueryResult OkeiRecord)
 getOkeiById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkeiEntity; where_ $ r ^. OkeiEntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okeiFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM okei WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n) = parseClassifierRow r in QuerySuccess (OkeiRecord i c n)
+        _ -> QueryError "Not Found"
 
 getOkeiByCode :: ConnectionPool -> Text -> IO (QueryResult OkeiRecord)
 getOkeiByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkeiEntity; where_ $ r ^. OkeiEntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okeiFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM okei WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n) = parseClassifierRow r in QuerySuccess (OkeiRecord i c n)
+        _ -> QueryError "Not Found"
 
 getOkpd2All :: ConnectionPool -> IO (QueryResult [Okpd2Record])
 getOkpd2All pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @Okpd2Entity; orderBy [asc $ r ^. Okpd2EntityCode]; return r) pool
-    return $ QuerySuccess (map okpd2FromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okpd2 ORDER BY code") []
+    let records = [Okpd2Record i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOkpd2ById :: ConnectionPool -> Int64 -> IO (QueryResult Okpd2Record)
 getOkpd2ById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @Okpd2Entity; where_ $ r ^. Okpd2EntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okpd2FromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okpd2 WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (Okpd2Record i c n p)
+        _ -> QueryError "Not Found"
 
 getOkpd2ByCode :: ConnectionPool -> Text -> IO (QueryResult Okpd2Record)
 getOkpd2ByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @Okpd2Entity; where_ $ r ^. Okpd2EntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okpd2FromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okpd2 WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (Okpd2Record i c n p)
+        _ -> QueryError "Not Found"
 
 getOkpd2ByParent :: ConnectionPool -> Text -> IO (QueryResult [Okpd2Record])
 getOkpd2ByParent pool parentCode = do
-    entities <- liftIO $ runSqlPool
-        (select $ do
-            r <- from $ table @Okpd2Entity
-            where_ $ r ^. Okpd2EntityParentCode ==. val (Just parentCode)
-            orderBy [asc $ r ^. Okpd2EntityCode]
-            return r) pool
-    return $ QuerySuccess (map okpd2FromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okpd2 WHERE parent_code = ? ORDER BY code") [PersistText parentCode]
+    let records = [Okpd2Record i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOkved2All :: ConnectionPool -> IO (QueryResult [Okved2Record])
 getOkved2All pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @Okved2Entity; orderBy [asc $ r ^. Okved2EntityCode]; return r) pool
-    return $ QuerySuccess (map okved2FromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okved2 ORDER BY code") []
+    let records = [Okved2Record i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOkved2ById :: ConnectionPool -> Int64 -> IO (QueryResult Okved2Record)
 getOkved2ById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @Okved2Entity; where_ $ r ^. Okved2EntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okved2FromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okved2 WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (Okved2Record i c n p)
+        _ -> QueryError "Not Found"
 
 getOkved2ByCode :: ConnectionPool -> Text -> IO (QueryResult Okved2Record)
 getOkved2ByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @Okved2Entity; where_ $ r ^. Okved2EntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okved2FromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okved2 WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (Okved2Record i c n p)
+        _ -> QueryError "Not Found"
 
 getOkved2ByParent :: ConnectionPool -> Text -> IO (QueryResult [Okved2Record])
 getOkved2ByParent pool parentCode = do
-    entities <- liftIO $ runSqlPool
-        (select $ do
-            r <- from $ table @Okved2Entity
-            where_ $ r ^. Okved2EntityParentCode ==. val (Just parentCode)
-            orderBy [asc $ r ^. Okved2EntityCode]
-            return r) pool
-    return $ QuerySuccess (map okved2FromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okved2 WHERE parent_code = ? ORDER BY code") [PersistText parentCode]
+    let records = [Okved2Record i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getTnvedAll :: ConnectionPool -> IO (QueryResult [TnvedRecord])
 getTnvedAll pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @TnvedEntity; orderBy [asc $ r ^. TnvedEntityCode]; return r) pool
-    return $ QuerySuccess (map tnvedFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM tnved ORDER BY code") []
+    let records = [TnvedRecord i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getTnvedById :: ConnectionPool -> Int64 -> IO (QueryResult TnvedRecord)
 getTnvedById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @TnvedEntity; where_ $ r ^. TnvedEntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (tnvedFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM tnved WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (TnvedRecord i c n p)
+        _ -> QueryError "Not Found"
 
 getTnvedByCode :: ConnectionPool -> Text -> IO (QueryResult TnvedRecord)
 getTnvedByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @TnvedEntity; where_ $ r ^. TnvedEntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (tnvedFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM tnved WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (TnvedRecord i c n p)
+        _ -> QueryError "Not Found"
 
 getTnvedByParent :: ConnectionPool -> Text -> IO (QueryResult [TnvedRecord])
 getTnvedByParent pool parentCode = do
-    entities <- liftIO $ runSqlPool
-        (select $ do
-            r <- from $ table @TnvedEntity
-            where_ $ r ^. TnvedEntityParentCode ==. val (Just parentCode)
-            orderBy [asc $ r ^. TnvedEntityCode]
-            return r) pool
-    return $ QuerySuccess (map tnvedFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM tnved WHERE parent_code = ? ORDER BY code") [PersistText parentCode]
+    let records = [TnvedRecord i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOkatoAll :: ConnectionPool -> IO (QueryResult [OkatoRecord])
 getOkatoAll pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkatoEntity; orderBy [asc $ r ^. OkatoEntityCode]; return r) pool
-    return $ QuerySuccess (map okatoFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okato ORDER BY code") []
+    let records = [OkatoRecord i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOkatoById :: ConnectionPool -> Int64 -> IO (QueryResult OkatoRecord)
 getOkatoById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkatoEntity; where_ $ r ^. OkatoEntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okatoFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okato WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (OkatoRecord i c n p)
+        _ -> QueryError "Not Found"
 
 getOkatoByCode :: ConnectionPool -> Text -> IO (QueryResult OkatoRecord)
 getOkatoByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkatoEntity; where_ $ r ^. OkatoEntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okatoFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okato WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (OkatoRecord i c n p)
+        _ -> QueryError "Not Found"
 
 getOkatoByParent :: ConnectionPool -> Text -> IO (QueryResult [OkatoRecord])
 getOkatoByParent pool parentCode = do
-    entities <- liftIO $ runSqlPool
-        (select $ do
-            r <- from $ table @OkatoEntity
-            where_ $ r ^. OkatoEntityParentCode ==. val (Just parentCode)
-            orderBy [asc $ r ^. OkatoEntityCode]
-            return r) pool
-    return $ QuerySuccess (map okatoFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okato WHERE parent_code = ? ORDER BY code") [PersistText parentCode]
+    let records = [OkatoRecord i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOktmoAll :: ConnectionPool -> IO (QueryResult [OktmoRecord])
 getOktmoAll pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OktmoEntity; orderBy [asc $ r ^. OktmoEntityCode]; return r) pool
-    return $ QuerySuccess (map oktmoFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM oktmo ORDER BY code") []
+    let records = [OktmoRecord i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOktmoById :: ConnectionPool -> Int64 -> IO (QueryResult OktmoRecord)
 getOktmoById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OktmoEntity; where_ $ r ^. OktmoEntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (oktmoFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM oktmo WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (OktmoRecord i c n p)
+        _ -> QueryError "Not Found"
 
 getOktmoByCode :: ConnectionPool -> Text -> IO (QueryResult OktmoRecord)
 getOktmoByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OktmoEntity; where_ $ r ^. OktmoEntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (oktmoFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM oktmo WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (OktmoRecord i c n p)
+        _ -> QueryError "Not Found"
 
 getOktmoByParent :: ConnectionPool -> Text -> IO (QueryResult [OktmoRecord])
 getOktmoByParent pool parentCode = do
-    entities <- liftIO $ runSqlPool
-        (select $ do
-            r <- from $ table @OktmoEntity
-            where_ $ r ^. OktmoEntityParentCode ==. val (Just parentCode)
-            orderBy [asc $ r ^. OktmoEntityCode]
-            return r) pool
-    return $ QuerySuccess (map oktmoFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM oktmo WHERE parent_code = ? ORDER BY code") [PersistText parentCode]
+    let records = [OktmoRecord i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOkofAll :: ConnectionPool -> IO (QueryResult [OkofRecord])
 getOkofAll pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkofEntity; orderBy [asc $ r ^. OkofEntityCode]; return r) pool
-    return $ QuerySuccess (map okofFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okof ORDER BY code") []
+    let records = [OkofRecord i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOkofById :: ConnectionPool -> Int64 -> IO (QueryResult OkofRecord)
 getOkofById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkofEntity; where_ $ r ^. OkofEntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okofFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okof WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (OkofRecord i c n p)
+        _ -> QueryError "Not Found"
 
 getOkofByCode :: ConnectionPool -> Text -> IO (QueryResult OkofRecord)
 getOkofByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkofEntity; where_ $ r ^. OkofEntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okofFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okof WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (OkofRecord i c n p)
+        _ -> QueryError "Not Found"
 
 getOkofByParent :: ConnectionPool -> Text -> IO (QueryResult [OkofRecord])
 getOkofByParent pool parentCode = do
-    entities <- liftIO $ runSqlPool
-        (select $ do
-            r <- from $ table @OkofEntity
-            where_ $ r ^. OkofEntityParentCode ==. val (Just parentCode)
-            orderBy [asc $ r ^. OkofEntityCode]
-            return r) pool
-    return $ QuerySuccess (map okofFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okof WHERE parent_code = ? ORDER BY code") [PersistText parentCode]
+    let records = [OkofRecord i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOkpAll :: ConnectionPool -> IO (QueryResult [OkpRecord])
 getOkpAll pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkpEntity; orderBy [asc $ r ^. OkpEntityCode]; return r) pool
-    return $ QuerySuccess (map okpFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okp ORDER BY code") []
+    let records = [OkpRecord i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOkpById :: ConnectionPool -> Int64 -> IO (QueryResult OkpRecord)
 getOkpById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkpEntity; where_ $ r ^. OkpEntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okpFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okp WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (OkpRecord i c n p)
+        _ -> QueryError "Not Found"
 
 getOkpByCode :: ConnectionPool -> Text -> IO (QueryResult OkpRecord)
 getOkpByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkpEntity; where_ $ r ^. OkpEntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okpFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okp WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (OkpRecord i c n p)
+        _ -> QueryError "Not Found"
 
 getOkpByParent :: ConnectionPool -> Text -> IO (QueryResult [OkpRecord])
 getOkpByParent pool parentCode = do
-    entities <- liftIO $ runSqlPool
-        (select $ do
-            r <- from $ table @OkpEntity
-            where_ $ r ^. OkpEntityParentCode ==. val (Just parentCode)
-            orderBy [asc $ r ^. OkpEntityCode]
-            return r) pool
-    return $ QuerySuccess (map okpFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okp WHERE parent_code = ? ORDER BY code") [PersistText parentCode]
+    let records = [OkpRecord i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOkdpAll :: ConnectionPool -> IO (QueryResult [OkdpRecord])
 getOkdpAll pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkdpEntity; orderBy [asc $ r ^. OkdpEntityCode]; return r) pool
-    return $ QuerySuccess (map okdpFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okdp ORDER BY code") []
+    let records = [OkdpRecord i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOkdpById :: ConnectionPool -> Int64 -> IO (QueryResult OkdpRecord)
 getOkdpById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkdpEntity; where_ $ r ^. OkdpEntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okdpFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okdp WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (OkdpRecord i c n p)
+        _ -> QueryError "Not Found"
 
 getOkdpByCode :: ConnectionPool -> Text -> IO (QueryResult OkdpRecord)
 getOkdpByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkdpEntity; where_ $ r ^. OkdpEntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okdpFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okdp WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (OkdpRecord i c n p)
+        _ -> QueryError "Not Found"
 
 getOkdpByParent :: ConnectionPool -> Text -> IO (QueryResult [OkdpRecord])
 getOkdpByParent pool parentCode = do
-    entities <- liftIO $ runSqlPool
-        (select $ do
-            r <- from $ table @OkdpEntity
-            where_ $ r ^. OkdpEntityParentCode ==. val (Just parentCode)
-            orderBy [asc $ r ^. OkdpEntityCode]
-            return r) pool
-    return $ QuerySuccess (map okdpFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okdp WHERE parent_code = ? ORDER BY code") [PersistText parentCode]
+    let records = [OkdpRecord i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOksoAll :: ConnectionPool -> IO (QueryResult [OksoRecord])
 getOksoAll pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OksoEntity; orderBy [asc $ r ^. OksoEntityCode]; return r) pool
-    return $ QuerySuccess (map oksoFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM okso ORDER BY code") []
+    let records = [OksoRecord i c n | r <- rows, let (i, c, n) = parseClassifierRow r]
+    return $ QuerySuccess records
 
 getOksoById :: ConnectionPool -> Int64 -> IO (QueryResult OksoRecord)
 getOksoById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OksoEntity; where_ $ r ^. OksoEntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (oksoFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM okso WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n) = parseClassifierRow r in QuerySuccess (OksoRecord i c n)
+        _ -> QueryError "Not Found"
 
 getOksoByCode :: ConnectionPool -> Text -> IO (QueryResult OksoRecord)
 getOksoByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OksoEntity; where_ $ r ^. OksoEntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (oksoFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM okso WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n) = parseClassifierRow r in QuerySuccess (OksoRecord i c n)
+        _ -> QueryError "Not Found"
 
 getOkunAll :: ConnectionPool -> IO (QueryResult [OkunRecord])
 getOkunAll pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkunEntity; orderBy [asc $ r ^. OkunEntityCode]; return r) pool
-    return $ QuerySuccess (map okunFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okun ORDER BY code") []
+    let records = [OkunRecord i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOkunById :: ConnectionPool -> Int64 -> IO (QueryResult OkunRecord)
 getOkunById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkunEntity; where_ $ r ^. OkunEntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okunFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okun WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (OkunRecord i c n p)
+        _ -> QueryError "Not Found"
 
 getOkunByCode :: ConnectionPool -> Text -> IO (QueryResult OkunRecord)
 getOkunByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkunEntity; where_ $ r ^. OkunEntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okunFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okun WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n, p) = parseClassifierRowParent r in QuerySuccess (OkunRecord i c n p)
+        _ -> QueryError "Not Found"
 
 getOkunByParent :: ConnectionPool -> Text -> IO (QueryResult [OkunRecord])
 getOkunByParent pool parentCode = do
-    entities <- liftIO $ runSqlPool
-        (select $ do
-            r <- from $ table @OkunEntity
-            where_ $ r ^. OkunEntityParentCode ==. val (Just parentCode)
-            orderBy [asc $ r ^. OkunEntityCode]
-            return r) pool
-    return $ QuerySuccess (map okunFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name, parent_code FROM okun WHERE parent_code = ? ORDER BY code") [PersistText parentCode]
+    let records = [OkunRecord i c n p | r <- rows, let (i, c, n, p) = parseClassifierRowParent r]
+    return $ QuerySuccess records
 
 getOkudAll :: ConnectionPool -> IO (QueryResult [OkudRecord])
 getOkudAll pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkudEntity; orderBy [asc $ r ^. OkudEntityCode]; return r) pool
-    return $ QuerySuccess (map okudFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM okud ORDER BY code") []
+    let records = [OkudRecord i c n | r <- rows, let (i, c, n) = parseClassifierRow r]
+    return $ QuerySuccess records
 
 getOkudById :: ConnectionPool -> Int64 -> IO (QueryResult OkudRecord)
 getOkudById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkudEntity; where_ $ r ^. OkudEntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okudFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM okud WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n) = parseClassifierRow r in QuerySuccess (OkudRecord i c n)
+        _ -> QueryError "Not Found"
 
 getOkudByCode :: ConnectionPool -> Text -> IO (QueryResult OkudRecord)
 getOkudByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkudEntity; where_ $ r ^. OkudEntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okudFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM okud WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n) = parseClassifierRow r in QuerySuccess (OkudRecord i c n)
+        _ -> QueryError "Not Found"
 
 getOkfsAll :: ConnectionPool -> IO (QueryResult [OkfsRecord])
 getOkfsAll pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkfsEntity; orderBy [asc $ r ^. OkfsEntityCode]; return r) pool
-    return $ QuerySuccess (map okfsFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM okfs ORDER BY code") []
+    let records = [OkfsRecord i c n | r <- rows, let (i, c, n) = parseClassifierRow r]
+    return $ QuerySuccess records
 
 getOkfsById :: ConnectionPool -> Int64 -> IO (QueryResult OkfsRecord)
 getOkfsById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkfsEntity; where_ $ r ^. OkfsEntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okfsFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM okfs WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n) = parseClassifierRow r in QuerySuccess (OkfsRecord i c n)
+        _ -> QueryError "Not Found"
 
 getOkfsByCode :: ConnectionPool -> Text -> IO (QueryResult OkfsRecord)
 getOkfsByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OkfsEntity; where_ $ r ^. OkfsEntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (okfsFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM okfs WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n) = parseClassifierRow r in QuerySuccess (OkfsRecord i c n)
+        _ -> QueryError "Not Found"
 
 getOknpoAll :: ConnectionPool -> IO (QueryResult [OknpoRecord])
 getOknpoAll pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OknpoEntity; orderBy [asc $ r ^. OknpoEntityCode]; return r) pool
-    return $ QuerySuccess (map oknpoFromEntity entities)
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM oknpo ORDER BY code") []
+    let records = [OknpoRecord i c n | r <- rows, let (i, c, n) = parseClassifierRow r]
+    return $ QuerySuccess records
 
 getOknpoById :: ConnectionPool -> Int64 -> IO (QueryResult OknpoRecord)
 getOknpoById pool pid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OknpoEntity; where_ $ r ^. OknpoEntityId ==. val (toSqlKey pid); return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (oknpoFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM oknpo WHERE id = ?") [PersistInt64 pid]
+    return $ case rows of
+        (r:_) -> let (i, c, n) = parseClassifierRow r in QuerySuccess (OknpoRecord i c n)
+        _ -> QueryError "Not Found"
 
 getOknpoByCode :: ConnectionPool -> Text -> IO (QueryResult OknpoRecord)
 getOknpoByCode pool code = do
-    entities <- liftIO $ runSqlPool
-        (select $ do r <- from $ table @OknpoEntity; where_ $ r ^. OknpoEntityCode ==. val code; return r) pool
-    return $ case entities of (e:_) -> QuerySuccess (oknpoFromEntity e); _ -> QueryError "Not Found"
+    rows <- liftIO $ runDb pool $ rawSql ("SELECT id, code, name FROM oknpo WHERE code = ?") [PersistText code]
+    return $ case rows of
+        (r:_) -> let (i, c, n) = parseClassifierRow r in QuerySuccess (OknpoRecord i c n)
+        _ -> QueryError "Not Found"

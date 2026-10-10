@@ -1,3 +1,4 @@
+
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TypeApplications #-}
@@ -22,9 +23,12 @@ import GHC.Generics (Generic)
 import Database.Persist.Sql (runSqlPool, toSqlKey)
 import qualified Database.Persist as P
 import Database.Esqueleto.Experimental
-import DAL.Schema
-import DAL.Conversion (keyToInt)
-import Database.Persist.Sql (runSqlPool, toSqlKey)
+import DAL.Schema (ReportTemplateEntity(..))
+import DAL.Conversion
+import Database.Persist.Sql (fromSqlKey, Key)
+
+keyToInt :: Key a -> Int64
+keyToInt = fromIntegral . fromSqlKey
 
 data BillTemplateInfo = BillTemplateInfo
   { btiId :: Int64

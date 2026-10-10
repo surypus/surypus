@@ -1,3 +1,4 @@
+
 {-# LANGUAGE OverloadedStrings #-}
 -- | Surypus API Bills (Phase 1: stub)
 module Surypus.API.Bills
@@ -15,28 +16,28 @@ import Data.Int (Int64)
 
 -- | List bills (stub)
 listBills :: Int64 -> IO (QueryResult [Bill])
-listBills _ = return $ QueryResults [] 0
+listBills _ = return $ QuerySuccess []
 
 -- | Create bill (stub)
 createBill :: Bill -> IO (QueryResult Int64)
-createBill _ = return $ QueryResult [0] 1
+createBill _ = return $ QuerySuccess 0
 
 -- | Get bill (stub)
 getBill :: Int64 -> IO (QueryResult Bill)
-getBill _ = return $ QueryResults [] 0
+getBill _ = return $ QueryError "Not found"
 
 -- | Update bill (stub)
 updateBill :: Bill -> IO (QueryResult ())
-updateBill _ = return $ QueryResult [()] 1
+updateBill _ = return $ QuerySuccess ()
 
 -- | Delete bill (stub)
 deleteBill :: Int64 -> IO (QueryResult ())
-deleteBill _ = return $ QueryResult [()] 1
+deleteBill _ = return $ QuerySuccess ()
 
 -- | Post bill (stub)
 postBill :: Int64 -> IO (QueryResult ())
-postBill _ = return $ QueryResult [()] 1
+postBill _ = return $ QuerySuccess ()
 
 -- | Update bill status (stub)
 updateBillStatus :: Int64 -> String -> IO (QueryResult ())
-updateBillStatus _ _ = return $ QueryResult [()] 1
+updateBillStatus _ _ = return $ QuerySuccess ()

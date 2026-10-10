@@ -191,12 +191,17 @@ appendCRMEvent store event = do
       let nextSeq = case latestSeq of
             Nothing -> 1
             Just s  -> s + 1
-      ES.appendEvent (cesPool store)
-        aggId
-        aggType
-        evType
-        1 -- version
-        1 -- schema version
-        (toJSON event)
-        Nothing
-        nextSeq
+      now <- getCurrentTime
+      let esEvent = ES.Event
+            { ES.eventAggregateId = aggId
+            , ES.eventAggregateType = aggType
+            , ES.eventEventType = evType
+            , ES.eventEventVersion = 1
+            , ES.eventSchemaVersion = 1
+            , ES.eventEventData = toJSON event
+            , ES.eventEventMetadata = Nothing
+            , ES.eventSequenceNumber = nextSeq
+            , ES.eventOccurredAt = now
+            , ES.eventCreatedAt = now
+            }
+      ES.appendEvent (cesPool store) esEvent

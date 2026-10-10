@@ -16,10 +16,12 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Types (status401, status403)
 import Network.Wai (Application, requestHeaders, rawPathInfo, requestMethod, responseLBS)
-import Surypus.API.Authorization (requiredPermissionForPathMethod, checkPermission)
+import Surypus.API.Authorization (requiredPermissionForPathMethod, checkPermission, permissionToText)
 import Surypus.JWT.Token (UserClaims(..), verifyToken, SecretKey, defaultSecretKey)
+import qualified Data.Text.Encoding as TE
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Lazy as BL
 
 -- | Authentication result
 data AuthResult
@@ -33,19 +35,19 @@ extractToken :: ByteString -> Maybe Text
 extractToken authHeader = do
   let prefix = "Bearer "
   if prefix `BS.isPrefixOf` authHeader
-    then Just $ TE.decodeUtf8 $ BS.drop (length prefix) authHeader
+    then Just $ TE.decodeUtf8 $ BS.drop (BS.length prefix) authHeader
     else Nothing
 
 -- | Authenticate a request
 authenticateRequest :: SecretKey -> ByteString -> ByteString -> IO AuthResult
-authenticateRequest secret path method = do
+authenticateRequest _secret _path method = do
   let mToken = extractToken method
   case mToken of
     Nothing -> return $ AuthFailed "Missing or invalid Authorization header"
     Just token -> do
-      result <- verifyToken secret token
+      result <- verifyToken token
       case result of
-        Left err -> return $ AuthFailed err
+        Left err -> return $ AuthFailed (T.pack err)
         Right claims -> return $ Authenticated claims
 
 -- | Apply RBAC authorization middleware.
@@ -69,17 +71,17 @@ withAuthzResolverAdvanced publicPaths checkPerm app request respond = do
           case mToken of
             Nothing -> respond $ responseLBS status401 [("Content-Type", "application/json")] "{\"error\":\"Invalid token format\"}"
             Just token -> do
-              result <- verifyToken defaultSecretKey token
+              result <- verifyToken token
               case result of
-                Left err -> respond $ responseLBS status401 [("Content-Type", "application/json")] $ BS.pack $ "{\"error\":\"" ++ T.unpack err ++ "\"}"
+                Left err -> respond $ responseLBS status401 [("Content-Type", "application/json")] $ BL.fromStrict $ BS.pack $ "{\"error\":\"" ++ err ++ "\"}"
                 Right claims -> do
                   let mRequiredPerm = requiredPermissionForPathMethod path method
                   case mRequiredPerm of
                     Nothing -> app request respond
                     Just perm -> do
-                      let userId = claimsUserId claims
-                          userRoles = claimsRoles claims
-                      hasPerm <- checkPerm userId (Surypus.API.Authorization.permissionToText perm)
+                      let userId = ucUserId claims
+                          userRoles = ucRoles claims
+                      hasPerm <- checkPerm userId (permissionToText perm)
                       if hasPerm || checkPermission userRoles perm
                         then app request respond
                         else respond $ responseLBS status403 [("Content-Type", "application/json")] "{\"error\":\"Forbidden\"}"

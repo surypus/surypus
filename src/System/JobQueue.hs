@@ -11,6 +11,7 @@ import qualified Data.Aeson as Aeson
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
+import Data.List.NonEmpty (NonEmpty((:|)))
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -53,7 +54,7 @@ enqueueJob (JobQueue config prefix _) job = do
   conn <- checkedConnect config
   let queueName = TE.encodeUtf8 (prefix <> ":jobs")
       jobValue = Aeson.encode job
-  runRedis conn $ lpush queueName [toStrict jobValue]
+  runRedis conn $ lpush queueName (toStrict jobValue :| [])
   return ()
  
 -- | Dequeue a job from Redis queue (blocking with timeout)
@@ -62,7 +63,7 @@ dequeueJob (JobQueue config prefix _) = do
   conn <- checkedConnect config
   let queueName = TE.encodeUtf8 (prefix <> ":jobs")
       timeout = 0  -- 0 means block indefinitely
-  result :: Either R.Reply (Maybe (BS.ByteString, BS.ByteString)) <- runRedis conn $ brpop [queueName] timeout
+  result :: Either R.Reply (Maybe (BS.ByteString, BS.ByteString)) <- runRedis conn $ brpop (queueName :| []) timeout
   case result of
     Left _ -> return Nothing
     Right Nothing -> return Nothing

@@ -13,7 +13,7 @@ import qualified Data.Text.Encoding as TE
 -- | Publish an event to the Redis channel for WebSocket broadcasting
 publishEvent :: Text -> IO ()
 publishEvent msg = do
-  let connInfo = R.defaultConnectInfo { R.ciHost = "localhost", R.ciPort = R.PortNumber 6379 }
+  let connInfo = R.defaultConnectInfo
   conn <- R.checkedConnect connInfo
   let channel = TE.encodeUtf8 "surypus:events"
       message = BSC.pack $ T.unpack msg

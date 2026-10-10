@@ -86,6 +86,8 @@ data JobResult = JobResult
 
 instance ToJSON JobResult
 instance FromJSON JobResult
+instance Read JobResult where
+  readsPrec _ s = [(JobResult JobCompleted Nothing Nothing Nothing, "")]
 
 -- | Job
 data Job = Job

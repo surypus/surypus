@@ -161,20 +161,25 @@ appendAccountingEvent store event = do
       let nextSeq = case latestSeq of
             Nothing -> 1
             Just seq -> seq + 1
-      ES.appendEvent (aesPool store)
-        aggId
-        aggType
-        evType
-        1 -- version
-        1 -- schema version
-        (toJSON event)
-        Nothing
-        nextSeq
+      now <- getCurrentTime
+      let esEvent = ES.Event
+            { ES.eventAggregateId = aggId
+            , ES.eventAggregateType = aggType
+            , ES.eventEventType = evType
+            , ES.eventEventVersion = 1
+            , ES.eventSchemaVersion = 1
+            , ES.eventEventData = toJSON event
+            , ES.eventEventMetadata = Nothing
+            , ES.eventSequenceNumber = nextSeq
+            , ES.eventOccurredAt = now
+            , ES.eventCreatedAt = now
+            }
+      ES.appendEvent (aesPool store) esEvent
 
 -- | Read events for an account stream
 readAccountEvents :: AccountingEventStore -> Int64 -> IO (Either Text [AccountingEvent])
 readAccountEvents store accountId = do
-  res <- ES.replayAccount (aesPool store) accountId
+  res <- ES.replayAccount (aesPool store) accountId "account"
   case res of
     Left err -> pure $ Left err
     Right rawEvents -> pure $ Right $ map decodeEvent rawEvents

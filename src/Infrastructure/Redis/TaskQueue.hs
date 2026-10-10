@@ -29,6 +29,7 @@ import GHC.Generics (Generic)
 import qualified Database.Redis as R
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Lazy as LBS
+import Data.List.NonEmpty (NonEmpty((:|)))
 import Control.Concurrent (forkIO, threadDelay)
 import Control.Monad (forever, void)
 import Control.Exception (catch, SomeException)
@@ -108,7 +109,7 @@ enqueueTask queue taskType payload = do
       let queueKey = encodeUtf8 $ tqQueueName queue <> ":pending"
       let taskKey = encodeUtf8 $ "task:" <> T.pack (show taskId)
       result <- R.runRedis (tqRedisConn queue) $ do
-        _ <- R.rpush queueKey [taskBytes]
+        _ <- R.rpush queueKey (taskBytes :| [])
         R.set taskKey taskBytes
       case result of
         Right _ -> pure $ Right taskId
@@ -118,7 +119,7 @@ enqueueTask queue taskType payload = do
 dequeueTask :: TaskQueue -> IO (Either Text (Maybe Task))
 dequeueTask queue = do
   let queueKey = encodeUtf8 $ tqQueueName queue <> ":pending"
-  result <- R.runRedis (tqRedisConn queue) $ R.brpop [queueKey] 0
+  result <- R.runRedis (tqRedisConn queue) $ R.brpop (queueKey :| []) 0
   case result of
     Right (Just (_, taskBytes)) -> 
       case taskFromBytes taskBytes of
