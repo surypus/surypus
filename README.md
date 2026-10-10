@@ -19,11 +19,18 @@ This repository is not production-ready. The current goal is one green vertical 
 ## Current status
 
 - Prototype stage
+<<<<<<< HEAD
 - CI: green (one job, GHC 9.6.5, `lts-22.21`)
 - Compiling core: `Finance.Tax`, `Finance.Accounting`, `DAL.Types`, `DAL.Schema`, `Surypus.RBAC`, `Surypus.JWT`, `Surypus.Metrics`
 - Stack resolver: `lts-22.21`
 - GHC: `9.6.5`
 - Note: 356 modules quarantined in `src/_quarantine/` — they don't compile and were removed from `exposed-modules`
+=======
+- One working scenario: bill posting with audit trail
+- Verified core: `Finance.Tax`, `Finance.Accounting`, `DAL.Types`
+- Stack resolver: `lts-22.21`
+- GHC: `9.6.6`
+>>>>>>> phase-0-1
 
 ## Getting started
 
