@@ -14,7 +14,9 @@ import Test.QuickCheck
 
 import Service.BillService (BillLine (..), calculateLineAmount, validateBill)
 import Surypus.API.Authorization (requiredPermissionForPathMethod)
+import qualified Surypus.API.Authorization as Auth
 import Network.HTTP.Types (Method, methodGet, methodPost, methodPut, methodDelete)
+import qualified Data.Text.Encoding as TE
 
 -- | Arbitrary bill line with wide-ranging numeric fields (including negatives).
 instance Arbitrary BillLine where
@@ -51,27 +53,28 @@ prop_validateBillRejectsEmptyLines total =
 -- RBAC: route -> permission mapping is consistent and well-formed.
 prop_rbacBillsRead :: Bool
 prop_rbacBillsRead =
-  requiredPermissionForPathMethod methodGet "/api/v1/bills" == Just "bill:read"
+  requiredPermissionForPathMethod "/api/v1/bills" (TE.decodeUtf8 methodGet) == Just (Auth.Read Auth.Bills)
 
 prop_rbacBillsWrite :: Bool
 prop_rbacBillsWrite =
-  requiredPermissionForPathMethod methodPost "/api/v1/bills" == Just "bill:write"
+  requiredPermissionForPathMethod "/api/v1/bills" (TE.decodeUtf8 methodPost) == Just (Auth.Create Auth.Bills)
 
 prop_rbacBillPost :: Bool
 prop_rbacBillPost =
-  requiredPermissionForPathMethod methodPost "/api/v1/bills/5/status" == Just "bill:post"
+  requiredPermissionForPathMethod "/api/v1/bills/5/status" (TE.decodeUtf8 methodPost) == Just (Auth.Create Auth.Bills)
 
--- Every mapped route yields a permission of the form "<resource>:<action>".
-prop_rbacPermissionWellFormed :: Method -> Text -> Property
-prop_rbacPermissionWellFormed m p =
-  forAll (elements [methodGet, methodPost, methodPut, methodDelete]) $ \_ ->
+-- Every mapped route yields a permission with a known resource.
+prop_rbacPermissionWellFormed :: Property
+prop_rbacPermissionWellFormed =
+  forAll (elements [methodGet, methodPost, methodPut, methodDelete]) $ \method ->
     forAll (elements ["/api/v1/bills", "/api/v1/bills/5", "/api/v1/bills/5/status",
                        "/api/v1/goods", "/api/v1/persons", "/api/v1/payments"]) $ \path ->
-      case requiredPermissionForPathMethod m path of
+      case requiredPermissionForPathMethod path (TE.decodeUtf8 method) of
         Nothing -> True  -- unmapped route is allowed
-        Just perm -> case T.breakOn ":" perm of
-                      (res, ':':act) -> not (T.null res) && not (T.null act)
-                      _ -> False
+        Just perm -> perm `elem` [ Auth.Read Auth.Bills, Auth.Write Auth.Bills, Auth.Create Auth.Bills, Auth.Delete Auth.Bills
+                                  , Auth.Read Auth.Goods, Auth.Write Auth.Goods, Auth.Create Auth.Goods, Auth.Delete Auth.Goods
+                                  , Auth.Read Auth.Persons, Auth.Write Auth.Persons, Auth.Create Auth.Persons, Auth.Delete Auth.Persons
+                                  ]
 
 spec :: Spec
 spec = do
@@ -86,11 +89,11 @@ spec = do
       property prop_validateBillRejectsEmptyLines
 
   describe "RBAC route -> permission mapping" $ do
-    it "GET /api/v1/bills requires bill:read" $
+    it "GET /api/v1/bills requires Read Bills" $
       prop_rbacBillsRead `shouldBe` True
-    it "POST /api/v1/bills requires bill:write" $
+    it "POST /api/v1/bills requires Create Bills" $
       prop_rbacBillsWrite `shouldBe` True
-    it "POST /api/v1/bills/:id/status requires bill:post" $
+    it "POST /api/v1/bills/:id/status requires Create Bills" $
       prop_rbacBillPost `shouldBe` True
-    it "every mapped permission is <resource>:<action>" $
+    it "every mapped permission is a known resource" $
       property prop_rbacPermissionWellFormed

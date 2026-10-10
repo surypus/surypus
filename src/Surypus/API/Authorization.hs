@@ -97,21 +97,28 @@ parseResource = \case
   _            -> Nothing
 
 -- | Determine required permission for a given path and method
+-- Strips /api/v1/ or /api/ prefix before matching resource routes.
 requiredPermissionForPathMethod :: Text -> Text -> Maybe Permission
-requiredPermissionForPathMethod path method
-  | "/api/persons"    `T.isPrefixOf` path = Just $ methodToPermission method Persons
-  | "/api/goods"      `T.isPrefixOf` path = Just $ methodToPermission method Goods
-  | "/api/bills"      `T.isPrefixOf` path = Just $ methodToPermission method Bills
-  | "/api/orders"     `T.isPrefixOf` path = Just $ methodToPermission method Orders
-  | "/api/reports"    `T.isPrefixOf` path = Just $ methodToPermission method Reports
-  | "/api/settings"   `T.isPrefixOf` path = Just $ methodToPermission method Settings
-  | "/api/users"      `T.isPrefixOf` path = Just $ methodToPermission method Users
-  | "/api/inventory"  `T.isPrefixOf` path = Just $ methodToPermission method Inventory
-  | "/api/production" `T.isPrefixOf` path = Just $ methodToPermission method Production
-  | "/api/finance"    `T.isPrefixOf` path = Just $ methodToPermission method Finance
-  | "/api/crm"        `T.isPrefixOf` path = Just $ methodToPermission method CRM
-  | "/api/admin"      `T.isPrefixOf` path = Just $ Admin All
-  | otherwise = Nothing
+requiredPermissionForPathMethod path method =
+  let stripped = case T.stripPrefix "/api/v1/" path of
+                  Just s  -> s
+                  Nothing -> case T.stripPrefix "/api/" path of
+                               Just s  -> s
+                               Nothing -> path
+  in case stripped of
+    s | "persons"    `T.isPrefixOf` s -> Just $ methodToPermission method Persons
+      | "goods"      `T.isPrefixOf` s -> Just $ methodToPermission method Goods
+      | "bills"      `T.isPrefixOf` s -> Just $ methodToPermission method Bills
+      | "orders"     `T.isPrefixOf` s -> Just $ methodToPermission method Orders
+      | "reports"    `T.isPrefixOf` s -> Just $ methodToPermission method Reports
+      | "settings"   `T.isPrefixOf` s -> Just $ methodToPermission method Settings
+      | "users"      `T.isPrefixOf` s -> Just $ methodToPermission method Users
+      | "inventory"  `T.isPrefixOf` s -> Just $ methodToPermission method Inventory
+      | "production" `T.isPrefixOf` s -> Just $ methodToPermission method Production
+      | "finance"    `T.isPrefixOf` s -> Just $ methodToPermission method Finance
+      | "crm"        `T.isPrefixOf` s -> Just $ methodToPermission method CRM
+      | "admin"      `T.isPrefixOf` s -> Just $ Admin All
+      | otherwise -> Nothing
 
 methodToPermission :: Text -> Resource -> Permission
 methodToPermission "GET"    = Read
