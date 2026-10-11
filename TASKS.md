@@ -11,13 +11,14 @@
 - [ ] **TASK-002**: Snapshot-based replay (load latest snapshot, replay only subsequent events) — effort: **2 days**
 - [ ] **TASK-003**: Event schema versioning (`event_schema_version`, versioned JSON envelope, forward-compat deserialization) — effort: **3 days**
 - [ ] **TASK-004**: Thread-safe broadcaster audit (remove any remaining `unsafePerformIO` in EventStore) — effort: **1 day**
-- [ ] **TASK-028**: Wire all 65+ existing test files into cabal test-suite — effort: **3 days** (partial: System.RateLimiterSpec added 2026-10-09; ConfigSpec, ObservabilitySpec, MigrationDryRunSpec, RBACCanonSpec added 2026-10-10; ConcurrencySpec + Phase5PropsSpec added 2026-10-10; 55+ files remain)
+- [ ] **TASK-028**: Wire all 65+ existing test files into cabal test-suite — effort: **3 days** (partial: System.RateLimiterSpec added 2026-10-09; ConfigSpec, ObservabilitySpec, MigrationDryRunSpec, RBACCanonSpec added 2026-10-10; ConcurrencySpec + Phase5PropsSpec added 2026-10-10; QuickCheckInvariantsSpec added 2026-10-11; 54+ files remain)
   - ConcurrencySpec: 1 test (Domain.Concurrency.Domain stub)
   - Phase5PropsSpec: 8 tests (BillService refinement + RBAC route mapping)
   - Fixed Phase5PropsSpec to use real Permission type instead of Text
   - Fixed requiredPermissionForPathMethod to strip /api/v1/ prefix before matching
   - Verified: 298 examples, 2 pre-existing timing failures (RateLimiter), 6 pending
   - **2026-10-11**: Fixed cabal file — restored from committed conflict state (9ecd00d4 base + 2 intended changes: removed non-existent Shared.Export.Exporter, added JWTSpec). Added all 18 wired test modules to test-suite other-modules. Created missing test/System/SequenceSpec.hs (11 tests: 7 unit + 4 QuickCheck). Restored README.md and stack.yaml from 9ecd00d4 (removed committed conflict markers). Verified via direct GHC compilation: 298 examples, 2 pre-existing timing failures, 6 pending.
+  - **2026-10-11**: Added QuickCheckInvariantsSpec (14 property-based tests: payroll, tax, social tax, income tax brackets). Verified: 14 examples, 0 failures.
 - [ ] **TASK-029**: Integration tests for v51.0 features (snapshots, multi-tenant, rate limits, WebSocket) — effort: **5 days**
 - [ ] **TASK-030**: Expand QuickCheck properties (accounting, stock, VAT invariants; multi-tenant isolation) — effort: **4 days**
 

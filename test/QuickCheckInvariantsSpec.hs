@@ -1,13 +1,51 @@
 -- | QuickCheck property tests for all domain invariants
 -- Patch G: Comprehensive property coverage — accounting, tax, payroll, stock
 {-# LANGUAGE OverloadedStrings #-}
-module QuickCheckInvariantsSpec where
+module QuickCheckInvariantsSpec (spec) where
 
 import Test.Hspec
 import Test.Hspec.QuickCheck (prop)
 import Test.QuickCheck
 import Core.Payroll.Calculation
 import Data.Time (Day, fromGregorian)
+import Data.Decimal (Decimal)
+
+-- ============================================================================
+-- Decimal generators
+-- ============================================================================
+
+genDecimal :: (Integer, Integer) -> Gen Decimal
+genDecimal (lo, hi) = fromIntegral <$> choose (lo, hi)
+
+genDecimalNonNeg :: Gen Decimal
+genDecimalNonNeg = genDecimal (0, 10000000)
+
+genDecimalSalary :: Gen Decimal
+genDecimalSalary = genDecimal (0, 10000000)
+
+genDecimalSalaryMid :: Gen Decimal
+genDecimalSalaryMid = genDecimal (500000, 3500000)
+
+genDecimalSalaryHigh :: Gen Decimal
+genDecimalSalaryHigh = genDecimal (3500000, 5000000)
+
+genDecimalSalarySocialCap :: Gen Decimal
+genDecimalSalarySocialCap = genDecimal (876000, 10000000)
+
+genDecimalSalaryLow :: Gen Decimal
+genDecimalSalaryLow = genDecimal (0, 876000)
+
+genDecimalSalaryLowBracket :: Gen Decimal
+genDecimalSalaryLowBracket = genDecimal (0, 500000)
+
+genDecimalPct :: Gen Decimal
+genDecimalPct = genDecimal (0, 100)
+
+genDecimalBonus :: Gen Decimal
+genDecimalBonus = genDecimal (0, 1000000)
+
+genDecimalAdditions :: Gen Decimal
+genDecimalAdditions = genDecimal (0, 500000)
 
 -- ============================================================================
 -- PAYROLL INVARIANTS
@@ -16,66 +54,66 @@ import Data.Time (Day, fromGregorian)
 -- | Net salary must never be negative
 prop_calcNetSalaryNonNeg :: Property
 prop_calcNetSalaryNonNeg =
-  forAll (choose (0.0, 10000000)) $ \salary ->
+  forAll genDecimalSalary $ \salary ->
     calcNetSalaryFromGross salary >= 0
 
 -- | Income tax must never be negative
 prop_calcIncomeTaxNonNeg :: Property
 prop_calcIncomeTaxNonNeg =
-  forAll (choose (0.0, 10000000)) $ \salary ->
+  forAll genDecimalSalary $ \salary ->
     calcIncomeTax salary >= 0
 
 -- | Social tax must never be negative
 prop_calcSocialTaxNonNeg :: Property
 prop_calcSocialTaxNonNeg =
-  forAll (choose (0.0, 10000000)) $ \salary ->
+  forAll genDecimalSalary $ \salary ->
     calcSocialTax salary >= 0
 
 -- | Net salary must not exceed gross salary (taxes are positive)
 prop_calcNetSalaryLEGross :: Property
 prop_calcNetSalaryLEGross =
-  forAll (choose (0.0, 10000000)) $ \salary ->
+  forAll genDecimalSalary $ \salary ->
     calcNetSalaryFromGross salary <= salary
 
 -- | For salary ≤ 500000, NDFL = exactly 13%
 prop_ndfl_low_bracket :: Property
 prop_ndfl_low_bracket =
-  forAll (choose (0.0, 500000)) $ \salary ->
+  forAll genDecimalSalaryLowBracket $ \salary ->
     calcIncomeTax salary == salary * 0.13
 
 -- | Annual bonus less than 3 months → zero
 prop_year_end_bonus_minimum :: Property
 prop_year_end_bonus_minimum =
-  forAll (choose (0, 2)) $ \months ->
-    forAll (choose (0.0, 1000000)) $ \bonus ->
+  forAll (choose (0, 2) :: Gen Int) $ \months ->
+    forAll genDecimalBonus $ \bonus ->
       calcYearEndBonus months bonus == 0
 
 -- | Annual bonus at 12 months → full amount
 prop_year_end_bonus_full :: Property
 prop_year_end_bonus_full =
-  forAll (choose (0.0, 1000000)) $ \bonus ->
+  forAll genDecimalBonus $ \bonus ->
     calcYearEndBonus 12 bonus == bonus
 
 -- | Advance amount = base * pct / 100
 prop_advance_amount_correct :: Property
 prop_advance_amount_correct =
-  forAll (choose (0.0, 1000000)) $ \base ->
-    forAll (choose (0.0, 100.0)) $ \pct ->
+  forAll genDecimalBonus $ \base ->
+    forAll genDecimalPct $ \pct ->
       calcAdvanceAmount base pct == base * pct / 100.0
 
 -- | Total compensation = base + additions
 prop_total_compensation :: Property
 prop_total_compensation =
-  forAll (choose (0.0, 1000000)) $ \base ->
-    forAll (choose (0.0, 500000)) $ \additions ->
+  forAll genDecimalBonus $ \base ->
+    forAll genDecimalAdditions $ \additions ->
       calcTotalCompensation base additions == base + additions
 
 -- | Vacation days between same date = 0
 prop_vacation_zero_days :: Property
 prop_vacation_zero_days =
-  forAll (choose (2020, 2030)) $ \year ->
-    forAll (choose (1, 12)) $ \month ->
-      forAll (choose (1, 28)) $ \day ->
+  forAll (choose (2020, 2030) :: Gen Integer) $ \year ->
+    forAll (choose (1, 12) :: Gen Int) $ \month ->
+      forAll (choose (1, 28) :: Gen Int) $ \day ->
         let d = fromGregorian year month day
         in calcVacationDays d d == 0
 
@@ -86,13 +124,13 @@ prop_vacation_zero_days =
 -- | Social tax for low salary = salary * 30%
 prop_social_tax_low :: Property
 prop_social_tax_low =
-  forAll (choose (0.0, 876000)) $ \salary ->
+  forAll genDecimalSalaryLow $ \salary ->
     calcSocialTax salary == salary * 0.30
 
 -- | Social tax for high salary = capped at 876000 * 30%
 prop_social_tax_cap :: Property
 prop_social_tax_cap =
-  forAll (choose (876000.0, 10000000)) $ \salary ->
+  forAll genDecimalSalarySocialCap $ \salary ->
     calcSocialTax salary == 262800.0
 
 -- ============================================================================
@@ -102,14 +140,14 @@ prop_social_tax_cap =
 -- | Income tax for medium salary (500k-3.5M)
 prop_income_tax_medium :: Property
 prop_income_tax_medium =
-  forAll (choose (500000.0, 3500000)) $ \salary ->
+  forAll genDecimalSalaryMid $ \salary ->
     let expected = 65000 + (salary - 500000) * 0.15
     in calcIncomeTax salary == expected
 
 -- | Income tax for high salary (3.5M-5M)
 prop_income_tax_high :: Property
 prop_income_tax_high =
-  forAll (choose (3500000.0, 5000000)) $ \salary ->
+  forAll genDecimalSalaryHigh $ \salary ->
     let expected = 65000 + 450000 + (salary - 3500000) * 0.18
     in calcIncomeTax salary == expected
 
@@ -117,8 +155,8 @@ prop_income_tax_high =
 -- MAIN TEST
 -- ============================================================================
 
-main :: IO ()
-main = hspec $ do
+spec :: Spec
+spec = do
   describe "Payroll invariants" $ do
     prop "net salary ≥ 0" prop_calcNetSalaryNonNeg
     prop "income tax ≥ 0" prop_calcIncomeTaxNonNeg

@@ -25,6 +25,7 @@ import qualified MigrationDryRunSpec
 import qualified RBACCanonSpec
 import qualified ConcurrencySpec
 import qualified Phase5PropsSpec
+import qualified QuickCheckInvariantsSpec
 import DAL.Types
 
 main :: IO ()
@@ -50,6 +51,7 @@ main = hspec $ do
   RBACCanonSpec.spec
   ConcurrencySpec.spec
   Phase5PropsSpec.spec
+  QuickCheckInvariantsSpec.spec
 
   describe "TestHelpers properties" $ do
     it "bill total equals sum of line totals" $
