@@ -25,7 +25,7 @@ spec = do
       let req = CreateWarehouseRequest "WH1" "Main Warehouse" MainWarehouse Nothing (Just 1000)
           existing = [case createWarehouse [] req of WarehouseSuccess w -> w; _ -> error "bad"]
       case createWarehouse existing req of
-        WarehouseError _ -> pure ()
+        WarehouseError _ -> (pure () :: IO ())
         _ -> fail "Expected duplicate code error"
 
     it "finds by code and reads/updates/deletes" $ do
@@ -36,7 +36,7 @@ spec = do
         WarehouseSuccess u -> wName u `shouldBe` "Branch Updated"
         _ -> fail "Expected update"
       case deleteWarehouse [w] (wId w) of
-        WarehouseSuccess d -> wName d `shouldContain` "archived"
+        WarehouseSuccess d -> T.isInfixOf "archived" (wName d) `shouldBe` True
         _ -> fail "Expected delete"
 
     it "counts warehouses" $ do

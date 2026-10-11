@@ -26,6 +26,8 @@ import qualified RBACCanonSpec
 import qualified ConcurrencySpec
 import qualified Phase5PropsSpec
 import qualified QuickCheckInvariantsSpec
+import qualified Inventory.StockSpec
+import qualified Inventory.WarehouseSpec
 import DAL.Types
 
 main :: IO ()
@@ -52,6 +54,8 @@ main = hspec $ do
   ConcurrencySpec.spec
   Phase5PropsSpec.spec
   QuickCheckInvariantsSpec.spec
+  Inventory.StockSpec.spec
+  Inventory.WarehouseSpec.spec
 
   describe "TestHelpers properties" $ do
     it "bill total equals sum of line totals" $

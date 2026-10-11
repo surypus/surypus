@@ -31,7 +31,7 @@ spec = do
       let s = InvStock 1 1 10 20 0
       let mv = StockMovement Issue 1 (Just 10) Nothing 30 Nothing
       case applyMovement [s] mv of
-        Left _ -> pure ()
+        Left _ -> (pure () :: IO ())
         Right _ -> fail "Expected failure"
 
     it "transfers stock between warehouses" $ do

@@ -11,7 +11,7 @@
 - [ ] **TASK-002**: Snapshot-based replay (load latest snapshot, replay only subsequent events) — effort: **2 days**
 - [ ] **TASK-003**: Event schema versioning (`event_schema_version`, versioned JSON envelope, forward-compat deserialization) — effort: **3 days**
 - [ ] **TASK-004**: Thread-safe broadcaster audit (remove any remaining `unsafePerformIO` in EventStore) — effort: **1 day**
-- [ ] **TASK-028**: Wire all 65+ existing test files into cabal test-suite — effort: **3 days** (partial: System.RateLimiterSpec added 2026-10-09; ConfigSpec, ObservabilitySpec, MigrationDryRunSpec, RBACCanonSpec added 2026-10-10; ConcurrencySpec + Phase5PropsSpec added 2026-10-10; QuickCheckInvariantsSpec added 2026-10-11; 54+ files remain)
+- [ ] **TASK-028**: Wire all 65+ existing test files into cabal test-suite — effort: **3 days** (partial: System.RateLimiterSpec added 2026-10-09; ConfigSpec, ObservabilitySpec, MigrationDryRunSpec, RBACCanonSpec added 2026-10-10; ConcurrencySpec + Phase5PropsSpec added 2026-10-10; QuickCheckInvariantsSpec added 2026-10-11; Inventory.StockSpec + Inventory.WarehouseSpec added 2026-10-12; 52+ files remain)
   - ConcurrencySpec: 1 test (Domain.Concurrency.Domain stub)
   - Phase5PropsSpec: 8 tests (BillService refinement + RBAC route mapping)
   - Fixed Phase5PropsSpec to use real Permission type instead of Text
@@ -19,6 +19,10 @@
   - Verified: 298 examples, 2 pre-existing timing failures (RateLimiter), 6 pending
   - **2026-10-11**: Fixed cabal file — restored from committed conflict state (9ecd00d4 base + 2 intended changes: removed non-existent Shared.Export.Exporter, added JWTSpec). Added all 18 wired test modules to test-suite other-modules. Created missing test/System/SequenceSpec.hs (11 tests: 7 unit + 4 QuickCheck). Restored README.md and stack.yaml from 9ecd00d4 (removed committed conflict markers). Verified via direct GHC compilation: 298 examples, 2 pre-existing timing failures, 6 pending.
   - **2026-10-11**: Added QuickCheckInvariantsSpec (14 property-based tests: payroll, tax, social tax, income tax brackets). Verified: 14 examples, 0 failures.
+- **2026-10-12**: Wired Inventory.StockSpec + Inventory.WarehouseSpec (9 tests: receipt/issue/transfer/adjustment movements, warehouse CRUD + duplicate-code guard). Fixed 3 real compile errors found by compiling (ambiguous `pure ()` in hspec `it` blocks ×2 → `(pure () :: IO ())`; `shouldContain` on `Text` → `T.isInfixOf`). Verified end-to-end: **321 examples, 2 failures (pre-existing RateLimiter timing), 6 pending** — both new specs green.
+  - **Excluded Inventory.GoodsSpec** — it does NOT pass: `Inventory.Goods.goodsForRestocking` filters only on `gActive`/`gStatus` and never consults `gMinStock`, so the spec's `goodsForRestocking [g1,g2] == [g1]` assertion is unsatisfiable as written. Also `goodsForRestocking`/`totalInventoryValue` are implemented but **not exported** from `Inventory.Goods`. Needs a decision on intended semantics before wiring (see TASK-033).
+- **TASK-033 (new, found during TASK-028 audit)**: `Inventory.Goods.goodsForRestocking` ignores `gMinStock`/`gMaxStock`, so it cannot report goods below minimum — contradicts both its name and its spec. Fix requires defining intended semantics (below-min-stock? compare against what on-hand quantity, given `Goods` carries no stock level?) and exporting `goodsForRestocking` + `totalInventoryValue`. Blocks wiring of `test/Inventory/GoodsSpec.hs`.
+- **TASK-034 (new, found during TASK-028 audit)**: 12 spec files import modules that do not exist and are dead code: `Domain/Bill|Goods|Location|Person|Production|HR|HRProperty|Job|PayrollSpec.hs` (no `src/Domain/*` except `Accounting`), `Domain/CRMSpec.hs` (`src/CRM/` has only `Types.hs`, missing `Contact/Company/Deal/Activity/Pipeline`), `Domain/DocumentSpec.hs` (no `Core.Document.Types`/`Domain.Document`), `DAL/FixturesSpec.hs` (no `DAL.Fixtures`). Either restore the modules or delete the specs.
 - [ ] **TASK-029**: Integration tests for v51.0 features (snapshots, multi-tenant, rate limits, WebSocket) — effort: **5 days**
 - [ ] **TASK-030**: Expand QuickCheck properties (accounting, stock, VAT invariants; multi-tenant isolation) — effort: **4 days**
 
@@ -41,6 +45,8 @@
 - [ ] **TASK-026**: Pen-test preparation (auth bypass, rate limit bypass, cross-tenant leakage tests) — effort: **3 days**
 - [ ] **TASK-031**: Prometheus metrics completeness audit (pool gauge, per-endpoint counts) — effort: **2 days**
 - [ ] **TASK-032**: Structured logging production readiness (correlation IDs, replace putStrLn) — effort: **2 days**
+- [ ] **TASK-033**: Fix `Inventory.Goods.goodsForRestocking` semantics — it ignores `gMinStock`/`gMaxStock` and returns all active goods, so it cannot report below-minimum items (blocks `test/Inventory/GoodsSpec.hs`); also export `goodsForRestocking` + `totalInventoryValue` — effort: **1 day**
+- [ ] **TASK-034**: Resolve 12 orphaned spec files importing non-existent modules (`Domain.Bill/Goods/Location/Person/Production/HR/Job/Payroll`, `CRM.Contact/Company/Deal/Activity/Pipeline`, `Core.Document.Types`, `Domain.Document`, `DAL.Fixtures`) — restore the modules or delete the specs — effort: **2 days**
 
 ## Priority P2 (Nice to have — feature completion)
 

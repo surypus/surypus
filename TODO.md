@@ -115,6 +115,12 @@ bd ready
 - [x] Add JWTSpec with 22 tests covering Surypus.JWT security-critical module: jwtConfigFromSecret, validateAccessToken, decodeAndValidateToken + QuickCheck security properties (2026-10-09)
   - 17 unit tests + 5 QuickCheck security properties
   - Verified: 22 examples, 0 failures (compiled and run via ghc directly; full cabal build blocked by GHC 9.10.3 vs persistent incompatibility)
+- [x] Wire Inventory.StockSpec + Inventory.WarehouseSpec into cabal test-suite (2026-10-12)
+  - 9 tests: StockOps receipt/issue/insufficient/transfer/adjustment; Warehouse create/duplicate/read-update-delete/count
+  - Fixed 3 genuine compile errors: ambiguous `pure ()` in hspec `it` blocks (Inventory.StockSpec:30, Inventory.WarehouseSpec:24) → `(pure () :: IO ())`; `shouldContain` on `Text` (Inventory.WarehouseSpec:39) → `T.isInfixOf "archived" (wName d) \`shouldBe\` True`
+  - Verified by building and running the whole wired suite: **321 examples, 2 failures (pre-existing RateLimiter timing flakes), 6 pending** — both new specs green
+- [ ] TASK-033: `Inventory.Goods.goodsForRestocking` ignores `gMinStock`, returns all active goods → cannot report below-minimum items; also not exported. Blocks `test/Inventory/GoodsSpec.hs`.
+- [ ] TASK-034: 12 orphaned spec files import non-existent modules (`Domain.*`, `CRM.Contact/Company/Deal/Activity/Pipeline`, `Core.Document.Types`, `Domain.Document`, `DAL.Fixtures`) — restore or delete.
 
 ### DevOps
 - [x] Add Docker configuration
@@ -301,4 +307,5 @@ bd ready
 | Done (System.Counter) | 1 |
 | Done (JWT) | 1 |
 | Done (New: Config+Obs+Mig+RBACCanon) | 4 |
-| **Total** | **67** |
+| Done (New: Inventory Stock+Warehouse) | 2 |
+| **Total** | **69** |
