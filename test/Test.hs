@@ -28,6 +28,7 @@ import qualified Phase5PropsSpec
 import qualified QuickCheckInvariantsSpec
 import qualified Inventory.StockSpec
 import qualified Inventory.WarehouseSpec
+import qualified Inventory.GoodsSpec
 import qualified HR.OperationsSpec
 import qualified Phase2Phase3.AccountingEventsSpec
 import qualified Domain.ProductionPropertySpec
@@ -60,6 +61,7 @@ main = hspec $ do
   QuickCheckInvariantsSpec.spec
   Inventory.StockSpec.spec
   Inventory.WarehouseSpec.spec
+  Inventory.GoodsSpec.spec
   HR.OperationsSpec.spec
   Phase2Phase3.AccountingEventsSpec.spec
   Domain.ProductionPropertySpec.spec

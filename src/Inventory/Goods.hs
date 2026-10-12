@@ -33,6 +33,8 @@ module Inventory.Goods
     findGoodsByBarcode,
     countGoods,
     findGoodsByParent,
+    goodsForRestocking,
+    totalInventoryValue,
   ) where
 
 import Data.Int (Int64)
@@ -185,7 +187,7 @@ createGoods goods req =
     [] -> case checkDuplicateGoods goods req of
       Just err -> GoodsConflict (T.pack (show err))
       Nothing ->
-        let newId = (maximum (map gId goods) `max` 0) + 1
+        let newId = (if null goods then 0 else maximum (map gId goods)) + 1
             newGoods = Goods
               { gId = newId
               , gCode = cgrCode req
@@ -297,10 +299,16 @@ countGoods = length
 countActiveGoods :: [Goods] -> Int
 countActiveGoods = length . goodsByStatus GoodsActive
 
--- | Get goods requiring restocking
+-- | Get goods requiring restocking.
+-- Semantics (TASK-033): a good is restockable iff it is active and declares a
+-- positive minimum-stock level (@gMinStock > 0@). A minimum of 0 means no
+-- restocking policy, so the good is excluded.
+-- NOTE: @Goods@ carries no on-hand quantity (that lives in @Inventory.Stock@),
+-- so a true below-minimum report requires joining with stock balances — out of
+-- scope here; this is the strongest self-contained definition.
 goodsForRestocking :: [Goods] -> [Goods]
 goodsForRestocking goods =
-  filter (\g -> gActive g && gStatus g == GoodsActive) goods
+  filter (\g -> gActive g && gStatus g == GoodsActive && gMinStock g > 0) goods
 
 -- | Calculate total inventory value
 totalInventoryValue :: [Goods] -> Double
