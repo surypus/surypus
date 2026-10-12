@@ -154,6 +154,13 @@ bd ready
   - Verified by direct GHC build+run of the full Test.hs closure (full `cabal build` still blocked by pre-existing library errors in Surypus.API.BillTemplates et al.): **360 examples, 0 failures, 6 pending** — stable across 4 runs
   - Negative check: the new spec compiled against the pre-fix `lbCheck` (git HEAD) fails exactly the 2 leaky tests, deterministically
 - [x] TASK-033: `goodsForRestocking` semantics fixed, functions exported, `test/Inventory/GoodsSpec.hs` wired. Follow-up: true below-minimum report via join with `Inventory.Stock` balances.
+- [x] Close fail-open validators in `Surypus.Validation` (2026-10-12)
+  - `validateBillInput` and `validateOrderInput` returned `Right ()` for **every** input — they were inert guards that read as enforced input validation while accepting empty and whitespace-only codes/names. Both now reject empty and blank text (`FieldRequired`), matching the fail-closed shape of their siblings (`validateGoodsInput`, `validateLocationInput`, `validateTaxInput`).
+  - `validatePersonInput` took an INN and a KPP and discarded both (`_inn`, `_kpp`), so a malformed identifier passed as long as the name was well-formed. It now validates `Just` INN/KPP through the same `isValidINN`/`isValidKPP` predicates as `validateINN`/`validateKPP` (`Nothing` still means "not supplied").
+  - Class guard added to `Surypus.ValidationSpec`: `validators fail closed on blank input` enumerates all 7 text-taking validators and asserts each rejects blank input while accepting well-formed input — so a future validator cannot silently become unconditional. The pair of assertions also proves the guard is not satisfied by over-broad rejection.
+  - Verified by direct GHC build+run of the full Test.hs closure: **371 examples, 0 failures, 6 pending** (baseline 360 → 371; +11 new examples).
+  - Negative control: the spec compiled against the pre-fix `src/Surypus/Validation.hs` (git HEAD, verified the compile log names the shadow copy) fails exactly the 7 new discriminating tests and nothing else — the 4 valid-input cases still pass.
+  - Zero production callers today (`Surypus.Validation` is imported by tests only), so the fix is behaviour-only for the validation contract; the guards are what `docs/TYPES.md`/`AGENTS.md` already document callers doing (`case validateBillInput input of Left err -> ValidationError`), which previously could never produce a `Left`.
 - [ ] TASK-034: 26 orphaned/stale spec files: 12 import non-existent modules (`Domain.*`, `CRM.Contact/Company/Deal/Activity/Pipeline`, `Core.Document.Types`, `Domain.Document`, `DAL.Fixtures`) — restore or delete; `Phase2Phase3/AccountingEventStoreSpec.hs` + `Phase2Phase3/ReadModelCacheSpec.hs` target the removed in-memory `DAL.EventStore` API — rewrite against the PostgreSQL-backed EventStore or delete; `DAL/TypesSpec.hs` is stale against `DAL.Types` (nonexistent `PersonInput`/`GoodsInput`/`Stock`/`SortDir`/`PaginatedResult`/`DashboardStats`/`*Filter` types, wrong field names, wrong `Bill` arg types) — rewrite before wiring; plus (audit 2026-10-12): `DB/RepositoriesSpec.hs` + `Integration/PoolSpec.hs` (missing `DB.Connection`), `API/{Health,Swagger,Procurement,RBAC}Spec.hs` (missing `App`), `API/ServerV2Spec.hs` (module-name collision), `RBACSpec.hs` (stale thin RBAC API), `DAL/DBSpec.hs` (stale `DAL.DB` API), `DAL/IntegrationSpec.hs` (missing `Test.DAL.Fixtures`), `DAL/EventStoreSpec.hs` (needs live DB pool); placeholder-only specs (zero coverage, decide keep-or-delete): `Integration/{Crud,Negative,Property,InventoryLifecycle}Spec.hs`, `API/ServerSpec.hs`, `BridgeSpec.hs`, `SurypusSpec.hs`.
 
 ### DevOps
@@ -347,4 +354,5 @@ bd ready
 | Done (New: Contract.SchemaSpec) | 1 |
 | Done (New: Inventory.Goods) | 1 |
 | Done (New: RateLimiter de-flake + lbCheck fix) | 1 |
-| **Total** | **74** |
+| Done (New: Surypus.Validation fail-open validators) | 1 |
+| **Total** | **75** |

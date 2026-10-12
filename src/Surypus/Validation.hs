@@ -59,11 +59,19 @@ isValidPhone phone =
   let digits = T.filter (`elem` ['0' .. '9']) phone
    in T.length digits >= 10
 
--- | Validate person input
+-- | Validate person input.
+--
+-- Fails closed: a @Just@ INN/KPP is validated with the same predicates as
+-- 'validateINN'/'validateKPP' rather than being silently discarded, so a
+-- malformed identifier cannot pass validation just because the name is fine.
 validatePersonInput :: Text -> Maybe Text -> Maybe Text -> Either ValidationError ()
-validatePersonInput name _inn _kpp
+validatePersonInput name mInn mKpp
   | T.null name || T.strip name == "" = Left EmptyName
-  | otherwise = Right ()
+  | otherwise = case mInn of
+      Just inn | not (isValidINN inn) -> Left InvalidINN
+      _ -> case mKpp of
+        Just kpp | not (isValidKPP kpp) -> Left InvalidKPP
+        _ -> Right ()
 
 -- | Validate INN string
 validateINN :: Text -> Either ValidationError Text
@@ -92,9 +100,11 @@ validateAccTurnInput AccTurnInput {..}
   | atiAmount <= 0 = Left InvalidAmount
   | otherwise = Right ()
 
--- | Validate bill input
+-- | Validate bill input (bill code must be non-empty and non-blank).
 validateBillInput :: Text -> Either ValidationError ()
-validateBillInput _code = Right ()
+validateBillInput code
+  | T.null code || T.strip code == "" = Left (FieldRequired "bill code")
+  | otherwise = Right ()
 
 -- | Validate currency input
 validateCurrencyInput :: Text -> Text -> Either ValidationError ()
@@ -114,9 +124,11 @@ validateLocationInput name
   | T.null name = Left (FieldRequired "name")
   | otherwise = Right ()
 
--- | Validate order input
+-- | Validate order input (order name must be non-empty and non-blank).
 validateOrderInput :: Text -> Either ValidationError ()
-validateOrderInput _name = Right ()
+validateOrderInput name
+  | T.null name || T.strip name == "" = Left (FieldRequired "order name")
+  | otherwise = Right ()
 
 -- | Validate payment input
 validatePaymentInput :: Double -> Day -> Either ValidationError ()

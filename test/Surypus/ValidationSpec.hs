@@ -60,6 +60,75 @@ spec = do
       validatePersonInput "   " Nothing Nothing
         `shouldSatisfy` isLeft
 
+    it "accepts a well-formed INN/KPP" $
+      validatePersonInput "John" (Just "1234567890") (Just "123456789")
+        `shouldBe` Right ()
+
+    it "rejects a malformed INN instead of discarding it" $
+      validatePersonInput "John" (Just "123") Nothing
+        `shouldSatisfy` isLeft
+
+    it "rejects a malformed KPP instead of discarding it" $
+      validatePersonInput "John" Nothing (Just "12345")
+        `shouldSatisfy` isLeft
+
+  describe "validateBillInput" $ do
+    it "accepts a non-empty code" $
+      validateBillInput "B-001"
+        `shouldBe` Right ()
+
+    it "rejects an empty code" $
+      validateBillInput ""
+        `shouldSatisfy` isLeft
+
+    it "rejects a whitespace-only code" $
+      validateBillInput "   "
+        `shouldSatisfy` isLeft
+
+  describe "validateOrderInput" $ do
+    it "accepts a non-empty name" $
+      validateOrderInput "Order 1"
+        `shouldBe` Right ()
+
+    it "rejects an empty name" $
+      validateOrderInput ""
+        `shouldSatisfy` isLeft
+
+    it "rejects a whitespace-only name" $
+      validateOrderInput "  \t "
+        `shouldSatisfy` isLeft
+
+  -- | Class guard: every text-taking validator must reject blank input.
+  -- A validator that returns Right unconditionally (the fail-open shape these
+  -- three had) fails here, so no new validator can go inert unnoticed.
+  describe "validators fail closed on blank input" $ do
+    let validators =
+          [ ("validatePersonInput", validatePersonInput "" Nothing Nothing)
+          , ("validateAccPlanInput", validateAccPlanInput "" "" 1)
+          , ("validateBillInput", validateBillInput "")
+          , ("validateGoodsInput", validateGoodsInput "" "ART001")
+          , ("validateLocationInput", validateLocationInput "")
+          , ("validateOrderInput", validateOrderInput "")
+          , ("validateTaxInput", validateTaxInput "" 20.0)
+          ]
+
+    it "no validator accepts blank text" $
+      mapM_ (\(nm, r) -> r `shouldSatisfy` isLeft) validators
+
+    it "the same validators accept well-formed text" $
+      mapM_
+        ( \(nm, r) ->
+            r `shouldSatisfy` isRight
+        )
+        [ ("validatePersonInput", validatePersonInput "John" (Just "1234567890") (Just "123456789"))
+        , ("validateAccPlanInput", validateAccPlanInput "50" "Cash" 1)
+        , ("validateBillInput", validateBillInput "B-001")
+        , ("validateGoodsInput", validateGoodsInput "Product" "ART001")
+        , ("validateLocationInput", validateLocationInput "Warehouse A")
+        , ("validateOrderInput", validateOrderInput "Order 1")
+        , ("validateTaxInput", validateTaxInput "VAT" 20.0)
+        ]
+
   describe "validateINN" $ do
     it "accepts 10-digit INN" $
       validateINN "1234567890"
@@ -180,6 +249,10 @@ spec = do
 isLeft :: Either a b -> Bool
 isLeft (Left _) = True
 isLeft _        = False
+
+isRight :: Either a b -> Bool
+isRight (Right _) = True
+isRight _         = False
 
 -- | Generate valid AccTurnInput
 genValidAccTurnInput :: Gen AccTurnInput
