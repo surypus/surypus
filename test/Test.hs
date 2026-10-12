@@ -32,6 +32,7 @@ import qualified Inventory.GoodsSpec
 import qualified HR.OperationsSpec
 import qualified Phase2Phase3.AccountingEventsSpec
 import qualified Phase2Phase3.AccountingReadModelSpec
+import qualified Core.Accounting.ReadModelSpec
 import qualified Domain.ProductionPropertySpec
 import qualified Contract.SchemaSpec
 import DAL.Types
@@ -66,6 +67,7 @@ main = hspec $ do
   HR.OperationsSpec.spec
   Phase2Phase3.AccountingEventsSpec.spec
   Phase2Phase3.AccountingReadModelSpec.spec
+  Core.Accounting.ReadModelSpec.spec
   Domain.ProductionPropertySpec.spec
   Contract.SchemaSpec.spec
 

@@ -95,6 +95,16 @@ applyAccountCreated model event = model
   }
 
 -- | Apply JournalEntryPosted event
+--
+-- The real producer ('Infrastructure.EventStore.Accounting.appendAccountingEvent')
+-- stores @toJSON (JournalEntryPostedEvent ev)@ — a tagged union whose payload
+-- sits under @"contents"@ with the record field names as keys
+-- (@jepAmount@/@jepDebitAcc@/@jepCreditAcc@). The amount is read from there
+-- (legacy payloads carrying only a top-level @"changeAmount"@ are still
+-- honoured), and the sign follows the double-entry side of this model's
+-- account: +amount on the debit side, -amount on the credit side, 0 for any
+-- other account — mirroring the pure replay layer
+-- 'Infrastructure.EventStore.Accounting.applyEvent'.
 applyJournalEntryPosted :: AccountReadModel -> ES.Event -> AccountReadModel
 applyJournalEntryPosted model event = model
   { armBalanceState = newBalanceState
@@ -102,16 +112,43 @@ applyJournalEntryPosted model event = model
   }
   where
     eventData = ES.eventEventData event
-    changeAmount = case A.fromJSON eventData of
-                     A.Success (A.Object obj) ->
-                       case KM.lookup "changeAmount" obj of
-                         Just val -> case A.fromJSON val of
-                           A.Success amt -> Just amt
-                           _ -> Nothing
-                         Nothing -> Nothing
-                     _ -> Nothing
+    entryFields = case A.fromJSON eventData of
+                    A.Success (A.Object top) ->
+                      case KM.lookup "contents" top of
+                        Just (A.Object inner) -> Just inner
+                        _ -> Just top
+                    _ -> Nothing
+    entryAmount = entryFields >>= \obj ->
+      case KM.lookup "jepAmount" obj of
+        Just val -> case A.fromJSON val of
+                      A.Success amt -> Just amt
+                      _ -> Nothing
+        Nothing ->
+          case KM.lookup "changeAmount" obj of
+            Just val -> case A.fromJSON val of
+                          A.Success amt -> Just amt
+                          _ -> Nothing
+            Nothing -> Nothing
+    debitAccount = entryFields >>= \obj ->
+      case KM.lookup "jepDebitAcc" obj of
+        Just val -> case A.fromJSON val of
+                      A.Success acc -> Just acc
+                      _ -> Nothing
+        Nothing -> Nothing
+    creditAccount = entryFields >>= \obj ->
+      case KM.lookup "jepCreditAcc" obj of
+        Just val -> case A.fromJSON val of
+                      A.Success acc -> Just acc
+                      _ -> Nothing
+        Nothing -> Nothing
     oldState = armBalanceState model
-    changeAmount' = fromMaybe 0.0 changeAmount
+    changeAmount' = case (entryAmount, debitAccount, creditAccount) of
+                      (Just amt, Just dAcc, Just cAcc)
+                        | armAccountId model == dAcc -> amt
+                        | armAccountId model == cAcc -> negate amt
+                        | otherwise -> 0
+                      (Just amt, Nothing, Nothing) -> amt
+                      _ -> 0.0
     newBalanceState = oldState
       { bsCurrentBalance = bsCurrentBalance oldState + changeAmount'
       , bsDebitTotal = if changeAmount' > 0
