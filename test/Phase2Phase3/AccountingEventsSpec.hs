@@ -1,4 +1,4 @@
-module Phase2Phase3.AccountingEventsSpec where
+module Phase2Phase3.AccountingEventsSpec (spec) where
 
 import Data.Text (pack)
 import Data.Time (getCurrentTime)
