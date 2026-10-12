@@ -166,6 +166,12 @@ bd ready
   - Added 3 deterministic tests: `evicts the oldest entry when maxSize is exceeded` (a evicted, c survives), `keeps existing entries when overwriting at capacity` (overwrite at maxSize does not grow the cache), `treats an entry expiring exactly now as not expired` (pins strict `now > expiryTime`)
   - Verified by direct GHC build+run of the full Test.hs closure: **374 examples, 0 failures, 6 pending** (baseline 371 → 374; +3 new examples)
   - Negative check: the spec compiled against a shadow `System.Cache` whose `stmCachePut` keeps the oldest entries (shadow dir first in `-i`, compile log verified to name the shadow file) fails exactly the eviction test — 22 examples, 1 failure
+- [x] Wire Phase2Phase3.AccountingReadModelSpec into cabal test-suite (2026-10-12)
+  - 9 tests over `Infrastructure.EventStore.Accounting` (the typed accounting event stream): AccountCreated projection; debit/credit balance movement; accumulation + double-entry conservation (ledger sums to 0); reconstruct present/unknown account; unprojected accounts get no phantom snapshot; freeze/unfreeze; EntryReverted/EntryCancelled no-op; debit == credit counts twice; JSON roundtrip of all 6 event variants (persistence contract)
+  - The spec was stale beyond small fixes — it targeted the removed in-memory `DAL.EventStore` API (`initEventStore`/`createAccountCreatedEvent`/`createJournalEntryEvent`) and 1-arg replay functions; the current `Core.Accounting.ReadModel` entry points are DB-bound. Rewritten against the pure `replayAccountEvents`/`reconstructAccountBalance` layer — no database, fully deterministic
+  - Verified by direct GHC build+run of the full Test.hs closure (full `cabal build` still blocked by pre-existing library errors in Surypus.API.BillTemplates et al.): **383 examples, 0 failures, 6 pending** (374 → 383), stable across 3 runs
+  - Negative check: shadow `Infrastructure.EventStore.Accounting` whose credit side does not decrement the balance fails exactly the 3 balance-moving tests — 9 examples, 3 failures
+  - Follow-up (new): `Core.Accounting.ReadModel.applyJournalEntryPosted` reads `changeAmount` from the event JSON, but the real producer writes `toJSON (JournalEntryPostedEvent …)` with keys `entryId`/`debitAcc`/`creditAcc`/`amount` — the two replay layers disagree on the event-data schema, so replaying real events through `Core.Accounting.ReadModel` treats every journal entry as 0
 - [ ] TASK-034: 26 orphaned/stale spec files: 12 import non-existent modules (`Domain.*`, `CRM.Contact/Company/Deal/Activity/Pipeline`, `Core.Document.Types`, `Domain.Document`, `DAL.Fixtures`) — restore or delete; `Phase2Phase3/AccountingEventStoreSpec.hs` + `Phase2Phase3/ReadModelCacheSpec.hs` target the removed in-memory `DAL.EventStore` API — rewrite against the PostgreSQL-backed EventStore or delete; `DAL/TypesSpec.hs` is stale against `DAL.Types` (nonexistent `PersonInput`/`GoodsInput`/`Stock`/`SortDir`/`PaginatedResult`/`DashboardStats`/`*Filter` types, wrong field names, wrong `Bill` arg types) — rewrite before wiring; plus (audit 2026-10-12): `DB/RepositoriesSpec.hs` + `Integration/PoolSpec.hs` (missing `DB.Connection`), `API/{Health,Swagger,Procurement,RBAC}Spec.hs` (missing `App`), `API/ServerV2Spec.hs` (module-name collision), `RBACSpec.hs` (stale thin RBAC API), `DAL/DBSpec.hs` (stale `DAL.DB` API), `DAL/IntegrationSpec.hs` (missing `Test.DAL.Fixtures`), `DAL/EventStoreSpec.hs` (needs live DB pool); placeholder-only specs (zero coverage, decide keep-or-delete): `Integration/{Crud,Negative,Property,InventoryLifecycle}Spec.hs`, `API/ServerSpec.hs`, `BridgeSpec.hs`, `SurypusSpec.hs`.
 
 ### DevOps
@@ -361,4 +367,5 @@ bd ready
 | Done (New: RateLimiter de-flake + lbCheck fix) | 1 |
 | Done (New: Surypus.Validation fail-open validators) | 1 |
 | Done (New: System.Cache eviction/boundary strengthening) | 1 |
-| **Total** | **75** |
+| Done (New: AccountingReadModel replay) | 1 |
+| **Total** | **76** |
