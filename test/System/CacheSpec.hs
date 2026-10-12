@@ -35,6 +35,8 @@ spec = do
       isExpired (CacheEntry "k" (1 :: Int) (Just pastTime)) testTime `shouldBe` True
     it "returns False when expiry is in the future" $
       isExpired (CacheEntry "k" (1 :: Int) (Just futureTime)) testTime `shouldBe` False
+    it "treats an entry expiring exactly now as not expired" $
+      isExpired (CacheEntry "k" (1 :: Int) (Just testTime)) testTime `shouldBe` False
 
   describe "calcVATStrict" $ do
     it "calculates 20% VAT on 100" $
@@ -85,6 +87,28 @@ spec = do
         stmCachePut "c" 3 cache
       size <- atomically $ stmCacheSize cache
       size `shouldBe` 2
+
+    it "evicts the oldest entry when maxSize is exceeded" $ do
+      cache <- newSTMCache 2 :: IO (STMCache String Int)
+      atomically $ do
+        stmCachePut "a" 1 cache
+        stmCachePut "b" 2 cache
+        stmCachePut "c" 3 cache
+      oldest <- atomically $ stmCacheGet "a" cache
+      newest <- atomically $ stmCacheGet "c" cache
+      oldest `shouldBe` Nothing
+      newest `shouldBe` Just 3
+
+    it "keeps existing entries when overwriting at capacity" $ do
+      cache <- newSTMCache 2 :: IO (STMCache String Int)
+      atomically $ do
+        stmCachePut "a" 1 cache
+        stmCachePut "b" 2 cache
+        stmCachePut "a" 10 cache
+      size <- atomically $ stmCacheSize cache
+      aVal <- atomically $ stmCacheGet "a" cache
+      size `shouldBe` 2
+      aVal `shouldBe` Just 10
 
     it "deletes entries" $ do
       cache <- newSTMCache 10 :: IO (STMCache String Int)

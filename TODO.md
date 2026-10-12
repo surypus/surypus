@@ -161,6 +161,11 @@ bd ready
   - Verified by direct GHC build+run of the full Test.hs closure: **371 examples, 0 failures, 6 pending** (baseline 360 → 371; +11 new examples).
   - Negative control: the spec compiled against the pre-fix `src/Surypus/Validation.hs` (git HEAD, verified the compile log names the shadow copy) fails exactly the 7 new discriminating tests and nothing else — the 4 valid-input cases still pass.
   - Zero production callers today (`Surypus.Validation` is imported by tests only), so the fix is behaviour-only for the validation contract; the guards are what `docs/TYPES.md`/`AGENTS.md` already document callers doing (`case validateBillInput input of Left err -> ValidationError`), which previously could never produce a `Left`.
+- [x] Strengthen System.CacheSpec eviction semantics + isExpired boundary (2026-10-12)
+  - The `respects maxSize` test asserted only the resulting size, so an eviction policy keeping the OLDEST entries would pass unchanged — a vacuous-coverage gap in an already-wired spec
+  - Added 3 deterministic tests: `evicts the oldest entry when maxSize is exceeded` (a evicted, c survives), `keeps existing entries when overwriting at capacity` (overwrite at maxSize does not grow the cache), `treats an entry expiring exactly now as not expired` (pins strict `now > expiryTime`)
+  - Verified by direct GHC build+run of the full Test.hs closure: **374 examples, 0 failures, 6 pending** (baseline 371 → 374; +3 new examples)
+  - Negative check: the spec compiled against a shadow `System.Cache` whose `stmCachePut` keeps the oldest entries (shadow dir first in `-i`, compile log verified to name the shadow file) fails exactly the eviction test — 22 examples, 1 failure
 - [ ] TASK-034: 26 orphaned/stale spec files: 12 import non-existent modules (`Domain.*`, `CRM.Contact/Company/Deal/Activity/Pipeline`, `Core.Document.Types`, `Domain.Document`, `DAL.Fixtures`) — restore or delete; `Phase2Phase3/AccountingEventStoreSpec.hs` + `Phase2Phase3/ReadModelCacheSpec.hs` target the removed in-memory `DAL.EventStore` API — rewrite against the PostgreSQL-backed EventStore or delete; `DAL/TypesSpec.hs` is stale against `DAL.Types` (nonexistent `PersonInput`/`GoodsInput`/`Stock`/`SortDir`/`PaginatedResult`/`DashboardStats`/`*Filter` types, wrong field names, wrong `Bill` arg types) — rewrite before wiring; plus (audit 2026-10-12): `DB/RepositoriesSpec.hs` + `Integration/PoolSpec.hs` (missing `DB.Connection`), `API/{Health,Swagger,Procurement,RBAC}Spec.hs` (missing `App`), `API/ServerV2Spec.hs` (module-name collision), `RBACSpec.hs` (stale thin RBAC API), `DAL/DBSpec.hs` (stale `DAL.DB` API), `DAL/IntegrationSpec.hs` (missing `Test.DAL.Fixtures`), `DAL/EventStoreSpec.hs` (needs live DB pool); placeholder-only specs (zero coverage, decide keep-or-delete): `Integration/{Crud,Negative,Property,InventoryLifecycle}Spec.hs`, `API/ServerSpec.hs`, `BridgeSpec.hs`, `SurypusSpec.hs`.
 
 ### DevOps
@@ -355,4 +360,5 @@ bd ready
 | Done (New: Inventory.Goods) | 1 |
 | Done (New: RateLimiter de-flake + lbCheck fix) | 1 |
 | Done (New: Surypus.Validation fail-open validators) | 1 |
+| Done (New: System.Cache eviction/boundary strengthening) | 1 |
 | **Total** | **75** |
