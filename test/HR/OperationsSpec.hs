@@ -155,7 +155,7 @@ spec = do
             today = fromGregorian 2024 1 1
             result = createPerson [person] req today
         case result of
-          OperationConflict _ -> pure ()
+          OperationConflict _ -> (pure () :: IO ())
           _ -> fail "Expected conflict"
 
       it "should find person by INN" $ do

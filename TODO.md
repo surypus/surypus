@@ -119,6 +119,11 @@ bd ready
   - 9 tests: StockOps receipt/issue/insufficient/transfer/adjustment; Warehouse create/duplicate/read-update-delete/count
   - Fixed 3 genuine compile errors: ambiguous `pure ()` in hspec `it` blocks (Inventory.StockSpec:30, Inventory.WarehouseSpec:24) → `(pure () :: IO ())`; `shouldContain` on `Text` (Inventory.WarehouseSpec:39) → `T.isInfixOf "archived" (wName d) \`shouldBe\` True`
   - Verified by building and running the whole wired suite: **321 examples, 2 failures (pre-existing RateLimiter timing flakes), 6 pending** — both new specs green
+- [x] Wire HR.OperationsSpec into cabal test-suite (2026-10-12)
+  - 14 tests: validatePersonData (valid request, empty code/name, invalid INN/KPP); createPerson CRUD (create, duplicate-INN conflict, findByINN, findByCode); status transitions (activate/deactivate/block); queries (countPersons, personsByKind)
+  - Fixed 1 compile error: ambiguous bare `pure ()` in `it` block (OperationsSpec:158) → `(pure () :: IO ())`
+  - Verified by direct GHC build+run of the full Test.hs closure (full `cabal build` still blocked by pre-existing library errors in Surypus.API.BillTemplates et al.): **335 examples, 2 failures (pre-existing idle-machine RateLimiter timing tests), 6 pending** — new spec 14/14 green
+  - Audit finding: `test/HR/PersonSpec.hs` is stale against the current API (expects 7-arg `createPerson`, `pIsActive`, `pPersonKindId :: PersonKind` — none exist in `HR.Person`/`HR.Operations`); verified by GHC ("Variable not in scope: pIsActive" + arity errors). Cannot be wired without rewrite — extends TASK-034
 - [ ] TASK-033: `Inventory.Goods.goodsForRestocking` ignores `gMinStock`, returns all active goods → cannot report below-minimum items; also not exported. Blocks `test/Inventory/GoodsSpec.hs`.
 - [ ] TASK-034: 12 orphaned spec files import non-existent modules (`Domain.*`, `CRM.Contact/Company/Deal/Activity/Pipeline`, `Core.Document.Types`, `Domain.Document`, `DAL.Fixtures`) — restore or delete.
 
@@ -308,4 +313,5 @@ bd ready
 | Done (JWT) | 1 |
 | Done (New: Config+Obs+Mig+RBACCanon) | 4 |
 | Done (New: Inventory Stock+Warehouse) | 2 |
-| **Total** | **69** |
+| Done (New: HR.Operations) | 1 |
+| **Total** | **70** |
