@@ -129,6 +129,11 @@ bd ready
   - Fixed missing export list: `spec` was not exported → added `(spec)` to module header
   - Verified by direct GHC build+run of the full Test.hs closure (full `cabal build` still blocked by pre-existing library errors in Surypus.API.BillTemplates et al.): **336 examples, 2 failures (pre-existing idle-machine RateLimiter timing tests), 6 pending** — new spec green
   - Audit finding: `test/Phase2Phase3/AccountingEventStoreSpec.hs` + `test/Phase2Phase3/ReadModelCacheSpec.hs` are stale — they target an old in-memory `DAL.EventStore` API (`initEventStore`, `EventData{edOldBalance,…}`, `createAccountCreatedEvent`, `createJournalEntryEvent`, `aeAggregateId`, `aeEventType`, `AccountCreated`/`JournalEntryPosted`) that no longer exists; the current `DAL.EventStore` is PostgreSQL-backed (`Event`/`Snapshot` records; `appendEvent`/`getEvents`/`replayAccount` over `ConnectionPool`). Full rewrite against the DB-backed API (needs live DB to run) or deletion — extends TASK-034
+- [x] Wire Domain.ProductionPropertySpec into cabal test-suite (2026-10-12)
+  - 12 property tests against `Production.Types`: validateTechCard (empty name / invalid status / valid card), validateTechLine (negative qty / invalid scrap % / valid line), validateWorkOrderCore (over-release / negative plan / valid order), mkWorkOrder creates valid orders, released ≤ planned, status in valid range — 100 QuickCheck cases each
+  - Fixed 6 compile errors: missing `Arbitrary TechCard`/`Arbitrary TechLine` instances (added; `Arbitrary WorkOrder` reused from TestHelpers via qualified import); `mkWorkOrder` called with 5 args vs real 4-arg signature (dropped stale `processorId`); leftover TemplateHaskell `return []` splice without pragma (removed); ambiguous `choose` result types (annotated `Gen Integer`); `UTCTime` type-only import (→ `UTCTime (..)`); `Bool` vs `Property` mismatch in `prop_statusInValidRange` (→ `property (...)`)
+  - Verified by direct GHC build+run of the full Test.hs closure (full `cabal build` still blocked by pre-existing library errors in Surypus.API.BillTemplates et al.): **348 examples, 2 failures (pre-existing idle-machine RateLimiter timing tests), 6 pending** — new spec 12/12 green
+  - Audit finding: `test/Integration/ValidationSpec.hs` is stale — `DAL.Types` no longer defines `PersonInput`/`GoodsInput`/`BillInput`/`LocationInput`/`OrderInput`/`PaymentInput`/`PriceInput`/`TaxInput`/`CurrencyInput`/`AccPlanInput` (only `AccTurnInput` remains), and every `validate*Input` in `Surypus.Validation` now takes individual scalar args instead of records. Needs full rewrite — extends TASK-034
 - [ ] TASK-033: `Inventory.Goods.goodsForRestocking` ignores `gMinStock`, returns all active goods → cannot report below-minimum items; also not exported. Blocks `test/Inventory/GoodsSpec.hs`.
 - [ ] TASK-034: 15 orphaned/stale spec files: 12 import non-existent modules (`Domain.*`, `CRM.Contact/Company/Deal/Activity/Pipeline`, `Core.Document.Types`, `Domain.Document`, `DAL.Fixtures`) — restore or delete; `Phase2Phase3/AccountingEventStoreSpec.hs` + `Phase2Phase3/ReadModelCacheSpec.hs` target the removed in-memory `DAL.EventStore` API — rewrite against the PostgreSQL-backed EventStore or delete; `DAL/TypesSpec.hs` is stale against `DAL.Types` (nonexistent `PersonInput`/`GoodsInput`/`Stock`/`SortDir`/`PaginatedResult`/`DashboardStats`/`*Filter` types, wrong field names, wrong `Bill` arg types) — rewrite before wiring.
 
@@ -319,4 +324,5 @@ bd ready
 | Done (New: Config+Obs+Mig+RBACCanon) | 4 |
 | Done (New: Inventory Stock+Warehouse) | 2 |
 | Done (New: HR.Operations) | 1 |
-| **Total** | **70** |
+| Done (New: Domain.ProductionProperty) | 1 |
+| **Total** | **71** |

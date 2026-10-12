@@ -3,20 +3,55 @@ module Domain.ProductionPropertySpec where
 import Test.Hspec
 import Test.QuickCheck
 import Production.Types
-import Data.Time (UTCTime, fromGregorian, secondsToDiffTime)
+import qualified TestHelpers
+import Data.Either (isLeft, isRight)
+import Data.Time (UTCTime (..), fromGregorian, secondsToDiffTime)
 import Data.Text (Text, pack)
 
 -- Helper to generate a valid UTCTime for testing
 genValidUTCTime :: Gen UTCTime
 genValidUTCTime = do
-  year <- choose (2020, 2030)
+  year <- choose (2020, 2030) :: Gen Integer
   month <- choose (1, 12)
   day <- choose (1, 28)
   hour <- choose (0, 23)
   minute <- choose (0, 59)
   second <- choose (0, 59)
-  return $ UTCTime (fromGregorian (fromIntegral year) month day) 
+  return $ UTCTime (fromGregorian year month day)
                   (secondsToDiffTime $ hour * 3600 + minute * 60 + second)
+
+-- | TechCard generator (valid card; properties mutate individual fields)
+instance Arbitrary TechCard where
+  arbitrary = do
+    t <- arbitrary
+    return TechCard
+      { tcId = Nothing
+      , tcGoodsId = 1
+      , tcName = pack "Card"
+      , tcVersion = pack "1.0"
+      , tcStatus = 1
+      , tcCreatedAt = t
+      , tcUpdatedAt = t
+      , tcCreatedBy = Nothing
+      }
+
+-- | TechLine generator (valid line; properties mutate individual fields)
+instance Arbitrary TechLine where
+  arbitrary = do
+    t <- arbitrary
+    return TechLine
+      { tlId = Nothing
+      , tlTechCardId = 1
+      , tlLineNum = 1
+      , tlGoodsId = 1
+      , tlQtyPlan = 10.0
+      , tlUnitId = Just 1
+      , tlScrapPercent = 5.0
+      , tlNotes = Nothing
+      , tlCreatedAt = t
+      , tlUpdatedAt = t
+      , tlCreatedBy = Nothing
+      }
 
 -- Property: TechCard validation should reject empty names
 prop_techCardRejectsEmptyName :: Property
@@ -112,14 +147,13 @@ prop_workOrderAcceptsValid =
 
 -- Property: mkWorkOrder should create valid work orders
 prop_mkWorkOrderCreatesValid :: Property
-prop_mkWorkOrderCreatesValid = 
+prop_mkWorkOrderCreatesValid =
   forAll (choose (1, 1000)) $ \goodsId ->
-    forAll (choose (1, 1000)) $ \processorId ->
-      forAll (choose (0, 100)) $ \qtyPlan ->
-        forAll genValidUTCTime $ \scheduled ->
-          let code = pack ("WO-" ++ show goodsId ++ "-" ++ show processorId)
-              wo = mkWorkOrder code goodsId processorId qtyPlan scheduled
-          in validateWorkOrderCore wo `shouldSatisfy` isRight
+    forAll (choose (0, 100)) $ \qtyPlan ->
+      forAll genValidUTCTime $ \scheduled ->
+        let code = pack ("WO-" ++ show goodsId)
+            wo = mkWorkOrder code goodsId qtyPlan scheduled
+        in validateWorkOrderCore wo `shouldSatisfy` isRight
 
 -- Property: Released quantity should never exceed planned quantity in valid work orders
 prop_releasedNeverExceedsPlanned :: Property
@@ -144,9 +178,8 @@ prop_statusInValidRange =
     woQtyReleased wo <= woQtyPlan wo)) $ \wo ->
     case validateWorkOrderCore wo of
       Left _ -> property True -- Invalid orders don't need to satisfy this
-      Right wo' -> woStatus wo' >= 0 && woStatus wo' <= 4
+      Right wo' -> property (woStatus wo' >= 0 && woStatus wo' <= 4)
 
-return []
 spec :: Spec
 spec = do
   describe "Production module property tests" $ do

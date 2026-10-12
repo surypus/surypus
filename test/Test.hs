@@ -30,6 +30,7 @@ import qualified Inventory.StockSpec
 import qualified Inventory.WarehouseSpec
 import qualified HR.OperationsSpec
 import qualified Phase2Phase3.AccountingEventsSpec
+import qualified Domain.ProductionPropertySpec
 import DAL.Types
 
 main :: IO ()
@@ -60,6 +61,7 @@ main = hspec $ do
   Inventory.WarehouseSpec.spec
   HR.OperationsSpec.spec
   Phase2Phase3.AccountingEventsSpec.spec
+  Domain.ProductionPropertySpec.spec
 
   describe "TestHelpers properties" $ do
     it "bill total equals sum of line totals" $
