@@ -146,6 +146,13 @@ bd ready
   - Fixed 1 compile error (ambiguous bare `pure ()` → `(pure () :: IO ())`) and 1 real bug found by running: `createGoods` crashed with `maximum: empty list` when creating the first goods (lazy `GoodsSuccess g` bindings hid the field forcing; `Eq` in `shouldBe` forced `gId`) → `if null goods then 0 else maximum (map gId goods)`
   - Verified by direct GHC build+run of the full Test.hs closure (full `cabal build` still blocked by pre-existing library errors in Surypus.API.BillTemplates et al.): **358 examples, 2 failures (pre-existing idle-machine RateLimiter timing), 6 pending** — new spec 5/5 green
   - Negative check: the spec compiled against the old active-only filter fails exactly the restocking example (5 examples, 1 failure), so the test pins the new semantics
+- [x] De-flake System.RateLimiterSpec + fix inverted `lbCheck` leak predicate (2026-10-12)
+  - The 2 known "pre-existing RateLimiter timing" failures are gone: both depended on ~10 ms of real elapsed time between consecutive checks (TokenBucket refill at rate 100/s; LeakyBucket entries aging past the leak window) — failed on idle, passed under load
+  - Deterministic rewrites via the exposed TVar timestamps (`tbLastRefill` backdating, `lbQueue` pinning) — same technique as the existing SlidingWindow manual-time-advance test
+  - New deterministic tests: `refills proportionally to elapsed time` (rate 0.5: 1 s → 0.5 tokens → denied; 2 s → 1.0 tokens → allowed) and `leaks entries after the window`
+  - Library fix: `lbCheck` used `dropWhileL (age < window)` — keeping aged entries and dropping fresh ones, so the queue grew monotonically and the bucket denied everything permanently after `capacity` requests; now `Seq.filter` keeps un-leaked entries (canonical leaky-bucket semantics, doc comment added). `System.RateLimiter` is imported by tests only (the API layer uses the separate `Surypus.API.RateLimiter`) — no production impact
+  - Verified by direct GHC build+run of the full Test.hs closure (full `cabal build` still blocked by pre-existing library errors in Surypus.API.BillTemplates et al.): **360 examples, 0 failures, 6 pending** — stable across 4 runs
+  - Negative check: the new spec compiled against the pre-fix `lbCheck` (git HEAD) fails exactly the 2 leaky tests, deterministically
 - [x] TASK-033: `goodsForRestocking` semantics fixed, functions exported, `test/Inventory/GoodsSpec.hs` wired. Follow-up: true below-minimum report via join with `Inventory.Stock` balances.
 - [ ] TASK-034: 26 orphaned/stale spec files: 12 import non-existent modules (`Domain.*`, `CRM.Contact/Company/Deal/Activity/Pipeline`, `Core.Document.Types`, `Domain.Document`, `DAL.Fixtures`) — restore or delete; `Phase2Phase3/AccountingEventStoreSpec.hs` + `Phase2Phase3/ReadModelCacheSpec.hs` target the removed in-memory `DAL.EventStore` API — rewrite against the PostgreSQL-backed EventStore or delete; `DAL/TypesSpec.hs` is stale against `DAL.Types` (nonexistent `PersonInput`/`GoodsInput`/`Stock`/`SortDir`/`PaginatedResult`/`DashboardStats`/`*Filter` types, wrong field names, wrong `Bill` arg types) — rewrite before wiring; plus (audit 2026-10-12): `DB/RepositoriesSpec.hs` + `Integration/PoolSpec.hs` (missing `DB.Connection`), `API/{Health,Swagger,Procurement,RBAC}Spec.hs` (missing `App`), `API/ServerV2Spec.hs` (module-name collision), `RBACSpec.hs` (stale thin RBAC API), `DAL/DBSpec.hs` (stale `DAL.DB` API), `DAL/IntegrationSpec.hs` (missing `Test.DAL.Fixtures`), `DAL/EventStoreSpec.hs` (needs live DB pool); placeholder-only specs (zero coverage, decide keep-or-delete): `Integration/{Crud,Negative,Property,InventoryLifecycle}Spec.hs`, `API/ServerSpec.hs`, `BridgeSpec.hs`, `SurypusSpec.hs`.
 
@@ -339,4 +346,5 @@ bd ready
 | Done (New: Domain.ProductionProperty) | 1 |
 | Done (New: Contract.SchemaSpec) | 1 |
 | Done (New: Inventory.Goods) | 1 |
-| **Total** | **73** |
+| Done (New: RateLimiter de-flake + lbCheck fix) | 1 |
+| **Total** | **74** |

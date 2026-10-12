@@ -15,8 +15,10 @@ import qualified Data.Time.Calendar as Calendar
 import System.RateLimiter ( SlidingWindow (..)
                            , initSlidingWindow
                            , swCheck
+                           , TokenBucket (..)
                            , initTokenBucket
                            , tbCheck
+                           , LeakyBucket (..)
                            , initLeakyBucket
                            , lbCheck
                            , initFixedWindow
@@ -193,9 +195,28 @@ tokenBucketSpec = do
   it "refills over time" $ do
     bucket <- initTokenBucket 100.0 1.0
     _ <- tbCheck bucket
+    -- Deterministic: backdate the last refill by 0.1 s instead of relying
+    -- on real elapsed time (rate 100/s → 10 tokens refilled, capped at 1.0)
+    now <- getCurrentTime
+    atomically $ writeTVar (tbLastRefill bucket) (addUTCTime (-0.1) now)
     result <- tbCheck bucket
-    -- With very high rate, refill is fast enough
     result `shouldBe` True
+    -- Refill is capped at capacity: only the consumed token is available
+    tokens <- atomically $ readTVar (tbTokens bucket)
+    tokens `shouldBe` 0.0
+
+  it "refills proportionally to elapsed time" $ do
+    bucket <- initTokenBucket 0.5 1.0
+    _ <- tbCheck bucket
+    -- 1 s at 0.5 tokens/s refills 0.5 tokens — still below the threshold
+    now <- getCurrentTime
+    atomically $ writeTVar (tbLastRefill bucket) (addUTCTime (-1.0) now)
+    denied <- tbCheck bucket
+    denied `shouldBe` False
+    -- 2 s refills exactly 1.0 tokens — the request goes through
+    atomically $ writeTVar (tbLastRefill bucket) (addUTCTime (-2.0) now)
+    allowed <- tbCheck bucket
+    allowed `shouldBe` True
 
 -- ============================================================================
 -- LeakyBucket tests
@@ -212,10 +233,24 @@ leakyBucketSpec = do
     bucket <- initLeakyBucket 2 100.0
     r1 <- lbCheck bucket
     r2 <- lbCheck bucket
-    r3 <- lbCheck bucket
     r1 `shouldBe` True
     r2 `shouldBe` True
+    -- Pin the queue at capacity with fresh entries (rate 100/s → entries
+    -- leak after 10 ms) so the third check is denied regardless of the
+    -- real elapsed time between the checks
+    now <- getCurrentTime
+    atomically $ writeTVar (lbQueue bucket) (Seq.fromList [now, now])
+    r3 <- lbCheck bucket
     r3 `shouldBe` False
+
+  it "leaks entries after the window" $ do
+    bucket <- initLeakyBucket 1 100.0
+    -- An entry older than the leak window (1/rate = 10 ms) no longer
+    -- counts toward capacity
+    now <- getCurrentTime
+    atomically $ writeTVar (lbQueue bucket) (Seq.singleton (addUTCTime (-0.05) now))
+    result <- lbCheck bucket
+    result `shouldBe` True
 
 -- ============================================================================
 -- FixedWindow tests

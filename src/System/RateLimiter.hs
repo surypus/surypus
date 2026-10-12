@@ -77,7 +77,11 @@ tbCheck bucket = do
         writeTVar (tbLastRefill bucket) now
         return False
 
--- | Check leaky bucket
+-- | Check leaky bucket.
+-- An entry leaks out of the queue 'windowSize = 1/rate' seconds after it
+-- is added; the queue length is the number of entries that have not yet
+-- leaked. A request is admitted while the queue length is below capacity
+-- and is appended to the queue on success.
 lbCheck :: LeakyBucket -> IO Bool
 lbCheck bucket = do
   now <- getCurrentTime
@@ -85,7 +89,7 @@ lbCheck bucket = do
     queue <- readTVar (lbQueue bucket)
     let rate = lbRate bucket
         windowSize = realToFrac (1 / rate) :: NominalDiffTime
-        valid = Seq.dropWhileL (\t -> diffUTCTime now t < windowSize) queue
+        valid = Seq.filter (\t -> diffUTCTime now t < windowSize) queue
         count = Seq.length valid
     if count < lbCapacity bucket
       then do
