@@ -9,9 +9,11 @@ module Core.Accounting.ReadModelSpec (spec) where
 import Core.Accounting.ReadModel
 import Data.Aeson (Value, object, toJSON, (.=))
 import Data.Int (Int64)
+import Data.Text (Text)
 import Data.Time (UTCTime (..), fromGregorian)
 import Infrastructure.EventStore.Accounting
   ( AccountingEvent (..),
+    AccountCreated (..),
     JournalEntryPosted (..),
   )
 import qualified DAL.EventStore as ES
@@ -21,7 +23,7 @@ ts :: UTCTime
 ts = UTCTime (fromGregorian 2026 1 1) 0
 
 -- | An event row as it would come back from the event store, typed as
--- @JournalEntryPosted@ (the only type 'applyEvent' dispatches here).
+-- @JournalEntryPosted@ (one of the types 'applyEvent' dispatches here).
 mkEvent :: Value -> ES.Event
 mkEvent payload = ES.Event
   { ES.eventAggregateId = 42,
@@ -77,6 +79,34 @@ modelFor accountId =
       armUpdatedAt = ts
     }
 
+-- | Exactly the payload the real producer writes for AccountCreated:
+-- 'Infrastructure.EventStore.Accounting.appendAccountingEvent' stores
+-- @toJSON (AccountCreatedEvent ev)@ — a tagged union whose fields sit under
+-- "contents" with the record field names as keys.
+producerAccountCreated :: Int64 -> Text -> Text -> Value
+producerAccountCreated accountId code name =
+  toJSON $
+    AccountCreatedEvent
+      AccountCreated
+        { acAccountId = accountId,
+          acCode = code,
+          acName = name,
+          acType = "asset",
+          acParentId = Nothing,
+          acTimestamp = ts
+        }
+
+-- | An event row as it would come back from the event store, typed as
+-- @AccountCreated@. The real producer stores the account id as the aggregate
+-- id ('Infrastructure.EventStore.Accounting.getEventInfo' returns
+-- @(acAccountId ev, \"account\", \"AccountCreated\")@).
+mkCreatedEvent :: Int64 -> Value -> ES.Event
+mkCreatedEvent accountId payload = (mkEvent payload)
+  { ES.eventAggregateId = accountId,
+    ES.eventAggregateType = "account",
+    ES.eventEventType = "AccountCreated"
+  }
+
 spec :: Spec
 spec = describe "Core.Accounting.ReadModel JSON replay" $ do
   it "posts a debit when replaying a real producer event" $ do
@@ -131,3 +161,46 @@ spec = describe "Core.Accounting.ReadModel JSON replay" $ do
   it "ignores events whose payload is not an object" $ do
     let model = applyJournalEntryPosted (modelFor 100) (mkEvent (toJSON (42 :: Int)))
     bsCurrentBalance (armBalanceState model) `shouldBe` 0.0
+
+  it "applies code and name from a real AccountCreated producer event" $ do
+    let model = applyAccountCreated (modelFor 100)
+                  (mkCreatedEvent 100 (producerAccountCreated 100 "51" "Расчетный счет"))
+    armCode model `shouldBe` Just "51"
+    armName model `shouldBe` Just "Расчетный счет"
+
+  it "resets balance state and stamp on AccountCreated" $ do
+    let model = applyAccountCreated (modelFor 100)
+                  (mkCreatedEvent 100 (producerAccountCreated 100 "51" "Cash"))
+    armAccountId model `shouldBe` 100
+    bsCurrentBalance (armBalanceState model) `shouldBe` 0.0
+    bsDebitTotal (armBalanceState model) `shouldBe` 0.0
+    bsCreditTotal (armBalanceState model) `shouldBe` 0.0
+    bsEventCount (armBalanceState model) `shouldBe` 1
+    armCreatedAt model `shouldBe` ts
+    armUpdatedAt model `shouldBe` ts
+
+  it "dispatches AccountCreated events through applyEvent" $ do
+    let model = applyEvent (modelFor 100)
+                  (mkCreatedEvent 100 (producerAccountCreated 100 "91" "Other income"))
+    armCode model `shouldBe` Just "91"
+    armName model `shouldBe` Just "Other income"
+    bsEventCount (armBalanceState model) `shouldBe` 1
+
+  it "still applies legacy flat AccountCreated payloads" $ do
+    let legacy = mkCreatedEvent 100 (object ["acCode" .= ("51" :: Text), "acName" .= ("Cash" :: Text)])
+        model = applyAccountCreated (modelFor 100) legacy
+    armCode model `shouldBe` Just "51"
+    armName model `shouldBe` Just "Cash"
+
+  it "leaves code and name as Nothing for AccountCreated payloads with no identity keys" $ do
+    let model = applyAccountCreated (modelFor 100) (mkCreatedEvent 100 (object []))
+    armCode model `shouldBe` Nothing
+    armName model `shouldBe` Nothing
+
+  it "does not fabricate an account type from the producer's Text acType" $ do
+    -- acType is "asset"/"liability" Text, armAccountType is an Int id, and no
+    -- mapping exists — the replay must not invent one.
+    let model = applyAccountCreated (modelFor 100)
+                  (mkCreatedEvent 100 (producerAccountCreated 100 "01" "Fixed assets"))
+    armAccountType model `shouldBe` Nothing
+    armCurrencyId model `shouldBe` Nothing

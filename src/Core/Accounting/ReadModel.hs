@@ -36,6 +36,19 @@ import qualified Data.Aeson.KeyMap as KM
 import qualified DAL.EventStore as ES
 import DAL.ORMPool (ConnectionPool)
 
+-- | Unwrap the payload of a tagged-union event as written by
+-- 'Infrastructure.EventStore.Accounting.appendAccountingEvent': @toJSON event@
+-- stores @{\"tag\": ..., \"contents\": {fields...}}@. Payloads that are already
+-- flat objects (legacy writers) are returned as-is; anything else is Nothing.
+unwrappedFields :: A.Value -> Maybe (KM.KeyMap A.Value)
+unwrappedFields eventData =
+  case A.fromJSON eventData of
+    A.Success (A.Object top) ->
+      case KM.lookup "contents" top of
+        Just (A.Object inner) -> Just inner
+        _ -> Just top
+    _ -> Nothing
+
 -- ============================================================================
 -- READ MODEL TYPES
 -- ============================================================================
@@ -75,11 +88,24 @@ applyEvent model event
   | otherwise = model
 
 -- | Apply AccountCreated event
+--
+-- The real producer ('Infrastructure.EventStore.Accounting.appendAccountingEvent')
+-- stores @toJSON (AccountCreatedEvent ev)@ — a tagged union whose payload
+-- sits under @\"contents\"@ with the record field names as keys
+-- (@acCode@/@acName@/@acType@/@acParentId@). The code and name are read from
+-- there (legacy flat payloads are still honoured); the previous version
+-- discarded them and always set Nothing, so a replayed model carried no
+-- account identity. 'armAccountType' stays Nothing on purpose: the producer's
+-- @acType@ is a Text category (@\"asset\"@/@\"liability\"@/…) while the read
+-- model expects an Int account-type id, and no mapping between the two exists
+-- in the codebase — inventing one here would fabricate data. Same for
+-- 'armCurrencyId' (the producer event has no currency field). Defining the
+-- Text→Int mapping is a follow-up.
 applyAccountCreated :: AccountReadModel -> ES.Event -> AccountReadModel
 applyAccountCreated model event = model
   { armAccountId = ES.eventAggregateId event
-  , armCode = Nothing
-  , armName = Nothing
+  , armCode = entryCode
+  , armName = entryName
   , armAccountType = Nothing
   , armCurrencyId = Nothing
   , armBalanceState = BalanceState
@@ -93,6 +119,17 @@ applyAccountCreated model event = model
   , armCreatedAt = ES.eventOccurredAt event
   , armUpdatedAt = ES.eventOccurredAt event
   }
+  where
+    eventData = ES.eventEventData event
+    entryFields = unwrappedFields eventData
+    lookupText key = entryFields >>= \obj ->
+      case KM.lookup key obj of
+        Just val -> case A.fromJSON val of
+                      A.Success txt -> Just txt
+                      _ -> Nothing
+        Nothing -> Nothing
+    entryCode = lookupText "acCode"
+    entryName = lookupText "acName"
 
 -- | Apply JournalEntryPosted event
 --
@@ -112,12 +149,7 @@ applyJournalEntryPosted model event = model
   }
   where
     eventData = ES.eventEventData event
-    entryFields = case A.fromJSON eventData of
-                    A.Success (A.Object top) ->
-                      case KM.lookup "contents" top of
-                        Just (A.Object inner) -> Just inner
-                        _ -> Just top
-                    _ -> Nothing
+    entryFields = unwrappedFields eventData
     entryAmount = entryFields >>= \obj ->
       case KM.lookup "jepAmount" obj of
         Just val -> case A.fromJSON val of
@@ -162,6 +194,12 @@ applyJournalEntryPosted model event = model
       }
 
 -- | Apply BalanceAdjusted event
+--
+-- Note: no producer in the codebase writes a @BalanceAdjusted@ variant (the
+-- 'Infrastructure.EventStore.Accounting.AccountingEvent' union has no such
+-- constructor), so the @changeAmount@/@newBalance@ keys read here are a
+-- documented contract for a future writer, not a live schema. Kept as-is
+-- rather than guessing a producer shape.
 applyBalanceAdjusted :: AccountReadModel -> ES.Event -> AccountReadModel
 applyBalanceAdjusted model event = model
   { armBalanceState = newBalanceState
@@ -205,27 +243,35 @@ applyBalanceAdjusted model event = model
 -- ============================================================================
 
 -- | Create initial model from the first event in a list
+--
+-- Note: this region completed a broken uncommitted WIP edit (case arms with
+-- the record braces left dangling — the file did not parse). The guard's
+-- intent (fail explicitly on an empty event list instead of crashing in
+-- 'head') is preserved. The only caller ('replayAccountEvents') already
+-- rejects the empty case with a Left, so this is defence in depth.
 mkInitialModel :: Int64 -> [ES.Event] -> AccountReadModel
 mkInitialModel accountId events =
-   let firstEvent = head events
-       ts = ES.eventOccurredAt firstEvent
-   in AccountReadModel
-    { armAccountId = accountId
-    , armCode = Nothing
-    , armName = Nothing
-    , armAccountType = Nothing
-    , armCurrencyId = Nothing
-    , armBalanceState = BalanceState
-        { bsAccountId = accountId
-        , bsCurrentBalance = 0.0
-        , bsDebitTotal = 0.0
-        , bsCreditTotal = 0.0
-        , bsLastUpdated = ts
-        , bsEventCount = 0
-        }
-    , armCreatedAt = ts
-    , armUpdatedAt = ts
-    }
+  case events of
+    (firstEvent:_) -> buildModel (ES.eventOccurredAt firstEvent)
+    [] -> error "mkInitialModel: empty events list"
+  where
+    buildModel ts = AccountReadModel
+      { armAccountId = accountId
+      , armCode = Nothing
+      , armName = Nothing
+      , armAccountType = Nothing
+      , armCurrencyId = Nothing
+      , armBalanceState = BalanceState
+          { bsAccountId = accountId
+          , bsCurrentBalance = 0.0
+          , bsDebitTotal = 0.0
+          , bsCreditTotal = 0.0
+          , bsLastUpdated = ts
+          , bsEventCount = 0
+          }
+      , armCreatedAt = ts
+      , armUpdatedAt = ts
+      }
 
 -- | Replay events from the event store to build read model
 replayAccountEvents :: ConnectionPool -> Int64 -> Text -> IO (Either Text AccountReadModel)
