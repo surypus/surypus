@@ -49,9 +49,16 @@ queryMetrics collector metricName from to = atomically $ do
   return $ filter (\p -> pointTimestamp p >= from && pointTimestamp p <= to) points
 
 -- | Aggregate metrics
+--
+-- 'avg' over an empty series has no defined value: dividing by zero yields
+-- NaN, which compares false against everything and would silently poison
+-- every threshold check downstream. Reject it instead. 'sum' and 'count'
+-- are well-defined over the empty series (0) and stay total.
 aggregateMetrics :: [MetricPoint] -> Text -> Either Text Double
 aggregateMetrics points operation = case operation of
-  "avg" -> Right $ sum (map pointValue points) / fromIntegral (length points)
+  "avg"
+    | null points -> Left "Cannot compute avg over an empty metric series"
+    | otherwise -> Right $ sum (map pointValue points) / fromIntegral (length points)
   "sum" -> Right $ sum (map pointValue points)
   "count" -> Right $ fromIntegral (length points)
   _ -> Left $ "Unknown operation: " <> operation

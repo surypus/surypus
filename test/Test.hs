@@ -17,6 +17,7 @@ import qualified TestHelpers
 import qualified System.RateLimiterSpec
 import qualified System.CacheSpec
 import qualified System.CounterSpec
+import qualified System.MetricsCollectorSpec
 import qualified System.SequenceSpec
 import qualified JWTSpec
 import qualified ConfigSpec
@@ -54,6 +55,7 @@ main = hspec $ do
   System.RateLimiterSpec.spec
   System.CacheSpec.spec
   System.CounterSpec.spec
+  System.MetricsCollectorSpec.spec
   System.SequenceSpec.spec
   JWTSpec.spec
   Core.Accounting.CacheSpec.spec
