@@ -5,6 +5,8 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Time.Clock (UTCTime, getCurrentTime)
+import Data.UUID (toString)
+import Data.UUID.V4 (nextRandom)
 import Service.Workflow (Workflow)
 
 -- | Workflow engine with full orchestration
@@ -48,10 +50,42 @@ initWorkflowEngine config = do
   instancesVar <- newTVarIO Map.empty
   return $ WorkflowEngine workflowsVar instancesVar config
 
--- | Create new workflow instance
+-- | Create a new workflow instance and register it in the engine.
+--
+-- The generated id is @workflowId <> "-inst-" <> uuid@ so it is unique and
+-- traceable back to its workflow.  Decisions pinned by
+-- 'Service.WorkflowEngineSpec':
+--
+-- * @desc@ is not stored: 'WorkflowInstance' carries no description field
+--   (a 'Workflow' keeps its definition in the @wfDefinition@ JSON text), so
+--   the argument cannot affect the instance — any value is accepted.
+-- * 'instanceSteps' is always empty: nothing in the codebase registers
+--   workflows into 'engineWorkflows' (there is no @addWorkflow@ export and
+--   'Workflow' has no step list), so a step-less instance completes on its
+--   first 'executeWorkflowStep' ('advanceStep' with @current >= length steps@).
+-- * 'WorkflowConfig' ('maxConcurrentInstances', 'defaultTimeoutSeconds',
+--   'retryLimit') is not consulted: creation cannot fail (the return type has
+--   no error channel) and there is no timeout/retry state to configure.
 createWorkflowInstance :: WorkflowEngine -> Text -> Text -> IO Text
-createWorkflowInstance _ _workflowId _desc = do
-  return (T.pack "stub-instance-id")
+createWorkflowInstance engine workflowId _desc = do
+  uuid <- nextRandom
+  now <- getCurrentTime
+  stateVar <- newTVarIO InstanceDraft
+  stepVar <- newTVarIO 0
+  let instId = workflowId <> T.pack "-inst-" <> T.pack (toString uuid)
+      inst =
+        WorkflowInstance
+          { instanceId = instId,
+            instanceWorkflow = workflowId,
+            instanceState = stateVar,
+            instanceCreated = now,
+            instanceSteps = [],
+            instanceCurrentStep = stepVar
+          }
+  atomically $ do
+    insts <- readTVar (engineInstances engine)
+    writeTVar (engineInstances engine) (Map.insert instId inst insts)
+  return instId
 
 -- | Execute workflow step
 executeWorkflowStep :: WorkflowEngine -> Text -> IO (Either Text ())

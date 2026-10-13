@@ -32,6 +32,7 @@ import qualified Inventory.WarehouseSpec
 import qualified Inventory.GoodsSpec
 import qualified Inventory.OperationsSpec
 import qualified HR.OperationsSpec
+import qualified Service.WorkflowEngineSpec
 import qualified Phase2Phase3.AccountingEventsSpec
 import qualified Phase2Phase3.AccountingReadModelSpec
 import qualified Core.Accounting.ReadModelSpec
@@ -69,6 +70,7 @@ main = hspec $ do
   Inventory.GoodsSpec.spec
   Inventory.OperationsSpec.spec
   HR.OperationsSpec.spec
+  Service.WorkflowEngineSpec.spec
   Phase2Phase3.AccountingEventsSpec.spec
   Phase2Phase3.AccountingReadModelSpec.spec
   Core.Accounting.ReadModelSpec.spec
