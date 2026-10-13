@@ -30,6 +30,7 @@ import qualified QuickCheckInvariantsSpec
 import qualified Inventory.StockSpec
 import qualified Inventory.WarehouseSpec
 import qualified Inventory.GoodsSpec
+import qualified Inventory.OperationsSpec
 import qualified HR.OperationsSpec
 import qualified Phase2Phase3.AccountingEventsSpec
 import qualified Phase2Phase3.AccountingReadModelSpec
@@ -66,6 +67,7 @@ main = hspec $ do
   Inventory.StockSpec.spec
   Inventory.WarehouseSpec.spec
   Inventory.GoodsSpec.spec
+  Inventory.OperationsSpec.spec
   HR.OperationsSpec.spec
   Phase2Phase3.AccountingEventsSpec.spec
   Phase2Phase3.AccountingReadModelSpec.spec
