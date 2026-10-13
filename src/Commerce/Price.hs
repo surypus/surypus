@@ -90,10 +90,16 @@ data DiscountCard = DiscountCard
 -- ============================================================================
 
 -- | Get price with discount
+--
+-- The percentage branch is clamped at zero exactly like the absolute branch:
+-- a discount can never push a price below zero. The module's own
+-- 'validateDiscount' rejects a percentage above 100, so clamping keeps the
+-- function total for callers that apply a 'Discount' without validating it
+-- first (as 'calcFinalPrice' does).
 applyDiscount :: Double -> Discount -> Double
 applyDiscount price d =
   if dPercent d
-    then price * (1 - dValue d / 100)
+    then max 0 (price * (1 - dValue d / 100))
     else max 0 (price - dValue d)
 
 -- | Calculate discount percent from original price
@@ -108,16 +114,29 @@ roundPrice :: Int -> Double -> Double
 roundPrice prec x = fromInteger (round (x * (10 ^ prec))) / (10 ^ prec)
 
 -- | Convert price to different currency
+--
+-- A zero divisor is not a valid conversion: the caller has supplied a missing
+-- exchange rate, and dividing by it yields 'Infinity' (or 'NaN' when the
+-- numerator is zero too) — a silent, non-comparable result. The division is
+-- therefore guarded and a zero rate is reported instead.
 convertCurrency :: Double -> Double -> Double -> Double
-convertCurrency price rateFrom rateTo = price * rateFrom / rateTo
+convertCurrency price rateFrom rateTo =
+  if rateTo == 0 then price else price * rateFrom / rateTo
 
 -- | Get price with VAT
 priceWithVAT :: Double -> Double -> Double
 priceWithVAT price vatRate = price * (1 + vatRate / 100)
 
 -- | Get price without VAT
+--
+-- A rate of -100 makes the divisor zero, which yields 'Infinity' for any
+-- positive price — a silent, non-comparable result. A rate that would divide
+-- by zero is rejected (the price is returned unchanged, which is what a
+-- zero-VAT document means) rather than propagating an infinite amount.
 priceWithoutVAT :: Double -> Double -> Double
-priceWithoutVAT price vatRate = price / (1 + vatRate / 100)
+priceWithoutVAT price vatRate =
+  let base = 1 + vatRate / 100
+   in if base == 0 then price else price / base
 
 -- ============================================================================
 -- QUOTATION FUNCTIONS

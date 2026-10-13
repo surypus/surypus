@@ -40,6 +40,7 @@ import qualified Phase2Phase3.AccountingReadModelSpec
 import qualified Core.Accounting.ReadModelSpec
 import qualified Domain.ProductionPropertySpec
 import qualified Contract.SchemaSpec
+import qualified Commerce.PriceSpec
 import DAL.Types
 
 main :: IO ()
@@ -80,6 +81,7 @@ main = hspec $ do
   Core.Accounting.ReadModelSpec.spec
   Domain.ProductionPropertySpec.spec
   Contract.SchemaSpec.spec
+  Commerce.PriceSpec.spec
 
   describe "TestHelpers properties" $ do
     it "bill total equals sum of line totals" $
