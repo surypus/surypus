@@ -29,6 +29,7 @@ spec :: Spec
 spec = do
   describe "nextNumber" nextNumberSpec
   describe "Prefix and suffix" prefixSuffixSpec
+  describe "Step semantics" stepSpec
   describe "Properties" propertiesSpec
 
 -- ============================================================================
@@ -85,6 +86,39 @@ prefixSuffixSpec = do
     nextNumber s `shouldBe` "DOC-1-DRAFT"
 
 -- ============================================================================
+-- Step semantics
+-- ============================================================================
+
+-- | nextNumber must honour the sequence's configured 'seqStep' — the field
+-- existed but was silently ignored (always +1), so a sequence configured
+-- with step 5 produced 1, 2, 3… instead of 5, 10, 15….
+stepSpec :: Spec
+stepSpec = do
+  it "increments by the configured step" $ do
+    let s = (mkSequence 0 "") { seqStep = 5 }
+    nextNumber s `shouldBe` "DOC-5"
+
+  it "increments by a large step from a nonzero base" $ do
+    let s = (mkSequence 42 "") { seqStep = 10 }
+    nextNumber s `shouldBe` "DOC-52"
+
+  it "honours a negative step" $ do
+    let s = (mkSequence 10 "") { seqStep = -3 }
+    nextNumber s `shouldBe` "DOC-7"
+
+  it "zero step yields no movement" $ do
+    let s = (mkSequence 7 "") { seqStep = 0 }
+    nextNumber s `shouldBe` "DOC-7"
+
+  it "step applies before prefix/suffix concatenation" $ do
+    let s = (mkSequence 5 "-2025") { seqStep = 3 }
+    nextNumber s `shouldBe` "DOC-8-2025"
+
+  it "step of 1 is the default increment" $ do
+    let s = (mkSequence 99 "") { seqStep = 1 }
+    nextNumber s `shouldBe` "DOC-100"
+
+-- ============================================================================
 -- Property-based tests
 -- ============================================================================
 
@@ -94,6 +128,7 @@ propertiesSpec = do
   it "result always starts with prefix" $ property prop_startsWithPrefix
   it "result always ends with suffix" $ property prop_endsWithSuffix
   it "result length >= prefix + suffix + 1" $ property prop_minLength
+  it "numeric part equals last number + step" $ property prop_numericEqualsLastPlusStep
 
 -- | Property: nextNumber always increments by 1
 prop_incrementsByOne :: Property
@@ -129,3 +164,15 @@ prop_minLength =
       let s = mkSequence n suf
           result = nextNumber s
       in T.length result >= T.length (seqPrefix s) + T.length (seqSuffix s) + 1
+
+-- | Property: the numeric part equals last number + configured step,
+-- across negative, zero and positive steps.
+prop_numericEqualsLastPlusStep :: Property
+prop_numericEqualsLastPlusStep =
+  forAll (choose (0, 100000 :: Int)) $ \n ->
+    forAll (elements ([-5, -1, 0, 1, 2, 3, 5, 100] :: [Int])) $ \st ->
+      let s = (mkSequence n "") { seqStep = st }
+          result = nextNumber s
+          numPart = T.drop (T.length $ seqPrefix s) result
+          numericValue = read (T.unpack numPart) :: Int
+      in numericValue == n + st

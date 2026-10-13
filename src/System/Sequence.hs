@@ -17,6 +17,15 @@ data Sequence = Sequence
   }
   deriving (Show, Eq)
 
--- | Generate next number
+-- | Generate next number.
+--
+-- The increment is the sequence's configured 'seqStep' (not a hardcoded 1):
+-- a sequence configured with a step of 5 must yield 5, 10, 15…, not 1, 2, 3….
+-- The step is applied as-is and may be negative; a step of 0 yields no
+-- movement. 'seqFlags' carries no defined bits anywhere in the codebase and
+-- is deliberately ignored here.
 nextNumber :: Sequence -> Text
-nextNumber s = seqPrefix s `T.append` T.pack (show (seqLastNum s + 1)) `T.append` seqSuffix s
+nextNumber s =
+  seqPrefix s
+    `T.append` T.pack (show (seqLastNum s + seqStep s))
+    `T.append` seqSuffix s
