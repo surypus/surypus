@@ -195,11 +195,18 @@ applyJournalEntryPosted model event = model
 
 -- | Apply BalanceAdjusted event
 --
--- Note: no producer in the codebase writes a @BalanceAdjusted@ variant (the
+-- No producer in the codebase writes a @BalanceAdjusted@ variant yet (the
 -- 'Infrastructure.EventStore.Accounting.AccountingEvent' union has no such
--- constructor), so the @changeAmount@/@newBalance@ keys read here are a
--- documented contract for a future writer, not a live schema. Kept as-is
--- rather than guessing a producer shape.
+-- constructor), so this is the documented contract for a future writer:
+--
+-- * @changeAmount@ is applied RELATIVE to the current balance and drives the
+--   debit/credit totals (same sign convention as 'applyJournalEntryPosted').
+-- * @newBalance@, when present, overrides the current balance absolutely;
+--   when absent the balance keeps its old value plus @changeAmount@ — a
+--   partial payload must never zero a live balance.
+-- * Both payload shapes are honoured through 'unwrappedFields' (tagged-union
+--   as written by 'Infrastructure.EventStore.Accounting.appendAccountingEvent'
+--   and flat legacy objects), matching the other appliers.
 applyBalanceAdjusted :: AccountReadModel -> ES.Event -> AccountReadModel
 applyBalanceAdjusted model event = model
   { armBalanceState = newBalanceState
@@ -207,27 +214,21 @@ applyBalanceAdjusted model event = model
   }
   where
     eventData = ES.eventEventData event
-    changeAmount = case A.fromJSON eventData of
-                     A.Success (A.Object obj) ->
-                       case KM.lookup "changeAmount" obj of
-                         Just val -> case A.fromJSON val of
-                           A.Success amt -> Just amt
-                           _ -> Nothing
-                         Nothing -> Nothing
-                     _ -> Nothing
-    newBalance = case A.fromJSON eventData of
-                   A.Success (A.Object obj) ->
-                     case KM.lookup "newBalance" obj of
-                       Just val -> case A.fromJSON val of
-                         A.Success amt -> Just amt
-                         _ -> Nothing
-                       Nothing -> Nothing
-                   _ -> Nothing
+    entryFields = unwrappedFields eventData
+    lookupDouble key = entryFields >>= \obj ->
+      case KM.lookup key obj of
+        Just val -> case A.fromJSON val of
+                      A.Success amt -> Just amt
+                      _ -> Nothing
+        Nothing -> Nothing
+    changeAmount = lookupDouble "changeAmount"
+    newBalance = lookupDouble "newBalance"
     oldState = armBalanceState model
     changeAmount' = fromMaybe 0.0 changeAmount
-    newBalance' = fromMaybe 0.0 newBalance
     newBalanceState = oldState
-      { bsCurrentBalance = newBalance'
+      { bsCurrentBalance = case newBalance of
+                            Just nb -> nb
+                            Nothing -> bsCurrentBalance oldState + changeAmount'
       , bsDebitTotal = if changeAmount' > 0
                        then bsDebitTotal oldState + changeAmount'
                        else bsDebitTotal oldState

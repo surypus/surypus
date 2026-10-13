@@ -107,6 +107,25 @@ mkCreatedEvent accountId payload = (mkEvent payload)
     ES.eventEventType = "AccountCreated"
   }
 
+-- | An event row typed as @BalanceAdjusted@. No producer writes this
+-- variant yet ('Infrastructure.EventStore.Accounting.AccountingEvent' has no
+-- such constructor) — these tests pin the documented contract a future
+-- writer must follow.
+mkBalanceEvent :: Value -> ES.Event
+mkBalanceEvent payload = (mkEvent payload)
+  { ES.eventEventType = "BalanceAdjusted"
+  }
+
+-- | A model whose balance already carries prior movement, so relative
+-- adjustments are distinguishable from absolute ones.
+modelWithBalance :: Int64 -> Double -> AccountReadModel
+modelWithBalance accountId bal = (modelFor accountId)
+  { armBalanceState = (armBalanceState (modelFor accountId))
+      { bsCurrentBalance = bal
+      , bsDebitTotal = 500.0
+      }
+  }
+
 spec :: Spec
 spec = describe "Core.Accounting.ReadModel JSON replay" $ do
   it "posts a debit when replaying a real producer event" $ do
@@ -204,3 +223,53 @@ spec = describe "Core.Accounting.ReadModel JSON replay" $ do
                   (mkCreatedEvent 100 (producerAccountCreated 100 "01" "Fixed assets"))
     armAccountType model `shouldBe` Nothing
     armCurrencyId model `shouldBe` Nothing
+
+  it "applies a changeAmount BalanceAdjusted relative to the old balance" $ do
+    -- changeAmount is a delta on the existing balance, not an absolute set:
+    -- a payload without newBalance must never zero a live balance.
+    let model = applyBalanceAdjusted (modelWithBalance 100 400.0)
+                  (mkBalanceEvent (object ["changeAmount" .= (250.0 :: Double)]))
+    bsCurrentBalance (armBalanceState model) `shouldBe` 650.0
+    bsDebitTotal (armBalanceState model) `shouldBe` 750.0
+    bsCreditTotal (armBalanceState model) `shouldBe` 0.0
+    bsEventCount (armBalanceState model) `shouldBe` 1
+
+  it "applies a negative changeAmount BalanceAdjusted to the credit total" $ do
+    let model = applyBalanceAdjusted (modelWithBalance 100 400.0)
+                  (mkBalanceEvent (object ["changeAmount" .= (-100.0 :: Double)]))
+    bsCurrentBalance (armBalanceState model) `shouldBe` 300.0
+    bsCreditTotal (armBalanceState model) `shouldBe` 100.0
+    bsDebitTotal (armBalanceState model) `shouldBe` 500.0
+
+  it "sets the balance absolutely from a newBalance BalanceAdjusted" $ do
+    let model = applyBalanceAdjusted (modelWithBalance 100 400.0)
+                  (mkBalanceEvent (object ["newBalance" .= (700.0 :: Double)]))
+    bsCurrentBalance (armBalanceState model) `shouldBe` 700.0
+    bsDebitTotal (armBalanceState model) `shouldBe` 500.0
+
+  it "lets newBalance override changeAmount for the current balance" $ do
+    let model = applyBalanceAdjusted (modelWithBalance 100 400.0)
+                  (mkBalanceEvent (object ["changeAmount" .= (250.0 :: Double)
+                                          , "newBalance" .= (700.0 :: Double)]))
+    bsCurrentBalance (armBalanceState model) `shouldBe` 700.0
+    bsDebitTotal (armBalanceState model) `shouldBe` 750.0
+
+  it "applies a tagged-union BalanceAdjusted payload" $ do
+    -- Same shape the real producer would write for any event variant:
+    -- fields under "contents", unwrapped like the other appliers.
+    let payload = object ["tag" .= ("BalanceAdjusted" :: Text)
+                         , "contents" .= object ["changeAmount" .= (100.0 :: Double)]]
+        model = applyBalanceAdjusted (modelWithBalance 100 400.0) (mkBalanceEvent payload)
+    bsCurrentBalance (armBalanceState model) `shouldBe` 500.0
+
+  it "applies zero change for BalanceAdjusted payloads with no adjustment keys" $ do
+    let model = applyBalanceAdjusted (modelWithBalance 100 300.0) (mkBalanceEvent (object []))
+    bsCurrentBalance (armBalanceState model) `shouldBe` 300.0
+    bsDebitTotal (armBalanceState model) `shouldBe` 500.0
+    bsEventCount (armBalanceState model) `shouldBe` 1
+    bsLastUpdated (armBalanceState model) `shouldBe` ts
+
+  it "dispatches BalanceAdjusted events through applyEvent" $ do
+    let model = applyEvent (modelWithBalance 100 400.0)
+                  (mkBalanceEvent (object ["changeAmount" .= (250.0 :: Double)]))
+    bsCurrentBalance (armBalanceState model) `shouldBe` 650.0
