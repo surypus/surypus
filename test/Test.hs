@@ -19,6 +19,7 @@ import qualified System.CacheSpec
 import qualified System.CounterSpec
 import qualified System.MetricsCollectorSpec
 import qualified System.SequenceSpec
+import qualified System.RetrySpec
 import qualified JWTSpec
 import qualified ConfigSpec
 import qualified ObservabilitySpec
@@ -57,6 +58,7 @@ main = hspec $ do
   System.CounterSpec.spec
   System.MetricsCollectorSpec.spec
   System.SequenceSpec.spec
+  System.RetrySpec.spec
   JWTSpec.spec
   Core.Accounting.CacheSpec.spec
   ConfigSpec.spec
