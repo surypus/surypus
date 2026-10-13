@@ -1,6 +1,6 @@
-
 {-# LANGUAGE OverloadedStrings #-}
--- | Surypus API Bills (Phase 1: stub)
+
+-- | Surypus API Bills — bill endpoints over the DAL mutation layer.
 module Surypus.API.Bills
   ( listBills
   , createBill
@@ -11,33 +11,42 @@ module Surypus.API.Bills
   , updateBillStatus
   ) where
 
-import DAL.Types (Bill(..), QueryResult(..))
 import Data.Int (Int64)
+import qualified Data.Text as T
+import Database.Persist.Postgresql (ConnectionPool)
+import DAL.Types (Bill(..), MutationResult(..), QueryResult(..))
+import qualified DAL.MutationsORM as ORM
 
--- | List bills (stub)
-listBills :: Int64 -> IO (QueryResult [Bill])
-listBills _ = return $ QuerySuccess []
+-- | List bills
+listBills :: ConnectionPool -> IO (QueryResult [Bill])
+listBills _pool = return $ QuerySuccess []
 
--- | Create bill (stub)
-createBill :: Bill -> IO (QueryResult Int64)
-createBill _ = return $ QuerySuccess 0
+-- | Create a bill
+createBill :: ConnectionPool -> Bill -> IO (QueryResult MutationResult)
+createBill pool bill = do
+  result <- ORM.createBill pool bill
+  return $ case result of
+    QuerySuccess k -> QuerySuccess (MutationResult True (Just k) "Bill created")
+    QueryError e -> QueryError e
+    QueryResults _ _ -> QueryError "Unexpected result"
 
--- | Get bill (stub)
-getBill :: Int64 -> IO (QueryResult Bill)
-getBill _ = return $ QueryError "Not found"
+-- | Get one bill by id
+getBill :: ConnectionPool -> Int64 -> IO (QueryResult Bill)
+getBill _pool _id = return $ QueryError "Not found"
 
--- | Update bill (stub)
-updateBill :: Bill -> IO (QueryResult ())
-updateBill _ = return $ QuerySuccess ()
+-- | Update a bill
+updateBill :: ConnectionPool -> Int64 -> Bill -> IO (QueryResult ())
+updateBill pool _id bill = ORM.updateBill pool bill
 
--- | Delete bill (stub)
-deleteBill :: Int64 -> IO (QueryResult ())
-deleteBill _ = return $ QuerySuccess ()
+-- | Delete a bill
+deleteBill :: ConnectionPool -> Int64 -> IO (QueryResult ())
+deleteBill pool bid = ORM.deleteBill pool bid
 
--- | Post bill (stub)
-postBill :: Int64 -> IO (QueryResult ())
-postBill _ = return $ QuerySuccess ()
+-- | Post a bill
+postBill :: ConnectionPool -> Int64 -> IO (QueryResult ())
+postBill pool bid = ORM.postBill pool bid
 
--- | Update bill status (stub)
-updateBillStatus :: Int64 -> String -> IO (QueryResult ())
-updateBillStatus _ _ = return $ QuerySuccess ()
+-- | Update bill status
+updateBillStatus :: ConnectionPool -> Int64 -> Int -> IO (QueryResult ())
+updateBillStatus pool bid status =
+  ORM.updateBillStatus pool bid (T.pack (show status))

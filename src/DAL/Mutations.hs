@@ -1,26 +1,30 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module DAL.Mutations (
-    createPerson, updatePerson, deletePerson,
-    createGoods, updateGoods, deleteGoods,
-    createBill, updateBill, updateBillStatus, postBill, postBillWithAcc,
-    addBillLine, deleteBillLine, deleteBill,
-    createLocation, updateLocation, deleteLocation,
-    updateStock, reserveStock, releaseStock,
-    createOrder, updateOrderStatus, deleteOrder,
-    createPayment, updatePayment, deletePayment,
-    createUser, updateUser, listUsers, getUser, deleteUser, authenticateUser,
-    createPrice,
-    createTax, updateTax, deleteTax,
-    createCurrency, updateCurrency, deleteCurrency,
-    createAccPlan, updateAccPlan, deleteAccPlan,
-    createAccTurn, updateAccTurn, deleteAccTurn,
-    createEmployee, updateEmployee, deleteEmployee,
-    createSalary, deleteSalary,
-    createStockMovement,
-    createTimesheet, updateTimesheet, deleteTimesheet
-) where
+-- | DAL.Mutations — write operations facade over DAL.MutationsORM.
+-- Uniform API: every mutation returns 'QueryResult' 'MutationResult';
+-- update/delete functions take the entity id explicitly even though the
+-- ORM derives it from the record itself.
+module DAL.Mutations
+    ( createPerson, updatePerson, deletePerson
+    , createGoods, updateGoods, deleteGoods
+    , createBill, updateBill, updateBillStatus, postBill, postBillWithAcc
+    , addBillLine, deleteBillLine, deleteBill
+    , createLocation, updateLocation, deleteLocation
+    , updateStock, reserveStock, releaseStock
+    , createOrder, updateOrderStatus, deleteOrder
+    , createPayment, updatePayment, deletePayment
+    , createUser, updateUser, listUsers, getUser, deleteUser, authenticateUser
+    , createPrice
+    , createTax, updateTax, deleteTax
+    , createCurrency, updateCurrency, deleteCurrency
+    , createAccPlan, updateAccPlan, deleteAccPlan
+    , createAccTurn, updateAccTurn, deleteAccTurn
+    , createEmployee, updateEmployee, deleteEmployee
+    , createSalary, deleteSalary
+    , createStockMovement
+    , createTimesheet, updateTimesheet, deleteTimesheet
+    ) where
 
 import Data.Int (Int64)
 import Data.Text (Text)
@@ -33,98 +37,176 @@ import Database.Persist.Postgresql (ConnectionPool)
 import qualified DAL.MutationsORM
 import DAL.Schema
 import DAL.Types
+import Surypus.DB.Schema (UserEntity(..))
+import qualified Surypus.DB.Schema as DBS
 import DAL.Conversion (keyToInt)
 
-createPerson :: ConnectionPool -> PersonInput -> IO (QueryResult MutationResult)
-createPerson = DAL.MutationsORM.createPerson
+-- | Wrap a successful ORM key result into a MutationResult.
+keyToMutation :: Text -> QueryResult Int64 -> QueryResult MutationResult
+keyToMutation msg (QuerySuccess k) = QuerySuccess (MutationResult True (Just k) msg)
+keyToMutation _ (QueryError e) = QueryError e
+keyToMutation _ (QueryResults _ _) = QueryError "Unexpected result"
 
-updatePerson :: ConnectionPool -> Int64 -> PersonInput -> IO (QueryResult MutationResult)
-updatePerson = DAL.MutationsORM.updatePerson
+-- | Wrap a successful ORM unit result into a MutationResult carrying the id.
+unitToMutation :: Int64 -> Text -> QueryResult () -> QueryResult MutationResult
+unitToMutation i msg (QuerySuccess ()) = QuerySuccess (MutationResult True (Just i) msg)
+unitToMutation _ _ (QueryError e) = QueryError e
+unitToMutation _ _ (QueryResults _ _) = QueryError "Unexpected result"
+
+-- Persons ---------------------------------------------------------------------
+
+createPerson :: ConnectionPool -> Person -> IO (QueryResult MutationResult)
+createPerson pool person =
+  keyToMutation "Person created" <$> DAL.MutationsORM.createPerson pool person
+
+updatePerson :: ConnectionPool -> Int64 -> Person -> IO (QueryResult MutationResult)
+updatePerson pool pid person =
+  unitToMutation pid "Person updated" <$> DAL.MutationsORM.updatePerson pool person
 
 deletePerson :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
-deletePerson = DAL.MutationsORM.deletePerson
+deletePerson pool pid =
+  unitToMutation pid "Person deleted" <$> DAL.MutationsORM.deletePerson pool pid
 
-createGoods :: ConnectionPool -> GoodsInput -> IO (QueryResult MutationResult)
-createGoods = DAL.MutationsORM.createGoods
+-- Goods -----------------------------------------------------------------------
 
-updateGoods :: ConnectionPool -> Int64 -> GoodsInput -> IO (QueryResult MutationResult)
-updateGoods = DAL.MutationsORM.updateGoods
+createGoods :: ConnectionPool -> Goods -> IO (QueryResult MutationResult)
+createGoods pool goods =
+  keyToMutation "Goods created" <$> DAL.MutationsORM.createGoods pool goods
+
+updateGoods :: ConnectionPool -> Int64 -> Goods -> IO (QueryResult MutationResult)
+updateGoods pool gid goods =
+  unitToMutation gid "Goods updated" <$> DAL.MutationsORM.updateGoods pool goods
 
 deleteGoods :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
-deleteGoods = DAL.MutationsORM.deleteGoods
+deleteGoods pool gid =
+  unitToMutation gid "Goods deleted" <$> DAL.MutationsORM.deleteGoods pool gid
 
-createBill :: ConnectionPool -> BillInput -> IO (QueryResult MutationResult)
-createBill = DAL.MutationsORM.createBill
+-- Bills -----------------------------------------------------------------------
 
-updateBill :: ConnectionPool -> Int64 -> BillInput -> IO (QueryResult MutationResult)
-updateBill = DAL.MutationsORM.updateBill
+createBill :: ConnectionPool -> Bill -> IO (QueryResult MutationResult)
+createBill pool bill =
+  keyToMutation "Bill created" <$> DAL.MutationsORM.createBill pool bill
 
-updateBillStatus :: ConnectionPool -> Int64 -> Int -> IO (QueryResult MutationResult)
-updateBillStatus = DAL.MutationsORM.updateBillStatus
+updateBill :: ConnectionPool -> Int64 -> Bill -> IO (QueryResult MutationResult)
+updateBill pool bid bill =
+  unitToMutation bid "Bill updated" <$> DAL.MutationsORM.updateBill pool bill
+
+updateBillStatus :: ConnectionPool -> Int64 -> Text -> IO (QueryResult MutationResult)
+updateBillStatus pool bid status =
+  unitToMutation bid "Bill status updated" <$> DAL.MutationsORM.updateBillStatus pool bid status
 
 postBill :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
-postBill = DAL.MutationsORM.postBill
+postBill pool bid =
+  unitToMutation bid "Bill posted" <$> DAL.MutationsORM.postBill pool bid
 
-postBillWithAcc :: ConnectionPool -> Int64 -> IO (QueryResult [Int64])
-postBillWithAcc = DAL.MutationsORM.postBillWithAcc
+postBillWithAcc :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
+postBillWithAcc pool bid =
+  unitToMutation bid "Bill posted with accounting" <$> DAL.MutationsORM.postBillWithAcc pool bid
 
-addBillLine :: ConnectionPool -> Int64 -> BillLineInput -> IO (QueryResult MutationResult)
-addBillLine = DAL.MutationsORM.addBillLine
+addBillLine :: ConnectionPool -> BillLine -> IO (QueryResult MutationResult)
+addBillLine pool line =
+  keyToMutation "Bill line added" <$> DAL.MutationsORM.addBillLine pool line
 
 deleteBillLine :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
-deleteBillLine = DAL.MutationsORM.deleteBillLine
+deleteBillLine pool lid =
+  unitToMutation lid "Bill line deleted" <$> DAL.MutationsORM.deleteBillLine pool lid
 
 deleteBill :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
-deleteBill = DAL.MutationsORM.deleteBill
+deleteBill pool bid =
+  unitToMutation bid "Bill deleted" <$> DAL.MutationsORM.deleteBill pool bid
 
-createLocation :: ConnectionPool -> LocationInput -> IO (QueryResult MutationResult)
-createLocation = DAL.MutationsORM.createLocation
+-- Locations -------------------------------------------------------------------
 
-updateLocation :: ConnectionPool -> Int64 -> LocationInput -> IO (QueryResult MutationResult)
-updateLocation = DAL.MutationsORM.updateLocation
+createLocation :: ConnectionPool -> Location -> IO (QueryResult MutationResult)
+createLocation pool loc =
+  keyToMutation "Location created" <$> DAL.MutationsORM.createLocation pool loc
+
+updateLocation :: ConnectionPool -> Int64 -> Location -> IO (QueryResult MutationResult)
+updateLocation pool lid loc =
+  unitToMutation lid "Location updated" <$> DAL.MutationsORM.updateLocation pool loc
 
 deleteLocation :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
-deleteLocation = DAL.MutationsORM.deleteLocation
+deleteLocation pool lid =
+  unitToMutation lid "Location deleted" <$> DAL.MutationsORM.deleteLocation pool lid
 
-updateStock :: ConnectionPool -> Int64 -> Int64 -> Double -> IO (QueryResult MutationResult)
-updateStock = DAL.MutationsORM.updateStock
+-- Stock -----------------------------------------------------------------------
 
-reserveStock :: ConnectionPool -> Int64 -> Int64 -> Double -> IO (QueryResult MutationResult)
-reserveStock = DAL.MutationsORM.reserveStock
+updateStock :: ConnectionPool -> Int64 -> Double -> IO (QueryResult MutationResult)
+updateStock pool goodsId qty =
+  unitToMutation goodsId "Stock updated" <$> DAL.MutationsORM.updateStock pool goodsId qty
 
-releaseStock :: ConnectionPool -> Int64 -> Int64 -> Double -> IO (QueryResult MutationResult)
-releaseStock = DAL.MutationsORM.releaseStock
+reserveStock :: ConnectionPool -> Int64 -> Double -> IO (QueryResult MutationResult)
+reserveStock pool goodsId qty =
+  unitToMutation goodsId "Stock reserved" <$> DAL.MutationsORM.reserveStock pool goodsId qty
 
-createOrder :: ConnectionPool -> OrderInput -> IO (QueryResult MutationResult)
-createOrder = DAL.MutationsORM.createOrder
+releaseStock :: ConnectionPool -> Int64 -> Double -> IO (QueryResult MutationResult)
+releaseStock pool goodsId qty =
+  unitToMutation goodsId "Stock released" <$> DAL.MutationsORM.releaseStock pool goodsId qty
 
-updateOrderStatus :: ConnectionPool -> Int64 -> Int -> IO (QueryResult MutationResult)
-updateOrderStatus = DAL.MutationsORM.updateOrderStatus
+-- Orders ----------------------------------------------------------------------
+
+createOrder :: ConnectionPool -> Order -> IO (QueryResult MutationResult)
+createOrder pool order =
+  keyToMutation "Order created" <$> DAL.MutationsORM.createOrder pool order
+
+updateOrderStatus :: ConnectionPool -> Int64 -> Text -> IO (QueryResult MutationResult)
+updateOrderStatus pool oid status =
+  unitToMutation oid "Order status updated" <$> DAL.MutationsORM.updateOrderStatus pool oid status
 
 deleteOrder :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
-deleteOrder = DAL.MutationsORM.deleteOrder
+deleteOrder pool oid =
+  unitToMutation oid "Order deleted" <$> DAL.MutationsORM.deleteOrder pool oid
 
-createPayment :: ConnectionPool -> PaymentInput -> IO (QueryResult MutationResult)
-createPayment = DAL.MutationsORM.createPayment
+-- Payments --------------------------------------------------------------------
 
-updatePayment :: ConnectionPool -> Int64 -> PaymentInput -> IO (QueryResult MutationResult)
-updatePayment = DAL.MutationsORM.updatePayment
+createPayment :: ConnectionPool -> Payment -> IO (QueryResult MutationResult)
+createPayment pool payment =
+  keyToMutation "Payment created" <$> DAL.MutationsORM.createPayment pool payment
+
+updatePayment :: ConnectionPool -> Int64 -> Payment -> IO (QueryResult MutationResult)
+updatePayment pool pid payment =
+  unitToMutation pid "Payment updated" <$> DAL.MutationsORM.updatePayment pool payment
 
 deletePayment :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
-deletePayment = DAL.MutationsORM.deletePayment
+deletePayment pool pid =
+  unitToMutation pid "Payment deleted" <$> DAL.MutationsORM.deletePayment pool pid
+
+-- Users -----------------------------------------------------------------------
 
 createUser :: ConnectionPool -> UserInput -> IO (QueryResult MutationResult)
-createUser = DAL.MutationsORM.createUser
+createUser pool input = do
+  let user = User
+        { userId = 0
+        , userName = uiUsername input
+        , userPassword = Just (uiPasswordHash input)
+        , userEmail = uiEmail input
+        , userPersonId = Nothing
+        , userStatus = uiStatus input
+        , userTenantId = 0
+        }
+  keyToMutation "User created" <$> DAL.MutationsORM.createUser pool user
 
 updateUser :: ConnectionPool -> Int64 -> UserInput -> IO (QueryResult MutationResult)
-updateUser = DAL.MutationsORM.updateUser
+updateUser pool uid input = do
+  existing <- getUser pool uid
+  case existing of
+    QueryError e -> return $ QueryError e
+    QuerySuccess old -> do
+      let user = old
+            { userName = uiUsername input
+            , userPassword = Just (uiPasswordHash input)
+            , userEmail = uiEmail input
+            , userStatus = uiStatus input
+            }
+      unitToMutation uid "User updated" <$> DAL.MutationsORM.updateUser pool user
+    QueryResults _ _ -> return $ QueryError "Unexpected result"
 
 listUsers :: ConnectionPool -> IO (QueryResult [User])
 listUsers pool = do
     entities <- liftIO $ runSqlPool
         (select $ do
             u <- from $ table @UserEntity
-            orderBy [asc $ u ^. UserEntityId]
+            orderBy [asc $ u ^. DBS.UserEntityId]
             return u
         ) pool
     return $ QuerySuccess (map userFromEntity entities)
@@ -134,7 +216,7 @@ getUser pool uid = do
     result <- liftIO $ runSqlPool
         (selectOne $ do
             u <- from $ table @UserEntity
-            where_ $ u ^. UserEntityId ==. val (toSqlKey uid)
+            where_ $ u ^. DBS.UserEntityId ==. val (toSqlKey uid)
             return u
         ) pool
     case result of
@@ -151,7 +233,7 @@ authenticateUser pool login password = do
     result <- liftIO $ runSqlPool
         (selectOne $ do
             u <- from $ table @UserEntity
-            where_ $ u ^. UserEntityUsername ==. val login
+            where_ $ u ^. DBS.UserEntityUsername ==. val login
             return u
         ) pool
     case result of
@@ -162,14 +244,66 @@ authenticateUser pool login password = do
                 then return $ QuerySuccess (Just user)
                 else return $ QuerySuccess Nothing
 
-createAccPlan :: ConnectionPool -> AccPlanInput -> IO (QueryResult MutationResult)
-createAccPlan = DAL.MutationsORM.createAccPlan
+userFromEntity :: P.Entity UserEntity -> User
+userFromEntity (P.Entity key e) = User
+    { userId = keyToInt key
+    , userName = userEntityUsername e
+    , userPassword = Just $ userEntityPasswordHash e
+    , userEmail = Nothing
+    , userPersonId = userEntityPersonId e
+    , userStatus = userEntityStatus e
+    , userTenantId = userEntityTenantId e
+    }
 
-updateAccPlan :: ConnectionPool -> Int64 -> AccPlanInput -> IO (QueryResult MutationResult)
-updateAccPlan = DAL.MutationsORM.updateAccPlan
+-- Prices ----------------------------------------------------------------------
+
+createPrice :: ConnectionPool -> GoodsPrice -> IO (QueryResult MutationResult)
+createPrice pool price =
+  keyToMutation "Price created" <$> DAL.MutationsORM.createPrice pool price
+
+-- Taxes -----------------------------------------------------------------------
+
+createTax :: ConnectionPool -> Tax -> IO (QueryResult MutationResult)
+createTax pool tax =
+  keyToMutation "Tax created" <$> DAL.MutationsORM.createTax pool tax
+
+updateTax :: ConnectionPool -> Int64 -> Tax -> IO (QueryResult MutationResult)
+updateTax pool tid tax =
+  unitToMutation tid "Tax updated" <$> DAL.MutationsORM.updateTax pool tax
+
+deleteTax :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
+deleteTax pool tid =
+  unitToMutation tid "Tax deleted" <$> DAL.MutationsORM.deleteTax pool tid
+
+-- Currencies ------------------------------------------------------------------
+
+createCurrency :: ConnectionPool -> Currency -> IO (QueryResult MutationResult)
+createCurrency pool currency =
+  keyToMutation "Currency created" <$> DAL.MutationsORM.createCurrency pool currency
+
+updateCurrency :: ConnectionPool -> Int64 -> Currency -> IO (QueryResult MutationResult)
+updateCurrency pool cid currency =
+  unitToMutation cid "Currency updated" <$> DAL.MutationsORM.updateCurrency pool currency
+
+deleteCurrency :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
+deleteCurrency pool cid =
+  unitToMutation cid "Currency deleted" <$> DAL.MutationsORM.deleteCurrency pool cid
+
+-- Account plans ---------------------------------------------------------------
+
+createAccPlan :: ConnectionPool -> AccPlan -> IO (QueryResult MutationResult)
+createAccPlan pool acc =
+  keyToMutation "Account plan created" <$> DAL.MutationsORM.createAccPlan pool acc
+
+updateAccPlan :: ConnectionPool -> Int64 -> AccPlan -> IO (QueryResult MutationResult)
+updateAccPlan pool pid acc =
+  unitToMutation pid "Account plan updated" <$> DAL.MutationsORM.updateAccPlan pool acc
 
 deleteAccPlan :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
-deleteAccPlan = DAL.MutationsORM.deleteAccPlan
+deleteAccPlan pool pid =
+  unitToMutation pid "Account plan deleted" <$> DAL.MutationsORM.deleteAccPlan pool pid
+
+-- Account turns ---------------------------------------------------------------
 
 createAccTurn :: ConnectionPool -> AccTurnInput -> IO (QueryResult MutationResult)
 createAccTurn pool input = do
@@ -202,63 +336,49 @@ updateAccTurn pool tid input = do
     QueryResults _ _ -> QueryError "Unexpected result"
 
 deleteAccTurn :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
-deleteAccTurn = DAL.MutationsORM.deleteAccTurn
+deleteAccTurn pool tid =
+  unitToMutation tid "AccTurn deleted" <$> DAL.MutationsORM.deleteAccTurn pool tid
 
-createPrice :: ConnectionPool -> PriceInput -> IO (QueryResult MutationResult)
-createPrice = DAL.MutationsORM.createPrice
+-- Employees -------------------------------------------------------------------
 
-createTax :: ConnectionPool -> TaxInput -> IO (QueryResult MutationResult)
-createTax = DAL.MutationsORM.createTax
+createEmployee :: ConnectionPool -> Employee -> IO (QueryResult MutationResult)
+createEmployee pool emp =
+  keyToMutation "Employee created" <$> DAL.MutationsORM.createEmployee pool emp
 
-updateTax :: ConnectionPool -> Int64 -> TaxInput -> IO (QueryResult MutationResult)
-updateTax = DAL.MutationsORM.updateTax
-
-deleteTax :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
-deleteTax = DAL.MutationsORM.deleteTax
-
-createCurrency :: ConnectionPool -> CurrencyInput -> IO (QueryResult MutationResult)
-createCurrency = DAL.MutationsORM.createCurrency
-
-createEmployee :: ConnectionPool -> EmployeeInput -> IO (QueryResult MutationResult)
-createEmployee = DAL.MutationsORM.createEmployee
-
-createSalary :: ConnectionPool -> SalaryInput -> IO (QueryResult MutationResult)
-createSalary = DAL.MutationsORM.createSalary
-
-updateEmployee :: ConnectionPool -> Int64 -> EmployeeInput -> IO (QueryResult MutationResult)
-updateEmployee = DAL.MutationsORM.updateEmployee
+updateEmployee :: ConnectionPool -> Int64 -> Employee -> IO (QueryResult MutationResult)
+updateEmployee pool eid emp =
+  unitToMutation eid "Employee updated" <$> DAL.MutationsORM.updateEmployee pool emp
 
 deleteEmployee :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
-deleteEmployee = DAL.MutationsORM.deleteEmployee
+deleteEmployee pool eid =
+  unitToMutation eid "Employee deleted" <$> DAL.MutationsORM.deleteEmployee pool eid
+
+-- Salaries --------------------------------------------------------------------
+
+createSalary :: ConnectionPool -> Salary -> IO (QueryResult MutationResult)
+createSalary pool salary =
+  keyToMutation "Salary created" <$> DAL.MutationsORM.createSalary pool salary
 
 deleteSalary :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
-deleteSalary = DAL.MutationsORM.deleteSalary
+deleteSalary pool sid =
+  unitToMutation sid "Salary deleted" <$> DAL.MutationsORM.deleteSalary pool sid
 
-createTimesheet :: ConnectionPool -> TimesheetInput -> IO (QueryResult MutationResult)
-createTimesheet = DAL.MutationsORM.createTimesheet
+-- Stock movements -------------------------------------------------------------
 
-updateTimesheet :: ConnectionPool -> Int64 -> TimesheetInput -> IO (QueryResult MutationResult)
-updateTimesheet = DAL.MutationsORM.updateTimesheet
+createStockMovement :: ConnectionPool -> StockMovement -> IO (QueryResult MutationResult)
+createStockMovement pool movement =
+  keyToMutation "Stock movement created" <$> DAL.MutationsORM.createStockMovement pool movement
+
+-- Timesheets ------------------------------------------------------------------
+
+createTimesheet :: ConnectionPool -> Timesheet -> IO (QueryResult MutationResult)
+createTimesheet pool ts =
+  keyToMutation "Timesheet created" <$> DAL.MutationsORM.createTimesheet pool ts
+
+updateTimesheet :: ConnectionPool -> Int64 -> Timesheet -> IO (QueryResult MutationResult)
+updateTimesheet pool tid ts =
+  unitToMutation tid "Timesheet updated" <$> DAL.MutationsORM.updateTimesheet pool ts
 
 deleteTimesheet :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
-deleteTimesheet = DAL.MutationsORM.deleteTimesheet
-
-createStockMovement :: ConnectionPool -> StockMovementInput -> IO (QueryResult MutationResult)
-createStockMovement = DAL.MutationsORM.createStockMovement
-
-updateCurrency :: ConnectionPool -> Int64 -> CurrencyInput -> IO (QueryResult MutationResult)
-updateCurrency = DAL.MutationsORM.updateCurrency
-
-deleteCurrency :: ConnectionPool -> Int64 -> IO (QueryResult MutationResult)
-deleteCurrency = DAL.MutationsORM.deleteCurrency
-
-userFromEntity :: P.Entity UserEntity -> User
-userFromEntity (P.Entity key e) = User
-    { userId = keyToInt key
-    , userName = userEntityUsername e
-    , userPassword = Just $ userEntityPasswordHash e
-    , userEmail = Nothing
-    , userPersonId = userEntityPersonId e
-    , userStatus = userEntityStatus e
-    , userTenantId = userEntityTenantId e
-    }
+deleteTimesheet pool tid =
+  unitToMutation tid "Timesheet deleted" <$> DAL.MutationsORM.deleteTimesheet pool tid

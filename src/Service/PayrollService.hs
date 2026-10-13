@@ -1,7 +1,6 @@
 -- | Payroll Service — orchestrates payroll calculations and persistence
 -- Uses Data.Decimal for all monetary amounts (PYR-02)
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 module Service.PayrollService
   ( PayrollRequest(..)
@@ -18,17 +17,17 @@ module Service.PayrollService
   , emptyPayrollState
   ) where
 
-import Data.Aeson (ToJSON, FromJSON, object, (.=), toJSON, Value)
+import Data.Aeson (object, (.=), toJSON)
 import qualified Data.Aeson as A
 import Data.Decimal (Decimal)
 import Data.Int (Int64)
 import Data.Text (Text)
-import Data.Time (Day)
+import Data.Time (Day, UTCTime, getCurrentTime)
 import Database.Persist.Postgresql (ConnectionPool)
 import Core.Payroll.Calculation
 import DAL.Payroll (savePayrollResult)
-import DAL.EventStore (appendEvent, currentEventSchemaVersion)
-import DAL.Types (QueryResult(..))
+import DAL.Types (QueryResult(..), PayrollResult(..))
+import DAL.EventStore (appendEvent, currentEventSchemaVersion, Event(..))
 
 -- | Payroll calculation request
 data PayrollRequest = PayrollRequest
@@ -41,42 +40,6 @@ data PayrollRequest = PayrollRequest
   , prVacationDays :: Int
   , prSickDays :: Int
   }
-
--- | Payroll calculation result (domain type, matches DAL.PayrollResult fields)
-data PayrollResult = PayrollResult
-  { prCalcEmployeeId :: Int64
-  , prCalcTenantId :: Int64
-  , prCalcPeriod :: Day
-  , prGrossSalary :: Decimal
-  , prIncomeTax :: Decimal
-  , prSocialTax :: Decimal
-  , prDeductions :: Decimal
-  , prNetSalary :: Decimal
-  , prAdvance :: Decimal
-  , prBonusAmount :: Decimal
-  , prVacationPay :: Decimal
-  , prSickPay :: Decimal
-  , prTotalToPay :: Decimal
-  , prCurrency :: Text
-  } deriving (Show, Eq)
-
-instance ToJSON PayrollResult where
-  toJSON r = A.object
-    [ "employeeId" .= prCalcEmployeeId r
-    , "tenantId"   .= prCalcTenantId r
-    , "period"     .= prCalcPeriod r
-    , "gross"      .= show (prGrossSalary r)
-    , "incomeTax"  .= show (prIncomeTax r)
-    , "socialTax"  .= show (prSocialTax r)
-    , "deductions" .= show (prDeductions r)
-    , "net"        .= show (prNetSalary r)
-    , "advance"    .= show (prAdvance r)
-    , "bonus"      .= show (prBonusAmount r)
-    , "vacationPay" .= show (prVacationPay r)
-    , "sickPay"    .= show (prSickPay r)
-    , "totalToPay" .= show (prTotalToPay r)
-    , "currency"   .= prCurrency r
-    ]
 
 -- | Calculate full payroll for an employee
 calculatePayroll :: PayrollRequest -> PayrollResult
@@ -92,65 +55,69 @@ calculatePayroll req =
       sickPay = calcSickPay (prSickDays req) gross
       totalToPay = netSalary + bonus + vacationPay + sickPay
   in PayrollResult
-    { prCalcEmployeeId = prEmployeeId req
-    , prCalcTenantId = prTenantId req
-    , prCalcPeriod = prPeriod req
-    , prGrossSalary = gross
-    , prIncomeTax = incomeTax
-    , prSocialTax = socialTax
-    , prDeductions = deductions
-    , prNetSalary = netSalary
-    , prAdvance = advance
-    , prBonusAmount = bonus
-    , prVacationPay = vacationPay
-    , prSickPay = sickPay
-    , prTotalToPay = totalToPay
-    , prCurrency = "RUB"
+    { payrollResultId = 0
+    , payrollResultEmployeeId = prEmployeeId req
+    , payrollResultTenantId = prTenantId req
+    , payrollResultPeriod = prPeriod req
+    , payrollResultGross = realToFrac gross
+    , payrollResultIncomeTax = realToFrac incomeTax
+    , payrollResultSocialTax = realToFrac socialTax
+    , payrollResultDeductions = realToFrac deductions
+    , payrollResultNet = realToFrac netSalary
+    , payrollResultAdvance = realToFrac advance
+    , payrollResultBonus = realToFrac bonus
+    , payrollResultVacationPay = realToFrac vacationPay
+    , payrollResultSickPay = realToFrac sickPay
+    , payrollResultTotalToPay = realToFrac totalToPay
+    , payrollResultCurrency = "RUB"
+    , payrollResultVersion = 0
+    , payrollResultCreatedBy = Nothing
+    , payrollResultCreatedAt = read "1970-01-01 00:00:00 UTC"
+    , payrollResultUpdatedAt = read "1970-01-01 00:00:00 UTC"
     }
 
 -- | Calculate and persist payroll result, emitting a PayrollCalculated
 -- domain event for the event-sourced read model (PYR-01 + event sourcing).
 calculateAndSavePayroll :: ConnectionPool -> PayrollRequest -> Int64 -> IO (QueryResult PayrollResult)
-calculateAndSavePayroll pool req userId =
+calculateAndSavePayroll pool req userId = do
+  now <- getCurrentTime
   let result = calculatePayroll req
-  in do
-    dbRes <- savePayrollResult pool
-      (prCalcTenantId result)
-      (prCalcPeriod result)
-      (prCalcEmployeeId result)
-      (prGrossSalary result)
-      (prDeductions result)
-      (prNetSalary result)
-      (prIncomeTax result)
-      (prSocialTax result)
-      (prAdvance result)
-      (prBonusAmount result)
-      (prVacationPay result)
-      (prSickPay result)
-      (prTotalToPay result)
-      (prCurrency result)
-      userId
-    -- Emit the domain event. The payroll aggregate is keyed by employee id;
-    -- the event carries the full calculated result plus who triggered it.
-    let eventData = toJSON result
-        eventMeta = object
-          [ "userId"   .= userId
-          , "tenantId" .= prCalcTenantId result
-          , "period"   .= show (prCalcPeriod result)
-          ]
-    _ <- appendEvent pool
-      (prCalcEmployeeId result)   -- aggregate id (per-employee stream)
-      "payroll"                   -- aggregate type
-      "PayrollCalculated"         -- event type
-      1                           -- event version
-      currentEventSchemaVersion  -- schema version
-      eventData
-      (Just eventMeta)
-      (prCalcEmployeeId result)   -- sequence number (one stream per employee)
-    -- The DB write is authoritative for the response; event emission is
-    -- best-effort here (a production system would wrap both in one transaction
-    -- or use the event as the source of truth and project from it).
-    pure dbRes
+  dbRes <- savePayrollResult pool
+    (payrollResultTenantId result)
+    (payrollResultPeriod result)
+    (payrollResultEmployeeId result)
+    (realToFrac (payrollResultGross result) :: Double)
+    (realToFrac (payrollResultDeductions result) :: Double)
+    (realToFrac (payrollResultNet result) :: Double)
+    (realToFrac (payrollResultIncomeTax result) :: Double)
+    (realToFrac (payrollResultSocialTax result) :: Double)
+    (realToFrac (payrollResultAdvance result) :: Double)
+    (realToFrac (payrollResultBonus result) :: Double)
+    (realToFrac (payrollResultVacationPay result) :: Double)
+    (realToFrac (payrollResultSickPay result) :: Double)
+    (realToFrac (payrollResultTotalToPay result) :: Double)
+    (payrollResultCurrency result)
+    userId
+  let eventData = toJSON result
+      eventMeta = object
+        [ "userId"   .= userId
+        , "tenantId" .= payrollResultTenantId result
+        , "period"   .= show (payrollResultPeriod result)
+        ]
+      event = Event
+        { eventAggregateId = payrollResultEmployeeId result
+        , eventAggregateType = "payroll"
+        , eventEventType = "PayrollCalculated"
+        , eventEventVersion = 1
+        , eventSchemaVersion = currentEventSchemaVersion
+        , eventEventData = eventData
+        , eventEventMetadata = Just eventMeta
+        , eventSequenceNumber = payrollResultEmployeeId result
+        , eventOccurredAt = now
+        , eventCreatedAt = now
+        }
+  _ <- appendEvent pool event
+  pure dbRes
 
 -- | Calculate vacation pay (avg daily * days * 1.0)
 calcVacationPay :: Int -> Decimal -> Decimal
@@ -166,9 +133,9 @@ calcSickPay days monthlySalary
                 in emp + soc
 
 -- | Calculate year-end payroll summary
-calculateYearEndSummary :: [PayrollResult] -> Decimal
+calculateYearEndSummary :: [PayrollResult] -> Double
 calculateYearEndSummary results =
-  sum (map prTotalToPay results)
+  sum (map payrollResultTotalToPay results)
 
 --------------------------------------------------------------------------------
 -- Event sourcing: fold payroll events back into the latest state.

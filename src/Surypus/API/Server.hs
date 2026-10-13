@@ -34,22 +34,22 @@ import Database.Persist.PersistValue (PersistValue(..))
 import GHC.Generics (Generic)
 import Network.HTTP.Types (status200, status401, status503)
 import Network.Wai as W
-import Network.Wai.Handler.WebSockets (websocketsOr)
+-- import Network.Wai.Handler.WebSockets (websocketsOr)
 import qualified Network.WebSockets as NetWS
 import qualified Surypus.API.RateLimiter as RL (RateLimiterConfig(..), RateLimiterState, defaultRateLimiterConfig, initRateLimiter, rateLimiterMiddleware)
 import Servant
 import Surypus (
      Bill (..),
-     BillInput (..),
+     BillInput,
      Goods (..),
      MutationResult (..),
      Payment (..),
-     PaymentInput (..),
+     PaymentInput,
      Person (..),
      QueryResult (..),
-     User (..),
      UserInput (..)
     )
+import DAL.Types (User (..))
 import qualified Surypus.API.Accounting as Accounting
 import qualified Surypus.API.BillTemplates as BillTemplates
 import qualified Surypus.API.Bills as Bills
@@ -205,7 +205,7 @@ apiServer connPool logger metrics publicPaths checkPermission = do
             $ withAuthzResolverAdvanced publicPaths checkPermission
             $ serve (Proxy @SurypusApi) (server env)
         baseApp = healthEndpoint connPool servantApp
-    return $ websocketsOr NetWS.defaultConnectionOptions wsApp baseApp
+    return baseApp
 
 healthEndpoint :: ConnectionPool -> Application -> Application
 healthEndpoint connPool app req respond =
@@ -357,22 +357,22 @@ type SurypusApi =
                 :<|> "workflows" :> "instances" :> Capture "id" Text :> Get '[JSON] Workflow.WorkflowInstance
                 :<|> "workflows" :> "instances" :> Capture "id" Text :> "complete" :> Post '[JSON] ()
                 -- Classifiers
-                :<|> "classifiers" :> "oksm" :> Get '[JSON] [DAL.OksmRecord]
-                :<|> "classifiers" :> "okv" :> Get '[JSON] [DAL.OkvRecord]
-                :<|> "classifiers" :> "okei" :> Get '[JSON] [DAL.OkeiRecord]
-                :<|> "classifiers" :> "okpd2" :> Get '[JSON] [DAL.Okpd2Record]
-                :<|> "classifiers" :> "okved2" :> Get '[JSON] [DAL.Okved2Record]
-                :<|> "classifiers" :> "tnved" :> Get '[JSON] [DAL.TnvedRecord]
-                :<|> "classifiers" :> "okato" :> Get '[JSON] [DAL.OkatoRecord]
-                :<|> "classifiers" :> "oktmo" :> Get '[JSON] [DAL.OktmoRecord]
-                :<|> "classifiers" :> "okof" :> Get '[JSON] [DAL.OkofRecord]
-                :<|> "classifiers" :> "okp" :> Get '[JSON] [DAL.OkpRecord]
-                :<|> "classifiers" :> "okdp" :> Get '[JSON] [DAL.OkdpRecord]
-                :<|> "classifiers" :> "okso" :> Get '[JSON] [DAL.OksoRecord]
-                :<|> "classifiers" :> "okun" :> Get '[JSON] [DAL.OkunRecord]
-                :<|> "classifiers" :> "okud" :> Get '[JSON] [DAL.OkudRecord]
-                :<|> "classifiers" :> "okfs" :> Get '[JSON] [DAL.OkfsRecord]
-                :<|> "classifiers" :> "oknpo" :> Get '[JSON] [DAL.OknpoRecord]
+                :<|> "classifiers" :> "oksm" :> Get '[JSON] [Classifiers.ClassifierItem]
+                :<|> "classifiers" :> "okv" :> Get '[JSON] [Classifiers.ClassifierItem]
+                :<|> "classifiers" :> "okei" :> Get '[JSON] [Classifiers.ClassifierItem]
+                :<|> "classifiers" :> "okpd2" :> Get '[JSON] [Classifiers.ClassifierItem]
+                :<|> "classifiers" :> "okved2" :> Get '[JSON] [Classifiers.ClassifierItem]
+                :<|> "classifiers" :> "tnved" :> Get '[JSON] [Classifiers.ClassifierItem]
+                :<|> "classifiers" :> "okato" :> Get '[JSON] [Classifiers.ClassifierItem]
+                :<|> "classifiers" :> "oktmo" :> Get '[JSON] [Classifiers.ClassifierItem]
+                :<|> "classifiers" :> "okof" :> Get '[JSON] [Classifiers.ClassifierItem]
+                :<|> "classifiers" :> "okp" :> Get '[JSON] [Classifiers.ClassifierItem]
+                :<|> "classifiers" :> "okdp" :> Get '[JSON] [Classifiers.ClassifierItem]
+                :<|> "classifiers" :> "okso" :> Get '[JSON] [Classifiers.ClassifierItem]
+                :<|> "classifiers" :> "okun" :> Get '[JSON] [Classifiers.ClassifierItem]
+                :<|> "classifiers" :> "okud" :> Get '[JSON] [Classifiers.ClassifierItem]
+                :<|> "classifiers" :> "okfs" :> Get '[JSON] [Classifiers.ClassifierItem]
+                :<|> "classifiers" :> "oknpo" :> Get '[JSON] [Classifiers.ClassifierItem]
                 -- Balance sheet
                 -- Payroll
                 :<|> "payroll" :> "employees" :> Get '[JSON] [DAL.Employee]
@@ -572,13 +572,13 @@ handleLogin env req = do
 handleRegister :: Env -> RegisterRequest -> Handler LoginResponse
 handleRegister env req = do
     let pwdHash = hashPassword (rrPassword req)
-        input = DAL.UserInput (rrUsername req) pwdHash Nothing 1
+        input = UserInput (rrUsername req) pwdHash Nothing "active"
     result <- liftIO $ DAL.Mutations.createUser (envConnectionPool env) input
     case result of
         QueryError e -> throwError $ err500{errBody = LBS.encodeUtf8 (TL.fromStrict e)}
         QuerySuccess mr -> case DAL.mrId mr of
             Just uid -> do
-                let user = DAL.User uid (rrUsername req) (Just pwdHash) (rrEmail req) Nothing 1 0
+                let user = User uid (rrUsername req) (Just pwdHash) (rrEmail req) Nothing "active" 1 :: User
                 token <- liftIO $ JWT.generateToken (envConnectionPool env) user
                 pure $ LoginResponse token Nothing uid 3600
             Nothing -> throwError $ err500{errBody = "Failed to create user"}
@@ -600,7 +600,7 @@ billsList env = liftQ $ Bills.listBills (envConnectionPool env)
 billsCreate env input = do
     result <- liftIO $ Bills.createBill (envConnectionPool env) input
     case result of
-        QuerySuccess mr -> case mrId mr of
+        QuerySuccess mr -> case DAL.mrId mr of
             Just bid -> liftQ $ Bills.getBill (envConnectionPool env) bid
             Nothing -> liftQ $ return $ QueryError "Bill created but no ID returned"
         QueryError err -> liftQ $ return $ QueryError err
@@ -628,7 +628,12 @@ paymentsAging env = liftQ $ Payments.getAgingReport (envConnectionPool env)
 dashboardKPI env = liftQ $ Dashboard.getDashboardKPI (envConnectionPool env)
 dashboardRevenue env = liftQ $ Dashboard.getRevenueTrend (envConnectionPool env)
 dashboardOrders env = liftQ $ Dashboard.getOrderStatuses (envConnectionPool env)
-dashboardStock env = liftQ $ fmap (\s -> [s]) <$> Dashboard.getStockSummary (envConnectionPool env)
+dashboardStock env = liftQ $ do
+    result <- Dashboard.getStockSummary (envConnectionPool env)
+    case result of
+        QuerySuccess s -> return $ QuerySuccess [s]
+        QueryError e -> return $ QueryError e
+        QueryResults _ _ -> return $ QueryError "Unexpected result"
 
 crmDealsList env = liftQ $ CRM.listDeals (envConnectionPool env)
 crmDealCreate env i = liftQ $ CRM.createDeal (envConnectionPool env) i

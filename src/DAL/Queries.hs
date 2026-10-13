@@ -2,243 +2,93 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module DAL.Queries where
+-- | DAL.Queries — read queries used by the API layer.
+-- Only the queries the HTTP handlers need live here;
+-- list-style queries are implemented in 'DAL.QueriesORM'.
+module DAL.Queries
+  ( getLowStockGoods
+  , getEmployeeById
+  , getSalaryByEmployee
+  ) where
 
 import Control.Monad.IO.Class (liftIO)
 import Data.Int (Int64)
-import Data.Text (Text)
-import Data.Time (Day)
+import qualified Data.Text as T
 import Database.Esqueleto.Experimental
-import Database.Persist.Sql (ConnectionPool, Entity, runSqlPool, toSqlKey, rawSql)
-import DAL.Schema hiding (TaxEntity)
+import Database.Persist.Sql (ConnectionPool, runSqlPool, rawSql, fromSqlKey, PersistValue(..), Single(..))
+import Database.Persist.Postgresql (ConnectionPool)
+import qualified Database.Persist as P
+import qualified Surypus.DB.Schema as DBS
+import Surypus.DB.Schema (SalaryEntity(..))
 import DAL.Types
-import DAL.Conversion
-import Surypus.DB.Schema (ReportTemplateEntity(..), PaymentEntity(..), AccPlanEntity(..), SalaryEntity(..), CurrencyEntity(..), ReportTemplateEntityId, ReportTemplateEntityReportType, PaymentEntityId, PaymentEntityDate, PaymentEntityBillId, PaymentEntityPayStatus, AccPlanEntityId, SalaryEntityId, SalaryEntityEmployeeId, SalaryEntityDate, CurrencyEntityId, TaxEntityId)
-import Surypus.API.BillTemplates (BillTemplateInfo(..))
-import qualified DAL.QueriesORM as ORM
 
--- | Delegated functions (forwarded to DAL.QueriesORM)
-
-getPersons :: ConnectionPool -> IO (QueryResult [Person])
-getPersons = ORM.getPersons
-
-searchPersons :: ConnectionPool -> Text -> IO (QueryResult [Person])
-searchPersons = ORM.searchPersons
-
-getPersonById :: ConnectionPool -> Int64 -> IO (QueryResult Person)
-getPersonById = ORM.getPersonById
-
-getGoods :: ConnectionPool -> IO (QueryResult [Goods])
-getGoods = ORM.getGoods
-
-searchGoods :: ConnectionPool -> Text -> IO (QueryResult [Goods])
-searchGoods = ORM.searchGoods
-
-getGoodsById :: ConnectionPool -> Int64 -> IO (QueryResult Goods)
-getGoodsById = ORM.getGoodsById
-
-getGoodsByBarcode :: ConnectionPool -> Text -> IO (QueryResult Goods)
-getGoodsByBarcode = ORM.getGoodsByBarcode
-
-getLocations :: ConnectionPool -> IO (QueryResult [Location])
-getLocations = ORM.getLocations
-
-getLocationById :: ConnectionPool -> Int64 -> IO (QueryResult Location)
-getLocationById = ORM.getLocationById
-
-getBills :: ConnectionPool -> IO (QueryResult [Bill])
-getBills = ORM.getBills
-
-getBillById :: ConnectionPool -> Int64 -> IO (QueryResult Bill)
-getBillById = ORM.getBillById
-
-getBillLines :: ConnectionPool -> Int64 -> IO (QueryResult [BillLine])
-getBillLines = ORM.getBillLines
-
-getStockAll :: ConnectionPool -> IO (QueryResult [Stock])
-getStockAll = ORM.getStockAll
-
-getStockMovements :: ConnectionPool -> IO (QueryResult [StockMovement])
-getStockMovements = ORM.getStockMovements
-
-getStockMovementsByGoods :: ConnectionPool -> Int64 -> IO (QueryResult [StockMovement])
-getStockMovementsByGoods = ORM.getStockMovementsByGoods
-
-getStockByLocation :: ConnectionPool -> Int64 -> IO (QueryResult [Stock])
-getStockByLocation = ORM.getStockByLocation
-
-getStockByGoods :: ConnectionPool -> Int64 -> IO (QueryResult [Stock])
-getStockByGoods = ORM.getStockByGoods
-
-getUsers :: ConnectionPool -> IO (QueryResult [User])
-getUsers = ORM.getUsers
-
-getEmployees :: ConnectionPool -> IO (QueryResult [Employee])
-getEmployees = ORM.getEmployees
-
-getSalaries :: ConnectionPool -> IO (QueryResult [Salary])
-getSalaries = ORM.getSalaries
-
-getAccPlans :: ConnectionPool -> IO (QueryResult [AccPlan])
-getAccPlans = ORM.getAccPlans
-
-getAccTurns :: ConnectionPool -> IO (QueryResult [AccTurn])
-getAccTurns = ORM.getAccTurns
-
-getPayments :: ConnectionPool -> IO (QueryResult [Payment])
-getPayments = ORM.getPayments
-
-getUnits :: ConnectionPool -> IO (QueryResult [Unit])
-getUnits = ORM.getUnits
-
-getTaxes :: ConnectionPool -> IO (QueryResult [Tax])
-getTaxes = ORM.getTaxes
-
-getDocumentTypes :: ConnectionPool -> IO (QueryResult [DocumentRegisterType])
-getDocumentTypes = ORM.getDocumentTypes
-
-getOrders :: ConnectionPool -> IO (QueryResult [Order])
-getOrders = ORM.getOrders
-
-getGoodsPrices :: ConnectionPool -> IO (QueryResult [GoodsPrice])
-getGoodsPrices = ORM.getGoodsPrices
-
-getReports :: ConnectionPool -> IO (QueryResult [BillTemplateInfo])
-getReports pool = do
-    result <- liftIO $ runSqlPool
-        (select $ do
-            r <- from $ table @ReportTemplateEntity
-            orderBy [asc $ r ^. ReportTemplateEntityId]
-            return r
-        ) pool
-    return $ QuerySuccess (map reportTemplateFromEntity result)
-
-getCurrencies :: ConnectionPool -> IO (QueryResult [Currency])
-getCurrencies pool = do
-    entities <- liftIO $ runSqlPool
-        (select $ do
-            c <- from $ table @CurrencyEntity
-            orderBy [asc $ c ^. CurrencyEntityId]
-            return c
-        ) pool
-    return $ QuerySuccess (map currencyFromEntity entities)
-
-currencyFromEntity :: Entity CurrencyEntity -> Currency
-currencyFromEntity (P.Entity _ e) = Currency
-  { currencyId = 0
-  , currencyCode = currencyEntityCode e
-  , currencyName = currencyEntityName e
-  }
-
--- | Functions without ORM equivalents — inline esqueleto
-
-getPaymentById :: ConnectionPool -> Int64 -> IO (QueryResult Payment)
-getPaymentById pool pid = do
-    result <- liftIO $ runSqlPool
-        (select $ do
-            p <- from $ table @PaymentEntity
-            where_ $ p ^. PaymentEntityId ==. val (toSqlKey pid)
-            return p
-        ) pool
-    return $ case result of
-        (entity:_) -> QuerySuccess (paymentFromEntity entity)
-        _ -> QueryError "Not Found"
-
-reportTemplateFromEntity :: Entity ReportTemplateEntity -> BillTemplateInfo
-reportTemplateFromEntity (P.Entity rid e) = BillTemplateInfo
-  { btiId = fromIntegral (fromSqlKey rid)
-  , btiName = reportTemplateEntityName e
-  , btiContent = reportTemplateEntityContent e
-  }
-
-getTaxById :: ConnectionPool -> Int64 -> IO (QueryResult Tax)
-getTaxById pool tid = do
-    result <- liftIO $ runSqlPool
-        (select $ do
-            t <- from $ table @TaxEntity
-            where_ $ t ^. TaxEntityId ==. val (toSqlKey tid)
-            return t
-        ) pool
-    return $ case result of
-        (entity:_) -> QuerySuccess (taxFromEntity entity)
-        _ -> QueryError "Not Found"
-
-getAccPlanById :: ConnectionPool -> Int64 -> IO (QueryResult AccPlan)
-getAccPlanById pool pid = do
-    result <- liftIO $ runSqlPool
-        (select $ do
-            a <- from $ table @AccPlanEntity
-            where_ $ a ^. AccPlanEntityId ==. val (toSqlKey pid)
-            return a
-        ) pool
-    return $ case result of
-        (entity:_) -> QuerySuccess (accPlanFromEntity entity)
-        _ -> QueryError "Not Found"
-
-getEmployeeById :: ConnectionPool -> Int64 -> IO (QueryResult Employee)
-getEmployeeById pool eid = do
-    result <- liftIO $ runSqlPool
-        (select $ do
-            e <- from $ table @EmployeeEntity
-            where_ $ e ^. EmployeeEntityId ==. val (toSqlKey eid)
-            return e
-        ) pool
-    return $ case result of
-        (entity:_) -> QuerySuccess (employeeFromEntity entity)
-        _ -> QueryError "Not Found"
-
-getSalaryByEmployee :: ConnectionPool -> Int64 -> IO (QueryResult [Salary])
-getSalaryByEmployee pool eid = do
-    entities <- liftIO $ runSqlPool
-        (select $ do
-            s <- from $ table @SalaryEntity
-            where_ $ s ^. SalaryEntityEmployeeId ==. val (eid :: Int64)
-            orderBy [desc $ s ^. SalaryEntityDate, desc $ s ^. SalaryEntityId]
-            return s
-        ) pool
-    return $ QuerySuccess (map salaryFromEntity entities)
-
-getReportById :: ConnectionPool -> Int64 -> IO (QueryResult BillTemplateInfo)
-getReportById pool rid = do
-    result <- liftIO $ runSqlPool
-        (select $ do
-            r <- from $ table @ReportTemplateEntity
-            where_ $ r ^. ReportTemplateEntityId ==. val (toSqlKey rid)
-            return r
-        ) pool
-    return $ case result of
-        (entity:_) -> QuerySuccess (reportTemplateFromEntity entity)
-        _ -> QueryError "Not Found"
-
-getPaymentsByBill :: ConnectionPool -> Int64 -> IO (QueryResult [Payment])
-getPaymentsByBill pool billId = do
-    entities <- liftIO $ runSqlPool
-        (select $ do
-            p <- from $ table @PaymentEntity
-            where_ $ p ^. PaymentEntityBillId ==. val (billId :: Int64)
-            orderBy [desc $ p ^. PaymentEntityDate, desc $ p ^. PaymentEntityId]
-            return p
-        ) pool
-    return $ QuerySuccess (map paymentFromEntity entities)
-
-getPaymentsByStatus :: ConnectionPool -> Int -> IO (QueryResult [Payment])
-getPaymentsByStatus pool statusVal = do
-    entities <- liftIO $ runSqlPool
-        (select $ do
-            p <- from $ table @PaymentEntity
-            where_ $ p ^. PaymentEntityPayStatus ==. val statusVal
-            orderBy [desc $ p ^. PaymentEntityDate, desc $ p ^. PaymentEntityId]
-            return p
-        ) pool
-    return $ QuerySuccess (map paymentFromEntity entities)
-
+-- | Goods whose stock is at or below the minimum level
 getLowStockGoods :: ConnectionPool -> IO (QueryResult [Goods])
 getLowStockGoods pool = do
-    entities <- liftIO $ runSqlPool
-        (rawSql
-            "SELECT ?? FROM goods g \
-            \WHERE g.min_stock IS NOT NULL \
-            \  AND (SELECT COALESCE(SUM(s.qtty), 0) FROM stock s WHERE s.goods_id = g.id) <= g.min_stock"
-            [])
-        pool
-    return $ QuerySuccess (map goodsFromEntity entities)
+  rows <- liftIO $ runSqlPool
+    (rawSql
+      "SELECT g.id, g.code, g.name, g.min_stock FROM goods g \
+      \WHERE g.min_stock IS NOT NULL \
+      \  AND (SELECT COALESCE(SUM(s.qtty), 0) FROM stock s WHERE s.goods_id = g.id) <= g.min_stock"
+      [])
+    pool
+  return $ QuerySuccess (map goodsFromRow rows)
+
+goodsFromRow :: (Single Int64, Single (Maybe T.Text), Single T.Text, Single (Maybe T.Text)) -> Goods
+goodsFromRow (Single gid, Single gcode, Single gname, Single gmin) = Goods
+  { goodsId = fromIntegral gid
+  , goodsCode = gcode
+  , goodsName = gname
+  , goodsFullName = Nothing
+  , goodsBarcode = Nothing
+  , goodsUnitId = Nothing
+  , goodsCategoryId = Nothing
+  , goodsType = Nothing
+  , goodsStatus = Nothing
+  , goodsMinStock = gmin
+  , goodsMaxStock = Nothing
+  , goodsWeight = Nothing
+  , goodsVolume = Nothing
+  , goodsCreatedAt = Nothing
+  , goodsUpdatedAt = Nothing
+  }
+
+-- | One employee by id
+getEmployeeById :: ConnectionPool -> Int64 -> IO (QueryResult Employee)
+getEmployeeById pool eid = do
+  rows <- liftIO $ runSqlPool
+    (rawSql
+      "SELECT id, code, first_name, last_name FROM employees WHERE id = ?"
+      [PersistInt64 eid])
+    pool
+  return $ case rows of
+    (row : _) -> QuerySuccess (employeeFromRow row)
+    [] -> QueryError "Employee not found"
+
+employeeFromRow :: (Single Int64, Single T.Text, Single T.Text, Single (Maybe T.Text)) -> Employee
+employeeFromRow (Single eid, Single ecode, Single efirst, Single elast) = Employee
+  { employeeId = eid
+  , employeeCode = ecode
+  , employeeFirstName = efirst
+  , employeeLastName = elast
+  }
+
+-- | Salary records for one employee
+getSalaryByEmployee :: ConnectionPool -> Int64 -> IO (QueryResult [Salary])
+getSalaryByEmployee pool eid = do
+  entities <- liftIO $ runSqlPool
+    (select $ do
+        s <- from $ table @SalaryEntity
+        where_ $ s ^. DBS.SalaryEntityEmployeeId ==. val (eid :: Int64)
+        orderBy [desc $ s ^. DBS.SalaryEntityDate, desc $ s ^. DBS.SalaryEntityId]
+        return s)
+    pool
+  return $ QuerySuccess (map salaryFromEntity entities)
+
+salaryFromEntity :: P.Entity SalaryEntity -> Salary
+salaryFromEntity (P.Entity key e) = Salary
+  { salaryId = fromSqlKey key
+  , salaryEmployeeId = salaryEntityEmployeeId e
+  , salaryAmount = salaryEntityAmount e
+  , salaryPeriod = salaryEntityPeriod e
+  }

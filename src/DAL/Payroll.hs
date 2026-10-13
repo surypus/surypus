@@ -7,6 +7,7 @@ module DAL.Payroll
   , getPayrollByPeriod
   , getPayrollByEmployee
   , getPayrollById
+  , parsePayrollResult
   ) where
 
 import Data.Int (Int64)

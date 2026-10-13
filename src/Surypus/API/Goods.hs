@@ -10,10 +10,11 @@ module Surypus.API.Goods
 
 import DAL.Types (Goods(..), QueryResult(..))
 import Data.Int (Int64)
+import Database.Persist.Postgresql (ConnectionPool)
 
 -- | List goods (stub)
-listGoods :: Int64 -> IO (QueryResult [Goods])
-listGoods _ = return $ QuerySuccess []
+listGoods :: ConnectionPool -> IO (QueryResult [Goods])
+listGoods _pool = return $ QuerySuccess []
 
 -- | Create good (stub)
 createGood :: Goods -> IO (QueryResult Int64)

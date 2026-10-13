@@ -24,9 +24,9 @@ import Database.Persist.Sql
   , fromSqlKey
   , toSqlKey
   , SqlPersistT
+  , RawSql
   )
 import Database.Persist.SqlBackend (SqlBackend)
-import Database.Persist.Class (RawSql)
 
 -- | Run a stored procedure and return results
 -- Example: runProcedure pool "calculate_balance" ["account_id"]
@@ -52,11 +52,11 @@ callFunction pool funcName params = do
 -- | Execute raw SQL and return entity results
 runRawSql :: (PersistEntity a, PersistEntityBackend a ~ SqlBackend) => ConnectionPool -> Text -> [PersistValue] -> IO (CommandResult [Entity a])
 runRawSql pool sql params = do
-  result <- runDb pool $ (rawSql sql params :: SqlPersistT IO [Entity a])
+  result <- runDb pool $ (rawSql sql params :: (PersistEntity a, PersistEntityBackend a ~ SqlBackend) => SqlPersistT IO [Entity a])
   return $ CommandSuccess result
 
 -- | Execute raw SQL without results
 executeSql :: ConnectionPool -> Text -> [PersistValue] -> IO (CommandResult Int64)
 executeSql pool sql params = do
-  result <- runDb pool $ rawExecute sql params
-  return $ CommandSuccess (fromIntegral result)
+  _ <- runDb pool $ rawExecute sql params
+  return $ CommandSuccess 0

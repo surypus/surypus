@@ -1,13 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE StandaloneDeriving #-}
 
 -- | Finance.AccMask - Enhanced accounting mask with type safety
 -- This module provides type-safe accounting masks for document processing
 module Finance.AccMask where
 
+import Data.Aeson (encode, ToJSON, FromJSON)
+import Data.ByteString.Lazy (toStrict)
 import Data.Int (Int64)
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Time (Day, fromGregorian)
 import GHC.Generics (Generic)
 
@@ -16,7 +21,7 @@ data AccMaskStatus
   = AMSActive     -- Активна (active)
   | AMSInactive   -- Неактивна (inactive)
   | AMSExpired    -- Истёкла (expired)
-  deriving (Show, Eq, Enum, Bounded, Ord)
+  deriving (Show, Eq, Enum, Bounded, Ord, Generic)
 
 -- | Enhanced accounting mask with validation
 data AccMask = AccMask
@@ -30,6 +35,11 @@ data AccMask = AccMask
   , amIsSystem    :: Bool           -- System mask (cannot be deleted)
   }
   deriving (Show, Eq, Generic)
+
+deriving instance ToJSON AccMaskStatus
+deriving instance FromJSON AccMaskStatus
+deriving instance ToJSON AccMask
+deriving instance FromJSON AccMask
 
 -- | Mask code type
 type MaskCode = Text
@@ -53,6 +63,8 @@ validateMaskCode code
   | not (T.all (\c -> T.any (== c) (T.pack "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")) code) = Left "Mask code must be alphanumeric"
   | otherwise = Right code
 
--- | Convert mask to JSON
+-- | Convert mask to JSON.
+-- Was @T.pack (show mask)@ — Haskell record syntax, not JSON — so any
+-- consumer parsing the output as JSON got a parse error.
 toJSONMask :: AccMask -> Text
-toJSONMask mask = T.pack $ show mask
+toJSONMask = TE.decodeUtf8 . toStrict . encode

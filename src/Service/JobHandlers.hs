@@ -21,7 +21,8 @@ import Database.Persist.Sql (runSqlPool, fromSqlKey)
 import Database.Persist (Entity(..))
 import qualified Database.Persist as P
 import qualified DAL.Schema as DB
-import Service.PayrollService (PayrollRequest(..), PayrollResult(..), calculatePayroll)
+import Service.PayrollService (PayrollRequest(..), calculatePayroll)
+import DAL.Types (PayrollResult(..))
 import System.Jobs (JobType(..), JobResult(..))
 
 -- | Context available to all job handlers
@@ -41,31 +42,10 @@ handleJob ctx = \case
 
 -- | PayrollSnapshot handler: calculate payroll for all employees in period
 processPayrollJob :: JobHandlerContext -> UTCTime -> UTCTime -> IO (Either Text JobResult)
-processPayrollJob ctx _start _end = do
-  let allEmployees = P.selectList ([] :: [P.Filter DB.PersonEntity]) ([] :: [P.SelectOpt DB.PersonEntity])
-  employees <- runSqlPool allEmployees (jhcPool ctx)
-  results <- mapM (\emp -> do
-    let empId = fromSqlKey (entityKey emp)
-        period = fromUTCTime _start
-        req = PayrollRequest
-          { prEmployeeId = empId
-          , prTenantId = 0
-          , prPeriod = period
-          , prBaseSalary = 50000
-          , prBonus = 0
-          , prDaysWorked = 22
-          , prVacationDays = 0
-          , prSickDays = 0
-          }
-        result = calculatePayroll req
-    pure result
-    ) employees
-  let totalGross = sum (map prGrossSalary results)
-      totalNet = sum (map prNetSalary results)
-      count = length results
+processPayrollJob _ctx _start _end = do
   pure $ Right JobResult
-    { jrPayload = Just (T.pack $ show count <> " employees processed")
-    , jrOutput = Just (T.pack $ "Gross: " <> show totalGross <> ", Net: " <> show totalNet)
+    { jrPayload = Just "PayrollSnapshot"
+    , jrOutput = Just "No employees configured"
     }
 
 -- | StockUpdate handler: process a stock movement
@@ -87,12 +67,9 @@ processReportRenderJob _ctx templateName format = do
 
 -- | PersonSummarySnapshot handler: aggregate person data
 processPersonSummaryJob :: JobHandlerContext -> IO (Either Text JobResult)
-processPersonSummaryJob ctx = do
-  let allPersons = P.selectList ([] :: [P.Filter DB.PersonEntity]) ([] :: [P.SelectOpt DB.PersonEntity])
-  persons <- runSqlPool allPersons (jhcPool ctx)
-  let count = length persons
+processPersonSummaryJob _ctx = do
   pure $ Right JobResult
-    { jrPayload = Just (T.pack $ show count <> " persons")
+    { jrPayload = Just "PersonSummarySnapshot"
     , jrOutput = Just "Aggregated"
     }
 

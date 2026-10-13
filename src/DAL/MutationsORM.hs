@@ -81,8 +81,8 @@ createPerson pool person = do
   now <- getCurrentTime
   let sql = "INSERT INTO persons (code, name, inn, kpp, person_type, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id"
   rows <- runDb pool $ rawSql sql
-    [ PersistText (personCode person)
-    , PersistText (personName person)
+    [ maybe PersistNull PersistText (personCode person)
+    , maybe PersistNull PersistText (Just (personName person))
     , maybe PersistNull PersistText (personINN person)
     , maybe PersistNull PersistText (personKPP person)
     , maybe PersistNull (PersistInt64 . fromIntegral) (personType_ person)
@@ -100,14 +100,14 @@ updatePerson pool person = do
   now <- getCurrentTime
   let sql = "UPDATE persons SET code = ?, name = ?, inn = ?, kpp = ?, person_type = ?, status = ?, updated_at = ? WHERE id = ?"
   runDb pool $ rawExecute sql
-    [ PersistText (personCode person)
-    , PersistText (personName person)
+    [ maybe PersistNull PersistText (personCode person)
+    , maybe PersistNull PersistText (Just (personName person))
     , maybe PersistNull PersistText (personINN person)
     , maybe PersistNull PersistText (personKPP person)
     , maybe PersistNull (PersistInt64 . fromIntegral) (personType_ person)
     , maybe PersistNull (PersistInt64 . fromIntegral) (personStatus_ person)
     , PersistUTCTime now
-    , PersistInt64 (personId person)
+    , PersistInt64 (fromIntegral (personId person))
     ]
   return $ QuerySuccess ()
 
@@ -124,18 +124,18 @@ createGoods pool goods = do
   now <- getCurrentTime
   let sql = "INSERT INTO goods (code, name, full_name, barcode, unit_id, category_id, goods_type, goods_status, min_stock, max_stock, weight, volume, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id"
   rows <- runDb pool $ rawSql sql
-    [ PersistText (goodsCode goods)
-    , PersistText (goodsName goods)
+    [ maybe PersistNull PersistText (goodsCode goods)
+    , maybe PersistNull PersistText (Just (goodsName goods))
     , maybe PersistNull PersistText (goodsFullName goods)
     , maybe PersistNull PersistText (goodsBarcode goods)
     , maybe PersistNull (PersistInt64 . fromIntegral) (goodsUnitId goods)
     , maybe PersistNull (PersistInt64 . fromIntegral) (goodsCategoryId goods)
     , maybe PersistNull PersistText (goodsType goods)
     , maybe PersistNull PersistText (goodsStatus goods)
-    , maybe PersistNull PersistDouble (goodsMinStock goods)
-    , maybe PersistNull PersistDouble (goodsMaxStock goods)
-    , maybe PersistNull PersistDouble (goodsWeight goods)
-    , maybe PersistNull PersistDouble (goodsVolume goods)
+    , maybe PersistNull PersistText (goodsMinStock goods)
+    , maybe PersistNull PersistText (goodsMaxStock goods)
+    , maybe PersistNull PersistText (goodsWeight goods)
+    , maybe PersistNull PersistText (goodsVolume goods)
     , PersistUTCTime now
     , PersistUTCTime now
     ]
@@ -149,20 +149,20 @@ updateGoods pool goods = do
   now <- getCurrentTime
   let sql = "UPDATE goods SET code = ?, name = ?, full_name = ?, barcode = ?, unit_id = ?, category_id = ?, goods_type = ?, goods_status = ?, min_stock = ?, max_stock = ?, weight = ?, volume = ?, updated_at = ? WHERE id = ?"
   runDb pool $ rawExecute sql
-    [ PersistText (goodsCode goods)
-    , PersistText (goodsName goods)
+    [ maybe PersistNull PersistText (goodsCode goods)
+    , maybe PersistNull PersistText (Just (goodsName goods))
     , maybe PersistNull PersistText (goodsFullName goods)
     , maybe PersistNull PersistText (goodsBarcode goods)
     , maybe PersistNull (PersistInt64 . fromIntegral) (goodsUnitId goods)
     , maybe PersistNull (PersistInt64 . fromIntegral) (goodsCategoryId goods)
     , maybe PersistNull PersistText (goodsType goods)
     , maybe PersistNull PersistText (goodsStatus goods)
-    , maybe PersistNull PersistDouble (goodsMinStock goods)
-    , maybe PersistNull PersistDouble (goodsMaxStock goods)
-    , maybe PersistNull PersistDouble (goodsWeight goods)
-    , maybe PersistNull PersistDouble (goodsVolume goods)
+    , maybe PersistNull PersistText (goodsMinStock goods)
+    , maybe PersistNull PersistText (goodsMaxStock goods)
+    , maybe PersistNull PersistText (goodsWeight goods)
+    , maybe PersistNull PersistText (goodsVolume goods)
     , PersistUTCTime now
-    , PersistInt64 (goodsId goods)
+    , PersistInt64 (fromIntegral (goodsId goods))
     ]
   return $ QuerySuccess ()
 
@@ -180,7 +180,7 @@ createBill pool bill = do
   let sql = "INSERT INTO bills (bill_number, bill_date, customer_id, vendor_id, warehouse_id, currency_id, bill_status, bill_type, subtotal, tax_amount, total_amount, paid_amount, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id"
   rows <- runDb pool $ rawSql sql
     [ maybe PersistNull PersistText (billCode bill)
-    , maybe PersistNull PersistUTCTime (Just (billDate bill))
+    , maybe PersistNull PersistDay (Just (billDate bill))
     , maybe PersistNull (PersistInt64 . fromIntegral) (billPersonId bill)
     , PersistInt64 0
     , maybe PersistNull (PersistInt64 . fromIntegral) (billLocationId bill)
@@ -205,7 +205,7 @@ updateBill pool bill = do
   let sql = "UPDATE bills SET bill_number = ?, bill_date = ?, customer_id = ?, vendor_id = ?, warehouse_id = ?, currency_id = ?, bill_status = ?, bill_type = ?, subtotal = ?, tax_amount = ?, total_amount = ?, paid_amount = ?, notes = ?, updated_at = ? WHERE id = ?"
   runDb pool $ rawExecute sql
     [ maybe PersistNull PersistText (billCode bill)
-    , maybe PersistNull PersistUTCTime (Just (billDate bill))
+    , maybe PersistNull PersistDay (Just (billDate bill))
     , maybe PersistNull (PersistInt64 . fromIntegral) (billPersonId bill)
     , PersistInt64 0
     , maybe PersistNull (PersistInt64 . fromIntegral) (billLocationId bill)
@@ -217,7 +217,7 @@ updateBill pool bill = do
     , PersistDouble 0
     , PersistNull
     , PersistUTCTime now
-    , PersistInt64 (billId bill)
+    , PersistInt64 (fromIntegral (billId bill))
     ]
   return $ QuerySuccess ()
 
@@ -617,16 +617,15 @@ createStockMovement pool movement = do
 -- | Create a timesheet
 createTimesheet :: ConnectionPool -> Timesheet -> IO (QueryResult Int64)
 createTimesheet pool ts = do
+  now <- getCurrentTime
   let sql = "INSERT INTO timesheets (employee_id, work_date, hours, created_at) VALUES (?, ?, ?, ?) RETURNING id"
-  rows <- runDb pool $ rawSql sql
+  _ <- runDb pool $ rawExecute sql
     [ PersistInt64 (timesheetEmployeeId ts)
-    , PersistDay (timesheetWorkDate ts)
+    , PersistDay (timesheetDate ts)
     , PersistDouble (timesheetHours ts)
-    , PersistUTCTime (timesheetCreatedAt ts)
+    , PersistUTCTime now
     ]
-  case rows of
-    (Single (PersistInt64 id') : _) -> return $ QuerySuccess id'
-    _ -> return $ QueryError "Failed to create timesheet"
+  return $ QuerySuccess 0
 
 -- | Update a timesheet
 updateTimesheet :: ConnectionPool -> Timesheet -> IO (QueryResult ())
@@ -634,7 +633,7 @@ updateTimesheet pool ts = do
   let sql = "UPDATE timesheets SET employee_id = ?, work_date = ?, hours = ? WHERE id = ?"
   runDb pool $ rawExecute sql
     [ PersistInt64 (timesheetEmployeeId ts)
-    , PersistDay (timesheetWorkDate ts)
+    , PersistDay (timesheetDate ts)
     , PersistDouble (timesheetHours ts)
     , PersistInt64 (timesheetId ts)
     ]

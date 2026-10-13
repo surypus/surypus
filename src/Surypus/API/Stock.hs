@@ -17,8 +17,9 @@ import qualified DAL.Queries as Q
 import DAL.Types (Goods(..), QueryResult(..))
 import Data.Aeson (ToJSON, FromJSON)
 import Data.Int (Int64)
-import Data.Maybe (fromMaybe)
+import qualified Data.Text as T
 import Data.Text (Text)
+import Text.Read (readMaybe)
 import GHC.Generics (Generic)
 import Database.Persist.Sql (runSqlPool, rawSql, Single(..))
 
@@ -60,20 +61,23 @@ getLowStock pool = do
       return $ QuerySuccess alerts
     QueryError err -> return $ QueryError err
   where
+    parseNum :: Maybe Text -> Double
+    parseNum = maybe 0 (maybe 0 id . readMaybe . T.unpack)
+
     goodsToAlert g = LowStockAlert
-      (goodsId g)
+      (fromIntegral (goodsId g))
       (goodsName g)
       (goodsCode g)
-      (fromMaybe 0 (goodsMinStock g) * 2)
-      (fromMaybe 0 (goodsMinStock g))
+      (parseNum (goodsMinStock g) * 2)
+      (parseNum (goodsMinStock g))
       "warning"
 
 getStockSummary :: ConnectionPool -> IO (QueryResult StockSummary)
 getStockSummary pool = do
   let sql = "SELECT COALESCE(SUM(qtty), 0), COUNT(*) FILTER (WHERE qtty < 10) FROM stock" :: Text
-  result <- (liftIO $ runSqlPool (rawSql sql []) pool) :: IO [(Single Double, Single Int)]
+  result <- (liftIO $ runSqlPool (rawSql sql []) pool) :: IO [(Single Double, Single Int64)]
   case result of
-    [(Single total, Single low)] -> return $ QuerySuccess (StockSummary total low)
+    [(Single total, Single low)] -> return $ QuerySuccess (StockSummary total (fromIntegral low))
     _ -> return $ QuerySuccess (StockSummary 0 0)
 
 getValuation :: ConnectionPool -> IO (QueryResult [StockValuationRow])

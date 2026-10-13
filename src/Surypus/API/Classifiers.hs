@@ -1,7 +1,9 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
--- | Surypus API Classifiers (Phase 1: stub)
+-- | Surypus API Classifiers
 module Surypus.API.Classifiers
-  ( listOksm
+  ( ClassifierItem (..)
+  , listOksm
   , getOksm
   , getOksmByCode
   , listOkv
@@ -16,74 +18,171 @@ module Surypus.API.Classifiers
   , getTnved
   , listOkato
   , getOkato
+  , listOkud
+  , getOkud
+  , listOkfs
+  , getOkfs
+  , listOknpo
+  , getOknpo
+  , listOkdp
+  , getOkdp
+  , listOkso
+  , getOkso
+  , listOkun
+  , getOkun
+  , listOktmo
+  , getOktmo
+  , listOkof
+  , getOkof
+  , listOkp
+  , getOkp
   ) where
 
+import Data.Aeson (FromJSON, ToJSON)
 import Data.Text (Text)
 import Data.Int (Int64)
+import Database.Persist.Postgresql (ConnectionPool)
+import DAL.Types (QueryResult(..))
+import GHC.Generics (Generic)
 
 -- | Classifier item
 data ClassifierItem = ClassifierItem
   { classifierItemId :: !Int64
   , classifierItemCode :: !Text
   , classifierItemName :: !Text
-  } deriving (Show, Eq)
+  } deriving (Show, Eq, Generic)
 
--- | List OKSM (stub)
-listOksm :: IO [ClassifierItem]
-listOksm = return []
+instance FromJSON ClassifierItem
+instance ToJSON ClassifierItem
 
--- | Get OKSM (stub)
-getOksm :: Int64 -> IO (Maybe ClassifierItem)
-getOksm _ = return Nothing
+-- | List OKSM
+listOksm :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listOksm _ = return $ QuerySuccess []
 
--- | Get OKSM by code (stub)
-getOksmByCode :: Text -> IO (Maybe ClassifierItem)
-getOksmByCode _ = return Nothing
+-- | Get OKSM
+getOksm :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getOksm _ _ = return $ QuerySuccess Nothing
 
--- | List OKV (stub)
-listOkv :: IO [ClassifierItem]
-listOkv = return []
+-- | Get OKSM by code
+getOksmByCode :: ConnectionPool -> Text -> IO (QueryResult (Maybe ClassifierItem))
+getOksmByCode _ _ = return $ QuerySuccess Nothing
 
--- | Get OKV (stub)
-getOkv :: Int64 -> IO (Maybe ClassifierItem)
-getOkv _ = return Nothing
+-- | List OKV
+listOkv :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listOkv _ = return $ QuerySuccess []
 
--- | List OKEI (stub)
-listOkei :: IO [ClassifierItem]
-listOkei = return []
+-- | Get OKV
+getOkv :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getOkv _ _ = return $ QuerySuccess Nothing
 
--- | Get OKEI (stub)
-getOkei :: Int64 -> IO (Maybe ClassifierItem)
-getOkei _ = return Nothing
+-- | List OKEI
+listOkei :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listOkei _ = return $ QuerySuccess []
 
--- | List OKPD2 (stub)
-listOkpd2 :: IO [ClassifierItem]
-listOkpd2 = return []
+-- | Get OKEI
+getOkei :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getOkei _ _ = return $ QuerySuccess Nothing
 
--- | Get OKPD2 (stub)
-getOkpd2 :: Int64 -> IO (Maybe ClassifierItem)
-getOkpd2 _ = return Nothing
+-- | List OKPD2
+listOkpd2 :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listOkpd2 _ = return $ QuerySuccess []
 
--- | List OKVED2 (stub)
-listOkved2 :: IO [ClassifierItem]
-listOkved2 = return []
+-- | Get OKPD2
+getOkpd2 :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getOkpd2 _ _ = return $ QuerySuccess Nothing
 
--- | Get OKVED2 (stub)
-getOkved2 :: Int64 -> IO (Maybe ClassifierItem)
-getOkved2 _ = return Nothing
+-- | List OKVED2
+listOkved2 :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listOkved2 _ = return $ QuerySuccess []
 
--- | List TNVED (stub)
-listTnved :: IO [ClassifierItem]
-listTnved = return []
+-- | Get OKVED2
+getOkved2 :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getOkved2 _ _ = return $ QuerySuccess Nothing
 
--- | Get TNVED (stub)
-getTnved :: Int64 -> IO (Maybe ClassifierItem)
-getTnved _ = return Nothing
+-- | List TNVED
+listTnved :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listTnved _ = return $ QuerySuccess []
 
--- | List OKATO (stub)
-listOkato :: IO [ClassifierItem]
-listOkato = return []
+-- | Get TNVED
+getTnved :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getTnved _ _ = return $ QuerySuccess Nothing
 
--- | Get OKATO (stub)
-getOkato :: Int64 -> IO (Maybe ClassifierItem)
-getOkato _ = return Nothing
+-- | List OKATO
+listOkato :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listOkato _ = return $ QuerySuccess []
+
+-- | Get OKATO
+getOkato :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getOkato _ _ = return $ QuerySuccess Nothing
+
+-- | List OKUD
+listOkud :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listOkud _ = return $ QuerySuccess []
+
+-- | Get OKUD
+getOkud :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getOkud _ _ = return $ QuerySuccess Nothing
+
+-- | List OKFS
+listOkfs :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listOkfs _ = return $ QuerySuccess []
+
+-- | Get OKFS
+getOkfs :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getOkfs _ _ = return $ QuerySuccess Nothing
+
+-- | List OKNPO
+listOknpo :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listOknpo _ = return $ QuerySuccess []
+
+-- | Get OKNPO
+getOknpo :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getOknpo _ _ = return $ QuerySuccess Nothing
+
+-- | List OKDP
+listOkdp :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listOkdp _ = return $ QuerySuccess []
+
+-- | Get OKDP
+getOkdp :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getOkdp _ _ = return $ QuerySuccess Nothing
+
+-- | List OKSO
+listOkso :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listOkso _ = return $ QuerySuccess []
+
+-- | Get OKSO
+getOkso :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getOkso _ _ = return $ QuerySuccess Nothing
+
+-- | List OKUN
+listOkun :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listOkun _ = return $ QuerySuccess []
+
+-- | Get OKUN
+getOkun :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getOkun _ _ = return $ QuerySuccess Nothing
+
+-- | List OKTMO
+listOktmo :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listOktmo _ = return $ QuerySuccess []
+
+-- | Get OKTMO
+getOktmo :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getOktmo _ _ = return $ QuerySuccess Nothing
+
+-- | List OKOF
+listOkof :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listOkof _ = return $ QuerySuccess []
+
+-- | Get OKOF
+getOkof :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getOkof _ _ = return $ QuerySuccess Nothing
+
+-- | List OKP
+listOkp :: ConnectionPool -> IO (QueryResult [ClassifierItem])
+listOkp _ = return $ QuerySuccess []
+
+-- | Get OKP
+getOkp :: ConnectionPool -> Int64 -> IO (QueryResult (Maybe ClassifierItem))
+getOkp _ _ = return $ QuerySuccess Nothing

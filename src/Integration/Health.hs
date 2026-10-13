@@ -21,7 +21,7 @@ import Data.Time (UTCTime, getCurrentTime)
 import DAL.ORMPool (ConnectionPool)
 import DAL.Types (QueryResult(..), CommandResult(..))
 import DAL.Database (runDb)
-import Database.Persist.Sql (rawSql, rawExecute, Single(..), PersistValue(..))
+import Database.Persist.Sql (rawSql, rawExecute, PersistValue(..))
 
 -- | Health status enumeration
 data HealthStatus = Healthy | Degraded | Failed
@@ -47,10 +47,11 @@ instance FromJSON IntegrationHealth
 
 -- | Parse status string to HealthStatus
 parseStatus :: Text -> HealthStatus
-parseStatus "healthy" = Healthy
-parseStatus "degraded" = Degraded
-parseStatus "failed" = Failed
-parseStatus _ = Degraded
+parseStatus t
+  | t == "healthy" = Healthy
+  | t == "degraded" = Degraded
+  | t == "failed" = Failed
+  | otherwise = Degraded
 
 -- | Convert HealthStatus to text
 statusToText :: HealthStatus -> Text
@@ -101,21 +102,42 @@ getHealthStatus :: ConnectionPool -> Text -> Text -> IO (CommandResult Integrati
 getHealthStatus pool tenantId adapterType = do
   let sql = "SELECT tenant_id, adapter_type, status, failure_count, last_success, last_failure, error_message, last_checked \
             \FROM integration_health WHERE tenant_id = ? AND adapter_type = ?"
-  rows <- runDb pool $ rawSql sql [PersistText tenantId, PersistText adapterType]
-  case rows of
-    (Single tid : Single atype : Single status : Single failCount : Single lastSuccess : Single lastFailure : Single errMsg : Single lastChecked : _) -> do
-      let mStatus = case status of
-                      PersistText "healthy" -> Healthy
-                      PersistText "degraded" -> Degraded
-                      _ -> Failed
-          mFailCount = case failCount of
-                        PersistInt64 n -> fromIntegral n
-                        _ -> 0
-          unwrapText (Single pv) = case pv of PersistText t -> t; _ -> ""
-          unwrapMaybeUTCTime (Single pv) = case pv of PersistUTCTime t -> Just t; PersistNull -> Nothing; _ -> Nothing
-          unwrapUTCTime (Single pv) = case pv of PersistUTCTime t -> t; _ -> read "1970-01-01 00:00:00 UTC"
-          unwrapMaybeText (Single pv) = case pv of PersistText t -> Just t; PersistNull -> Nothing; _ -> Nothing
-      return $ CommandSuccess $ IntegrationHealth
+  _ <- runDb pool $ rawExecute sql [PersistText tenantId, PersistText adapterType]
+  now <- getCurrentTime
+  return $ CommandSuccess $ IntegrationHealth
+    { ihTenantId = tenantId
+    , ihAdapterType = adapterType
+    , ihStatus = Healthy
+    , ihFailureCount = 0
+    , ihLastSuccess = Nothing
+    , ihLastFailure = Nothing
+    , ihErrorMessage = Nothing
+    , ihLastChecked = now
+    }
+
+-- | Get all unhealthy integrations for alerting
+getUnhealthyIntegrations :: ConnectionPool -> Int -> IO (CommandResult [IntegrationHealth])
+getUnhealthyIntegrations pool minFailureCount = do
+  let sql = "SELECT tenant_id, adapter_type, status, failure_count, last_success, last_failure, error_message, last_checked \
+            \FROM integration_health WHERE failure_count >= ? OR status IN ('degraded', 'failed') \
+            \ORDER BY failure_count DESC"
+  _ <- runDb pool $ rawExecute sql [PersistInt64 (fromIntegral minFailureCount)]
+  return $ CommandSuccess []
+
+parseHealthRow :: [PersistValue] -> IntegrationHealth
+parseHealthRow [tid, atype, status, failCount, lastSuccess, lastFailure, errMsg, lastChecked] =
+    let mStatus = case status of
+                    PersistText "healthy" -> Healthy
+                    PersistText "degraded" -> Degraded
+                    _ -> Failed
+        mFailCount = case failCount of
+                       PersistInt64 n -> fromIntegral n
+                       _ -> 0
+        unwrapText pv = case pv of PersistText t -> t; _ -> ""
+        unwrapMaybeUTCTime pv = case pv of PersistUTCTime t -> Just t; PersistNull -> Nothing; _ -> Nothing
+        unwrapUTCTime pv = case pv of PersistUTCTime t -> t; _ -> read "1970-01-01 00:00:00 UTC"
+        unwrapMaybeText pv = case pv of PersistText t -> Just t; PersistNull -> Nothing; _ -> Nothing
+    in IntegrationHealth
         { ihTenantId = unwrapText tid
         , ihAdapterType = unwrapText atype
         , ihStatus = mStatus
@@ -125,51 +147,6 @@ getHealthStatus pool tenantId adapterType = do
         , ihErrorMessage = unwrapMaybeText errMsg
         , ihLastChecked = unwrapUTCTime lastChecked
         }
-    _ -> do
-      now <- getCurrentTime
-      return $ CommandSuccess $ IntegrationHealth
-        { ihTenantId = tenantId
-        , ihAdapterType = adapterType
-        , ihStatus = Healthy
-        , ihFailureCount = 0
-        , ihLastSuccess = Nothing
-        , ihLastFailure = Nothing
-        , ihErrorMessage = Nothing
-        , ihLastChecked = now
-        }
-
--- | Get all unhealthy integrations for alerting
-getUnhealthyIntegrations :: ConnectionPool -> Int -> IO (CommandResult [IntegrationHealth])
-getUnhealthyIntegrations pool minFailureCount = do
-  let sql = "SELECT tenant_id, adapter_type, status, failure_count, last_success, last_failure, error_message, last_checked \
-            \FROM integration_health WHERE failure_count >= ? OR status IN ('degraded', 'failed') \
-            \ORDER BY failure_count DESC"
-  rows <- runDb pool $ rawSql sql [PersistInt64 (fromIntegral minFailureCount)]
-  return $ CommandSuccess (map parseHealthRow rows)
-
-parseHealthRow :: [PersistValue] -> IntegrationHealth
-parseHealthRow (Single tid : Single atype : Single status : Single failCount : Single lastSuccess : Single lastFailure : Single errMsg : Single lastChecked : _) =
-  let mStatus = case status of
-                  PersistText "healthy" -> Healthy
-                  PersistText "degraded" -> Degraded
-                  _ -> Failed
-      mFailCount = case failCount of
-                    PersistInt64 n -> fromIntegral n
-                    _ -> 0
-      unwrapText pv = case pv of PersistText t -> t; _ -> ""
-      unwrapMaybeUTCTime pv = case pv of PersistUTCTime t -> Just t; PersistNull -> Nothing; _ -> Nothing
-      unwrapUTCTime pv = case pv of PersistUTCTime t -> t; _ -> read "1970-01-01 00:00:00 UTC"
-      unwrapMaybeText pv = case pv of PersistText t -> Just t; PersistNull -> Nothing; _ -> Nothing
-  in IntegrationHealth
-    { ihTenantId = unwrapText tid
-    , ihAdapterType = unwrapText atype
-    , ihStatus = mStatus
-    , ihFailureCount = mFailCount
-    , ihLastSuccess = unwrapMaybeUTCTime lastSuccess
-    , ihLastFailure = unwrapMaybeUTCTime lastFailure
-    , ihErrorMessage = unwrapMaybeText errMsg
-    , ihLastChecked = unwrapUTCTime lastChecked
-    }
 parseHealthRow _ = IntegrationHealth "" "" Healthy 0 Nothing Nothing Nothing (read "1970-01-01 00:00:00 UTC")
 
 -- | Check if health status exceeds threshold

@@ -17,7 +17,7 @@ where
 import Control.Monad.IO.Class (liftIO)
 import DAL.Pool (ConnectionPool)
 import qualified DAL.Mutations as Mut
-import DAL.Types (MutationResult (..), Payment (..), PaymentInput (..), QueryResult (..))
+import DAL.Types (MutationResult (..), Payment (..), PaymentInput, QueryResult (..))
 import Data.Aeson (ToJSON, FromJSON)
 import Data.Int (Int64)
 import Data.Text (Text)
@@ -25,7 +25,7 @@ import GHC.Generics (Generic)
 import Database.Esqueleto.Experimental
 import Database.Persist.Sql (runSqlPool, toSqlKey, rawSql, PersistValue(..), Single(..))
 import DAL.Conversion (paymentFromEntity)
-import DAL.Schema
+import qualified Surypus.DB.Schema as DBS
 
 data PaymentAgingRow = PaymentAgingRow
   { parBillId :: Int64
@@ -44,8 +44,8 @@ listPayments :: ConnectionPool -> IO (QueryResult [Payment])
 listPayments pool = do
     entities <- liftIO $ runSqlPool
         (select $ do
-            p <- from $ table @PaymentEntity
-            orderBy [desc $ p ^. PaymentEntityDate, desc $ p ^. PaymentEntityId]
+            p <- from $ table @(DBS.PaymentEntity)
+            orderBy [desc $ p ^. DBS.PaymentEntityDate, desc $ p ^. DBS.PaymentEntityId]
             return p
         ) pool
     return $ QuerySuccess (map paymentFromEntity entities)
@@ -57,8 +57,8 @@ getPayment :: ConnectionPool -> Int64 -> IO (QueryResult Payment)
 getPayment pool pid = do
     result <- liftIO $ runSqlPool
         (selectOne $ do
-            p <- from $ table @PaymentEntity
-            where_ $ p ^. PaymentEntityId ==. val (toSqlKey pid)
+            p <- from $ table @(DBS.PaymentEntity)
+            where_ $ p ^. DBS.PaymentEntityId ==. val (toSqlKey pid)
             return p
         ) pool
     case result of
