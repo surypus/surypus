@@ -68,7 +68,11 @@ data AuditEntry = AuditEntry
   deriving (Show, Eq)
 
 -- | RBAC Store
-data RBACStore = RBACStore (IORef StoreData)
+--
+-- Carries the audit sink passed to 'newRBACStore' so that
+-- 'writeAuditEntry' can push every entry both into the in-memory log
+-- and to the external sink (logger / DB).
+data RBACStore = RBACStore (IORef StoreData) (Maybe (AuditEntry -> IO ()))
 
 data StoreData = StoreData
   { sdRoles :: [DynamicRole],
@@ -76,47 +80,59 @@ data StoreData = StoreData
     sdAudit :: [AuditEntry]
   }
 
--- | Create a new RBAC store
+-- | Create a new RBAC store.
+--
+-- The audit callback is invoked synchronously by 'writeAuditEntry'
+-- for every recorded entry, after the entry is appended to the log.
 newRBACStore :: (AuditEntry -> IO ()) -> IO RBACStore
-newRBACStore _auditCallback = do
+newRBACStore auditCallback = do
   ref <- newIORef StoreData {sdRoles = [], sdGrants = [], sdAudit = []}
-  pure $ RBACStore ref
+  pure $ RBACStore ref (Just auditCallback)
 
 -- | List all roles
 listRoles :: RBACStore -> IO [DynamicRole]
-listRoles (RBACStore ref) = readIORef ref >>= pure . sdRoles
+listRoles (RBACStore ref _) = readIORef ref >>= pure . sdRoles
 
 -- | List all grants
 listGrants :: RBACStore -> IO [PermissionGrant]
-listGrants (RBACStore ref) = readIORef ref >>= pure . sdGrants
+listGrants (RBACStore ref _) = readIORef ref >>= pure . sdGrants
 
--- | List audit entries
+-- | List audit entries (newest first)
 listAuditEntries :: RBACStore -> IO [AuditEntry]
-listAuditEntries (RBACStore ref) = readIORef ref >>= pure . sdAudit
+listAuditEntries (RBACStore ref _) = readIORef ref >>= pure . sdAudit
 
--- | Write an audit entry
+-- | Write an audit entry: append to the in-memory log (newest first)
+-- and forward it to the store's audit sink.
 writeAuditEntry :: RBACStore -> AuditEntry -> IO ()
-writeAuditEntry (RBACStore ref) entry =
+writeAuditEntry (RBACStore ref mAuditCallback) entry = do
   modifyIORef' ref $ \s ->
     s {sdAudit = entry : sdAudit s}
+  case mAuditCallback of
+    Just cb -> cb entry
+    Nothing -> pure ()
 
--- | Add a permission grant
+-- | Add a permission grant (prepended, so the newest grant is first)
 addGrant :: RBACStore -> PermissionGrant -> IO ()
-addGrant (RBACStore ref) grant =
+addGrant (RBACStore ref _) grant =
   modifyIORef' ref $ \s ->
     s {sdGrants = grant : sdGrants s}
 
--- | Remove a permission grant
+-- | Remove a permission grant.
+--
+-- Revokes exactly the passed grant: a stored grant survives unless its
+-- principal pair matches 'from'\/'to' AND it equals 'grant' (same
+-- permission, scope and expiry). Revoking one grant of a pair must not
+-- silently revoke the other grants between the same principals.
 removeGrant :: RBACStore -> Text -> Text -> PermissionGrant -> IO ()
-removeGrant (RBACStore ref) _from _to _grant =
+removeGrant (RBACStore ref _) from to grant =
   modifyIORef' ref $ \s ->
     s {sdGrants = filter (not . matchesGrant) (sdGrants s)}
   where
-    matchesGrant g = pgFrom g == _from && pgTo g == _to
+    matchesGrant g = pgFrom g == from && pgTo g == to && g == grant
 
--- | Upsert a role
+-- | Upsert a role: a role with the same name is replaced (no duplicates)
 upsertRole :: RBACStore -> DynamicRole -> IO ()
-upsertRole (RBACStore ref) role' = do
+upsertRole (RBACStore ref _) role' =
   modifyIORef' ref $ \s ->
     s
       { sdRoles =
@@ -126,11 +142,15 @@ upsertRole (RBACStore ref) role' = do
 
 -- | Delete a role
 deleteRole :: RBACStore -> Text -> IO ()
-deleteRole (RBACStore ref) name =
+deleteRole (RBACStore ref _) name =
   modifyIORef' ref $ \s ->
     s {sdRoles = filter (\r -> drName r /= name) (sdRoles s)}
 
--- | List active grants for a principal
+-- | List active grants for a principal.
+--
+-- 'Nothing' means "no principal filter": every active grant is
+-- returned. A grant is active when it has no expiry or its expiry is
+-- at or after 'now'.
 activeDelegations :: RBACStore -> Maybe Text -> UTCTime -> IO [PermissionGrant]
 activeDelegations store mPrincipal now = do
   grants <- listGrants store
@@ -144,9 +164,12 @@ activeDelegations store mPrincipal now = do
   where
     isActive g t = maybe True (>= t) (pgExpiresAt g)
 
--- | Cleanup expired grants
+-- | Cleanup expired grants.
+--
+-- A grant expiring exactly at 'now' is still active and is kept
+-- (same boundary as 'activeDelegations'). Returns the number removed.
 cleanupExpiredGrants :: RBACStore -> UTCTime -> IO Int
-cleanupExpiredGrants (RBACStore ref) now = do
+cleanupExpiredGrants (RBACStore ref _) now = do
   s <- readIORef ref
   let gs = sdGrants s
       (active, expired) = foldr splitGrants ([], []) gs
@@ -158,9 +181,11 @@ cleanupExpiredGrants (RBACStore ref) now = do
         then (g : act, expr)
         else (act, g : expr)
 
--- | Cleanup audit entries (keep latest N)
+-- | Cleanup audit entries (keep latest N, newest first).
+-- Default keep limit is 1000 when 'mKeep' is 'Nothing'.
+-- Returns the number removed.
 cleanupAuditEntries :: RBACStore -> Maybe Int64 -> IO Int
-cleanupAuditEntries (RBACStore ref) mKeep = do
+cleanupAuditEntries (RBACStore ref _) mKeep = do
   s <- readIORef ref
   let audit = sdAudit s
       limit = fromIntegral $ maybe 1000 fromIntegral mKeep

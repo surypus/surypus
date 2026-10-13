@@ -23,6 +23,7 @@ import qualified ConfigSpec
 import qualified ObservabilitySpec
 import qualified MigrationDryRunSpec
 import qualified RBACCanonSpec
+import qualified Surypus.RBAC.StoreSpec
 import qualified ConcurrencySpec
 import qualified Phase5PropsSpec
 import qualified QuickCheckInvariantsSpec
@@ -58,6 +59,7 @@ main = hspec $ do
   ObservabilitySpec.spec
   MigrationDryRunSpec.spec
   RBACCanonSpec.spec
+  Surypus.RBAC.StoreSpec.spec
   ConcurrencySpec.spec
   Phase5PropsSpec.spec
   QuickCheckInvariantsSpec.spec
