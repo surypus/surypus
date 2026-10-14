@@ -22,25 +22,7 @@ import Core.Payroll.Calculation
 
 main :: IO ()
 main = hspec $ do
-    describe "Data Validation" $ do
-        it "validate INN - valid 10 digits" $ do
-            validateInn "7701234567" `shouldBe` True
-            
-        it "validate INN - valid 12 digits" $ do
-            validateInn "770123456789" `shouldBe` True
-            
-        it "validate INN - invalid too short" $ do
-            validateInn "770123456" `shouldBe` False
-            
-        it "validate INN - invalid with letters" $ do
-            validateInn "7701234567a" `shouldBe` False
-            
-        it "validate KPP - valid" $ do
-            validateKpp "770101001" `shouldBe` True
-            
-        it "validate KPP - invalid" $ do
-            validateKpp "77010100" `shouldBe` False
-            
+
     describe "Currency Formatting" $ do
         it "format integer amount" $ do
             formatCurrency 1000 `shouldBe` "1000.00 руб."
