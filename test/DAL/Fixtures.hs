@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Test.DAL.Fixtures where
+module DAL.Fixtures where
 
 import Data.Int (Int64)
 import Data.Text (Text)

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module API.ServerSpec where
+module API.ServerV2Spec where
 
 import Test.Hspec
 import Data.Aeson (Value, object, (.=))

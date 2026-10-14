@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module DAL.DBIntegrationSpec (spec) where
+module DAL.IntegrationSpec where
 
 import Test.Hspec
 import Data.Int (Int64)
