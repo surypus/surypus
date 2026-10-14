@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 -- | Main test entry point
-module Main where
+module Test.Main where
 
 import Test.Hspec
 import Domain.TypesSpec
