@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 -- | First coverage for 'Commerce.Price' — the pricing, discount, quotation and
 -- validation layer (pure, exposed, zero importers in src/+test/ before this run).
 --

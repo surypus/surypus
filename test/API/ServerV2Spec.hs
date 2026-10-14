@@ -6,7 +6,7 @@ import Test.Hspec
 import Data.Aeson (Value, object, (.=))
 import Data.Aeson.Key (fromString)
 import qualified Data.Aeson.KeyMap as KM
-import Data.Aeson (String (..))
+import Data.Aeson (Value(String))
 
 spec :: Spec
 spec = describe "API Server" $ do

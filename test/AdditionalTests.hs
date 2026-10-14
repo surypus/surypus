@@ -8,6 +8,7 @@ module AdditionalTests where
 
 import Test.Hspec
 import Data.Text (Text)
+import Data.Time.Calendar (Day)
 import qualified Data.Text as T
 import Surypus.Foreign.QML
 import Surypus.Reports.Templates
