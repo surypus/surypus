@@ -16,6 +16,7 @@ import qualified Core.Accounting.CacheSpec
 import qualified TestHelpers
 import qualified System.RateLimiterSpec
 import qualified System.CacheSpec
+import qualified System.CircuitBreakerSpec
 import qualified System.CounterSpec
 import qualified System.MetricsCollectorSpec
 import qualified System.SequenceSpec
@@ -56,6 +57,7 @@ main = hspec $ do
   TestHelpers.specInventory
   System.RateLimiterSpec.spec
   System.CacheSpec.spec
+  System.CircuitBreakerSpec.spec
   System.CounterSpec.spec
   System.MetricsCollectorSpec.spec
   System.SequenceSpec.spec

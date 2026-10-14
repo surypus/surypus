@@ -236,6 +236,11 @@ bd ready
   - **Coverage-gap lesson**: the never-negative property initially used the default `Double` generator and PASSED against the pre-fix module — QuickCheck's default `Double` distribution concentrates on small magnitudes, so a percentage over 100 was almost never drawn and the property was vacuous against exactly the bug it was meant to catch. The generator is now bounded (`choose (0, 500)` for the percentage value, `choose (0, 5000)` for the absolute value, base `choose (0, 1e6)`) so the discriminating branch is exercised on every run. Same vacuous-coverage family as the System.Cache eviction test
   - Compile errors fixed while wiring: missing `OverloadedStrings` (`Discount`'s `dCode`/`dName` are `Text`, so string literals did not typecheck); an unannotated QuickCheck variable defaulting to `Integer` where `Double` was required in the class guard
   - Verified by direct GHC build+run of the full Test.hs closure (full `cabal build` still blocked by pre-existing library errors in Surypus.API.BillTemplates et al.): **560 examples, 0 failures, 6 pending** (519 → 560), stable across 4 runs. Negative check: the spec compiled against the git HEAD `Commerce.Price` (shadow dir first in `-i`, compile log verified to name the shadow file) fails exactly 5 examples — the clamp test, the never-negative property, and the 3 non-finite-result tests — while the other 36 pass on both sides
+- [x] Wire System.CircuitBreakerSpec into cabal test-suite (2026-10-14)
+  - First coverage for `System.CircuitBreaker` (pure, TVar/IO-based, no DB; zero tests and zero importers in `src/`+`test/` before this run)
+  - 17 tests: initCircuitBreaker (closed start); executeWithCircuitBreaker (success returns Right and stays closed, failure returns Left with error text, opens after failureThresholdCount failures, returns Left "Circuit open" when open, transitions to half-open when resetTimeoutSec elapses, closes on half-open success, re-opens on half-open failure, tracks metrics on success/failure, computes failure rate, does not execute action when open); resetCircuitBreaker (resets to closed, clears failures, resets metrics); disabled state (returns Left, does not execute)
+  - Test config uses `resetTimeoutSec = 0` for immediate half-open transition and `resetTimeoutSec = 1` for threshold-triggering tests (a zero window filters older failures from the threshold check)
+  - Verified by direct GHC build+run of the full Test.hs closure: **577 examples, 0 failures, 6 pending** (560 → 577)
 
 ### DevOps
 - [x] Add Docker configuration
@@ -439,4 +444,5 @@ bd ready
 | Done (New: System.MetricsCollector + NaN avg fix) | 1 |
 | Done (New: System.Retry) | 1 |
 | Done (New: Commerce.Price + 3 fixes) | 1 |
-| **Total** | **84** |
+| Done (New: System.CircuitBreaker) | 1 |
+| **Total** | **85** |
