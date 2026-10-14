@@ -241,6 +241,12 @@ bd ready
   - 17 tests: initCircuitBreaker (closed start); executeWithCircuitBreaker (success returns Right and stays closed, failure returns Left with error text, opens after failureThresholdCount failures, returns Left "Circuit open" when open, transitions to half-open when resetTimeoutSec elapses, closes on half-open success, re-opens on half-open failure, tracks metrics on success/failure, computes failure rate, does not execute action when open); resetCircuitBreaker (resets to closed, clears failures, resets metrics); disabled state (returns Left, does not execute)
   - Test config uses `resetTimeoutSec = 0` for immediate half-open transition and `resetTimeoutSec = 1` for threshold-triggering tests (a zero window filters older failures from the threshold check)
   - Verified by direct GHC build+run of the full Test.hs closure: **577 examples, 0 failures, 6 pending** (560 → 577)
+- [x] Wire Commerce.DiscountSpec into cabal test-suite (2026-10-15)
+  - First coverage for `Commerce.Discount` (pure, no DB; zero importers in `src/`+`test/` before this run — behaviour-only module)
+  - 13 tests (9 unit + 4 QuickCheck properties): calcDiscount with DTPercent (amount ≥ minAmount → amount × value / 100; amount < minAmount → 0), DTFixed (amount ≥ minAmount → fixed value, independent of amount; amount < minAmount → 0), DTConditional (same formula as DTPercent), boundary (amount == minAmount → discount applied, inclusive ≥), zero-value (all types → 0), prop_discountAmountNonNeg (never negative), DTFixed result == dscValue (property), DTPercent result == amount × value / 100 (property), all-types amount < minAmount → 0 (property)
+  - Added `instance Arbitrary DiscountType` (the module exports one for Discount but not its sibling type)
+  - No latent bug found — `calcDiscount` is a simple, correct 3-branch function. The 0-importer status means any future caller gets a tested contract.
+  - Verified by direct GHC build+run of the full Test.hs closure: **590 examples, 0 failures, 6 pending** (577 → 590)
 
 ### DevOps
 - [x] Add Docker configuration
@@ -445,4 +451,5 @@ bd ready
 | Done (New: System.Retry) | 1 |
 | Done (New: Commerce.Price + 3 fixes) | 1 |
 | Done (New: System.CircuitBreaker) | 1 |
-| **Total** | **85** |
+| Done (New: Commerce.Discount) | 1 |
+| **Total** | **86** |
