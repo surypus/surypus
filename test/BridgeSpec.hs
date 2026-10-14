@@ -1,7 +1,7 @@
 -- Simple test for Surypus library
 {-# LANGUAGE OverloadedStrings #-}
 
-module Main where
+module Test.BridgeSpec where
 
 import Test.Hspec
 

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Main where
+module Test.Integration.PoolSpec where
 
 import Control.Exception (SomeException, try)
 import DB.Connection (PoolConfig (..), createPool)

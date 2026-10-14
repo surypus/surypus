@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Main where
+module Test.Runner where
 
 import Test.Hspec
 

@@ -1,4 +1,4 @@
-module Main where
+module Test.SurypusSpec where
 
 import Test.Hspec
 import qualified DAL.TypesSpec
