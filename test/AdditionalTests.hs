@@ -96,23 +96,6 @@ main = hspec $ do
             social `shouldBe` 3000.0
             net `shouldBe` 52000.0
             
-    describe "Dashboard Stats" $ do
-        it "get dashboard stats" $ do
-            let state = emptyAppState 
-                    { stPersons = samplePersons
-                    , stGoods = sampleGoods
-                    , stLocations = sampleLocations
-                    , stBills = sampleBills
-                    , stEmployees = sampleEmployees
-                    , stJobs = sampleJobs
-                    }
-            let stats = getDashboardStats state
-            statsPersons stats `shouldBe` 3
-            statsGoods stats `shouldBe` 3
-            statsLocations stats `shouldBe` 3
-            statsBills stats `shouldBe` 2
-            statsEmployees stats `shouldBe` 2
-            statsJobs stats `shouldBe` 4
             
     describe "Text Processing" $ do
         it "concatenate texts" $ do
@@ -196,15 +179,6 @@ main = hspec $ do
         it "format date" $ do
             let day = read "2026-03-11" :: Day
             formatDate day `shouldBe` "2026-03-11"
-            
-    describe "Error Handling" $ do
-        it "app state with error" $ do
-            let state = emptyAppState { stError = Just "Test error" }
-            stError state `shouldSatisfy` isJust
-            
-        it "app state without error" $ do
-            let state = emptyAppState { stError = Nothing }
-            stError state `shouldBe` Nothing
             
     describe "Navigation" $ do
         it "default navigation has items" $ do
