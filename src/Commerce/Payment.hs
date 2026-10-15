@@ -3,7 +3,6 @@ module Commerce.Payment  where
 
 import Data.Int (Int64)
 import Data.Time (Day)
-import Test.QuickCheck
 
 -- ============================================================================
 -- PAYMENT TYPES
@@ -84,12 +83,3 @@ calcPaymentAmount = max 0
 {-@ validatePayment :: Payment -> Bool @-}
 validatePayment :: Payment -> Bool
 validatePayment p = payAmount p > 0
-
--- ============================================================================
--- QUICKCHECK PROPERTIES
--- ============================================================================
-
--- | Property: Payment amount is non-negative
-prop_payment_amount_positive :: Payment -> Property
-prop_payment_amount_positive p =
-  property (payAmount p >= 0)

@@ -7,13 +7,11 @@ module Logistics.Warehouse
     calcStockBalance,
     checkStockAvailable,
     fifoSelect,
-    prop_stockBalanceNonNeg
   ) where
 
 import Inventory.Types
 import Data.Int (Int64)
 import Data.Time (Day, fromGregorian)
-import Test.QuickCheck
 
 {-@ type NonNeg = {v:Double | v >= 0} @-}
 
@@ -54,17 +52,3 @@ fifoSelect qty lots = go qty lots []
     go n (l : ls) selected
       | lotQtty l <= n = go (n - lotQtty l) ls (selected <> [(l, lotQtty l)])
       | otherwise = (selected <> [(l, n)], l {lotQtty = lotQtty l - n} : ls)
-
--- ============================================================================
--- QUICKCHECK PROPERTIES
--- ============================================================================
-
-instance Arbitrary StockMovement where
-  arbitrary = do
-    qtty <- choose (0, 1000 :: Double)
-    pure $ StockMovement (fromGregorian 2024 1 1) 0 0 qtty 0 0 Nothing
-
-prop_stockBalanceNonNeg :: Double -> [StockMovement] -> Property
-prop_stockBalanceNonNeg initial movements =
-  let balance = calcStockBalance initial movements
-   in balance >= 0 ==> True

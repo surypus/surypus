@@ -19,9 +19,39 @@ module Inventory.OperationsSpec (spec) where
 import Test.Hspec
 import Test.QuickCheck
 
-import Data.Time (fromGregorian)
+import Data.Time (Day, fromGregorian)
 import Inventory.Lot (Lot (..))
 import Inventory.Operations
+
+-- | Local generator: the library no longer ships test scaffolding (the
+-- Arbitrary instance that used to live in Inventory.Lot was removed so
+-- Test.QuickCheck is not a library dependency).
+instance Arbitrary Lot where
+  arbitrary = do
+    q <- arbitrary `suchThat` (>= 0)
+    c <- arbitrary `suchThat` (>= 0)
+    p <- arbitrary `suchThat` (>= 0)
+    d <- genDay
+    exp <- Just <$> genDay
+    serial <- pure Nothing
+    supplier <- arbitrary
+    bill <- arbitrary
+    (Lot <$> arbitrary
+         <*> arbitrary
+         <*> arbitrary
+         <*> pure q
+         <*> pure c
+         <*> pure p
+         <*> pure d
+         <*> pure exp
+         <*> arbitrary
+         <*> pure serial
+         <*> pure supplier
+         <*> pure bill)
+
+-- | QuickCheck has no Arbitrary Day, so generate one explicitly.
+genDay :: Gen Day
+genDay = fromGregorian <$> choose (1900, 2100) <*> choose (1, 12) <*> choose (1, 28)
 
 spec :: Spec
 spec = do

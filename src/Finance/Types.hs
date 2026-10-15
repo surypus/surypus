@@ -9,7 +9,6 @@ module Finance.Types where
 import Data.Int (Int64)
 import Data.Text (Text)
 import Data.Time (Day, fromGregorian)
-import Test.QuickCheck (Arbitrary   (..), suchThat)
 
 -- ============================================================================
 -- ACCOUNT TYPES (from account.cpp)
@@ -174,29 +173,3 @@ trialBalanceZero balances = trialBalance balances < 0.01
 -- ============================================================================
 -- ARBITRARY INSTANCES
 -- ============================================================================
-
-instance Arbitrary AccTurn where
-  arbitrary =
-    AccTurn
-      <$> arbitrary
-      <*> arbitrary
-      <*> arbitrary
-      <*> (fromGregorian <$> arbitrary <*> arbitrary <*> arbitrary)
-      <*> suchThat arbitrary (>= 0)
-      <*> arbitrary
-      <*> suchThat arbitrary (>= 0)
-      <*> arbitrary
-      <*> arbitrary
-      <*> arbitrary
-      <*> suchThat arbitrary (>= 0)
-      <*> suchThat arbitrary (>= 0)
-
-instance Arbitrary Accrual where
-  arbitrary =
-    Accrual
-      <$> arbitrary
-      <*> arbitrary
-      <*> arbitrary
-      <*> suchThat arbitrary (>= 0)
-      <*> (fromGregorian <$> arbitrary <*> arbitrary <*> arbitrary)
-      <*> arbitrary

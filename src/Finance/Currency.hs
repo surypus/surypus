@@ -5,7 +5,6 @@ import Data.Int (Int64)
 import Data.Ratio ((%))
 import Data.Text (Text)
 import qualified Data.Text as T
-import Test.QuickCheck
 
 -- | Non-negative amount
 {-@ type NonNeg = {v:Double | v >= 0} @-}
@@ -73,20 +72,3 @@ formatAmount :: Currency -> Double -> Text
 formatAmount cur amount =
   let rounded = roundToCurrency cur amount
    in T.cons (T.head (curSymbol cur)) (T.pack (show rounded))
-
--- ============================================================================
--- QUICKCHECK PROPERTIES
--- ============================================================================
-
--- | Property: Currency conversion is reversible (within precision)
-prop_conversion_reversible :: Currency -> Currency -> Double -> Property
-prop_conversion_reversible from to amount =
-  let converted = convertAmount from to amount
-      back = convertAmount to from converted
-   in property (abs (back - amount) < 0.01)
-
--- | Property: Converting to same currency returns same amount
-prop_convert_to_self :: Currency -> Double -> Property
-prop_convert_to_self cur amount =
-  let result = convertAmount cur cur amount
-   in property (abs (result - amount) < 0.01)
