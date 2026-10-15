@@ -31,6 +31,7 @@ import qualified QuickCheckInvariantsSpec
 import qualified Inventory.StockSpec
 import qualified Inventory.WarehouseSpec
 import qualified Inventory.GoodsSpec
+import qualified Inventory.UnitSpec
 import qualified Inventory.OperationsSpec
 import qualified HR.OperationsSpec
 import qualified Service.WorkflowEngineSpec
@@ -38,6 +39,7 @@ import qualified Phase2Phase3.AccountingEventsSpec
 import qualified Phase2Phase3.AccountingReadModelSpec
 import qualified Core.Accounting.ReadModelSpec
 import qualified Core.TaxSpec
+import qualified Core.OptimizationSpec
 import qualified Contract.SchemaSpec
 import qualified Commerce.PriceSpec
 import qualified Commerce.CashSessionTempSpec
@@ -73,12 +75,14 @@ main = hspec $ do
   Inventory.WarehouseSpec.spec
   Inventory.GoodsSpec.spec
   Inventory.OperationsSpec.spec
+  Inventory.UnitSpec.spec
   HR.OperationsSpec.spec
   Service.WorkflowEngineSpec.spec
   Phase2Phase3.AccountingEventsSpec.spec
   Phase2Phase3.AccountingReadModelSpec.spec
   Core.Accounting.ReadModelSpec.spec
   Core.TaxSpec.spec
+  Core.OptimizationSpec.spec
   Contract.SchemaSpec.spec
   Commerce.PriceSpec.spec
   Commerce.CashSessionTempSpec.spec
