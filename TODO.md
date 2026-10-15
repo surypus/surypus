@@ -91,6 +91,7 @@ bd ready
 - [x] Fix `calcNetSalaryFromGross` — return 0 for non-positive gross (2026-10-09)
 - [x] Fix QuickCheck generators — produce valid domain data: non-negative amounts, woQtyReleased ≤ woQtyPlan, billAmount = Σ lineTotal (2026-10-09)
 - [x] Add `instance Arbitrary Text` to TestHelpers (2026-10-09)
+- [x] Wired EmailSpec (6 tests): first coverage for Email; fixed latent bug — sendEmail with ecOutputFile printed to stdout instead of writing the file (2026-10-15)
 - [x] Full suite green: 160 examples, 0 failures, 6 pending (API stubs) (2026-10-09)
 - [x] Fix `checkSlidingWindowWithHeaders` off-by-one in `remaining` (2026-10-09)
 - [x] Add System.RateLimiterSpec with 15 tests covering all 4 rate limiter strategies + API middleware logic (2026-10-09)

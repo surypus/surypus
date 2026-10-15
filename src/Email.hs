@@ -93,8 +93,7 @@ sendEmail config toAddr subject bodyText = do
   case ecOutputFile config of
     Just filepath -> do
       result <- try $ do
-        TIO.putStrLn emailContent
-        putStrLn $ "Email written to: " ++ filepath
+        TIO.writeFile filepath emailContent
       case result of
         Left (e :: SomeException) -> return $ Left $ EmailSendError (T.pack $ show e)
         Right _ -> return $ Right ()
