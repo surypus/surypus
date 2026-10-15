@@ -37,6 +37,7 @@ import qualified Service.WorkflowEngineSpec
 import qualified Phase2Phase3.AccountingEventsSpec
 import qualified Phase2Phase3.AccountingReadModelSpec
 import qualified Core.Accounting.ReadModelSpec
+import qualified Core.TaxSpec
 import qualified Contract.SchemaSpec
 import qualified Commerce.PriceSpec
 import qualified EmailSpec
@@ -76,6 +77,7 @@ main = hspec $ do
   Phase2Phase3.AccountingEventsSpec.spec
   Phase2Phase3.AccountingReadModelSpec.spec
   Core.Accounting.ReadModelSpec.spec
+  Core.TaxSpec.spec
   Contract.SchemaSpec.spec
   Commerce.PriceSpec.spec
   EmailSpec.spec

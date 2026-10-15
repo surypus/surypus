@@ -253,6 +253,11 @@ bd ready
   - Fix: `ValidEmail` now uses `listOf1 (elements (['a'..'z'] ++ ['0'..'9']))` for user/domain and `listOf1 (elements ['a'..'z'])` for TLD; `NonBlankText` uses `listOf1 (elements (['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9']))` — both produce only values the validators accept
   - Removed unused `import Test.QuickCheck (NonEmptyList (..))` (no longer needed)
   - Verified by `cabal test`: **589 examples, 0 failures** (was 589 examples, 2 failures)
+- [x] Wire Core.TaxSpec into cabal test-suite (2026-10-15)
+  - First coverage for `Core.Tax` (pure, exposed, 63 lines, 0 importers in `src/`+`test/` before this run — behaviour-only module)
+  - 31 tests (24 unit + 7 QuickCheck properties): mkTaxBracket (valid, negative rate, rate > 1.0, negative threshold, rate 0.0, rate 1.0); applyTax (simple, zero rate, full rate, negative rate, rate > 1.0, negative base, zero base, fractional); applyTaxInclusive (extract, zero rate, rate 1.0, negative rate, rate > 1.0, negative gross, zero gross); totalTax (multiple brackets, empty, invalid rates filtered, zero base); properties (non-negativity, boundedness, inclusive extraction, totalTax sum consistency)
+  - No latent bug found — `Core.Tax` is a simple, correct 4-function module. The 0-importer status means any future caller gets a tested contract.
+  - Verified by direct GHC build+run of the full Test.hs closure: **620 examples, 0 failures, 6 pending** (589 → 620)
 
 ### DevOps
 - [x] Add Docker configuration
@@ -458,4 +463,5 @@ bd ready
 | Done (New: Commerce.Price + 3 fixes) | 1 |
 | Done (New: System.CircuitBreaker) | 1 |
 | Done (New: Commerce.Discount) | 1 |
-| **Total** | **86** |
+| Done (New: Core.Tax) | 1 |
+| **Total** | **87** |
