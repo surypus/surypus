@@ -25,6 +25,7 @@ import qualified RBACCanonSpec
 import qualified Surypus.RBAC.StoreSpec
 import qualified ConcurrencySpec
 import qualified QuickCheckInvariantsSpec
+import qualified Domain.InvariantsSpec
 import qualified Inventory.StockSpec
 import qualified Inventory.WarehouseSpec
 import qualified Inventory.GoodsSpec
@@ -89,3 +90,4 @@ main = hspec $ do
   AdditionalTests.spec
   DAL.TypesSpec.spec
   DAL.DBSpec.spec
+  Domain.InvariantsSpec.spec
