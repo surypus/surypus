@@ -1,7 +1,7 @@
 -- | Main test suite for Surypus
 {-# LANGUAGE OverloadedStrings #-}
 
-module Test where
+module Main where
 
 import Test.Hspec
 import Test.QuickCheck
