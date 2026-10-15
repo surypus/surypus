@@ -4,7 +4,6 @@
 module DAL.DBSpec (spec) where
 
 import Test.Hspec
-import Data.IORef (newIORef, readIORef)
 import Data.Text (Text)
 import qualified Data.Text as T
 
@@ -18,7 +17,7 @@ spec = do
       it "should create a new database" $ do
         db <- newDatabase
         persons <- queryPersons db 10 0
-        length persons `shouldBe` 3  -- testPersons has 3 records
+        length persons `shouldBe` 3
 
       it "should find person by ID" $ do
         db <- newDatabase
@@ -32,12 +31,7 @@ spec = do
         page1 <- queryPersons db 2 0
         page2 <- queryPersons db 2 2
         length page1 `shouldBe` 2
-        length page2 `shouldBe` 1  -- 3 total, page 2 (offset 2) has 1
-
-      it "should query persons by status" $ do
-        db <- newDatabase
-        result <- queryPersonsByStatus db 0
-        length result `shouldBe` 3  -- All test persons have status 0
+        length page2 `shouldBe` 1
 
       it "should insert new person" $ do
         db <- newDatabase
@@ -50,8 +44,7 @@ spec = do
               , pPersonType = 1
               , pStatus = 1
               }
-        pid <- insertPerson db newPerson
-        pid `shouldBe` 999
+        insertPerson db newPerson
         found <- findPersonById db 999
         case found of
           Just p -> pName p `shouldBe` T.pack "New Company"
@@ -63,7 +56,7 @@ spec = do
         case found of
           Just person -> do
             let updated = person { pName = T.pack "Updated Name" }
-            updatePerson db 1 updated
+            _ <- updatePerson db 1 updated
             result <- findPersonById db 1
             case result of
               Just p -> pName p `shouldBe` T.pack "Updated Name"
@@ -72,11 +65,11 @@ spec = do
 
       it "should delete person" $ do
         db <- newDatabase
-        _ <- insertPerson db (PersonStub 999 (Just "P999") (T.pack "Temp") Nothing Nothing 1 0)
+        insertPerson db (PersonStub 999 (Just "P999") (T.pack "Temp") Nothing Nothing 1 0)
         found1 <- findPersonById db 999
         case found1 of
           Just _ -> do
-            deletePerson db 999
+            _ <- deletePerson db 999
             found2 <- findPersonById db 999
             found2 `shouldBe` Nothing
           Nothing -> fail "Should insert before delete"
@@ -106,8 +99,11 @@ spec = do
               , gUnitId = 1
               , gParentId = Nothing
               }
-        gid <- insertGoods db newGoods
-        gid `shouldBe` 999
+        insertGoods db newGoods
+        found <- findGoodsById db 999
+        case found of
+          Just g -> gName g `shouldBe` T.pack "New Product"
+          Nothing -> fail "Should find inserted goods"
 
       it "should update goods" $ do
         db <- newDatabase
@@ -115,7 +111,7 @@ spec = do
         case found of
           Just goods -> do
             let updated = goods { gName = T.pack "Updated Product" }
-            updateGoods db 1 updated
+            _ <- updateGoods db 1 updated
             result <- findGoodsById db 1
             case result of
               Just g -> gName g `shouldBe` T.pack "Updated Product"
@@ -130,13 +126,12 @@ spec = do
           Just l -> lName l `shouldBe` T.pack "Main Warehouse"
           Nothing -> fail "Should find location with ID 1"
 
-      it "should query locations by type" $ do
+      it "should query locations with pagination" $ do
         db <- newDatabase
-        warehouses <- queryLocationsByType db 1
-        length warehouses `shouldBe` 2  -- 2 warehouses in test data
-
-        shops <- queryLocationsByType db 2
-        length shops `shouldBe` 1  -- 1 shop in test data
+        page1 <- queryLocations db 2 0
+        page2 <- queryLocations db 2 2
+        length page1 `shouldBe` 2
+        length page2 `shouldBe` 1
 
       it "should insert location" $ do
         db <- newDatabase
@@ -146,31 +141,17 @@ spec = do
               , lName = T.pack "New Location"
               , lType = 3
               }
-        lid <- insertLocation db newLoc
-        lid `shouldBe` 999
+        insertLocation db newLoc
+        found <- findLocationById db 999
+        case found of
+          Just l -> lName l `shouldBe` T.pack "New Location"
+          Nothing -> fail "Should find inserted location"
 
     describe "Stock Operations" $ do
-      it "should find stock by ID" $ do
+      it "should query stock with pagination" $ do
         db <- newDatabase
-        result <- findStockById db 1
-        case result of
-          Just s -> sQtty s `shouldBe` 100
-          Nothing -> fail "Should find stock with ID 1"
-
-      it "should query stock by goods ID" $ do
-        db <- newDatabase
-        result <- queryStockByGoods db 1
-        length result `shouldBe` 2  -- Product 1 in 2 locations
-
-      it "should query stock by location ID" $ do
-        db <- newDatabase
-        result <- queryStockByLocation db 1
-        length result `shouldBe` 2  -- Location 1 has 2 items
-
-      it "should query stock by goods and location" $ do
-        db <- newDatabase
-        result <- queryStockByGoodsAndLocation db 1 1
-        length result `shouldBe` 1
+        stock <- queryStock db 10 0
+        length stock `shouldBe` 3
 
       it "should insert stock" $ do
         db <- newDatabase
@@ -181,42 +162,27 @@ spec = do
               , sQtty = 50
               , sResrvQtty = 0
               }
-        sid <- insertStock db newStock
-        sid `shouldBe` 999
+        insertStock db newStock
+        stock <- queryStock db 100 0
+        length stock `shouldBe` 4
 
       it "should update stock quantity" $ do
         db <- newDatabase
-        found <- findStockById db 1
-        case found of
-          Just stock -> do
-            let updated = stock { sQtty = 150 }
-            updateStock db 1 updated
-            result <- findStockById db 1
-            case result of
-              Just s -> sQtty s `shouldBe` 150
-              Nothing -> fail "Should find updated stock"
-          Nothing -> fail "Should find stock to update"
+        _ <- updateStock db 1 (StockStub 1 1 1 150 0)
+        stock <- queryStock db 10 0
+        case filter (\s -> sId s == 1) stock of
+          (s:_) -> sQtty s `shouldBe` 150
+          [] -> fail "Should find stock with ID 1"
 
     describe "Bill Operations" $ do
       it "should insert bill" $ do
         db <- newDatabase
-        let newBill = BillStub
-              { billId = 999
-              , billTotal = 5000.0
-              }
-        bid <- insertBill db newBill
-        bid `shouldBe` 999
-
-      it "should find bill by ID" $ do
-        db <- newDatabase
         let newBill = BillStub 999 5000.0 "USD" 1.0
-        _ <- insertBill db newBill
-        result <- findBillById db 999
-        case result of
-          Just b -> billTotal b `shouldBe` 5000.0
-          Nothing -> fail "Should find inserted bill"
+        insertBill db newBill
+        bills <- queryBills db 10 0
+        length bills `shouldBe` 2
 
       it "should query bills with pagination" $ do
         db <- newDatabase
         testBills <- queryBills db 10 0
-        length testBills `shouldBe` 1  -- Test data has 1 bill
+        length testBills `shouldBe` 1

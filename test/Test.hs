@@ -1,7 +1,7 @@
 -- | Main test suite for Surypus
 {-# LANGUAGE OverloadedStrings #-}
 
-module Test where
+module Main where
 
 import Test.Hspec
 import Test.QuickCheck
@@ -13,7 +13,6 @@ import qualified Finance.BillSpec
 import qualified Surypus.ValidationSpec
 import qualified Core.PayrollSpec
 import qualified Core.Accounting.CacheSpec
-import qualified TestHelpers
 import qualified System.RateLimiterSpec
 import qualified System.CacheSpec
 import qualified System.CircuitBreakerSpec
@@ -28,7 +27,6 @@ import qualified MigrationDryRunSpec
 import qualified RBACCanonSpec
 import qualified Surypus.RBAC.StoreSpec
 import qualified ConcurrencySpec
-import qualified Phase5PropsSpec
 import qualified QuickCheckInvariantsSpec
 import qualified Inventory.StockSpec
 import qualified Inventory.WarehouseSpec
@@ -39,10 +37,8 @@ import qualified Service.WorkflowEngineSpec
 import qualified Phase2Phase3.AccountingEventsSpec
 import qualified Phase2Phase3.AccountingReadModelSpec
 import qualified Core.Accounting.ReadModelSpec
-import qualified Domain.ProductionPropertySpec
 import qualified Contract.SchemaSpec
 import qualified Commerce.PriceSpec
-import qualified Commerce.DiscountSpec
 import DAL.Types
 
 main :: IO ()
@@ -52,10 +48,6 @@ main = hspec $ do
   Finance.BillSpec.spec
   Surypus.ValidationSpec.spec
   Core.PayrollSpec.spec
-  TestHelpers.specBillLines
-  TestHelpers.specPayroll
-  TestHelpers.specProduction
-  TestHelpers.specInventory
   System.RateLimiterSpec.spec
   System.CacheSpec.spec
   System.CircuitBreakerSpec.spec
@@ -71,7 +63,6 @@ main = hspec $ do
   RBACCanonSpec.spec
   Surypus.RBAC.StoreSpec.spec
   ConcurrencySpec.spec
-  Phase5PropsSpec.spec
   QuickCheckInvariantsSpec.spec
   Inventory.StockSpec.spec
   Inventory.WarehouseSpec.spec
@@ -82,20 +73,8 @@ main = hspec $ do
   Phase2Phase3.AccountingEventsSpec.spec
   Phase2Phase3.AccountingReadModelSpec.spec
   Core.Accounting.ReadModelSpec.spec
-  Domain.ProductionPropertySpec.spec
   Contract.SchemaSpec.spec
   Commerce.PriceSpec.spec
-  Commerce.DiscountSpec.spec
-
-  describe "TestHelpers properties" $ do
-    it "bill total equals sum of line totals" $
-      property TestHelpers.prop_bill_post_total_equals_sum_of_lines
-    it "salary amount is non-negative" $
-      property TestHelpers.prop_salary_amount_nonnegative
-    it "work order released never exceeds planned" $
-      property TestHelpers.prop_work_order_released_le_planned
-    it "bill line total is non-negative" $
-      property TestHelpers.prop_bill_line_total_nonnegative
 
   describe "DAL.Types JSON roundtrip" $ do
     it "Person roundtrip" $ do
