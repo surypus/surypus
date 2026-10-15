@@ -118,31 +118,31 @@ testStock =
 queryPersons :: Database -> Int -> Int -> IO [Person]
 queryPersons db limit offset = do
   ps <- readIORef (dbPersons db)
-  return $ drop offset $ take limit ps
+  return $ take limit $ drop offset ps
 
 -- Goods
 queryGoods :: Database -> Int -> Int -> IO [Goods]
 queryGoods db limit offset = do
   gs <- readIORef (dbGoods db)
-  return $ drop offset $ take limit gs
+  return $ take limit $ drop offset gs
 
 -- Locations
 queryLocations :: Database -> Int -> Int -> IO [Location]
 queryLocations db limit offset = do
   ls <- readIORef (dbLocations db)
-  return $ drop offset $ take limit ls
+  return $ take limit $ drop offset ls
 
 -- Bills
 queryBills :: Database -> Int -> Int -> IO [Bill]
 queryBills db limit offset = do
   bs <- readIORef (dbBills db)
-  return $ drop offset $ take limit bs
+  return $ take limit $ drop offset bs
 
 -- Stock
 queryStock :: Database -> Int -> Int -> IO [Stock]
 queryStock db limit offset = do
   st <- readIORef (dbStock db)
-  return $ drop offset $ take limit st
+  return $ take limit $ drop offset st
 
 -- Find operations
 findPersonById :: Database -> Int64 -> IO (Maybe Person)

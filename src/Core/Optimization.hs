@@ -16,6 +16,7 @@ module Core.Optimization
   , evaluateObjective
   , checkConstraint
   , optimize
+  , defOptimizationState
   ) where
 
 import Data.Text (Text)

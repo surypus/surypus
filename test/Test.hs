@@ -4,9 +4,6 @@
 module Main where
 
 import Test.Hspec
-import Test.QuickCheck
-import qualified Data.Aeson as A
-import Data.Time.Calendar (fromGregorian)
 import qualified Finance.TaxSpec
 import qualified Finance.AccountingSpec
 import qualified Finance.BillSpec
@@ -46,7 +43,8 @@ import qualified Commerce.CashSessionTempSpec
 import qualified EmailSpec
 import qualified System.ValidationSpec
 import qualified AdditionalTests
-import DAL.Types
+import qualified DAL.TypesSpec
+import qualified DAL.DBSpec
 
 main :: IO ()
 main = hspec $ do
@@ -89,36 +87,5 @@ main = hspec $ do
   EmailSpec.spec
   System.ValidationSpec.spec
   AdditionalTests.spec
-
-  describe "DAL.Types JSON roundtrip" $ do
-    it "Person roundtrip" $ do
-      let p = Person 1 (Just "001") "Test" (Just "7707083893") (Just "770701001") (Just 1) (Just 1)
-      A.decode (A.encode p) `shouldBe` Just p
-
-    it "Goods roundtrip" $ do
-      let g = Goods 1 (Just "001") "Test" Nothing (Just "123456") (Just 1) Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
-      A.decode (A.encode g) `shouldBe` Just g
-
-    it "Bill roundtrip" $ do
-      let b = Bill 1 (Just "B-001") (Just "sale") (Just "paid") (fromGregorian 2024 1 1) (Just 1) (Just 1) 1000.0 0.0 200.0
-      A.decode (A.encode b) `shouldBe` Just b
-
-    it "TaxEntity roundtrip" $ do
-      let t = TaxEntity "tax-1" "VAT" "Value Added Tax" "20"
-      A.decode (A.encode t) `shouldBe` Just t
-
-    it "Pagination roundtrip" $ do
-      let p = Pagination 0 10
-      A.decode (A.encode p) `shouldBe` Just p
-
-    it "AccTurnInput roundtrip" $ do
-      let input = AccTurnInput 1 2 100.0 (Just "Test")
-      A.decode (A.encode input) `shouldBe` Just input
-
-    it "MutationResult roundtrip" $ do
-      let mr = MutationResult True (Just 42) "Success"
-      A.decode (A.encode mr) `shouldBe` Just mr
-
-  describe "Sanity" $ do
-    it "True is True" $ do
-      True `shouldBe` True
+  DAL.TypesSpec.spec
+  DAL.DBSpec.spec
