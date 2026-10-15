@@ -23,11 +23,11 @@ vertical slice, not broad feature coverage.
 
 - **Prototype stage** — the library and executables build; the API surface is
   exercised by tests, not deployed.
-- **CI: green** — 12 workflows pass on `main` (build + tests, CodeQL, HLint,
+- **CI: green** — 13 workflows pass on `main` (build + tests, CodeQL, HLint,
   Fourmolu, Hadolint, secret scanning, coverage, supply-chain checks, docs).
-- **390 library modules** in `src/`, all listed in `exposed-modules` of
-  `Surypus.cabal`.
-- **703 test examples, 0 failures** across 43 test modules.
+- **390 library modules** in `src/`: 389 exposed in `exposed-modules` of
+  `Surypus.cabal`, plus one internal helper (`Service.Workflow`).
+- **719 test examples, 0 failures** across 43 test modules.
 - Stack resolver: `lts-22.21` (GHC **9.6.5**); local development uses GHC
   9.10.3.
 
