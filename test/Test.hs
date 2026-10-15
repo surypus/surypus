@@ -43,6 +43,7 @@ import qualified Commerce.PriceSpec
 import qualified Commerce.CashSessionTempSpec
 import qualified EmailSpec
 import qualified System.ValidationSpec
+import qualified TranscendenceSpec
 import qualified AdditionalTests
 import qualified DAL.TypesSpec
 import qualified DAL.DBSpec
@@ -88,6 +89,7 @@ main = hspec $ do
   EmailSpec.spec
   System.ValidationSpec.spec
   AdditionalTests.spec
+  TranscendenceSpec.spec
   DAL.TypesSpec.spec
   DAL.DBSpec.spec
   Domain.InvariantsSpec.spec
