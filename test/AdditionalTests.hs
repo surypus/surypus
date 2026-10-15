@@ -4,7 +4,7 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 
-module AdditionalTests where
+module AdditionalTests (spec) where
 
 import Test.Hspec
 import Data.Text (Text)
@@ -17,11 +17,11 @@ import Surypus.Reports.Conversion.CrystalToPdfSlave
 import Core.Payroll.Calculation
 
 -- ============================================================================
--- MAIN
+-- SPEC
 -- ============================================================================
 
-main :: IO ()
-main = hspec $ do
+spec :: Spec
+spec = do
 
     describe "Text Processing" $ do
         it "concatenate texts" $ do

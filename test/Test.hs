@@ -40,6 +40,8 @@ import qualified Core.Accounting.ReadModelSpec
 import qualified Contract.SchemaSpec
 import qualified Commerce.PriceSpec
 import qualified EmailSpec
+import qualified System.ValidationSpec
+import qualified AdditionalTests
 import DAL.Types
 
 main :: IO ()
@@ -77,6 +79,8 @@ main = hspec $ do
   Contract.SchemaSpec.spec
   Commerce.PriceSpec.spec
   EmailSpec.spec
+  System.ValidationSpec.spec
+  AdditionalTests.spec
 
   describe "DAL.Types JSON roundtrip" $ do
     it "Person roundtrip" $ do

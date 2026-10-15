@@ -248,6 +248,11 @@ bd ready
   - Added `instance Arbitrary DiscountType` (the module exports one for Discount but not its sibling type)
   - No latent bug found — `calcDiscount` is a simple, correct 3-branch function. The 0-importer status means any future caller gets a tested contract.
   - Verified by direct GHC build+run of the full Test.hs closure: **590 examples, 0 failures, 6 pending** (577 → 590)
+- [x] Fix System.ValidationSpec QuickCheck generators — ValidEmail and NonBlankText produced values the validators rejected, causing "Gave up after N tests" failures; now generate only valid inputs (2026-10-15)
+  - Root cause: `ValidEmail` used `arbitrary :: Gen Char` which produces arbitrary Unicode characters; `NonBlankText` filtered only spaces/tabs but `T.strip` removes all whitespace — both generators could produce values that fail validation
+  - Fix: `ValidEmail` now uses `listOf1 (elements (['a'..'z'] ++ ['0'..'9']))` for user/domain and `listOf1 (elements ['a'..'z'])` for TLD; `NonBlankText` uses `listOf1 (elements (['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9']))` — both produce only values the validators accept
+  - Removed unused `import Test.QuickCheck (NonEmptyList (..))` (no longer needed)
+  - Verified by `cabal test`: **589 examples, 0 failures** (was 589 examples, 2 failures)
 
 ### DevOps
 - [x] Add Docker configuration
