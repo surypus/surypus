@@ -40,6 +40,7 @@ import qualified Core.Accounting.ReadModelSpec
 import qualified Core.TaxSpec
 import qualified Contract.SchemaSpec
 import qualified Commerce.PriceSpec
+import qualified Commerce.CashSessionTempSpec
 import qualified EmailSpec
 import qualified System.ValidationSpec
 import qualified AdditionalTests
@@ -80,6 +81,7 @@ main = hspec $ do
   Core.TaxSpec.spec
   Contract.SchemaSpec.spec
   Commerce.PriceSpec.spec
+  Commerce.CashSessionTempSpec.spec
   EmailSpec.spec
   System.ValidationSpec.spec
   AdditionalTests.spec

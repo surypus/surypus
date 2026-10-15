@@ -258,6 +258,12 @@ bd ready
   - 31 tests (24 unit + 7 QuickCheck properties): mkTaxBracket (valid, negative rate, rate > 1.0, negative threshold, rate 0.0, rate 1.0); applyTax (simple, zero rate, full rate, negative rate, rate > 1.0, negative base, zero base, fractional); applyTaxInclusive (extract, zero rate, rate 1.0, negative rate, rate > 1.0, negative gross, zero gross); totalTax (multiple brackets, empty, invalid rates filtered, zero base); properties (non-negativity, boundedness, inclusive extraction, totalTax sum consistency)
   - No latent bug found — `Core.Tax` is a simple, correct 4-function module. The 0-importer status means any future caller gets a tested contract.
   - Verified by direct GHC build+run of the full Test.hs closure: **620 examples, 0 failures, 6 pending** (589 → 620)
+- [x] Wire Commerce.CashSessionTempSpec into cabal test-suite (2026-10-15)
+  - First coverage for `Commerce.CashSessionTemp` (pure, exposed, 78 lines, 0 importers in `src/`+`test/` before this run — behaviour-only module)
+  - 19 tests (16 unit + 3 QuickCheck properties): emptyTempCashCheck (empty check, zero amounts, valid); mkTempCheckLine (accepts amount >= discount, rejects amount < discount, boundary amount == discount, zero/zero); addTempCheckLine + totalAmount (single line, multiple lines, accumulation); totalDiscount (single, multiple); netAmount (empty, single line, multiple lines, consistency with totalAmount - totalDiscount); verifyCheck (empty, valid check); properties (netAmount never negative, totalAmount >= totalDiscount invariant, adding a line increases totalAmount by the line amount)
+  - Module exports types without record constructors (opaque) — spec uses only exported functions, no field access
+  - No latent bug found — `Commerce.CashSessionTemp` is a simple, correct module. The 0-importer status means any future caller gets a tested contract.
+  - Verified: **639 examples, 0 failures, 6 pending** (620 → 639)
 
 ### DevOps
 - [x] Add Docker configuration
@@ -464,4 +470,5 @@ bd ready
 | Done (New: System.CircuitBreaker) | 1 |
 | Done (New: Commerce.Discount) | 1 |
 | Done (New: Core.Tax) | 1 |
-| **Total** | **87** |
+| Done (New: Commerce.CashSessionTemp) | 1 |
+| **Total** | **88** |
