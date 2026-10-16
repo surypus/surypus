@@ -44,6 +44,7 @@ import Data.Maybe (mapMaybe, fromMaybe)
 import Control.Applicative ((<|>))
 import GHC.Generics (Generic)
 import Data.Aeson (FromJSON, ToJSON)
+import Inventory.Stock (Stock (..))
 
 -- | Goods kind (type)
 data GoodsKind
@@ -299,16 +300,25 @@ countGoods = length
 countActiveGoods :: [Goods] -> Int
 countActiveGoods = length . goodsByStatus GoodsActive
 
--- | Get goods requiring restocking.
--- Semantics (TASK-033): a good is restockable iff it is active and declares a
--- positive minimum-stock level (@gMinStock > 0@). A minimum of 0 means no
--- restocking policy, so the good is excluded.
--- NOTE: @Goods@ carries no on-hand quantity (that lives in @Inventory.Stock@),
--- so a true below-minimum report requires joining with stock balances — out of
--- scope here; this is the strongest self-contained definition.
-goodsForRestocking :: [Goods] -> [Goods]
-goodsForRestocking goods =
-  filter (\g -> gActive g && gStatus g == GoodsActive && gMinStock g > 0) goods
+-- | Goods that are below their minimum stock level.
+--
+-- Available quantity is on-hand minus reserved, summed across every location.
+-- A good is reported when it is active, has a minimum-stock policy, and its
+-- available quantity is below that minimum. Goods with no minimum policy are
+-- never reported, so a zero @gMinStock@ means "no restocking policy" rather
+-- than "always restock".
+goodsForRestocking :: [Goods] -> [Stock] -> [Goods]
+goodsForRestocking goods stocks =
+  filter needsRestocking goods
+  where
+    needsRestocking g =
+      gActive g
+        && gStatus g == GoodsActive
+        && gMinStock g > 0
+        && availableQty (gId g) < gMinStock g
+
+    availableQty gid =
+      sum [ sQtty s - sResrvQtty s | s <- stocks, sGoodsId s == gid ]
 
 -- | Calculate total inventory value
 totalInventoryValue :: [Goods] -> Double
