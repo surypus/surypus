@@ -316,7 +316,7 @@ bd ready
 ### Epic: US-3 API Gateway
 - [x] US-3-4: GraphQL Proxy (P2, 5SP) — /graphql returns data consistent with REST; no direct DB access
 - [x] US-3-6: WebSocket real-time (P3, 5SP) — WebSocket broadcasts events when keys change
-- [ ] US-3-7: Proxy usage and client migration plan (P3, 3SP) — GraphQL client integration plan
+- [x] US-3-7: Proxy usage and client migration plan (P3, 3SP) — GraphQL client integration plan (docs/GRAPHQL_MIGRATION.md)
 
 ---
 
@@ -464,6 +464,10 @@ bd ready
   - Added `Integration.API.ExternalAPISpec` (7 tests)
   - Added http-client/http-client-tls/http-types as direct library dependencies
 
+- [x] Write GraphQL client migration plan (US-3-7) (2026-10-16)
+  - Documented the 11 REST→GraphQL operation mappings, variable schema, and deprecation timeline
+  - Added docs/GRAPHQL_MIGRATION.md and registered it in extra-doc-files
+
 ## Stats
 
 | Status | Count |
@@ -500,4 +504,5 @@ bd ready
 | Done (New: Inventory.Unit) | 1 |
 | Done (New: RedisCache + ReadModel wiring) | 1 |
 | Done (New: Stub cleanup + ExternalAPI client) | 1 |
-| **Total** | **91** |
+| Done (New: GraphQL migration plan) | 1 |
+| **Total** | **92** |
