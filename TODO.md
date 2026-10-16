@@ -472,6 +472,18 @@ bd ready
     **788 examples, 0 failures, 0 pending**; **784 examples, 0 failures, 1 pending**
     without a database.
 
+- [x] Redis Streams for events (US-3-3 follow-up) (2026-10-16)
+  - Added `Infrastructure.Redis.EventStream`: `publishEvent` appends
+    `{eventType, data}` to a stream, `readEvents` reads back oldest-first,
+    `streamLength` reports the entry count.
+  - Wired it into `Infrastructure.EventStore.Accounting`: `mkAccountingEventStore`
+    now connects to Redis and `appendAccountingEvent` publishes every appended
+    event. PostgreSQL stays the system of record, so an unreachable Redis
+    degrades the store to "no stream" instead of failing the write.
+  - Tests: `Infrastructure.Redis.EventStreamSpec` (module contract) and
+    `Infrastructure.EventStore.AccountingIntegration` (end-to-end through both
+    systems). Verified: **798 examples, 0 failures, 0 pending**.
+
 - [x] Implement Redis read-model cache and wire it into the read model (US-3-3) (2026-10-16)
   - Replaced the `createRedisCache _ = return ()` stub with a real hedis-backed cache
   - `balanceKey`: namespaced `surypus:accounting:balance:<id>` key

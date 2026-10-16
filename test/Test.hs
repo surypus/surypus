@@ -54,6 +54,8 @@ import qualified DAL.TypesSpec
 import qualified DAL.DBSpec
 import qualified DAL.PoolSpec
 import qualified DAL.EventStoreIntegration
+import qualified Infrastructure.Redis.EventStreamSpec
+import qualified Infrastructure.EventStore.AccountingIntegration
 
 main :: IO ()
 main = hspec $ do
@@ -106,4 +108,6 @@ main = hspec $ do
   DAL.DBSpec.spec
   DAL.PoolSpec.spec
   DAL.EventStoreIntegration.spec
+  Infrastructure.Redis.EventStreamSpec.spec
+  Infrastructure.EventStore.AccountingIntegration.spec
   Domain.InvariantsSpec.spec

@@ -3,6 +3,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE LambdaCase #-}
 module Infrastructure.EventStore.Accounting
   ( AccountingEvent   (..)
   , AccountCreated   (..)
@@ -22,6 +23,7 @@ module Infrastructure.EventStore.Accounting
   , projectCurrentState
   ) where
 
+import Control.Exception (SomeException, try)
 import Data.Int (Int64)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -34,6 +36,8 @@ import Data.Aeson (ToJSON, FromJSON, toJSON, fromJSON, Result  (..))
 import Data.Aeson.TH (deriveJSON, defaultOptions)
 import DAL.ORMPool (ConnectionPool)
 import qualified DAL.EventStore as ES
+import qualified Database.Redis as R
+import Infrastructure.Redis.EventStream (EventStream, mkEventStream, publishEvent)
 
 -- | Account created event payload
 data AccountCreated = AccountCreated
@@ -139,14 +143,21 @@ getEventInfo (AccountUnfrozenEvent ev) = (ufAccountId ev, "account", "AccountUnf
 data AccountingEventStore = AccountingEventStore
   { aesPool :: ConnectionPool
   , aesStreamName :: Text
+  , aesEventStream :: Maybe EventStream
   }
 
--- | Create a new accounting event store
-mkAccountingEventStore :: ConnectionPool -> Text -> AccountingEventStore
-mkAccountingEventStore pool streamName =
-  AccountingEventStore
+-- | Create a new accounting event store.
+--
+-- The Redis Stream is the fan-out path: when a server is reachable the store
+-- publishes every appended event to it. PostgreSQL stays the system of record,
+-- so a Redis outage degrades the store to "no stream" instead of failing.
+mkAccountingEventStore :: ConnectionPool -> Text -> IO AccountingEventStore
+mkAccountingEventStore pool streamName = do
+  mStream <- try (mkEventStream <$> R.connect R.defaultConnectInfo <*> pure streamName) :: IO (Either SomeException EventStream)
+  pure AccountingEventStore
     { aesPool = pool
     , aesStreamName = streamName
+    , aesEventStream = either (const Nothing) Just mStream
     }
 
 -- | Append an event to the store
@@ -174,7 +185,15 @@ appendAccountingEvent store event = do
             , ES.eventOccurredAt = now
             , ES.eventCreatedAt = now
             }
-      ES.appendEvent (aesPool store) esEvent
+      ES.appendEvent (aesPool store) esEvent >>= \case
+        Left err -> pure $ Left err
+        Right () -> case aesEventStream store of
+          Nothing -> pure $ Right ()
+          Just stream -> do
+            res <- publishEvent stream evType (toJSON event)
+            -- A Redis outage must not fail the write: PostgreSQL is the system
+            -- of record, the stream is only a fan-out path.
+            pure $ either (const (Right ())) pure res
 
 -- | Read events for an account stream
 readAccountEvents :: AccountingEventStore -> Int64 -> IO (Either Text [AccountingEvent])

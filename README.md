@@ -27,10 +27,10 @@ vertical slice, not broad feature coverage.
   Fourmolu, Hadolint, secret scanning, coverage, supply-chain checks, docs).
 - **382 library modules** in `src/`: 381 exposed in `exposed-modules` of
   `Surypus.cabal`, plus one internal helper (`Service.Workflow`).
-- **784 test examples, 0 failures** across 52 test modules (1 pending
-  without a database); **788 examples, 0 failures, 0 pending** when run with
-  `SURYPUS_TEST_DATABASE_URL`, which also exercises the real PostgreSQL event-store
-  round-trip.
+- **792 test examples, 0 failures** across 54 test modules (a few pending
+  without infrastructure); **798 examples, 0 failures, 0 pending** when run with
+  `SURYPUS_TEST_DATABASE_URL` and `SURYPUS_TEST_REDIS_URL`, which also exercises
+  the real PostgreSQL event-store round-trip and the Redis Streams fan-out.
 - Stack resolver: `lts-22.21` (GHC **9.6.5**); local development uses GHC
   9.10.3.
 
