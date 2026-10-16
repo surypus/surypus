@@ -54,7 +54,7 @@ Granular flags are composable: `--discuss --research --validate` gives the same 
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/quick.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/quick.md
 </execution_context>
 
 <context>

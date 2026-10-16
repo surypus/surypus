@@ -34,8 +34,8 @@ Produces EVAL-REVIEW.md with score, verdict, gaps, and remediation plan.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/eval-review.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/ai-evals.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/eval-review.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/ai-evals.md
 </execution_context>
 
 <context>

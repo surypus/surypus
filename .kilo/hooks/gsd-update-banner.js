@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// gsd-hook-version: 1.42.3
+// gsd-hook-version: 1.17.0
 // SessionStart banner that surfaces GSD update availability when GSD's
 // statusline isn't installed. Reads the cache that
-// gsd-check-update-worker.js writes to ~/.cache/gsd/gsd-update-check.json.
+// gsd-check-update-worker.js writes to ~/.cache/gsd/<updateCacheFileName> (per-package).
 //
 // Opt-in by design: bin/install.js only registers this hook when the user
 // declines to install (or replace) the GSD statusline. The presence of the
@@ -12,9 +12,39 @@
 
 'use strict';
 
+// #5183: Node's on-disk compile cache, so later runs reuse V8's compiled code
+// for unchanged modules. Only as the entry (a test require() is unaffected),
+// skipped under V8 coverage, optional (Bun stubs it), and never fatal.
+// NODE_DISABLE_COMPILE_CACHE (any value) turns it off.
+if (require.main === module && !process.env.NODE_V8_COVERAGE) {
+  try { require('node:module').enableCompileCache?.(); } catch { /* optimization only */ }
+}
+
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+
+// #3582: gsd-core/bin/lib/package-identity.cjs is a tsc build artifact
+// (ADR-457), gitignored and absent on a raw plugin-marketplace / git-clone
+// install that never ran `npm run build:lib`. This is an opt-in SessionStart
+// hook — a build failure here must DEGRADE, not crash session start. With
+// PACKAGE_NAME left null, buildBannerOutput's own lineage guard
+// (`!cache.package_name || cache.package_name !== PACKAGE_NAME`) always
+// treats the cache as untrusted, so main() falls through to its existing
+// silent "print nothing" path below — no separate degrade branch needed.
+// This try/require/ensureRuntimeBuild/require/catch shape is deliberately
+// duplicated (not extracted to hooks/lib/) — see
+// gsd-check-update-worker.js's identical #3582 comment for why.
+let PACKAGE_NAME = null;
+let updateCacheFileName = 'gsd-update-check.json';
+try {
+  const { ensureRuntimeBuild } = require('../gsd-core/bin/ensure-runtime-build.cjs');
+  ensureRuntimeBuild();
+  ({ PACKAGE_NAME, updateCacheFileName } = require('../gsd-core/bin/lib/package-identity.cjs'));
+} catch (e) {
+  // Runtime library missing/broken and could not self-build — degrade to the
+  // fallbacks above rather than crash the SessionStart hook.
+}
 
 // Suppress repeat parse-error banners for 24 hours so a genuinely broken
 // cache file doesn't nag the user every session.
@@ -37,6 +67,9 @@ function buildBannerOutput(state) {
     return { systemMessage: 'GSD update check failed.' };
   }
   if (!cache) return null;
+  // Lineage guard: package_name must be present and match this package.
+  // Absent package_name means the cache predates lineage tracking — treat as untrusted.
+  if (!cache.package_name || cache.package_name !== PACKAGE_NAME) return null;
   if (!cache.update_available) return null;
   const installed = cache.installed || 'unknown';
   const latest = cache.latest || 'unknown';
@@ -96,7 +129,7 @@ function recordFailureWarning(sentinelFile, nowSeconds) {
 
 function main() {
   const cacheDir = path.join(os.homedir(), '.cache', 'gsd');
-  const cacheFile = path.join(cacheDir, 'gsd-update-check.json');
+  const cacheFile = path.join(cacheDir, updateCacheFileName);
   const sentinelFile = path.join(cacheDir, 'banner-failure-warned-at');
   const now = Math.floor(Date.now() / 1000);
 

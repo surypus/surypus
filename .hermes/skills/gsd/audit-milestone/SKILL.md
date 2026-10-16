@@ -1,7 +1,7 @@
 ---
 name: audit-milestone
 description: "Audit milestone completion against original intent before archiving"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[version]"
 allowed-tools:
   - Read
@@ -19,7 +19,7 @@ Verify milestone achieved its definition of done. Check requirements coverage, c
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/audit-milestone.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/audit-milestone.md
 </execution_context>
 
 <context>

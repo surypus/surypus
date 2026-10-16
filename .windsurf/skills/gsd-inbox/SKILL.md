@@ -37,7 +37,7 @@ and optionally applies labels or closes non-compliant submissions.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/inbox.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/inbox.md
 </execution_context>
 
 <context>

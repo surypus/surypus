@@ -36,7 +36,7 @@ Output: .planning/codebase/ folder with 7 structured documents about the codebas
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/map-codebase.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/map-codebase.md
 </execution_context>
 
 <flags>

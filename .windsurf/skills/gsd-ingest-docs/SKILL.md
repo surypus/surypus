@@ -41,10 +41,10 @@ Auto-synthesizes most conflicts using the precedence rule `ADR > SPEC > PRD > DO
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/ingest-docs.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/ui-brand.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/gate-prompts.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/doc-conflict-engine.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/ingest-docs.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/gate-prompts.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/doc-conflict-engine.md
 </execution_context>
 
 <context>

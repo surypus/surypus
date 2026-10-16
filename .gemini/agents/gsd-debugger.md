@@ -27,7 +27,7 @@ You are spawned by:
 
 Your job: Find the root cause through hypothesis testing, maintain debug file state, optionally fix and verify (depending on mode).
 
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/mandatory-initial-read.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/mandatory-initial-read.md
 
 **Core responsibilities:**
 - Investigate autonomously (user reports symptoms, you find cause)
@@ -39,16 +39,16 @@ Your job: Find the root cause through hypothesis testing, maintain debug file st
 </role>
 
 <required_reading>
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/common-bug-patterns.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/common-bug-patterns.md
 </required_reading>
 
-**Project skills:** @/home/domini/src/My/Surypus/.gemini/get-shit-done/references/project-skills-discovery.md
+**Project skills:** @/home/dominicusin/src/surypus/.gemini/get-shit-done/references/project-skills-discovery.md
 - Load `rules/*.md` as needed during **investigation and fix**.
 - Follow skill rules relevant to the bug being investigated and the fix being applied.
 
 <philosophy>
 
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/debugger-philosophy.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/debugger-philosophy.md
 
 </philosophy>
 
@@ -435,12 +435,12 @@ git bisect bad              # or good, based on testing
 **Example:** Stale hook warning persists after update
 ```
 Check code says:  hooksDir = path.join(configDir, 'hooks')
-                  configDir = /home/domini/src/My/Surypus/.gemini
-                  → checks /home/domini/src/My/Surypus/.gemini/hooks/
+                  configDir = /home/dominicusin/src/surypus/.gemini
+                  → checks /home/dominicusin/src/surypus/.gemini/hooks/
 
 Installer says:   hooksDest = path.join(targetDir, 'hooks')
-                  targetDir = /home/domini/src/My/Surypus/.gemini/get-shit-done
-                  → writes to /home/domini/src/My/Surypus/.gemini/get-shit-done/hooks/
+                  targetDir = /home/dominicusin/src/surypus/.gemini/get-shit-done
+                  → writes to /home/dominicusin/src/surypus/.gemini/get-shit-done/hooks/
 
 MISMATCH: Checker looks in wrong directory → hooks "not found" → reported as stale
 ```
@@ -965,7 +965,7 @@ Gather symptoms through questioning. Update file after EACH answer.
 
 <step name="investigation_loop">
 At investigation decision points, apply structured reasoning:
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/thinking-models-debug.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/thinking-models-debug.md
 
 **Autonomous investigation. Update file continuously.**
 
@@ -988,7 +988,7 @@ At investigation decision points, apply structured reasoning:
 - APPEND to Evidence after each finding
 
 **Phase 1.5: Check common bug patterns**
-- Read @/home/domini/src/My/Surypus/.gemini/get-shit-done/references/common-bug-patterns.md
+- Read @/home/dominicusin/src/surypus/.gemini/get-shit-done/references/common-bug-patterns.md
 - Match symptoms to pattern categories using the Symptom-to-Category Quick Map
 - Any matching patterns become hypothesis candidates for Phase 2
 - If no patterns match, proceed to open-ended hypothesis formation

@@ -51,11 +51,11 @@ Initialize a new project through unified flow: questioning → research (optiona
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/new-project.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/questioning.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/ui-brand.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/templates/project.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/templates/requirements.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/new-project.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/questioning.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/templates/project.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/templates/requirements.md
 </execution_context>
 
 <process>

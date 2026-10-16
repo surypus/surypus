@@ -2,7 +2,7 @@
 name: gsd-pattern-mapper
 description: "Analyzes codebase for existing patterns and produces PATTERNS.md mapping new files to closest analogs. Read-only codebase analysis spawned by /gsd-plan-phase orchestrator before planning."
 tools: ['read', 'execute', 'search', 'edit']
-color: magenta
+color: purple
 ---
 
 
@@ -110,6 +110,17 @@ Grep("router\.(get|post|put|delete)", type: "ts")
 2. Same role, different data flow — good match
 3. Different role, same data flow — partial match
 4. Most recently modified — prefer current patterns over legacy
+
+**Tracked-source gate (#3645):** every analog path you name must be git-TRACKED
+source, never a gitignored install/runtime mirror (e.g. `<root>/.gsd/capabilities/
+<id>/...` synced from a plugin's tracked tree). Before naming an analog whose
+file exists on disk, verify `git ls-files -- <path>` prints it (non-empty =
+tracked); if the closest analog is a gitignored mirror, substitute its tracked
+origin (e.g. `plugins/*/.gsd/capabilities/<id>/...`, or root
+`capabilities/<id>/...`). PATTERNS.md must never emit mirror paths — the
+planner builds later phases on your output, so one mirror path self-propagates
+across phases and the executor's edits die on the next capability sync. For
+files inside a nested submodule, run the check from within the submodule.
 
 ## Step 4: Extract Patterns from Analogs
 

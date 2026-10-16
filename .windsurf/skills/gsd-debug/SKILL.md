@@ -45,7 +45,7 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 </available_agent_types>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/debug.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/debug.md
 </execution_context>
 
 <context>

@@ -1,7 +1,7 @@
 ---
 name: explore
 description: "Socratic ideation and idea routing — think through ideas before committing to plans"
-version: "1.0.0"
+version: "1.1.0"
 allowed-tools:
   - Read
   - Write
@@ -21,7 +21,7 @@ Accepts an optional topic argument: `/gsd-explore authentication strategy`
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/explore.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/explore.md
 </execution_context>
 
 <process>

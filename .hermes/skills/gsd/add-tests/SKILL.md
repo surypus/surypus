@@ -1,7 +1,7 @@
 ---
 name: add-tests
 description: "Generate tests for a completed phase based on UAT criteria and implementation"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "<phase> [additional instructions]"
 allowed-tools:
   - Read
@@ -23,7 +23,7 @@ Output: Test files committed with message `test(phase-{N}): add unit and E2E tes
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/add-tests.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/add-tests.md
 </execution_context>
 
 <context>

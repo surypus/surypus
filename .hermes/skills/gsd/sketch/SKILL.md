@@ -1,7 +1,7 @@
 ---
 name: sketch
 description: "Sketch UI/design ideas with throwaway HTML mockups, or propose what to sketch next (frontier mode)"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[design idea to explore] [--quick] [--text] [--wrap-up] or [frontier]"
 allowed-tools:
   - Read
@@ -31,13 +31,13 @@ Does not require prior new-project setup — auto-creates `.planning/sketches/` 
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/sketch.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/sketch-wrap-up.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ui-brand.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/sketch-theme-system.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/sketch-interactivity.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/sketch-tooling.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/sketch-variant-patterns.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/sketch.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/sketch-wrap-up.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/sketch-theme-system.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/sketch-interactivity.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/sketch-tooling.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/sketch-variant-patterns.md
 </execution_context>
 
 <runtime_note>

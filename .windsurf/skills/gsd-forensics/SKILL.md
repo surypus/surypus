@@ -35,7 +35,7 @@ Output: Forensic report saved to `.planning/forensics/`, presented inline, with 
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/forensics.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/forensics.md
 </execution_context>
 
 <context>

@@ -1,7 +1,7 @@
 ---
 name: ui-review
 description: "Retroactive 6-pillar visual audit of implemented frontend code"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[phase]"
 allowed-tools:
   - Read
@@ -20,8 +20,8 @@ Output: {phase_num}-UI-REVIEW.md
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/ui-review.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/ui-review.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

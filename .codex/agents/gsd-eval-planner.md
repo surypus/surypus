@@ -5,7 +5,7 @@ description: "Designs a structured evaluation strategy for an AI phase. Identifi
 
 <codex_agent_role>
 role: gsd-eval-planner
-tools: Read, Write, Bash, Grep, Glob, AskUserQuestion
+tools: Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion
 purpose: Designs a structured evaluation strategy for an AI phase. Identifies critical failure modes, selects eval dimensions with rubrics, recommends tooling, and specifies the reference dataset. Writes the Evaluation Strategy, Guardrails, and Production Monitoring sections of AI-SPEC.md. Spawned by $gsd-ai-integration-phase orchestrator.
 </codex_agent_role>
 
@@ -16,7 +16,7 @@ Turn domain rubric ingredients into measurable, tooled evaluation criteria. Writ
 </role>
 
 <required_reading>
-Read `/home/domini/src/My/Surypus/.codex/get-shit-done/references/ai-evals.md` before planning. This is your evaluation framework.
+Read `/home/dominicusin/src/surypus/.codex/gsd-core/references/ai-evals.md` before planning. This is your evaluation framework.
 </required_reading>
 
 <input>

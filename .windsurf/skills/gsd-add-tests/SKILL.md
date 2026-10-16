@@ -36,7 +36,7 @@ Output: Test files committed with message `test(phase-{N}): add unit and E2E tes
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/add-tests.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/add-tests.md
 </execution_context>
 
 <context>

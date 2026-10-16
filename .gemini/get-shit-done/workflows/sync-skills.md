@@ -17,7 +17,7 @@ Sync managed `gsd-*` skill directories from one canonical runtime's skills root 
 
 If neither `--dry-run` nor `--apply` is specified, dry-run is the default.
 
-**Supported runtime names:** `claude`, `codex`, `copilot`, `cursor`, `windsurf`, `opencode`, `gemini`, `kilo`, `augment`, `trae`, `qwen`, `codebuddy`, `cline`, `antigravity`
+**Supported runtime names:** `claude`, `codex`, `grok`, `copilot`, `cursor`, `windsurf`, `opencode`, `gemini`, `kilo`, `augment`, `trae`, `qwen`, `codebuddy`, `cline`, `antigravity` (grok uses the `~/.agents` layout)
 
 ---
 
@@ -35,7 +35,7 @@ fi
 
 # Parse --to
 if [[ "$@" == *"--to all"* ]]; then
-  TO_RUNTIMES=(claude codex copilot cursor windsurf opencode gemini kilo augment trae qwen codebuddy cline antigravity)
+  TO_RUNTIMES=(claude codex grok copilot cursor windsurf opencode gemini kilo augment trae qwen codebuddy cline antigravity)
 elif [[ "$@" == *"--to"* ]]; then
   TO_RUNTIMES=( $(echo "$@" | grep -oP '(?<=--to )\S+') )
 fi
@@ -60,7 +60,7 @@ Use `install.js --skills-root` to resolve paths — this reuses the single autho
 ```bash
 INSTALL_JS="$(dirname "$0")/../get-shit-done/bin/install.js"
 # If running from a global install, resolve relative to the GSD package
-INSTALL_JS_GLOBAL="/home/domini/src/My/Surypus/.gemini/get-shit-done/bin/install.js"
+INSTALL_JS_GLOBAL="/home/dominicusin/src/surypus/.gemini/get-shit-done/bin/install.js"
 [[ ! -f "$INSTALL_JS" ]] && INSTALL_JS="$INSTALL_JS_GLOBAL"
 
 SRC_SKILLS_ROOT=$(node "$INSTALL_JS" --skills-root "$FROM_RUNTIME")
@@ -74,7 +74,7 @@ done
 ```
 error: source skills root not found: <path>
        Is GSD installed globally for the '<runtime>' runtime?
-       Run: node /home/domini/src/My/Surypus/.gemini/get-shit-done/bin/install.js --global --<runtime>
+       Run: node /home/dominicusin/src/surypus/.gemini/get-shit-done/bin/install.js --global --<runtime>
 ```
 Then exit.
 

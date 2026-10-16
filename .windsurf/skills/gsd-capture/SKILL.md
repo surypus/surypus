@@ -51,12 +51,12 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/add-todo.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/note.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/add-backlog.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/plant-seed.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/check-todos.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/add-todo.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/note.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/add-backlog.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/plant-seed.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/check-todos.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

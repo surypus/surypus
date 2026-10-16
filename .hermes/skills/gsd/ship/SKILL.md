@@ -1,7 +1,7 @@
 ---
 name: ship
 description: "Create PR, run review, and prepare for merge after verification passes"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[phase number or milestone, e.g., '4' or 'v1.0']"
 allowed-tools:
   - Read
@@ -19,7 +19,7 @@ Closes the plan → execute → verify → ship loop.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/ship.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/ship.md
 </execution_context>
 
-Execute the ship workflow from @/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/ship.md end-to-end.
+Execute the ship workflow from @/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/ship.md end-to-end.

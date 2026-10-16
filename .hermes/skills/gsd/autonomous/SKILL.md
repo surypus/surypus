@@ -1,7 +1,7 @@
 ---
 name: autonomous
 description: "Run all remaining phases autonomously — discuss→plan→execute per phase"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[--from N] [--to N] [--only N] [--interactive]"
 allowed-tools:
   - Read
@@ -27,8 +27,8 @@ Uses ROADMAP.md phase discovery and Skill() flat invocations for each phase comm
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/autonomous.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/autonomous.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

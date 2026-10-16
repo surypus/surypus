@@ -34,8 +34,8 @@ Flow: Validate → Research UI → Verify UI-SPEC → Done
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/ui-phase.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/ui-phase.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

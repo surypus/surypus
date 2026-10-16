@@ -1,7 +1,7 @@
 ---
 name: config
 description: "Configure GSD settings — workflow toggles, advanced knobs, integrations, and model profile"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[--advanced | --integrations | --profile <name>]"
 allowed-tools:
   - Read
@@ -33,9 +33,9 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/settings.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/settings-advanced.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/settings-integrations.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/settings.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/settings-advanced.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/settings-integrations.md
 </execution_context>
 
 <context>

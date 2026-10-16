@@ -46,7 +46,7 @@ Issues without a severity classification are not valid output.
 </adversarial_stance>
 
 <required_reading>
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/gates.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/gates.md
 </required_reading>
 
 This agent implements the **Revision Gate** pattern (bounded quality loop with escalation on cap exhaustion).
@@ -106,10 +106,10 @@ Same methodology (goal-backward), different timing, different subject matter.
 <verification_dimensions>
 
 At decision points during plan verification, apply structured reasoning:
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/thinking-models-planning.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/thinking-models-planning.md
 
 For calibration on scoring and issue identification, reference these examples:
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/few-shot-examples/plan-checker.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/few-shot-examples/plan-checker.md
 
 ## Dimension 1: Requirement Coverage
 

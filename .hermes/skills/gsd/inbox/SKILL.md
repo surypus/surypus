@@ -1,7 +1,7 @@
 ---
 name: inbox
 description: "Triage and review open GitHub issues and PRs against project templates and contribution guidelines."
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[--issues] [--prs] [--label] [--close-incomplete] [--repo owner/repo]"
 allowed-tools:
   - Read
@@ -22,7 +22,7 @@ and optionally applies labels or closes non-compliant submissions.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/inbox.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/inbox.md
 </execution_context>
 
 <context>

@@ -49,10 +49,10 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/add-phase.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/insert-phase.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/remove-phase.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/edit-phase.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/add-phase.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/insert-phase.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/remove-phase.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/edit-phase.md
 </execution_context>
 
 <context>

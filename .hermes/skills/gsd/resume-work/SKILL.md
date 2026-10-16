@@ -1,7 +1,7 @@
 ---
 name: resume-work
 description: "Resume work from previous session with full context restoration"
-version: "1.0.0"
+version: "1.1.0"
 allowed-tools:
   - Read
   - Bash
@@ -24,7 +24,7 @@ Routes to the resume-project workflow which handles:
   </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/resume-project.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/resume-project.md
 </execution_context>
 
 <process>

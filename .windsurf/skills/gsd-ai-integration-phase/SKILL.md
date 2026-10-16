@@ -34,9 +34,9 @@ Flow: Select Framework → Research Docs → Research Domain → Design Eval Str
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/ai-integration-phase.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/ai-frameworks.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/ai-evals.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/ai-integration-phase.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/ai-frameworks.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/ai-evals.md
 </execution_context>
 
 <context>

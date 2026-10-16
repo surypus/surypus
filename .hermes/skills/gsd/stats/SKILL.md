@@ -1,7 +1,7 @@
 ---
 name: stats
 description: "Display project statistics — phases, plans, requirements, git metrics, and timeline"
-version: "1.0.0"
+version: "1.1.0"
 allowed-tools:
   - Read
   - Bash
@@ -12,7 +12,7 @@ Display comprehensive project statistics including phase progress, plan executio
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/stats.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/stats.md
 </execution_context>
 
 <process>

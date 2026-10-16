@@ -1,7 +1,7 @@
 ---
 name: execute-phase
 description: "Execute all plans in a phase with wave-based parallelization"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "<phase-number> [--wave N] [--gaps-only] [--interactive] [--tdd]"
 allowed-tools:
   - Read
@@ -33,8 +33,8 @@ Context budget: ~15% orchestrator, 100% fresh per subagent.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/execute-phase.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/execute-phase.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <runtime_note>

@@ -1,7 +1,7 @@
 ---
 name: audit-fix
 description: "Autonomous audit-to-fix pipeline — find issues, classify, fix, test, commit"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "--source <audit-uat> [--severity <medium|high|all>] [--max N] [--dry-run]"
 allowed-tools:
   - Read
@@ -26,7 +26,7 @@ Flags:
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/audit-fix.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/audit-fix.md
 </execution_context>
 
 <process>

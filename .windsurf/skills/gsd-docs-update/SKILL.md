@@ -40,7 +40,7 @@ Flag handling rule:
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/docs-update.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/docs-update.md
 </execution_context>
 
 <context>

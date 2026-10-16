@@ -8,7 +8,7 @@
 ## Dispatch
 
 ```
-Read @/home/domini/src/My/Surypus/.gemini/get-shit-done/workflows/discuss-phase-power.md
+Read @/home/dominicusin/src/surypus/.gemini/get-shit-done/workflows/discuss-phase-power.md
 ```
 
 Execute it end-to-end. Do not continue with the standard interactive steps.

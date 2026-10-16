@@ -1,7 +1,7 @@
 ---
 name: spike
 description: "Spike an idea through experiential exploration, or propose what to spike next (frontier mode)"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[idea to validate] [--quick] [--text] [--wrap-up] or [frontier]"
 allowed-tools:
   - Read
@@ -31,9 +31,9 @@ Does not require prior new-project setup — auto-creates `.planning/spikes/` if
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/spike.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/spike-wrap-up.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/spike.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/spike-wrap-up.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <runtime_note>

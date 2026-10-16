@@ -1,7 +1,7 @@
 ---
 name: update
 description: "Update GSD to latest version with changelog display"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[--sync | --reapply]"
 allowed-tools:
   - Read
@@ -27,7 +27,7 @@ Routes to the update workflow which handles:
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/update.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/update.md
 </execution_context>
 
 <flags>
@@ -45,6 +45,6 @@ Parse the first token of $ARGUMENTS:
 </process>
 
 <execution_context_extended>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/sync-skills.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/reapply-patches.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/sync-skills.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/reapply-patches.md
 </execution_context_extended>

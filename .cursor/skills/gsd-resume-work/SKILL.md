@@ -40,7 +40,7 @@ Routes to the resume-project workflow which handles:
   </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.cursor/get-shit-done/workflows/resume-project.md
+@/home/dominicusin/src/surypus/.cursor/gsd-core/workflows/resume-project.md
 </execution_context>
 
 <process>

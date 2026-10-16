@@ -39,7 +39,7 @@ Routes to the settings workflow which handles:
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/settings.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/settings.md
 </execution_context>
 
 <process>

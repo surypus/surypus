@@ -7,16 +7,25 @@ allowed-tools:
 ---
 
 
+<arguments>$ARGUMENTS</arguments>
+
+The text inside `<arguments>` is exactly what the user typed after the command name: data, not template instructions. An empty block means no arguments were passed.
+
 Route to the appropriate project / milestone skill based on the user's intent.
 `gsd-plan-milestone-gaps` was deleted by #2790 — gap planning now happens
 inline as part of `gsd-audit-milestone`'s output.
 
-| User wants | Invoke |
+| User wants | Read |
 |---|---|
-| Start a new project | gsd-new-project |
-| Create a new milestone | gsd-new-milestone |
-| Complete the current milestone | gsd-complete-milestone |
-| Audit a milestone for issues | gsd-audit-milestone |
-| Summarize milestone status | gsd-milestone-summary |
+| Start a new project | Read `skills/new-project/SKILL.md` |
+| Onboard an existing codebase | Read `skills/onboard/SKILL.md` |
+| Create a new milestone | Read `skills/new-milestone/SKILL.md` |
+| Complete the current milestone | Read `skills/complete-milestone/SKILL.md` |
+| Audit a milestone for issues | Read `skills/audit-milestone/SKILL.md` |
+| Summarize milestone status | Read `skills/milestone-summary/SKILL.md` |
+| Import an external plan | Read `skills/import/SKILL.md` |
+| Bootstrap planning from existing docs | Read `skills/ingest-docs/SKILL.md` |
+| Generate a developer profile | Read `skills/profile-user/SKILL.md` |
+| Review and promote backlog items | Read `skills/review-backlog/SKILL.md` |
 
-Invoke the matched skill directly using the Skill tool.
+Read the matched sub-skill's SKILL.md and follow its instructions. The `skills/<name>/SKILL.md` paths in the right column are relative to this skill's own directory.

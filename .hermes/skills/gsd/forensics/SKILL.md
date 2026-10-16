@@ -1,7 +1,7 @@
 ---
 name: forensics
 description: "Post-mortem investigation for failed GSD workflows — diagnoses what went wrong."
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[problem description]"
 allowed-tools:
   - Read
@@ -20,7 +20,7 @@ Output: Forensic report saved to `.planning/forensics/`, presented inline, with 
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/forensics.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/forensics.md
 </execution_context>
 
 <context>

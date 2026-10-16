@@ -16,7 +16,7 @@ Run a ≤6-question interview, score frameworks, return a ranked recommendation 
 </role>
 
 <required_reading>
-Read `/home/domini/src/My/Surypus/.codex/get-shit-done/references/ai-frameworks.md` before asking questions. This is your decision matrix.
+Read `/home/dominicusin/src/surypus/.codex/gsd-core/references/ai-frameworks.md` before asking questions. This is your decision matrix.
 </required_reading>
 
 <project_context>
@@ -139,9 +139,7 @@ FRAMEWORK_RECOMMENDATION:
 Display to user:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- FRAMEWORK RECOMMENDATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### FRAMEWORK RECOMMENDATION
 
 ◆ Primary Pick: {framework}
   {rationale}

@@ -5,8 +5,9 @@ description: "Toggle which skills are surfaced — apply a profile, list, or dis
 
 
 <objective>
-Manage the runtime skill surface without reinstall. Reads/writes `.agent/skills/.gsd-surface.json`
-(sibling to `.gsd-profile`) and re-stages the active commands/gsd directory in place.
+Manage the runtime skill surface without reinstall. Reads/writes `~/.gemini/antigravity/.gsd-surface.json`
+(sibling to `~/.gemini/antigravity/.gsd-profile`) and re-stages the active skills directory in place.
+Skill dirs live at `~/.gemini/antigravity/skills/gsd-*/`.
 
 Sub-commands: list · status · profile · disable · enable · reset
 </objective>
@@ -59,7 +60,11 @@ Install profile: standard  (from .gsd-profile)
 1. Read current surface: `readSurface(runtimeConfigDir)` → if null, seed from `readActiveProfile(runtimeConfigDir)`.
 2. Set `surfaceState.baseProfile = name`.
 3. `writeSurface(runtimeConfigDir, surfaceState)`.
-4. Resolve and re-apply: `applySurface(runtimeConfigDir, commandsDir, agentsDir, manifest, CLUSTERS)`.
+4. Resolve and re-apply:
+   ```js
+   const layout = resolveRuntimeArtifactLayout(runtime, runtimeConfigDir, scope);
+   applySurface(runtimeConfigDir, layout, manifest, CLUSTERS);
+   ```
 5. Confirm: "Surface updated to profile `<name>`. N skills enabled."
 
 ---
@@ -72,7 +77,11 @@ Valid cluster names: `core_loop`, `audit_review`, `milestone`, `research_ideate`
 1. Validate cluster name against `Object.keys(CLUSTERS)`.
 2. Read or initialize surface state.
 3. Add cluster to `surfaceState.disabledClusters` (deduplicate).
-4. `writeSurface` → `applySurface`.
+4. `writeSurface` → resolve layout → `applySurface`:
+   ```js
+   const layout = resolveRuntimeArtifactLayout(runtime, runtimeConfigDir, scope);
+   applySurface(runtimeConfigDir, layout, manifest, CLUSTERS);
+   ```
 5. Confirm: "Disabled cluster `<cluster>`. N skills removed from surface."
 
 ---
@@ -81,7 +90,11 @@ Valid cluster names: `core_loop`, `audit_review`, `milestone`, `research_ideate`
 
 1. Read surface state; if null, nothing to enable — print "No surface delta active."
 2. Remove cluster from `surfaceState.disabledClusters`.
-3. `writeSurface` → `applySurface`.
+3. `writeSurface` → resolve layout → `applySurface`:
+   ```js
+   const layout = resolveRuntimeArtifactLayout(runtime, runtimeConfigDir, scope);
+   applySurface(runtimeConfigDir, layout, manifest, CLUSTERS);
+   ```
 4. Confirm: "Enabled cluster `<cluster>`. N skills added back to surface."
 
 ---
@@ -97,14 +110,26 @@ Valid cluster names: `core_loop`, `audit_review`, `milestone`, `research_ideate`
 
 ## runtimeConfigDir resolution
 
-```bash
-# Claude Code
-RUNTIME_CONFIG_DIR=.agent/skills
+The `runtimeConfigDir` for `applySurface` is the **base the agent config directory**
+(`~/.gemini/antigravity`), NOT the skills sub-directory (`~/.gemini/antigravity/skills`).
 
-# Resolve commandsDir and agentsDir
-COMMANDS_DIR=.agent/commands/gsd
-AGENTS_DIR=.agent/agents
+This matches `installRuntimeArtifacts` and `uninstallRuntimeArtifacts`, which also
+receive `~/.gemini/antigravity` as `configDir`. The skill dirs themselves live at
+`~/.gemini/antigravity/skills/gsd-*/` because the `claude global` layout has `destSubpath =
+'skills'` — they are derived from `configDir`, not the root for it.
+
+```bash
+# Claude Code — global install
+RUNTIME_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.gemini/antigravity}"
+SCOPE="global"
+
+# Artifact destinations are derived from runtime layout
+# via resolveRuntimeArtifactLayout(runtime, RUNTIME_CONFIG_DIR, SCOPE)
+# then applySurface(RUNTIME_CONFIG_DIR, layout, manifest, CLUSTERS)
 ```
+
+Surface state is stored at `${RUNTIME_CONFIG_DIR}/.gsd-surface.json`
+(i.e. `~/.gemini/antigravity/.gsd-surface.json`).
 
 All paths can be overridden by reading the `CLAUDE_CONFIG_DIR` env var if set.
 
@@ -117,8 +142,9 @@ All paths can be overridden by reading the `CLAUDE_CONFIG_DIR` env var if set.
 - Missing `surface.cjs` → prompt: "Run `npm i -g get-shit-done` to reinstall GSD."
 
 <execution_context>
-Surface state file: `.agent/skills/.gsd-surface.json`
-Install profile marker: `.agent/skills/.gsd-profile`
-Engine module: `.agent/get-shit-done/bin/lib/surface.cjs`
-Cluster definitions: `.agent/get-shit-done/bin/lib/clusters.cjs`
+Surface state file: `~/.gemini/antigravity/.gsd-surface.json`
+Install profile marker: `~/.gemini/antigravity/.gsd-profile`
+Skill dirs: `~/.gemini/antigravity/skills/gsd-*/`
+Engine module: `~/.gemini/antigravity/get-shit-done/bin/lib/surface.cjs`
+Cluster definitions: `~/.gemini/antigravity/get-shit-done/bin/lib/clusters.cjs`
 </execution_context>

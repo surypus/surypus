@@ -11,7 +11,7 @@ Scan all phases for pending, skipped, blocked, and human_needed UAT items. Cross
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.kilo/get-shit-done/workflows/audit-uat.md
+@/home/dominicusin/src/surypus/.kilo/gsd-core/workflows/audit-uat.md
 </execution_context>
 
 <context>

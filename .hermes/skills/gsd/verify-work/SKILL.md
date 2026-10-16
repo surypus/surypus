@@ -1,7 +1,7 @@
 ---
 name: verify-work
 description: "Validate built features through conversational UAT"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[phase number, e.g., '4'] [--ws <name>]"
 allowed-tools:
   - Read
@@ -22,8 +22,8 @@ Output: {phase_num}-UAT.md tracking all test results. If issues found: diagnosed
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/verify-work.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/templates/UAT.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/verify-work.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/templates/UAT.md
 </execution_context>
 
 <context>

@@ -216,7 +216,7 @@ get-shit-done/
 
 **New Workflow:**
 - Implementation: `get-shit-done/workflows/{name}.md`
-- Usage: Reference from command with `@/home/domini/src/My/Surypus/.gemini/get-shit-done/workflows/{name}.md`
+- Usage: Reference from command with `@/home/dominicusin/src/surypus/.gemini/get-shit-done/workflows/{name}.md`
 
 **New Reference Document:**
 - Implementation: `get-shit-done/references/{name}.md`
@@ -229,12 +229,12 @@ get-shit-done/
 ## Special Directories
 
 **get-shit-done/**
-- Purpose: Resources installed to /home/domini/src/My/Surypus/.gemini/
+- Purpose: Resources installed to /home/dominicusin/src/surypus/.gemini/
 - Source: Copied by bin/install.js during installation
 - Committed: Yes (source of truth)
 
 **commands/**
-- Purpose: Slash commands installed to /home/domini/src/My/Surypus/.gemini/commands/
+- Purpose: Slash commands installed to /home/dominicusin/src/surypus/.gemini/commands/
 - Source: Copied by bin/install.js during installation
 - Committed: Yes (source of truth)
 

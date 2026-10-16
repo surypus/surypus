@@ -28,9 +28,9 @@ When the workflow needs to spawn a subagent:
 </windsurf_skill_adapter>
 
 <objective>
-Display the complete GSD command reference.
+Display GSD help at the tier the user asked for: brief (one-line refresher), default (one-page tour), full (complete reference), a single topic section, or a compact scoped lookup of one topic (`--brief <topic>`: signature + one-line summary).
 
-Output ONLY the reference content below. Do NOT add:
+Output ONLY the reference content of the chosen tier. Do NOT add:
 - Project-specific analysis
 - Git status or file context
 - Next-step suggestions
@@ -38,10 +38,13 @@ Output ONLY the reference content below. Do NOT add:
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/help.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/help.md
 </execution_context>
 
+<context>
+Arguments: {{GSD_ARGS}}
+</context>
+
 <process>
-Execute end-to-end.
-Display the reference content directly — no additions or modifications.
+Follow /home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/help.md with {{GSD_ARGS}}.
 </process>

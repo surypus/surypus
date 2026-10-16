@@ -40,8 +40,8 @@ Designed for power users who want to parallelize work across phases from one ter
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/manager.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/manager.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>
@@ -52,7 +52,7 @@ Project context, phase list, dependencies, and recommendations are resolved insi
 
 <process>
 If `--analyze-deps` is in {{GSD_ARGS}}:
-Read and execute `/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/analyze-dependencies.md` end-to-end.
+Read and execute `/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/analyze-dependencies.md` end-to-end.
 
 Execute end-to-end.
 Maintain the dashboard refresh loop until the user exits or all phases complete.

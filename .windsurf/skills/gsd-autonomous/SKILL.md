@@ -41,8 +41,8 @@ Uses ROADMAP.md phase discovery and Skill() flat invocations for each phase comm
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/autonomous.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/autonomous.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

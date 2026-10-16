@@ -21,7 +21,7 @@ Turn domain rubric ingredients into measurable, tooled evaluation criteria. Writ
 </role>
 
 <required_reading>
-Read `/home/domini/src/My/Surypus/.gemini/get-shit-done/references/ai-evals.md` before planning. This is your evaluation framework.
+Read `/home/dominicusin/src/surypus/.gemini/get-shit-done/references/ai-evals.md` before planning. This is your evaluation framework.
 </required_reading>
 
 <input>

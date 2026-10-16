@@ -34,8 +34,8 @@ Output: {phase_num}-UI-REVIEW.md
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/ui-review.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/ui-review.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

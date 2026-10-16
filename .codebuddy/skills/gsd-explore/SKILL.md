@@ -1,6 +1,7 @@
 ---
 name: gsd-explore
 description: "Socratic ideation and idea routing — think through ideas before committing to plans"
+user-invocable: false
 ---
 
 <objective>
@@ -12,7 +13,7 @@ Accepts an optional topic argument: `/gsd-explore authentication strategy`
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.codebuddy/get-shit-done/workflows/explore.md
+@/home/dominicusin/src/surypus/.codebuddy/gsd-core/workflows/explore.md
 </execution_context>
 
 <process>

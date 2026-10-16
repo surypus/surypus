@@ -38,7 +38,7 @@ you could describe in one sentence and execute in under 2 minutes.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/fast.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/fast.md
 </execution_context>
 
 <process>

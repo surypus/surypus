@@ -34,7 +34,7 @@ Verify milestone achieved its definition of done. Check requirements coverage, c
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/audit-milestone.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/audit-milestone.md
 </execution_context>
 
 <context>

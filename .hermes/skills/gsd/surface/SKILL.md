@@ -1,7 +1,7 @@
 ---
 name: surface
 description: "Toggle which skills are surfaced — apply a profile, list, or disable a cluster without reinstall"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[list|status|profile <name>|disable <cluster>|enable <cluster>|reset]"
 allowed-tools:
   - Read
@@ -11,9 +11,9 @@ allowed-tools:
 
 
 <objective>
-Manage the runtime skill surface without reinstall. Reads/writes `/home/domini/src/My/Surypus/.hermes/.gsd-surface.json`
-(sibling to `/home/domini/src/My/Surypus/.hermes/.gsd-profile`) and re-stages the active skills directory in place.
-Skill dirs live at `/home/domini/src/My/Surypus/.hermes/skills/gsd-*/`.
+Manage the runtime skill surface without reinstall. Reads/writes `/home/dominicusin/src/surypus/.hermes/.gsd-surface.json`
+(sibling to `/home/dominicusin/src/surypus/.hermes/.gsd-profile`) and re-stages the active skills directory in place.
+Skill dirs live at `/home/dominicusin/src/surypus/.hermes/skills/gsd-*/`.
 
 Sub-commands: list · status · profile · disable · enable · reset
 </objective>
@@ -117,11 +117,11 @@ Valid cluster names: `core_loop`, `audit_review`, `milestone`, `research_ideate`
 ## runtimeConfigDir resolution
 
 The `runtimeConfigDir` for `applySurface` is the **base Claude config directory**
-(`~/.claude`), NOT the skills sub-directory (`/home/domini/src/My/Surypus/.hermes/skills`).
+(`~/.claude`), NOT the skills sub-directory (`/home/dominicusin/src/surypus/.hermes/skills`).
 
 This matches `installRuntimeArtifacts` and `uninstallRuntimeArtifacts`, which also
 receive `~/.claude` as `configDir`. The skill dirs themselves live at
-`/home/domini/src/My/Surypus/.hermes/skills/gsd-*/` because the `claude global` layout has `destSubpath =
+`/home/dominicusin/src/surypus/.hermes/skills/gsd-*/` because the `claude global` layout has `destSubpath =
 'skills'` — they are derived from `configDir`, not the root for it.
 
 ```bash
@@ -135,7 +135,7 @@ SCOPE="global"
 ```
 
 Surface state is stored at `${RUNTIME_CONFIG_DIR}/.gsd-surface.json`
-(i.e. `/home/domini/src/My/Surypus/.hermes/.gsd-surface.json`).
+(i.e. `/home/dominicusin/src/surypus/.hermes/.gsd-surface.json`).
 
 All paths can be overridden by reading the `CLAUDE_CONFIG_DIR` env var if set.
 
@@ -148,9 +148,9 @@ All paths can be overridden by reading the `CLAUDE_CONFIG_DIR` env var if set.
 - Missing `surface.cjs` → prompt: "Run `npm i -g get-shit-done` to reinstall GSD."
 
 <execution_context>
-Surface state file: `/home/domini/src/My/Surypus/.hermes/.gsd-surface.json`
-Install profile marker: `/home/domini/src/My/Surypus/.hermes/.gsd-profile`
-Skill dirs: `/home/domini/src/My/Surypus/.hermes/skills/gsd-*/`
-Engine module: `/home/domini/src/My/Surypus/.hermes/get-shit-done/bin/lib/surface.cjs`
-Cluster definitions: `/home/domini/src/My/Surypus/.hermes/get-shit-done/bin/lib/clusters.cjs`
+Surface state file: `/home/dominicusin/src/surypus/.hermes/.gsd-surface.json`
+Install profile marker: `/home/dominicusin/src/surypus/.hermes/.gsd-profile`
+Skill dirs: `/home/dominicusin/src/surypus/.hermes/skills/gsd-*/`
+Engine module: `/home/dominicusin/src/surypus/.hermes/get-shit-done/bin/lib/surface.cjs`
+Cluster definitions: `/home/dominicusin/src/surypus/.hermes/get-shit-done/bin/lib/clusters.cjs`
 </execution_context>

@@ -1,6 +1,7 @@
 ---
 name: gsd-settings
 description: "Configure GSD workflow toggles and model profile"
+user-invocable: false
 ---
 
 
@@ -10,13 +11,13 @@ Interactive configuration of GSD workflow agents and model profile via multi-que
 Routes to the settings workflow which handles:
 - Config existence ensuring
 - Current settings reading and parsing
-- Interactive 5-question prompt (model, research, plan_check, verifier, branching)
+- Interactive multi-question prompt covering model profile and workflow toggles (research, plan_check, verifier, drift guard, TDD, code review, worktrees, compact content, and more — see `gsd-core/workflows/settings.md` for the current set)
 - Config merging and writing
 - Confirmation display with quick command references
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.codebuddy/get-shit-done/workflows/settings.md
+@/home/dominicusin/src/surypus/.codebuddy/gsd-core/workflows/settings.md
 </execution_context>
 
 <process>

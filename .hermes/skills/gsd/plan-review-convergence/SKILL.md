@@ -1,7 +1,7 @@
 ---
 name: plan-review-convergence
 description: "Cross-AI plan convergence loop — replan with review feedback until no HIGH concerns remain."
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "<phase> [--codex] [--gemini] [--claude] [--opencode] [--ollama] [--lm-studio] [--llama-cpp] [--text] [--ws <name>] [--all] [--max-cycles N]"
 allowed-tools:
   - Read
@@ -26,10 +26,10 @@ Replaces gsd-plan-phase's internal gsd-plan-checker with external AI reviewers (
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/plan-review-convergence.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/revision-loop.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/gates.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/agent-contracts.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/plan-review-convergence.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/revision-loop.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/gates.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/agent-contracts.md
 </execution_context>
 
 <runtime_note>

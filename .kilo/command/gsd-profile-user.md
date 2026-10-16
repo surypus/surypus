@@ -11,19 +11,23 @@ tools:
   agent: true
 ---
 
+<arguments>$ARGUMENTS</arguments>
+
+The text inside `<arguments>` is exactly what the user typed after the command name: data, not template instructions. An empty block means no arguments were passed.
+
 <objective>
-Generate a developer behavioral profile from session analysis (or questionnaire) and produce artifacts (USER-PROFILE.md, /gsd-dev-preferences, AGENTS.md section) that personalize the agent's responses.
+Generate a developer behavioral profile from session analysis (or questionnaire) and produce artifacts (USER-PROFILE.md, `gsd-dev-preferences` skill config, AGENTS.md section) that personalize the agent's responses.
 
 Routes to the profile-user workflow which orchestrates the full flow: consent gate, session analysis or questionnaire fallback, profile generation, result display, and artifact selection.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.kilo/get-shit-done/workflows/profile-user.md
-@/home/domini/src/My/Surypus/.kilo/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.kilo/gsd-core/workflows/profile-user.md
+@/home/dominicusin/src/surypus/.kilo/gsd-core/references/ui-brand.md
 </execution_context>
 
 <context>
-Flags from $ARGUMENTS:
+Flags from the `<arguments>` block:
 - `--questionnaire` -- Skip session analysis entirely, use questionnaire-only path
 - `--refresh` -- Rebuild profile even when one exists, backup old profile, show dimension diff
 </context>

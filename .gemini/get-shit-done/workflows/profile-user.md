@@ -8,9 +8,9 @@ This workflow wires Phase 1 (session pipeline) and Phase 2 (profiling engine) in
 Read all files referenced by the invoking prompt's execution_context before starting.
 
 Key references:
-- @/home/domini/src/My/Surypus/.gemini/get-shit-done/references/ui-brand.md (display patterns)
-- @/home/domini/src/My/Surypus/.gemini/agents/gsd-user-profiler.md (profiler agent definition)
-- @/home/domini/src/My/Surypus/.gemini/get-shit-done/references/user-profiling.md (profiling reference doc)
+- @/home/dominicusin/src/surypus/.gemini/get-shit-done/references/ui-brand.md (display patterns)
+- @/home/dominicusin/src/surypus/.gemini/agents/gsd-user-profiler.md (profiler agent definition)
+- @/home/dominicusin/src/surypus/.gemini/get-shit-done/references/user-profiling.md (profiling reference doc)
 </required_reading>
 
 <process>
@@ -24,7 +24,7 @@ Parse flags from $ARGUMENTS:
 Check for existing profile:
 
 ```bash
-PROFILE_PATH="/home/domini/src/My/Surypus/.gemini/get-shit-done/USER-PROFILE.md"
+PROFILE_PATH="/home/dominicusin/src/surypus/.gemini/get-shit-done/USER-PROFILE.md"
 [ -f "$PROFILE_PATH" ] && echo "EXISTS" || echo "NOT_FOUND"
 ```
 
@@ -48,7 +48,7 @@ If "Cancel": Display "No changes made." and exit.
 
 Backup existing profile:
 ```bash
-cp "/home/domini/src/My/Surypus/.gemini/get-shit-done/USER-PROFILE.md" "/home/domini/src/My/Surypus/.gemini/USER-PROFILE.backup.md"
+cp "/home/dominicusin/src/surypus/.gemini/get-shit-done/USER-PROFILE.md" "/home/dominicusin/src/surypus/.gemini/USER-PROFILE.backup.md"
 ```
 
 Display: "Re-analyzing your sessions to update your profile."
@@ -92,7 +92,7 @@ Your recent Claude Code sessions, looking for patterns in these
 
 ✓ Reads session files locally (read-only, nothing modified)
 ✓ Analyzes message patterns (not content meaning)
-✓ Stores profile at /home/domini/src/My/Surypus/.gemini/get-shit-done/USER-PROFILE.md
+✓ Stores profile at /home/dominicusin/src/surypus/.gemini/get-shit-done/USER-PROFILE.md
 ✗ Nothing is sent to external services
 ✗ Sensitive content (API keys, passwords) is automatically excluded
 ```
@@ -130,7 +130,18 @@ Display: "◆ Scanning sessions..."
 
 Run session scan:
 ```bash
-SCAN_RESULT=$(gsd-sdk query scan-sessions --json 2>/dev/null)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then
+  GSD_SDK="node $GSD_TOOLS"
+elif command -v gsd-sdk >/dev/null 2>&1; then
+  GSD_SDK="gsd-sdk"
+else
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx get-shit-done-cc@latest --claude --local" >&2
+  exit 1
+fi
+SCAN_RESULT=$($GSD_SDK query scan-sessions --json 2>/dev/null)
 ```
 
 Parse the JSON output to get session count and project count.
@@ -150,7 +161,7 @@ Display: "◆ Sampling messages..."
 
 Run profile sampling:
 ```bash
-SAMPLE_RESULT=$(gsd-sdk query profile-sample --json 2>/dev/null)
+SAMPLE_RESULT=$($GSD_SDK query profile-sample --json 2>/dev/null)
 ```
 
 Parse the JSON output to get the temp directory path and message count.
@@ -163,13 +174,13 @@ Display: "◆ Analyzing patterns..."
 
 Use the Task tool to spawn the `gsd-user-profiler` agent. Provide it with:
 - The sampled JSONL file path from profile-sample output
-- The user-profiling reference doc at `/home/domini/src/My/Surypus/.gemini/get-shit-done/references/user-profiling.md`
+- The user-profiling reference doc at `/home/dominicusin/src/surypus/.gemini/get-shit-done/references/user-profiling.md`
 
 The agent prompt should follow this structure:
 ```
 Read the profiling reference document and the sampled session messages, then analyze the developer's behavioral patterns across all 8 dimensions.
 
-Reference: @/home/domini/src/My/Surypus/.gemini/get-shit-done/references/user-profiling.md
+Reference: @/home/dominicusin/src/surypus/.gemini/get-shit-done/references/user-profiling.md
 Session data: @{temp_dir}/profile-sample.jsonl
 
 Analyze these messages and return your analysis in the <analysis> JSON format specified in the reference document.
@@ -201,7 +212,7 @@ Display: "Using questionnaire to build your profile."
 
 **Get questions:**
 ```bash
-QUESTIONS=$(gsd-sdk query profile-questionnaire --json 2>/dev/null)
+QUESTIONS=$($GSD_SDK query profile-questionnaire --json 2>/dev/null)
 ```
 
 Parse the questions JSON. It contains 8 questions, one per dimension.
@@ -224,7 +235,7 @@ Write the answers JSON to `$ANSWERS_PATH`.
 
 **Convert answers to analysis:**
 ```bash
-ANALYSIS_RESULT=$(gsd-sdk query profile-questionnaire --answers "$ANSWERS_PATH" --json 2>/dev/null)
+ANALYSIS_RESULT=$($GSD_SDK query profile-questionnaire --answers "$ANSWERS_PATH" --json 2>/dev/null)
 ```
 
 Parse the analysis JSON from the result.
@@ -271,10 +282,10 @@ Write updated analysis JSON back to `$ANALYSIS_PATH`.
 Display: "◆ Writing profile..."
 
 ```bash
-gsd-sdk query write-profile --input "$ANALYSIS_PATH" --json
+$GSD_SDK query write-profile --input "$ANALYSIS_PATH" --json
 ```
 
-Display: "✓ Profile written to /home/domini/src/My/Surypus/.gemini/get-shit-done/USER-PROFILE.md"
+Display: "✓ Profile written to /home/dominicusin/src/surypus/.gemini/get-shit-done/USER-PROFILE.md"
 
 ---
 
@@ -337,9 +348,9 @@ Use conversational prompting with multiSelect:
 - options (ALL pre-selected by default):
   - "/gsd-dev-preferences command file" -- "Load your preferences in any session"
   - "CLAUDE.md profile section" -- "Add profile to this project's CLAUDE.md"
-  - "Global CLAUDE.md" -- "Add profile to /home/domini/src/My/Surypus/.gemini/CLAUDE.md for all projects"
+  - "Global CLAUDE.md" -- "Add profile to /home/dominicusin/src/surypus/.gemini/CLAUDE.md for all projects"
 
-**If no artifacts selected:** Display "No artifacts generated. Your profile is saved at /home/domini/src/My/Surypus/.gemini/get-shit-done/USER-PROFILE.md" and jump to step 10.
+**If no artifacts selected:** Display "No artifacts generated. Your profile is saved at /home/dominicusin/src/surypus/.gemini/get-shit-done/USER-PROFILE.md" and jump to step 10.
 
 ---
 
@@ -350,15 +361,15 @@ Generate selected artifacts sequentially (file I/O is fast, no benefit from para
 **For /gsd-dev-preferences (if selected):**
 
 ```bash
-gsd-sdk query generate-dev-preferences --analysis "$ANALYSIS_PATH" --json
+$GSD_SDK query generate-dev-preferences --analysis "$ANALYSIS_PATH" --json
 ```
 
-Display: "✓ Generated /gsd-dev-preferences at /home/domini/src/My/Surypus/.gemini/skills/gsd-dev-preferences/SKILL.md"
+Display: "✓ Generated /gsd-dev-preferences at /home/dominicusin/src/surypus/.gemini/skills/gsd-dev-preferences/SKILL.md"
 
 **For CLAUDE.md profile section (if selected):**
 
 ```bash
-gsd-sdk query generate-claude-profile --analysis "$ANALYSIS_PATH" --json
+$GSD_SDK query generate-claude-profile --analysis "$ANALYSIS_PATH" --json
 ```
 
 Display: "✓ Added profile section to CLAUDE.md"
@@ -366,10 +377,10 @@ Display: "✓ Added profile section to CLAUDE.md"
 **For Global CLAUDE.md (if selected):**
 
 ```bash
-gsd-sdk query generate-claude-profile --analysis "$ANALYSIS_PATH" --global --json
+$GSD_SDK query generate-claude-profile --analysis "$ANALYSIS_PATH" --global --json
 ```
 
-Display: "✓ Added profile section to /home/domini/src/My/Surypus/.gemini/CLAUDE.md"
+Display: "✓ Added profile section to /home/dominicusin/src/surypus/.gemini/CLAUDE.md"
 
 **Error handling:** If any `gsd-sdk query` or gsd-tools.cjs call fails, display the error message and use conversational prompting to offer "Retry" or "Skip this artifact". On retry, re-run the command. On skip, continue to next artifact.
 
@@ -383,7 +394,7 @@ Read both old backup and new analysis to compare dimension ratings/confidence.
 
 Read the backed-up profile:
 ```bash
-BACKUP_PATH="/home/domini/src/My/Surypus/.gemini/USER-PROFILE.backup.md"
+BACKUP_PATH="/home/dominicusin/src/surypus/.gemini/USER-PROFILE.backup.md"
 ```
 
 Compare each dimension's rating and confidence between old and new. Display diff table showing only changed dimensions:
@@ -406,15 +417,15 @@ If nothing changed: Display "No changes detected -- your profile is already up t
  GSD > PROFILE COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Your profile:    /home/domini/src/My/Surypus/.gemini/get-shit-done/USER-PROFILE.md
+Your profile:    /home/dominicusin/src/surypus/.gemini/get-shit-done/USER-PROFILE.md
 ```
 
 Then list paths for each generated artifact:
 ```
 Artifacts:
-  ✓ /gsd-dev-preferences   /home/domini/src/My/Surypus/.gemini/skills/gsd-dev-preferences/SKILL.md
+  ✓ /gsd-dev-preferences   /home/dominicusin/src/surypus/.gemini/skills/gsd-dev-preferences/SKILL.md
   ✓ CLAUDE.md section       ./CLAUDE.md
-  ✓ Global CLAUDE.md        /home/domini/src/My/Surypus/.gemini/CLAUDE.md
+  ✓ Global CLAUDE.md        /home/dominicusin/src/surypus/.gemini/CLAUDE.md
 ```
 
 (Only show artifacts that were actually generated.)

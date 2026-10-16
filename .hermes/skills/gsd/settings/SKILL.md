@@ -1,7 +1,7 @@
 ---
 name: settings
 description: "Configure GSD workflow toggles and model profile"
-version: "1.0.0"
+version: "1.1.0"
 allowed-tools:
   - Read
   - Write
@@ -22,7 +22,7 @@ Routes to the settings workflow which handles:
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/settings.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/settings.md
 </execution_context>
 
 <process>

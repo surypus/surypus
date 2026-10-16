@@ -1,7 +1,7 @@
 ---
 name: audit-uat
 description: "Cross-phase audit of all outstanding UAT and verification items"
-version: "1.0.0"
+version: "1.1.0"
 allowed-tools:
   - Read
   - Glob
@@ -14,7 +14,7 @@ Scan all phases for pending, skipped, blocked, and human_needed UAT items. Cross
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/audit-uat.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/audit-uat.md
 </execution_context>
 
 <context>

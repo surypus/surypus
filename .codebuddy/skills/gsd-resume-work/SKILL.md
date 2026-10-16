@@ -1,6 +1,7 @@
 ---
 name: gsd-resume-work
 description: "Resume work from previous session with full context restoration"
+user-invocable: false
 ---
 
 
@@ -17,7 +18,7 @@ Routes to the resume-project workflow which handles:
   </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.codebuddy/get-shit-done/workflows/resume-project.md
+@/home/dominicusin/src/surypus/.codebuddy/gsd-core/workflows/resume-project.md
 </execution_context>
 
 <process>

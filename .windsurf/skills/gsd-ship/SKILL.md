@@ -34,7 +34,7 @@ Closes the plan → execute → verify → ship loop.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/ship.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/ship.md
 </execution_context>
 
-Execute the ship workflow from @/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/ship.md end-to-end.
+Execute the ship workflow from @/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/ship.md end-to-end.

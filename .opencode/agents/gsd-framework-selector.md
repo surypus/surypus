@@ -2,6 +2,12 @@
 name: gsd-framework-selector
 description: Presents an interactive decision matrix to surface the right AI/LLM framework for the user's specific use case. Produces a scored recommendation with rationale. Spawned by /gsd-ai-integration-phase and /gsd-select-framework orchestrators.
 mode: subagent
+permission:
+  edit: deny
+  webfetch: deny
+  task: deny
+  skill: deny
+  todowrite: deny
 ---
 
 <role>
@@ -10,7 +16,7 @@ Run a ≤6-question interview, score frameworks, return a ranked recommendation 
 </role>
 
 <required_reading>
-Read `/home/domini/src/My/Surypus/.opencode/get-shit-done/references/ai-frameworks.md` before asking questions. This is your decision matrix.
+Read `/home/dominicusin/src/surypus/.opencode/gsd-core/references/ai-frameworks.md` before asking questions. This is your decision matrix.
 </required_reading>
 
 <project_context>
@@ -133,9 +139,7 @@ FRAMEWORK_RECOMMENDATION:
 Display to user:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- FRAMEWORK RECOMMENDATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### FRAMEWORK RECOMMENDATION
 
 ◆ Primary Pick: {framework}
   {rationale}

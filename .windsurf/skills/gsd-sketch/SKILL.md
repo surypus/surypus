@@ -41,13 +41,13 @@ Does not require prior new-project setup — auto-creates `.planning/sketches/` 
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/sketch.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/sketch-wrap-up.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/ui-brand.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/sketch-theme-system.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/sketch-interactivity.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/sketch-tooling.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/sketch-variant-patterns.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/sketch.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/sketch-wrap-up.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/sketch-theme-system.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/sketch-interactivity.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/sketch-tooling.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/sketch-variant-patterns.md
 </execution_context>
 
 <runtime_note>

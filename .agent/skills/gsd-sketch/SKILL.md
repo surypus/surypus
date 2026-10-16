@@ -17,13 +17,13 @@ Does not require prior new-project setup — auto-creates `.planning/sketches/` 
 </objective>
 
 <execution_context>
-@.agent/get-shit-done/workflows/sketch.md
-@.agent/get-shit-done/workflows/sketch-wrap-up.md
-@.agent/get-shit-done/references/ui-brand.md
-@.agent/get-shit-done/references/sketch-theme-system.md
-@.agent/get-shit-done/references/sketch-interactivity.md
-@.agent/get-shit-done/references/sketch-tooling.md
-@.agent/get-shit-done/references/sketch-variant-patterns.md
+@~/.gemini/antigravity/get-shit-done/workflows/sketch.md
+@~/.gemini/antigravity/get-shit-done/workflows/sketch-wrap-up.md
+@~/.gemini/antigravity/get-shit-done/references/ui-brand.md
+@~/.gemini/antigravity/get-shit-done/references/sketch-theme-system.md
+@~/.gemini/antigravity/get-shit-done/references/sketch-interactivity.md
+@~/.gemini/antigravity/get-shit-done/references/sketch-tooling.md
+@~/.gemini/antigravity/get-shit-done/references/sketch-variant-patterns.md
 </execution_context>
 
 <runtime_note>

@@ -1,7 +1,7 @@
 ---
 name: new-project
 description: "Initialize a new project with deep context gathering and PROJECT.md"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[--auto]"
 allowed-tools:
   - Read
@@ -35,11 +35,11 @@ Initialize a new project through unified flow: questioning → research (optiona
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/new-project.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/questioning.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ui-brand.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/templates/project.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/templates/requirements.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/new-project.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/questioning.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/templates/project.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/templates/requirements.md
 </execution_context>
 
 <process>

@@ -1,7 +1,7 @@
 ---
 name: plan-phase
 description: "Create detailed phase plan (PLAN.md) with verification loop"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[phase] [--auto] [--research] [--skip-research] [--research-phase <N>] [--view] [--gaps] [--skip-verify] [--prd <file>] [--ingest <path-or-glob>] [--ingest-format <auto|nygard|madr|narrative>] [--reviews] [--text] [--tdd] [--mvp]"
 allowed-tools:
   - Read
@@ -31,8 +31,8 @@ Create executable phase prompts (PLAN.md files) for a roadmap phase with integra
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/plan-phase.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/plan-phase.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <runtime_note>

@@ -451,6 +451,27 @@ bd ready
   - Added Core.Accounting.CacheSpec with 15 tests (12 unit + 3 property-based)
   - All 15 cache tests passing
 
+- [x] Make the PostgreSQL event store actually round-trip (US-3-1) (2026-10-16)
+  - `DAL.EventStore` was dead code that could never work: `appendEvent` stored
+    `show` output (`String "x"`) into a jsonb column instead of JSON, and
+    `getEvents`/`getEventsFrom`/`getLatestSnapshot` declared one `Single
+    PersistValue` per row while selecting 10-11 columns, so Persistent never
+    produced a usable row and `parseEvent` discarded the value entirely.
+  - Rewrote the row handling with a 10-column `RawSql` tuple, real JSON encode
+    on write, and JSON decode on read. `jsonb` comes back as `PersistByteString`,
+    which `persistToText` now decodes instead of dropping.
+  - Fixed the snapshot SQL: the table is `event_snapshot` with
+    `last_sequence_number`, not `event_snapshots`/`last_seq`.
+  - Fixed the migration collision that made the CQRS schema unreachable:
+    `V014__event_store.sql` created a *legacy* `event_store` (id, event_name,
+    payload), so `V1000`'s `CREATE TABLE IF NOT EXISTS` was silently skipped.
+    The legacy log is now `legacy_event_store`, and `V1006__event_store_reconcile.sql`
+    renames any pre-existing legacy table on upgraded databases.
+  - Wired `DAL.EventStoreSpec` into the suite through `DAL.EventStoreIntegration`
+    (pends without `SURYPUS_TEST_DATABASE_URL`). Verified against PostgreSQL 18.6:
+    **788 examples, 0 failures, 0 pending**; **784 examples, 0 failures, 1 pending**
+    without a database.
+
 - [x] Implement Redis read-model cache and wire it into the read model (US-3-3) (2026-10-16)
   - Replaced the `createRedisCache _ = return ()` stub with a real hedis-backed cache
   - `balanceKey`: namespaced `surypus:accounting:balance:<id>` key

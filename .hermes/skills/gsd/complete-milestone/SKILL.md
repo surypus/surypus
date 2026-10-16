@@ -1,7 +1,7 @@
 ---
 name: complete-milestone
 description: "Archive completed milestone and prepare for next version"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "<version>"
 allowed-tools:
   - Read
@@ -20,8 +20,8 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
 <execution_context>
 **Load these files NOW (before proceeding):**
 
-- @/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/complete-milestone.md (main workflow)
-- @/home/domini/src/My/Surypus/.hermes/get-shit-done/templates/milestone-archive.md (archive template)
+- @/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/complete-milestone.md (main workflow)
+- @/home/dominicusin/src/surypus/.hermes/get-shit-done/templates/milestone-archive.md (archive template)
   </execution_context>
 
 <context>

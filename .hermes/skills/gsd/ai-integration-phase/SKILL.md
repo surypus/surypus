@@ -1,7 +1,7 @@
 ---
 name: ai-integration-phase
 description: "Generate an AI-SPEC.md design contract for phases that involve building AI systems."
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[phase number]"
 allowed-tools:
   - Read
@@ -23,9 +23,9 @@ Flow: Select Framework → Research Docs → Research Domain → Design Eval Str
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/ai-integration-phase.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ai-frameworks.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ai-evals.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/ai-integration-phase.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ai-frameworks.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ai-evals.md
 </execution_context>
 
 <context>

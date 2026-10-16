@@ -6,7 +6,12 @@ tools:
   read: true
   write: true
   bash: true
+  grep: true
 ---
+
+<arguments>$ARGUMENTS</arguments>
+
+The text inside `<arguments>` is exactly what the user typed after the command name: data, not template instructions. An empty block means no arguments were passed.
 
 <objective>
 Create `.continue-here.md` handoff file to preserve complete work state across sessions.
@@ -20,7 +25,7 @@ Routes to the pause-work workflow which handles:
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.kilo/get-shit-done/workflows/pause-work.md
+@/home/dominicusin/src/surypus/.kilo/gsd-core/workflows/pause-work.md
 </execution_context>
 
 <context>
@@ -28,8 +33,8 @@ State and phase progress are gathered in-workflow with targeted reads.
 </context>
 
 <process>
-If `--report` is in $ARGUMENTS:
-Read and execute `/home/domini/src/My/Surypus/.kilo/get-shit-done/workflows/session-report.md` end-to-end.
+If `--report` is in the `<arguments>` block:
+Read and execute `/home/dominicusin/src/surypus/.kilo/gsd-core/workflows/session-report.md` end-to-end.
 
 **Follow the pause-work workflow**.
 

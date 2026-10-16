@@ -1,9 +1,16 @@
 ---
 name: gsd-framework-selector
-description: Presents an interactive decision matrix to surface the right AI/LLM framework for the user's specific use case. Produces a scored recommendation with rationale. Spawned by /gsd:ai-integration-phase and /gsd-select-framework orchestrators.
-tools: Read, Bash, Grep, Glob, WebSearch, AskUserQuestion
-color: "#38BDF8"
+description: "Presents an interactive decision matrix to surface the right AI/LLM framework for the user's specific use case. Produces a scored recommendation with rationale. Spawned by /gsd-ai-integration-phase and /gsd-select-framework orchestrators."
+tools:
+  - Read
+  - Bash
+  - Grep
+  - Glob
+  - WebSearch
+  - AskUserQuestion
+color: cyan
 ---
+
 
 <role>
 You are a GSD framework selector. Answer: "What AI/LLM framework is right for this project?"
@@ -11,7 +18,7 @@ Run a ≤6-question interview, score frameworks, return a ranked recommendation 
 </role>
 
 <required_reading>
-Read `/home/domini/src/My/Surypus/.qwen/get-shit-done/references/ai-frameworks.md` before asking questions. This is your decision matrix.
+Read `/home/dominicusin/src/surypus/.qwen/gsd-core/references/ai-frameworks.md` before asking questions. This is your decision matrix.
 </required_reading>
 
 <project_context>
@@ -134,9 +141,7 @@ FRAMEWORK_RECOMMENDATION:
 Display to user:
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- FRAMEWORK RECOMMENDATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### FRAMEWORK RECOMMENDATION
 
 ◆ Primary Pick: {framework}
   {rationale}

@@ -290,7 +290,7 @@ Proceed to install step (treat as version 0.0.0 for comparison).
 <step name="check_latest_version">
 Check npm for latest version via the deterministic script. **Do NOT run `npm view` or `npm search` directly** — the package name must come from the script, not from a free choice at execution time. (#2992: LLM-driven prescriptions of npm package names produced wrong-package queries; moving the package name into a script constant closes that gap.)
 
-The `GSD_DIR` value emitted by `get_installed_version` (line 4) resolves to the runtime-specific config dir (`/home/domini/src/My/Surypus/.gemini/`, `~/.gemini/`, `~/.codex/`, etc.), so the script invocation works for every runtime — not just Claude. If `GSD_DIR` is empty (scope `UNKNOWN`), skip this step and go directly to install.
+The `GSD_DIR` value emitted by `get_installed_version` (line 4) resolves to the runtime-specific config dir (`/home/dominicusin/src/surypus/.gemini/`, `~/.gemini/`, `~/.codex/`, etc.), so the script invocation works for every runtime — not just Claude. If `GSD_DIR` is empty (scope `UNKNOWN`), skip this step and go directly to install.
 
 `LATEST_RESULT` is a JSON document with the documented shape `{ ok: bool, version: string, reason: string, detail?: string }`. Parse via `jq` ONLY when the script actually ran. When `GSD_DIR` is empty (scope `UNKNOWN`), skip the check entirely and seed the parsed fields with their no-op values so downstream logic does not mistake an unset `LATEST_RESULT` for a failed network check (#2993 CR feedback):
 
@@ -326,7 +326,7 @@ fi
 ```text
 Couldn't check for updates (reason: {LATEST_REASON}, exit: {LATEST_STATUS}).
 
-To update manually: `npx -y --package=get-shit-done-cc@latest -- get-shit-done-cc --global`
+To update manually: `npx -y --package=@opengsd/get-shit-done-redux@latest -- get-shit-done-redux --global`
 ```
 
 Exit.
@@ -372,28 +372,48 @@ Exit.
 <step name="show_changes_and_confirm">
 **If update available**, fetch and show what's new BEFORE updating:
 
-1. Fetch changelog from GitHub raw URL
-2. Extract entries between installed and latest versions
-3. Display preview and ask for confirmation:
+1. Fetch changelog from GitHub raw URL and save to a temp file, e.g. `/tmp/gsd-changelog-$$.md`.
+2. Extract entries between installed and latest versions using the deterministic range helper (fix for #3496 — do NOT use ad-hoc grep/awk extraction which silently skips intermediate versions):
+
+```bash
+CHANGELOG_TMP="/tmp/gsd-changelog-$$.md"
+curl -fsSL "https://raw.githubusercontent.com/open-gsd/get-shit-done-redux/main/CHANGELOG.md" -o "$CHANGELOG_TMP" 2>/dev/null \
+  || wget -qO "$CHANGELOG_TMP" "https://raw.githubusercontent.com/open-gsd/get-shit-done-redux/main/CHANGELOG.md" 2>/dev/null
+
+EXTRACT_JSON=$(node "$GSD_DIR/get-shit-done/scripts/changeset/cli.cjs" extract \
+  --from "$INSTALLED_VERSION" \
+  --to "$LATEST_VERSION" \
+  --changelog "$CHANGELOG_TMP" \
+  --json 2>/dev/null)
+EXTRACT_EXIT=$?
+rm -f "$CHANGELOG_TMP"
+
+if [ "$EXTRACT_EXIT" -eq 2 ]; then
+  # Exit 2 = no releases in range (e.g. versions are equal or changelog is sparse)
+  CHANGELOG_PREVIEW="No changelog updates between v${INSTALLED_VERSION} and v${LATEST_VERSION}."
+elif [ "$EXTRACT_EXIT" -ne 0 ] || [ -z "$EXTRACT_JSON" ]; then
+  CHANGELOG_PREVIEW="(Could not extract changelog — update will still proceed)"
+else
+  # Re-run without --json to get the human-readable markdown for display
+  CHANGELOG_PREVIEW=$(node "$GSD_DIR/get-shit-done/scripts/changeset/cli.cjs" extract \
+    --from "$INSTALLED_VERSION" \
+    --to "$LATEST_VERSION" \
+    --changelog "$CHANGELOG_TMP" 2>/dev/null || echo "(changelog unavailable)")
+fi
+```
+
+3. Display preview and ask for confirmation, using `$CHANGELOG_PREVIEW` from the extract step above:
 
 ```
 ## GSD Update Available
 
-**Installed:** 1.5.10
-**Latest:** 1.5.15
+**Installed:** {INSTALLED_VERSION}
+**Latest:** {LATEST_VERSION}
 
 ### What's New
 ────────────────────────────────────────────────────────────
 
-## [1.5.15] - 2026-01-20
-
-### Added
-- Feature X
-
-## [1.5.14] - 2026-01-18
-
-### Fixed
-- Bug fix Y
+{CHANGELOG_PREVIEW}
 
 ────────────────────────────────────────────────────────────
 
@@ -403,7 +423,7 @@ Exit.
 - `agents/gsd-*` files will be replaced
 
 (Paths are relative to detected runtime install location:
-global: `/home/domini/src/My/Surypus/.gemini/`, `~/.config/opencode/`, `~/.opencode/`, `~/.gemini/`, `~/.config/kilo/`, or `~/.codex/`
+global: `/home/dominicusin/src/surypus/.gemini/`, `~/.config/opencode/`, `~/.opencode/`, `~/.gemini/`, `~/.config/kilo/`, or `~/.codex/`
 local: `./.gemini/`, `./.config/opencode/`, `./.opencode/`, `./.gemini/`, `./.kilo/`, or `./.codex/`)
 
 Your custom files in other locations are preserved:
@@ -463,10 +483,10 @@ Otherwise run `detect-custom-files` (prefer SDK when available):
 ```bash
 GSD_TOOLS="$RUNTIME_DIR/get-shit-done/bin/gsd-tools.cjs"
 CUSTOM_JSON=''
-if [ -n "$RUNTIME_DIR" ] && command -v gsd-sdk >/dev/null 2>&1; then
-  CUSTOM_JSON=$(gsd-sdk query detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
-elif [ -f "$GSD_TOOLS" ] && [ -n "$RUNTIME_DIR" ]; then
+if [ -f "$GSD_TOOLS" ] && [ -n "$RUNTIME_DIR" ]; then
   CUSTOM_JSON=$(node "$GSD_TOOLS" detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
+elif [ -n "$RUNTIME_DIR" ] && command -v gsd-sdk >/dev/null 2>&1; then
+  CUSTOM_JSON=$(gsd-sdk query detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
 fi
 if [ -z "$CUSTOM_JSON" ]; then
   CUSTOM_JSON='{"custom_files":[],"custom_count":0}'
@@ -527,17 +547,17 @@ RUNTIME_FLAG="--$TARGET_RUNTIME"
 
 **If LOCAL install:**
 ```bash
-npx -y --package=get-shit-done-cc@latest -- get-shit-done-cc "$RUNTIME_FLAG" --local
+npx -y --package=@opengsd/get-shit-done-redux@latest -- get-shit-done-redux "$RUNTIME_FLAG" --local
 ```
 
 **If GLOBAL install:**
 ```bash
-npx -y --package=get-shit-done-cc@latest -- get-shit-done-cc "$RUNTIME_FLAG" --global
+npx -y --package=@opengsd/get-shit-done-redux@latest -- get-shit-done-redux "$RUNTIME_FLAG" --global
 ```
 
 **If UNKNOWN install:**
 ```bash
-npx -y --package=get-shit-done-cc@latest -- get-shit-done-cc --claude --global
+npx -y --package=@opengsd/get-shit-done-redux@latest -- get-shit-done-redux --claude --global
 ```
 
 Capture output. If install fails, show error and exit.
@@ -611,7 +631,7 @@ Format completion message (changelog was already shown in confirmation step):
 
 ⚠️  Restart your runtime to pick up the new commands.
 
-[View full changelog](https://github.com/gsd-build/get-shit-done/blob/main/CHANGELOG.md)
+[View full changelog](https://github.com/open-gsd/get-shit-done-redux/blob/main/CHANGELOG.md)
 ```
 </step>
 

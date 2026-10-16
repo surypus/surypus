@@ -206,7 +206,7 @@ Track coverage as you go.
 **Integer phases (1, 2, 3):** Planned milestone work.
 
 **Decimal phases (2.1, 2.2):** Urgent insertions after planning.
-- Created via `/gsd:phase insert`
+- Created via `/gsd:phase --insert`
 - Execute between integers: 1 → 1.1 → 1.2 → 2
 
 **Starting number:**
@@ -378,11 +378,11 @@ This annotation is consumed by downstream workflows (`new-project`, `progress`) 
 | 2. Name | 0/2 | Not started | - |
 ```
 
-Reference full template: `/home/domini/src/My/Surypus/.gemini/get-shit-done/templates/roadmap.md`
+Reference full template: `/home/dominicusin/src/surypus/.gemini/get-shit-done/templates/roadmap.md`
 
 ## STATE.md Structure
 
-Use template from `/home/domini/src/My/Surypus/.gemini/get-shit-done/templates/state.md`.
+Use template from `/home/dominicusin/src/surypus/.gemini/get-shit-done/templates/state.md`.
 
 Key sections:
 - Project Reference (core value, current focus)

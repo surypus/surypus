@@ -47,7 +47,7 @@ Output: {padded_phase}-REVIEW.md in phase directory + inline summary of findings
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/code-review.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/code-review.md
 </execution_context>
 
 <context>

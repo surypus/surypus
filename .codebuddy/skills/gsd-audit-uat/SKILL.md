@@ -1,6 +1,7 @@
 ---
 name: gsd-audit-uat
 description: "Cross-phase audit of all outstanding UAT and verification items"
+user-invocable: false
 ---
 
 <objective>
@@ -8,7 +9,7 @@ Scan all phases for pending, skipped, blocked, and human_needed UAT items. Cross
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.codebuddy/get-shit-done/workflows/audit-uat.md
+@/home/dominicusin/src/surypus/.codebuddy/gsd-core/workflows/audit-uat.md
 </execution_context>
 
 <context>

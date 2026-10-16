@@ -5,60 +5,72 @@
 -- | Event Store - PostgreSQL-backed event sourcing
 module DAL.EventStore
    ( Event (..)
-     , Snapshot (..)
-     , Broadcaster
-     , currentEventSchemaVersion
-     , appendEvent
-     , appendEventBroadcast
-     , getEvents
-     , getEventsFrom
-     , replayAccount
-     , getLatestSequence
-     , saveSnapshot
-     , getLatestSnapshot
-     , replayFromSnapshot
-     , upgradeEvent
-     , newBroadcaster
-     , subscribe
-     , unsubscribe
-   )
-   where
+   , Snapshot (..)
+   , Broadcaster
+   , currentEventSchemaVersion
+   , appendEvent
+   , appendEventBroadcast
+   , getEvents
+   , getEventsFrom
+   , replayAccount
+   , getLatestSequence
+   , saveSnapshot
+   , getLatestSnapshot
+   , replayFromSnapshot
+   , upgradeEvent
+   , newBroadcaster
+   , subscribe
+   , unsubscribe
+   ) where
 
 import Control.Concurrent.STM
-import Control.Monad (foldM)
 import DAL.Database (ConnectionPool, runDb)
-import Data.Aeson (Value(..), encode, decode, toJSON, object, (.=))
-import qualified Data.ByteString as BS
+import Data.Aeson (Value (..), decodeStrict, encode)
 import qualified Data.ByteString.Lazy as LBS
 import Data.Int (Int64)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
+import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time (UTCTime, getCurrentTime)
-import Data.Time.Format (parseTimeM, defaultTimeLocale)
-import Database.Persist.Sql (rawSql, rawExecute, Single(..), PersistValue(..))
+import Data.Time.Format (defaultTimeLocale, parseTimeM)
+import Database.Persist.Sql (PersistValue (..), Single (..), rawExecute, rawSql)
 import GHC.Generics (Generic)
-import Data.Maybe (fromMaybe)
 
 -- | Extract Int64 from PersistValue
 persistToInt64 :: PersistValue -> Int64
 persistToInt64 (PersistInt64 n) = n
 persistToInt64 (PersistDouble n) = round n
+persistToInt64 (PersistText t) = fromMaybe 0 (readMaybe (T.unpack t))
 persistToInt64 _ = 0
 
 -- | Extract Text from PersistValue
+--
+-- PostgreSQL hands @jsonb@/@json@ columns back as 'PersistByteString', so they
+-- have to be decoded rather than dropped.
 persistToText :: PersistValue -> Text
 persistToText (PersistText t) = t
+persistToText (PersistByteString bs) = TE.decodeUtf8 bs
 persistToText (PersistInt64 n) = T.pack $ show n
 persistToText (PersistDouble n) = T.pack $ show n
+persistToText (PersistUTCTime t) = T.pack $ show t
 persistToText _ = ""
 
--- | Extract Maybe Text from PersistValue
-persistToMaybeText :: PersistValue -> Maybe Text
-persistToMaybeText PersistNull = Nothing
-persistToMaybeText v = Just $ persistToText v
+-- | Extract a timestamp from a PersistValue
+persistToTime :: PersistValue -> UTCTime
+persistToTime (PersistUTCTime t) = t
+persistToTime (PersistText t) =
+  fromMaybe epoch $ parseTimeM True defaultTimeLocale "%Y-%m-%d %H:%M:%S%Q%Z" (T.unpack t)
+persistToTime _ = epoch
+
+-- | Decode a JSON payload, falling back to 'Null' for anything malformed
+decodeJSON :: Text -> Value
+decodeJSON t = fromMaybe Null (decodeStrict (TE.encodeUtf8 t))
+
+epoch :: UTCTime
+epoch = read "1970-01-01 00:00:00 UTC"
 
 currentEventSchemaVersion :: Int
 currentEventSchemaVersion = 1
@@ -75,7 +87,7 @@ data Event = Event
   , eventOccurredAt       :: UTCTime
   , eventCreatedAt        :: UTCTime
   }
-  deriving (Show, Generic)
+  deriving (Show, Eq, Generic)
 
 data Snapshot = Snapshot
   { snapAggregateId   :: Int64
@@ -85,7 +97,7 @@ data Snapshot = Snapshot
   , snapData          :: Text
   , snapCreatedAt     :: UTCTime
   }
-  deriving (Show, Generic)
+  deriving (Show, Eq, Generic)
 
 data Broadcaster = Broadcaster
   { bcSubscribers :: TVar (Map Int BroadcastCallback)
@@ -114,7 +126,10 @@ unsubscribe :: Broadcaster -> Int -> IO ()
 unsubscribe broadcaster sid = do
   atomically $ modifyTVar' (bcSubscribers broadcaster) $ M.delete sid
 
--- | Append an event to the event store
+-- | Append an event to the event store.
+--
+-- The payload is stored as real JSON, not as Haskell 'show' output, so the
+-- jsonb column round-trips through 'getEvents'.
 appendEvent :: ConnectionPool -> Event -> IO (Either Text ())
 appendEvent pool event = do
   now <- getCurrentTime
@@ -129,8 +144,8 @@ appendEvent pool event = do
     , PersistText (eventEventType event)
     , PersistInt64 (fromIntegral $ eventEventVersion event)
     , PersistInt64 (fromIntegral $ eventSchemaVersion event)
-    , PersistText (T.pack $ show $ eventEventData event)
-    , maybe PersistNull (PersistText . T.pack . show) (eventEventMetadata event)
+    , PersistText (TE.decodeUtf8 (LBS.toStrict (encode (eventEventData event))))
+    , maybe PersistNull (PersistText . TE.decodeUtf8 . LBS.toStrict . encode) (eventEventMetadata event)
     , PersistInt64 (eventSequenceNumber event)
     , PersistUTCTime (eventOccurredAt event)
     , PersistUTCTime now
@@ -148,6 +163,33 @@ appendEventBroadcast broadcaster pool event = do
       return $ Right ()
     Left err -> return $ Left err
 
+-- | One @event_store@ row: 10 columns, in SELECT order.
+type EventRow =
+  ( Single PersistValue, Single PersistValue, Single PersistValue
+  , Single PersistValue, Single PersistValue, Single PersistValue
+  , Single PersistValue, Single PersistValue, Single PersistValue
+  , Single PersistValue )
+
+-- | Parse one event row into an 'Event'
+parseEventRow :: EventRow -> Event
+parseEventRow (a, b, c, d, e, f, g, h, i, j) = Event
+  { eventAggregateId    = persistToInt64 (unwrap a)
+  , eventAggregateType  = persistToText (unwrap b)
+  , eventEventType      = persistToText (unwrap c)
+  , eventEventVersion   = fromIntegral (persistToInt64 (unwrap d))
+  , eventSchemaVersion  = fromIntegral (persistToInt64 (unwrap e))
+  , eventEventData      = decodeJSON (persistToText (unwrap f))
+  , eventEventMetadata  = case unwrap g of
+      PersistNull -> Nothing
+      v           -> Just (decodeJSON (persistToText v))
+  , eventSequenceNumber = persistToInt64 (unwrap h)
+  , eventOccurredAt     = persistToTime (unwrap i)
+  , eventCreatedAt      = persistToTime (unwrap j)
+  }
+  where
+    unwrap :: Single PersistValue -> PersistValue
+    unwrap (Single v) = v
+
 -- | Get events for an aggregate
 getEvents :: ConnectionPool -> Int64 -> Text -> IO (Either Text [Event])
 getEvents pool aggId aggType = do
@@ -156,8 +198,8 @@ getEvents pool aggId aggType = do
             \  sequence_number, occurred_at, created_at \
             \FROM event_store WHERE aggregate_id = ? AND aggregate_type = ? \
             \ORDER BY sequence_number ASC"
-  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType] :: IO [Single PersistValue]
-  return $ Right $ map parseEvent rows
+  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType] :: IO [EventRow]
+  return $ Right $ map parseEventRow rows
 
 -- | Get events from a specific sequence number
 getEventsFrom :: ConnectionPool -> Int64 -> Text -> Int64 -> IO (Either Text [Event])
@@ -168,8 +210,8 @@ getEventsFrom pool aggId aggType fromSeq = do
             \FROM event_store WHERE aggregate_id = ? AND aggregate_type = ? \
             \  AND sequence_number >= ? \
             \ORDER BY sequence_number ASC"
-  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType, PersistInt64 fromSeq]
-  return $ Right $ map parseEvent rows
+  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType, PersistInt64 fromSeq] :: IO [EventRow]
+  return $ Right $ map parseEventRow rows
 
 -- | Replay events for an aggregate
 replayAccount :: ConnectionPool -> Int64 -> Text -> IO (Either Text [Event])
@@ -185,14 +227,18 @@ getLatestSequence pool aggId aggType = do
     (Single PersistNull : _) -> return $ Right Nothing
     _ -> return $ Right Nothing
 
--- | Save a snapshot
+-- | Save a snapshot.
+--
+-- The table is @event_snapshot@ (singular) with @last_sequence_number@, as
+-- created by V1005__event_store_snapshots.sql.
 saveSnapshot :: ConnectionPool -> Snapshot -> IO (Either Text ())
 saveSnapshot pool snap = do
-  let sql = "INSERT INTO event_snapshots (\
-            \  aggregate_id, aggregate_type, version, last_seq, snapshot_data, created_at) \
+  let sql = "INSERT INTO event_snapshot (\
+            \  aggregate_id, aggregate_type, version, last_sequence_number, snapshot_data, created_at) \
             \VALUES (?, ?, ?, ?, ?, ?) \
             \ON CONFLICT (aggregate_id, aggregate_type, version) DO UPDATE SET \
-            \  last_seq = EXCLUDED.last_seq, snapshot_data = EXCLUDED.snapshot_data, created_at = EXCLUDED.created_at"
+            \  last_sequence_number = EXCLUDED.last_sequence_number, \
+            \  snapshot_data = EXCLUDED.snapshot_data, created_at = EXCLUDED.created_at"
   result <- runDb pool $ rawExecute sql
     [ PersistInt64 (snapAggregateId snap)
     , PersistText (snapAggregateType snap)
@@ -203,20 +249,34 @@ saveSnapshot pool snap = do
     ]
   return $ Right ()
 
+-- | One @event_snapshots@ row: 6 columns, in SELECT order.
+type SnapshotRow =
+  ( Single PersistValue, Single PersistValue, Single PersistValue
+  , Single PersistValue, Single PersistValue, Single PersistValue )
+
+parseSnapshotRow :: SnapshotRow -> Snapshot
+parseSnapshotRow (a, b, c, d, e, f) = Snapshot
+  { snapAggregateId   = persistToInt64 (unwrap a)
+  , snapAggregateType = persistToText (unwrap b)
+  , snapVersion       = fromIntegral (persistToInt64 (unwrap c))
+  , snapLastSeq       = persistToInt64 (unwrap d)
+  , snapData          = persistToText (unwrap e)
+  , snapCreatedAt     = persistToTime (unwrap f)
+  }
+  where
+    unwrap :: Single PersistValue -> PersistValue
+    unwrap (Single v) = v
+
 -- | Get latest snapshot for an aggregate
 getLatestSnapshot :: ConnectionPool -> Int64 -> Text -> IO (Either Text (Maybe Snapshot))
 getLatestSnapshot pool aggId aggType = do
-  let sql = "SELECT aggregate_id, aggregate_type, version, last_seq, snapshot_data, created_at \
-            \FROM event_snapshots WHERE aggregate_id = ? AND aggregate_type = ? \
+  let sql = "SELECT aggregate_id, aggregate_type, version, last_sequence_number, snapshot_data, created_at \
+            \FROM event_snapshot WHERE aggregate_id = ? AND aggregate_type = ? \
             \ORDER BY version DESC LIMIT 1"
-  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType] :: IO [Single PersistValue]
-  case rows of
-    (Single id' : Single typ : Single ver : Single lastSeq : Single data' : Single createdAt : _) -> do
-      let mSnap = parseSnapshot (T.pack $ show id') (T.pack $ show typ) (T.pack $ show ver) (T.pack $ show lastSeq) (T.pack $ show data') (T.pack $ show createdAt)
-      return $ case mSnap of
-        Just snap -> Right (Just snap)
-        Nothing -> Right Nothing
-    _ -> return $ Right Nothing
+  rows <- runDb pool $ rawSql sql [PersistInt64 aggId, PersistText aggType] :: IO [SnapshotRow]
+  return $ Right $ case rows of
+    (row : _) -> Just (parseSnapshotRow row)
+    []        -> Nothing
 
 -- | Replay from snapshot
 replayFromSnapshot :: ConnectionPool -> Int64 -> Text -> IO (Either Text [Event])
@@ -230,17 +290,6 @@ replayFromSnapshot pool aggId aggType = do
 -- | Upgrade event to new schema version
 upgradeEvent :: Event -> Int -> Event
 upgradeEvent event newVersion = event { eventSchemaVersion = newVersion }
-
--- | Parse event from database row
-parseEvent :: Single PersistValue -> Event
-parseEvent (Single sv) = case sv of
-  PersistInt64 n -> Event 0 T.empty T.empty 0 0 (Data.Aeson.object []) Nothing 0 (read "1970-01-01 00:00:00" :: UTCTime) (read "1970-01-01 00:00:00" :: UTCTime)
-  _ -> Event 0 T.empty T.empty 0 0 (Data.Aeson.object []) Nothing 0 (read "1970-01-01 00:00:00" :: UTCTime) (read "1970-01-01 00:00:00" :: UTCTime)
-
--- | Parse snapshot from text fields
-parseSnapshot :: Text -> Text -> Text -> Text -> Text -> Text -> Maybe Snapshot
-parseSnapshot id' typ ver lastSeq data' createdAt =
-  Snapshot <$> readMaybe (T.unpack id') <*> pure typ <*> readMaybe (T.unpack ver) <*> readMaybe (T.unpack lastSeq) <*> pure data' <*> readMaybe (T.unpack createdAt)
 
 -- | Safe readMaybe
 readMaybe :: Read a => String -> Maybe a

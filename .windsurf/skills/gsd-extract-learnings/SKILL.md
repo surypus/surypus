@@ -32,7 +32,7 @@ Extract structured learnings from completed phase artifacts (PLAN.md, SUMMARY.md
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/extract-learnings.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/extract-learnings.md
 </execution_context>
 
-Execute the extract-learnings workflow from @/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/extract-learnings.md end-to-end.
+Execute the extract-learnings workflow from @/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/extract-learnings.md end-to-end.

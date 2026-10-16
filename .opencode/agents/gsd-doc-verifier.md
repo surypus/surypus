@@ -2,6 +2,12 @@
 name: gsd-doc-verifier
 description: Verifies factual claims in generated docs against the live codebase. Returns structured JSON per doc.
 mode: subagent
+permission:
+  webfetch: deny
+  websearch: deny
+  task: deny
+  skill: deny
+  todowrite: deny
 ---
 
 <role>

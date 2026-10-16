@@ -53,6 +53,7 @@ import qualified AdditionalTests
 import qualified DAL.TypesSpec
 import qualified DAL.DBSpec
 import qualified DAL.PoolSpec
+import qualified DAL.EventStoreIntegration
 
 main :: IO ()
 main = hspec $ do
@@ -104,4 +105,5 @@ main = hspec $ do
   DAL.TypesSpec.spec
   DAL.DBSpec.spec
   DAL.PoolSpec.spec
+  DAL.EventStoreIntegration.spec
   Domain.InvariantsSpec.spec

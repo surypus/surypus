@@ -1,7 +1,7 @@
 ---
 name: new-milestone
 description: "Start a new milestone cycle — update PROJECT.md and route to requirements"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[milestone name, e.g., 'v1.1 Notifications']"
 allowed-tools:
   - Read
@@ -27,11 +27,11 @@ Brownfield equivalent of new-project. Project exists, PROJECT.md has history. Ga
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/new-milestone.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/questioning.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ui-brand.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/templates/project.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/templates/requirements.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/new-milestone.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/questioning.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/templates/project.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/templates/requirements.md
 </execution_context>
 
 <context>

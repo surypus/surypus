@@ -18,7 +18,7 @@ Accepts an optional topic argument: `/gsd-explore authentication strategy`
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.kilo/get-shit-done/workflows/explore.md
+@/home/dominicusin/src/surypus/.kilo/gsd-core/workflows/explore.md
 </execution_context>
 
 <process>

@@ -1,7 +1,7 @@
 ---
 name: pr-branch
 description: "Create a clean PR branch by filtering out .planning/ commits — ready for code review"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[target branch, default: main]"
 allowed-tools:
   - Bash
@@ -19,7 +19,7 @@ changes that are irrelevant to code review.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/pr-branch.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/pr-branch.md
 </execution_context>
 
 <process>

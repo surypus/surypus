@@ -1,7 +1,7 @@
 ---
 name: progress
 description: "Check progress, advance workflow, or dispatch freeform intent — the unified GSD situational command"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[--forensic | --next | --do \\\"task description\\\"]"
 allowed-tools:
   - Read
@@ -24,22 +24,23 @@ Three modes:
 
 <flags>
 - **--next**: Detect current project state and automatically invoke the next logical GSD workflow step. Scans all prior phases for incomplete work before routing. `--next --force` bypasses safety gates.
+- **--next --auto**: Like `--next`, but after the determined step completes, automatically re-invokes `/gsd-progress --next --auto` to continue chaining steps until completion or a blocking decision. Enables hands-free plan→execute→verify→complete progression.
 - **--do "..."**: Smart dispatcher — match freeform intent to the best GSD command using routing rules, confirm the match, then hand off.
 - **--forensic**: Run 6-check integrity audit after the standard progress report.
 - **(no flag)**: Standard progress check + intelligent routing (Routes A through F).
 </flags>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/progress.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/next.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/do.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/progress.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/next.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/do.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <process>
 Arguments provided: "$ARGUMENTS"
 Parse the first token from the provided arguments:
-- If it is `--next`: strip the flag, execute the next workflow (passing remaining args e.g. --force).
+- If it is `--next`: strip the flag, execute the next workflow (passing remaining args e.g. --force, --auto).
 - If it is `--do`: strip the flag, pass remainder as freeform intent to the do workflow.
 - Otherwise: execute the progress workflow end-to-end (pass --forensic through if present).
 

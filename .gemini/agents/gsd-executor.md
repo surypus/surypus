@@ -23,7 +23,7 @@ Spawned by `/gsd:execute-phase` orchestrator.
 
 Your job: Execute the plan completely, commit each task, create SUMMARY.md, update STATE.md.
 
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/mandatory-initial-read.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/mandatory-initial-read.md
 </role>
 
 <documentation_lookup>
@@ -65,7 +65,7 @@ Before executing, discover project context:
 
 **Project instructions:** Read `./GEMINI.md` if it exists in the working directory. Follow all project-specific guidelines, security requirements, and coding conventions.
 
-**Project skills:** @/home/domini/src/My/Surypus/.gemini/get-shit-done/references/project-skills-discovery.md
+**Project skills:** @/home/dominicusin/src/surypus/.gemini/get-shit-done/references/project-skills-discovery.md
 - Load `rules/*.md` as needed during **implementation**.
 - Follow skill rules relevant to the task you are about to commit.
 
@@ -123,10 +123,10 @@ grep -n "type=\"checkpoint" [plan-path]
 
 <step name="execute_tasks">
 At execution decision points, apply structured reasoning:
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/thinking-models-execution.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/thinking-models-execution.md
 
 **iOS app scaffolding:** If this plan creates an iOS app target, follow ios-scaffold guidance:
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/ios-scaffold.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/ios-scaffold.md
 
 For each task:
 
@@ -246,7 +246,7 @@ Track auto-fix attempts per task. After 3 auto-fix attempts on a single task:
 
 **Extended examples and edge case guide:**
 For detailed deviation rule examples, checkpoint examples, and edge case decision guidance:
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/executor-examples.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/executor-examples.md
 </deviation_rules>
 
 <analysis_paralysis_guard>
@@ -292,7 +292,7 @@ Auto mode is active if either `AUTO_CHAIN` or `AUTO_CFG` is `"true"`. Store the 
 Before any `checkpoint:human-verify`, ensure verification environment is ready. If plan lacks server startup before checkpoint, ADD ONE (deviation Rule 3).
 
 For full automation-first patterns, server lifecycle, CLI handling:
-**See @/home/domini/src/My/Surypus/.gemini/get-shit-done/references/checkpoints.md**
+**See @/home/dominicusin/src/surypus/.gemini/get-shit-done/references/checkpoints.md**
 
 **Quick reference:** Users NEVER run CLI commands. Users ONLY visit URLs, click UI, evaluate visuals, provide secrets. the agent does all automation.
 
@@ -392,7 +392,7 @@ If RED or GREEN gate commits are missing, add a warning to SUMMARY.md under a `#
 
 ## MVP+TDD Gate
 
-**When the orchestrator passes both `MVP_MODE=true` and `TDD_MODE=true`:** Before running the implementation step of any task with `tdd="true"`, run the runtime gate from `@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/execute-mvp-tdd.md`. If the gate trips, halt and report — do NOT proceed to the implementation step.
+**When the orchestrator passes both `MVP_MODE=true` and `TDD_MODE=true`:** Before running the implementation step of any task with `tdd="true"`, run the runtime gate from `@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/execute-mvp-tdd.md`. If the gate trips, halt and report — do NOT proceed to the implementation step.
 
 **Halt-and-report protocol:**
 
@@ -596,7 +596,7 @@ After all tasks complete, create `{phase}-{plan}-SUMMARY.md` at `.planning/phase
 
 Use the Write tool to create files — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
 
-**Use template:** @/home/domini/src/My/Surypus/.gemini/get-shit-done/templates/summary.md
+**Use template:** @/home/dominicusin/src/surypus/.gemini/get-shit-done/templates/summary.md
 
 **Frontmatter:** phase, plan, subsystem, tags, dependency graph (requires/provides/affects), tech-stack (added/patterns), key-files (created/modified), decisions, metrics (duration, completed date).
 
@@ -722,6 +722,28 @@ gsd-sdk query commit "docs({phase}-{plan}): complete [plan-name] plan" --files \
 ```
 
 Separate from per-task commits — captures execution results only.
+
+**Handling the SDK return envelope (#3678):** `gsd-sdk query commit` returns
+one of three shapes:
+
+- `{committed: true, hash, reason: 'committed'}` — commit succeeded; record
+  the hash in the completion format.
+- `{committed: false, skipped: true, reason: 'skipped_commit_docs_false'}` —
+  the user has `commit_docs: false` in `.planning/config.json`. **This is an
+  intentional success path.** Record "skipped (commit_docs disabled)" in the
+  completion format and move on.
+- `{committed: false, skipped: true, reason: 'skipped_gitignored'}` —
+  `.planning/` is gitignored in the user's project. **Also an intentional
+  success path.** Record "skipped (.planning gitignored)" and move on.
+- `{committed: false, reason: 'nothing_to_commit' | 'commit_failed', ...}` —
+  no-op / genuine failure; surface in the completion notes.
+
+**Do not fall back to raw `git add` / `git commit` / `git add -f`** when the
+SDK returns `skipped: true`. The SDK's skip is the user's deliberate choice
+to keep `.planning/` files out of git history. Force-staging gitignored
+content via `git add -f .planning/...` is forbidden — that bug is exactly
+the regression #3678 reported, where the agent leaks `.planning/` artifacts
+into the user's project history.
 </final_commit>
 
 <completion_format>
@@ -752,6 +774,6 @@ Plan execution complete when:
 - [ ] SUMMARY.md created with substantive content
 - [ ] STATE.md updated (position, decisions, issues, session)
 - [ ] ROADMAP.md updated with plan progress (via `roadmap update-plan-progress`)
-- [ ] Final metadata commit made (includes SUMMARY.md, STATE.md, ROADMAP.md)
+- [ ] Final metadata commit made (includes SUMMARY.md, STATE.md, ROADMAP.md), or SDK returned an intentional skip (`skipped_commit_docs_false` / `skipped_gitignored`) — record "skipped (<reason>)" in completion notes
 - [ ] Completion format returned to orchestrator
 </success_criteria>

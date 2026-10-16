@@ -1,7 +1,7 @@
 ---
 name: fast
 description: "Execute a trivial task inline — no subagents, no planning overhead"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[task description]"
 allowed-tools:
   - Read
@@ -24,7 +24,7 @@ you could describe in one sentence and execute in under 2 minutes.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/fast.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/fast.md
 </execution_context>
 
 <process>

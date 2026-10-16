@@ -41,9 +41,9 @@ Does not require prior new-project setup — auto-creates `.planning/spikes/` if
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/spike.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/spike-wrap-up.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/spike.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/spike-wrap-up.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <runtime_note>

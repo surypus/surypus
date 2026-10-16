@@ -1,7 +1,7 @@
 ---
 name: validate-phase
 description: "Retroactively audit and fill Nyquist validation gaps for a completed phase"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[phase number]"
 allowed-tools:
   - Read
@@ -24,7 +24,7 @@ Output: updated VALIDATION.md + generated test files.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/validate-phase.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/validate-phase.md
 </execution_context>
 
 <context>

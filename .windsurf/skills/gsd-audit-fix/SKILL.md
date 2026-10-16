@@ -39,7 +39,7 @@ Flags:
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/audit-fix.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/audit-fix.md
 </execution_context>
 
 <process>

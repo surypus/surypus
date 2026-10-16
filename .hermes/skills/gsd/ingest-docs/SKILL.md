@@ -1,7 +1,7 @@
 ---
 name: ingest-docs
 description: "Bootstrap or merge a .planning/ setup from existing ADRs, PRDs, SPECs, and docs in a repo."
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[path] [--mode new|merge] [--manifest <file>] [--resolve auto|interactive]"
 allowed-tools:
   - Read
@@ -29,10 +29,10 @@ Auto-synthesizes most conflicts using the precedence rule `ADR > SPEC > PRD > DO
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/ingest-docs.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ui-brand.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/gate-prompts.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/doc-conflict-engine.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/ingest-docs.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/gate-prompts.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/doc-conflict-engine.md
 </execution_context>
 
 <context>

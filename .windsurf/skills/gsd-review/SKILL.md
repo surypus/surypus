@@ -36,7 +36,7 @@ planning via /gsd-plan-phase --reviews.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/review.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/review.md
 </execution_context>
 
 <context>

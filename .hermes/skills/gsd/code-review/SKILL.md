@@ -1,7 +1,7 @@
 ---
 name: code-review
 description: "Review source files changed during a phase for bugs, security issues, and code quality problems"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "<phase-number> [--depth=quick|standard|deep] [--files file1,file2,...] [--fix [--all] [--auto]]"
 allowed-tools:
   - Read
@@ -32,7 +32,7 @@ Output: {padded_phase}-REVIEW.md in phase directory + inline summary of findings
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/code-review.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/code-review.md
 </execution_context>
 
 <context>

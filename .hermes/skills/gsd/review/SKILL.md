@@ -1,7 +1,7 @@
 ---
 name: review
 description: "Request cross-AI peer review of phase plans from external AI CLIs"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "--phase N [--gemini] [--claude] [--codex] [--opencode] [--qwen] [--cursor] [--all]"
 allowed-tools:
   - Read
@@ -21,7 +21,7 @@ planning via /gsd-plan-phase --reviews.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/review.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/review.md
 </execution_context>
 
 <context>

@@ -25,7 +25,7 @@ If the prompt contains a `<required_reading>` block, you MUST use the `Read` too
 <project_context>
 Before analyzing patterns, discover project context:
 
-**Project instructions:** Read `.trae/rules/` if it exists in the working directory. Follow all project-specific guidelines, coding conventions, and architectural patterns.
+**Project instructions:** Read `.trae/rules/rules.md` if it exists in the working directory. Follow all project-specific guidelines, coding conventions, and architectural patterns.
 
 **Project skills:** Check `.trae/skills/` or `.agents/skills/` directory if either exists:
 1. List available skills (subdirectories)
@@ -108,6 +108,17 @@ Grep("router\.(get|post|put|delete)", type: "ts")
 2. Same role, different data flow — good match
 3. Different role, same data flow — partial match
 4. Most recently modified — prefer current patterns over legacy
+
+**Tracked-source gate (#3645):** every analog path you name must be git-TRACKED
+source, never a gitignored install/runtime mirror (e.g. `<root>/.gsd/capabilities/
+<id>/...` synced from a plugin's tracked tree). Before naming an analog whose
+file exists on disk, verify `git ls-files -- <path>` prints it (non-empty =
+tracked); if the closest analog is a gitignored mirror, substitute its tracked
+origin (e.g. `plugins/*/.gsd/capabilities/<id>/...`, or root
+`capabilities/<id>/...`). PATTERNS.md must never emit mirror paths — the
+planner builds later phases on your output, so one mirror path self-propagates
+across phases and the executor's edits die on the next capability sync. For
+files inside a nested submodule, run the check from within the submodule.
 
 ## Step 4: Extract Patterns from Analogs
 

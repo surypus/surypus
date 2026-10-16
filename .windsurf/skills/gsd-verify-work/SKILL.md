@@ -36,8 +36,8 @@ Output: {phase_num}-UAT.md tracking all test results. If issues found: diagnosed
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/verify-work.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/templates/UAT.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/verify-work.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/templates/UAT.md
 </execution_context>
 
 <context>

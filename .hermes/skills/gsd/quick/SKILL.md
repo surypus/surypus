@@ -1,7 +1,7 @@
 ---
 name: quick
 description: "Execute a quick task with GSD guarantees (atomic commits, state tracking) but skip optional agents"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[list | status <slug> | resume <slug> | --full] [--validate] [--discuss] [--research] [task description]"
 allowed-tools:
   - Read
@@ -41,7 +41,7 @@ Granular flags are composable: `--discuss --research --validate` gives the same 
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/quick.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/quick.md
 </execution_context>
 
 <context>

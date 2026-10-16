@@ -1,7 +1,7 @@
 ---
 name: docs-update
 description: "Generate or update project documentation verified against the codebase"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[--force] [--verify-only]"
 allowed-tools:
   - Read
@@ -27,7 +27,7 @@ Flag handling rule:
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/docs-update.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/docs-update.md
 </execution_context>
 
 <context>

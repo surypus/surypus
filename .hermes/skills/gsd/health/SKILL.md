@@ -1,7 +1,7 @@
 ---
 name: health
 description: "Diagnose planning directory health and optionally repair issues"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[--repair] [--context]"
 allowed-tools:
   - Read
@@ -23,7 +23,7 @@ Validate `.planning/` directory integrity and report actionable issues. Checks f
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/health.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/health.md
 </execution_context>
 
 <process>

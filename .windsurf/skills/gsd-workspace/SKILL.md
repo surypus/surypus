@@ -47,10 +47,10 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/new-workspace.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/list-workspaces.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/remove-workspace.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/new-workspace.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/list-workspaces.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/remove-workspace.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

@@ -17,9 +17,9 @@ Does not require prior new-project setup — auto-creates `.planning/spikes/` if
 </objective>
 
 <execution_context>
-@.agent/get-shit-done/workflows/spike.md
-@.agent/get-shit-done/workflows/spike-wrap-up.md
-@.agent/get-shit-done/references/ui-brand.md
+@~/.gemini/antigravity/get-shit-done/workflows/spike.md
+@~/.gemini/antigravity/get-shit-done/workflows/spike-wrap-up.md
+@~/.gemini/antigravity/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <runtime_note>

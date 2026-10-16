@@ -1,7 +1,7 @@
 ---
 name: review-backlog
 description: "Review and promote backlog items to active milestone"
-version: "1.0.0"
+version: "1.1.0"
 allowed-tools:
   - Read
   - Write

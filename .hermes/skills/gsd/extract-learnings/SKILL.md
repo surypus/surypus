@@ -1,7 +1,7 @@
 ---
 name: extract-learnings
 description: "Extract decisions, lessons, patterns, and surprises from completed phase artifacts"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "<phase-number>"
 allowed-tools:
   - Read
@@ -17,7 +17,7 @@ Extract structured learnings from completed phase artifacts (PLAN.md, SUMMARY.md
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/extract-learnings.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/extract-learnings.md
 </execution_context>
 
-Execute the extract-learnings workflow from @/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/extract-learnings.md end-to-end.
+Execute the extract-learnings workflow from @/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/extract-learnings.md end-to-end.

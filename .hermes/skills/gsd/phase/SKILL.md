@@ -1,7 +1,7 @@
 ---
 name: phase
 description: "CRUD for phases in ROADMAP.md — add, insert, remove, or edit phases"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[--insert | --remove | --edit] <phase-name-or-number>"
 allowed-tools:
   - Read
@@ -33,10 +33,10 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/add-phase.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/insert-phase.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/remove-phase.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/edit-phase.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/add-phase.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/insert-phase.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/remove-phase.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/edit-phase.md
 </execution_context>
 
 <context>

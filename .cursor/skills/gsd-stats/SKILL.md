@@ -32,7 +32,7 @@ Display comprehensive project statistics including phase progress, plan executio
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.cursor/get-shit-done/workflows/stats.md
+@/home/dominicusin/src/surypus/.cursor/gsd-core/workflows/stats.md
 </execution_context>
 
 <process>

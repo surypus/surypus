@@ -1,7 +1,7 @@
 ---
 name: spec-phase
 description: "Clarify WHAT a phase delivers with ambiguity scoring; produces a SPEC.md before discuss-phase."
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "<phase> [--auto] [--text]"
 allowed-tools:
   - Read
@@ -30,8 +30,8 @@ Clarify phase requirements through structured Socratic questioning with quantita
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/spec-phase.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/templates/spec.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/spec-phase.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/templates/spec.md
 </execution_context>
 
 <runtime_note>

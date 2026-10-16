@@ -1,7 +1,7 @@
 ---
 name: milestone-summary
 description: "Generate a comprehensive project summary from milestone artifacts for team onboarding and review"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[version]"
 allowed-tools:
   - Read
@@ -20,7 +20,7 @@ Output: MILESTONE_SUMMARY written to `.planning/reports/`, presented inline, opt
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/milestone-summary.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/milestone-summary.md
 </execution_context>
 
 <context>

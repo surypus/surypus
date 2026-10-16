@@ -1,7 +1,7 @@
 ---
 name: secure-phase
 description: "Retroactively verify threat mitigations for a completed phase"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[phase number]"
 allowed-tools:
   - Read
@@ -24,7 +24,7 @@ Output: updated SECURITY.md.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/secure-phase.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/secure-phase.md
 </execution_context>
 
 <context>

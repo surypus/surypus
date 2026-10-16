@@ -37,7 +37,7 @@ Output: updated SECURITY.md.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/secure-phase.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/secure-phase.md
 </execution_context>
 
 <context>

@@ -1,7 +1,7 @@
 ---
 name: cleanup
 description: "Archive accumulated phase directories from completed milestones"
-version: "1.0.0"
+version: "1.1.0"
 allowed-tools:
   - Read
   - Write
@@ -16,7 +16,7 @@ Use when `.planning/phases/` has accumulated directories from past milestones.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/cleanup.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/cleanup.md
 </execution_context>
 
 <process>

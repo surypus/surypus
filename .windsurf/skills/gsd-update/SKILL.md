@@ -40,7 +40,7 @@ Routes to the update workflow which handles:
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/update.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/update.md
 </execution_context>
 
 <flags>
@@ -58,6 +58,6 @@ Parse the first token of {{GSD_ARGS}}:
 </process>
 
 <execution_context_extended>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/sync-skills.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/reapply-patches.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/sync-skills.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/reapply-patches.md
 </execution_context_extended>

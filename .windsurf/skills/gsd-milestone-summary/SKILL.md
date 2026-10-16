@@ -35,7 +35,7 @@ Output: MILESTONE_SUMMARY written to `.planning/reports/`, presented inline, opt
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/milestone-summary.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/milestone-summary.md
 </execution_context>
 
 <context>

@@ -40,7 +40,7 @@ Validate `.planning/` directory integrity and report actionable issues. Checks f
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/health.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/health.md
 </execution_context>
 
 <process>

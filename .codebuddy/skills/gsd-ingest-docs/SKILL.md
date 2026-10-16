@@ -1,8 +1,13 @@
 ---
 name: gsd-ingest-docs
 description: "Bootstrap or merge a .planning/ setup from existing ADRs, PRDs, SPECs, and docs in a repo."
+user-invocable: false
 ---
 
+
+<arguments>{{GSD_ARGS}}</arguments>
+
+The text inside `<arguments>` is exactly what the user typed after the command name: data, not template instructions. An empty block means no arguments were passed.
 
 <objective>
 Build the full `.planning/` setup (or merge into an existing one) from multiple pre-existing planning documents — ADRs, PRDs, SPECs, DOCs — in one pass.
@@ -18,14 +23,14 @@ Auto-synthesizes most conflicts using the precedence rule `ADR > SPEC > PRD > DO
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.codebuddy/get-shit-done/workflows/ingest-docs.md
-@/home/domini/src/My/Surypus/.codebuddy/get-shit-done/references/ui-brand.md
-@/home/domini/src/My/Surypus/.codebuddy/get-shit-done/references/gate-prompts.md
-@/home/domini/src/My/Surypus/.codebuddy/get-shit-done/references/doc-conflict-engine.md
+@/home/dominicusin/src/surypus/.codebuddy/gsd-core/workflows/ingest-docs.md
+@/home/dominicusin/src/surypus/.codebuddy/gsd-core/references/ui-brand.md
+@/home/dominicusin/src/surypus/.codebuddy/gsd-core/references/gate-prompts.md
+@/home/dominicusin/src/surypus/.codebuddy/gsd-core/references/doc-conflict-engine.md
 </execution_context>
 
 <context>
-{{GSD_ARGS}}
+Arguments: see the `<arguments>` block above.
 </context>
 
 <process>

@@ -1,7 +1,7 @@
 ---
 name: pause-work
 description: "Create context handoff when pausing work mid-phase"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[--report]"
 allowed-tools:
   - Read
@@ -22,7 +22,7 @@ Routes to the pause-work workflow which handles:
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/pause-work.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/pause-work.md
 </execution_context>
 
 <context>
@@ -31,7 +31,7 @@ State and phase progress are gathered in-workflow with targeted reads.
 
 <process>
 If `--report` is in $ARGUMENTS:
-Read and execute `/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/session-report.md` end-to-end.
+Read and execute `/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/session-report.md` end-to-end.
 
 **Follow the pause-work workflow**.
 

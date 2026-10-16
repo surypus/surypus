@@ -3,6 +3,7 @@ description: Resume work from previous session with full context restoration
 tools:
   read: true
   bash: true
+  grep: true
   write: true
   question: true
   skill: true
@@ -21,7 +22,7 @@ Routes to the resume-project workflow which handles:
   </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.kilo/get-shit-done/workflows/resume-project.md
+@/home/dominicusin/src/surypus/.kilo/gsd-core/workflows/resume-project.md
 </execution_context>
 
 <process>

@@ -49,9 +49,9 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/settings.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/settings-advanced.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/settings-integrations.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/settings.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/settings-advanced.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/settings-integrations.md
 </execution_context>
 
 <context>

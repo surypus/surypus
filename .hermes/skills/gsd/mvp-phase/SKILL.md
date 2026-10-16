@@ -1,7 +1,7 @@
 ---
 name: mvp-phase
 description: "Plan a phase as a vertical MVP slice — user story, SPIDR splitting, then plan-phase"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "<phase-number>"
 allowed-tools:
   - Read
@@ -25,9 +25,9 @@ Phase 1 of the vertical-mvp-slice PRD shipped the planner-side machinery; this c
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/mvp-phase.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/spidr-splitting.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/user-story-template.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/mvp-phase.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/spidr-splitting.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/user-story-template.md
 </execution_context>
 
 <runtime_note>
@@ -41,6 +41,6 @@ The phase must already exist in ROADMAP.md (created via `/gsd new-project`, `/gs
 </context>
 
 <process>
-Execute the mvp-phase workflow from @/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/mvp-phase.md end-to-end.
+Execute the mvp-phase workflow from @/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/mvp-phase.md end-to-end.
 Preserve all gates: phase existence, status guard (refuse in_progress/completed), user-story format validation, SPIDR splitting check, ROADMAP write confirmation, plan-phase delegation.
 </process>

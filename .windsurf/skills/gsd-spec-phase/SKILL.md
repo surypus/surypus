@@ -44,8 +44,8 @@ Clarify phase requirements through structured Socratic questioning with quantita
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/spec-phase.md
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/templates/spec.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/spec-phase.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/templates/spec.md
 </execution_context>
 
 <runtime_note>

@@ -1,7 +1,7 @@
 ---
 name: gsd-assumptions-analyzer
 description: "Deeply analyzes codebase for a phase and returns structured assumptions with evidence. Spawned by discuss-phase assumptions mode."
-tools: ['read', 'execute', 'search']
+tools: ['read', 'execute', 'search', 'skill']
 color: cyan
 ---
 
@@ -18,6 +18,10 @@ Spawned by `discuss-phase-assumptions` via `Task()`. You do NOT present output d
 - Produce structured assumptions citing file paths as evidence
 - Flag topics where codebase analysis alone is insufficient (needs external research)
 </role>
+
+@.github/gsd-core/references/untrusted-input-boundary.md
+
+**agent_skills:** self-load per @.github/gsd-core/references/agent-skills-bootstrap.md
 
 <input>
 Agent receives via prompt:

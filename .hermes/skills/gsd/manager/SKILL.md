@@ -1,7 +1,7 @@
 ---
 name: manager
 description: "Interactive command center for managing multiple phases from one terminal"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[--analyze-deps]"
 allowed-tools:
   - Read
@@ -27,8 +27,8 @@ Designed for power users who want to parallelize work across phases from one ter
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/manager.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/manager.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>
@@ -39,7 +39,7 @@ Project context, phase list, dependencies, and recommendations are resolved insi
 
 <process>
 If `--analyze-deps` is in $ARGUMENTS:
-Read and execute `/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/analyze-dependencies.md` end-to-end.
+Read and execute `/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/analyze-dependencies.md` end-to-end.
 
 Execute end-to-end.
 Maintain the dashboard refresh loop until the user exits or all phases complete.

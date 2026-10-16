@@ -1,7 +1,7 @@
 ---
 name: debug
 description: "Systematic debugging with persistent state across context resets"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[list | status <slug> | continue <slug> | --diagnose] [issue description]"
 allowed-tools:
   - Read
@@ -30,7 +30,7 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 </available_agent_types>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/debug.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/debug.md
 </execution_context>
 
 <context>

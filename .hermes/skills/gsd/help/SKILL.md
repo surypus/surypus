@@ -1,7 +1,7 @@
 ---
 name: help
 description: "Show available GSD commands and usage guide"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[--brief | --full | <topic> | --brief <topic>]"
 allowed-tools:
   - Read
@@ -18,7 +18,7 @@ Output ONLY the reference content of the chosen tier. Do NOT add:
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/help.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/help.md
 </execution_context>
 
 <context>
@@ -26,5 +26,5 @@ Arguments: $ARGUMENTS
 </context>
 
 <process>
-Follow /home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/help.md with $ARGUMENTS.
+Follow /home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/help.md with $ARGUMENTS.
 </process>

@@ -1,7 +1,7 @@
 ---
 name: ultraplan-phase
 description: "[BETA] Offload plan phase to Hermes Agent's ultraplan cloud; review in browser and import back."
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[phase-number]"
 allowed-tools:
   - Read
@@ -22,8 +22,8 @@ Requirements: Hermes Agent v2.1.91+, claude.ai account, GitHub repository.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/ultraplan-phase.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/ultraplan-phase.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

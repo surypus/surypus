@@ -5,6 +5,7 @@ tools:
   read: true
   write: true
   bash: true
+  grep: true
   question: true
 ---
 <objective>
@@ -14,7 +15,7 @@ Use when `.planning/phases/` has accumulated directories from past milestones.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.kilo/get-shit-done/workflows/cleanup.md
+@/home/dominicusin/src/surypus/.kilo/gsd-core/workflows/cleanup.md
 </execution_context>
 
 <process>

@@ -34,7 +34,7 @@ doesn't belong to any specific phase.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/thread.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/thread.md
 </execution_context>
 
 <process>

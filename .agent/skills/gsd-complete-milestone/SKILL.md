@@ -14,8 +14,8 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
 <execution_context>
 **Load these files NOW (before proceeding):**
 
-- @.agent/get-shit-done/workflows/complete-milestone.md (main workflow)
-- @.agent/get-shit-done/templates/milestone-archive.md (archive template)
+- @~/.gemini/antigravity/get-shit-done/workflows/complete-milestone.md (main workflow)
+- @~/.gemini/antigravity/get-shit-done/templates/milestone-archive.md (archive template)
   </execution_context>
 
 <context>

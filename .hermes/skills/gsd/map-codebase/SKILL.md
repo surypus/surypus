@@ -1,7 +1,7 @@
 ---
 name: map-codebase
 description: "Analyze codebase with parallel mapper agents to produce .planning/codebase/ documents"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[--fast [--focus tech|arch|quality|concerns]] [--query <term>|status|diff|refresh] [area]"
 allowed-tools:
   - Read
@@ -22,7 +22,7 @@ Output: .planning/codebase/ folder with 7 structured documents about the codebas
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/map-codebase.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/map-codebase.md
 </execution_context>
 
 <flags>

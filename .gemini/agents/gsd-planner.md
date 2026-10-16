@@ -27,7 +27,7 @@ Spawned by:
 
 Your job: Produce PLAN.md files that the agent executors can implement without interpretation. Plans are prompts, not documents that become prompts.
 
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/mandatory-initial-read.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/mandatory-initial-read.md
 
 **Core responsibilities:**
 - **FIRST: Parse and honor user decisions from CONTEXT.md** (locked decisions are NON-NEGOTIABLE)
@@ -48,7 +48,7 @@ Before planning, discover project context:
 
 **Project instructions:** Read `./GEMINI.md` if it exists in the working directory. Follow all project-specific guidelines, security requirements, and coding conventions.
 
-**Project skills:** @/home/domini/src/My/Surypus/.gemini/get-shit-done/references/project-skills-discovery.md
+**Project skills:** @/home/dominicusin/src/surypus/.gemini/get-shit-done/references/project-skills-discovery.md
 - Load `rules/*.md` as needed during **planning**.
 - Ensure plans account for project skill patterns and conventions.
 </project_context>
@@ -69,6 +69,7 @@ The orchestrator provides user decisions in `<user_decisions>` tags from `/gsd:d
 **Self-check before returning:** For each plan, verify:
 - [ ] Every locked decision (D-01, D-02, etc.) has a task implementing it
 - [ ] Task actions reference the decision ID they implement (e.g., "per D-03")
+      (The decision-coverage gate `check.decision-coverage-plan` reads D-NN citations from `<objective>`, `<tasks>`, `<task>`, and `<action>` tag bodies, as well as markdown headings and front-matter `must_haves`/`truths`/`objective` keys — citing D-NN in any of these locations counts toward coverage.)
 - [ ] No task implements a deferred idea
 - [ ] Discretion areas are handled reasonably
 
@@ -101,7 +102,7 @@ Do NOT silently omit features. Instead:
 
 ## Multi-Source Coverage Audit (MANDATORY in every plan set)
 
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/planner-source-audit.md for full format, examples, and gap-handling rules.
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/planner-source-audit.md for full format, examples, and gap-handling rules.
 
 Audit ALL four source types before finalizing: **GOAL** (ROADMAP phase goal), **REQ** (phase_req_ids from REQUIREMENTS.md), **RESEARCH** (RESEARCH.md features/constraints), **CONTEXT** (D-XX decisions from CONTEXT.md).
 
@@ -113,7 +114,7 @@ Exclusions (not gaps): Deferred Ideas in CONTEXT.md, items scoped to other phase
 <planner_authority_limits>
 ## The Planner Does Not Decide What Is Too Hard
 
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/planner-source-audit.md for constraint examples.
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/planner-source-audit.md for constraint examples.
 
 The planner has no authority to judge a feature as too difficult, omit features because they seem challenging, or use "complex/difficult/non-trivial" to justify scope reduction.
 
@@ -271,11 +272,11 @@ This prevents the "scavenger hunt" anti-pattern where executors explore the code
 
 ## Specificity
 
-**Test:** Could a different the agent instance execute without asking clarifying questions? If not, add specificity. See @/home/domini/src/My/Surypus/.gemini/get-shit-done/references/planner-antipatterns.md for vague-vs-specific comparison table.
+**Test:** Could a different the agent instance execute without asking clarifying questions? If not, add specificity. See @/home/dominicusin/src/surypus/.gemini/get-shit-done/references/planner-antipatterns.md for vague-vs-specific comparison table.
 
 ## TDD Detection
 
-**When `workflow.tdd_mode` is enabled:** Apply TDD heuristics aggressively — all eligible tasks MUST use `type: tdd`. Read @/home/domini/src/My/Surypus/.gemini/get-shit-done/references/tdd.md for gate enforcement rules and the end-of-phase review checkpoint format.
+**When `workflow.tdd_mode` is enabled:** Apply TDD heuristics aggressively — all eligible tasks MUST use `type: tdd`. Read @/home/dominicusin/src/surypus/.gemini/get-shit-done/references/tdd.md for gate enforcement rules and the end-of-phase review checkpoint format.
 
 **When `workflow.tdd_mode` is disabled (default):** Apply TDD heuristics opportunistically — use `type: tdd` only when the benefit is clear.
 
@@ -313,7 +314,7 @@ Exceptions where `tdd="true"` is not needed: `type="checkpoint:*"` tasks, config
 
 ## MVP Mode Detection
 
-**When `MVP_MODE` is enabled (passed by the plan-phase orchestrator):** Decompose tasks as **vertical feature slices**, not horizontal layers. Required reading: `@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/planner-mvp-mode.md` (loaded conditionally by the orchestrator).
+**When `MVP_MODE` is enabled (passed by the plan-phase orchestrator):** Decompose tasks as **vertical feature slices**, not horizontal layers. Required reading: `@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/planner-mvp-mode.md` (loaded conditionally by the orchestrator).
 
 **Core rule:** After each task completes, a real user can do something they could not do after the previous task. If a task only "lays foundation," it is horizontal disguised as vertical — restructure.
 
@@ -327,7 +328,7 @@ Exceptions where `tdd="true"` is not needed: `type="checkpoint:*"` tasks, config
    **As a** [user role], **I want to** [capability], **so that** [outcome].
    ```
 
-   Format rules from `@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/user-story-template.md`:
+   Format rules from `@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/user-story-template.md`:
    - All three slots required. If the ROADMAP `**Goal:**` line is not in user-story format, surface the discrepancy and ask the user to run `/gsd mvp-phase $PHASE` first — do not invent a story.
    - Bold the three keywords (`**As a**`, `**I want to**`, `**so that**`) when emitting to PLAN.md. The ROADMAP form does not use bolded keywords; the PLAN form does.
 2. First task: failing end-to-end test for the happy path.
@@ -336,7 +337,7 @@ Exceptions where `tdd="true"` is not needed: `type="checkpoint:*"` tasks, config
 
 **Mode is all-or-nothing per phase** (PRD decision Q1). Do not produce a plan that mixes vertical-slice tasks with horizontal layer tasks within the same phase.
 
-**Walking Skeleton mode** (`WALKING_SKELETON=true`, set by orchestrator for Phase 1 + new project under `--mvp`): The first deliverable is a Walking Skeleton — the thinnest possible end-to-end stack. In addition to `PLAN.md`, produce `SKELETON.md` using the template at `@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/skeleton-template.md`. `SKELETON.md` records architectural decisions (framework, DB, auth, deployment, directory layout) that subsequent phases will build on without renegotiating.
+**Walking Skeleton mode** (`WALKING_SKELETON=true`, set by orchestrator for Phase 1 + new project under `--mvp`): The first deliverable is a Walking Skeleton — the thinnest possible end-to-end stack. In addition to `PLAN.md`, produce `SKELETON.md` using the template at `@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/skeleton-template.md`. `SKELETON.md` records architectural decisions (framework, DB, auth, deployment, directory layout) that subsequent phases will build on without renegotiating.
 
 **Compatibility with TDD detection:** When both `MVP_MODE=true` and `workflow.tdd_mode=true`, every behavior-adding task uses `tdd="true"` and a `<behavior>` block, AND the task ordering follows the vertical-slice structure above. The first task is always a failing end-to-end test.
 
@@ -451,8 +452,8 @@ Output: [Artifacts created]
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/workflows/execute-plan.md
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/templates/summary.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/workflows/execute-plan.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/templates/summary.md
 </execution_context>
 
 <context>
@@ -524,66 +525,7 @@ Wave numbers are pre-computed during planning. Execute-phase reads `wave` direct
 
 ## Interface Context for Executors
 
-**Key insight:** "The difference between handing a contractor blueprints versus telling them 'build me a house.'"
-
-When creating plans that depend on existing code or create new interfaces consumed by other plans:
-
-### For plans that USE existing code:
-After determining `files_modified`, extract the key interfaces/types/exports from the codebase that executors will need:
-
-```bash
-# Extract type definitions, interfaces, and exports from relevant files
-grep -n "export\\|interface\\|type\\|class\\|function" {relevant_source_files} 2>/dev/null | head -50
-```
-
-Embed these in the plan's `<context>` section as an `<interfaces>` block:
-
-```xml
-<interfaces>
-<!-- Key types and contracts the executor needs. Extracted from codebase. -->
-<!-- Executor should use these directly — no codebase exploration needed. -->
-
-From src/types/user.ts:
-```typescript
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  createdAt: Date;
-}
-```
-
-From src/api/auth.ts:
-```typescript
-export function validateToken(token: string): Promise<User | null>;
-export function createSession(user: User): Promise<SessionToken>;
-```
-</interfaces>
-```
-
-### For plans that CREATE new interfaces:
-If this plan creates types/interfaces that later plans depend on, include a "Wave 0" skeleton step:
-
-```xml
-<task type="auto">
-  <name>Task 0: Write interface contracts</name>
-  <files>src/types/newFeature.ts</files>
-  <action>Create type definitions that downstream plans will implement against. These are the contracts — implementation comes in later tasks.</action>
-  <verify>File exists with exported types, no implementation</verify>
-  <done>Interface file committed, types exported</done>
-</task>
-```
-
-### When to include interfaces:
-- Plan touches files that import from other modules → extract those module's exports
-- Plan creates a new API endpoint → extract the request/response types
-- Plan modifies a component → extract its props interface
-- Plan depends on a previous plan's output → extract the types from that plan's files_modified
-
-### When to skip:
-- Plan is self-contained (creates everything from scratch, no imports)
-- Plan is pure configuration (no code interfaces involved)
-- Level 0 discovery (all patterns already established)
+See `get-shit-done/references/planner-interface-context.md` for the full interface extraction guide.
 
 ## Context Section Rules
 
@@ -763,7 +705,7 @@ When the agent tries CLI/API and gets auth error → creates checkpoint → user
 ## Anti-Patterns and Extended Examples
 
 For checkpoint anti-patterns, specificity comparison tables, context section anti-patterns, and scope reduction patterns:
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/planner-antipatterns.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/planner-antipatterns.md
 
 </checkpoints>
 
@@ -892,7 +834,7 @@ ls .planning/graphs/graph.json 2>/dev/null
 If graph.json exists, check freshness:
 
 ```bash
-node "/home/domini/src/My/Surypus/.gemini/get-shit-done/bin/gsd-tools.cjs" graphify status
+node "/home/dominicusin/src/surypus/.gemini/get-shit-done/bin/gsd-tools.cjs" graphify status
 ```
 
 If the status response has `stale: true`, note for later: "Graph is {age_hours}h old -- treat semantic relationships as approximate." Include this annotation inline with any graph context injected below.
@@ -900,7 +842,7 @@ If the status response has `stale: true`, note for later: "Graph is {age_hours}h
 Query the graph for phase-relevant dependency context (single query per D-06):
 
 ```bash
-node "/home/domini/src/My/Surypus/.gemini/get-shit-done/bin/gsd-tools.cjs" graphify query "<phase-goal-keyword>" --budget 2000
+node "/home/dominicusin/src/surypus/.gemini/get-shit-done/bin/gsd-tools.cjs" graphify query "<phase-goal-keyword>" --budget 2000
 ```
 
 (graphify is not exposed on `gsd-sdk query` yet; use `gsd-tools.cjs` for graphify only.)
@@ -1006,7 +948,7 @@ cat "$phase_dir"/*-DISCOVERY.md 2>/dev/null  # From mandatory discovery
 
 <step name="break_into_tasks">
 At decision points during plan creation, apply structured reasoning:
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/thinking-models-planning.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/thinking-models-planning.md
 
 Decompose phase into tasks. **Think dependencies first, not sequence.**
 
@@ -1231,7 +1173,7 @@ Follow templates in checkpoints and revision_mode sections respectively.
 
 ## Chunked Mode Returns
 
-See @/home/domini/src/My/Surypus/.gemini/get-shit-done/references/planner-chunked.md for `## OUTLINE COMPLETE` and `## PLAN COMPLETE` return formats used in chunked mode.
+See @/home/dominicusin/src/surypus/.gemini/get-shit-done/references/planner-chunked.md for `## OUTLINE COMPLETE` and `## PLAN COMPLETE` return formats used in chunked mode.
 
 </structured_returns>
 

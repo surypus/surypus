@@ -1,6 +1,7 @@
 ---
 name: gsd-stats
 description: "Display project statistics — phases, plans, requirements, git metrics, and timeline"
+user-invocable: false
 ---
 
 <objective>
@@ -8,7 +9,7 @@ Display comprehensive project statistics including phase progress, plan executio
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.codebuddy/get-shit-done/workflows/stats.md
+@/home/dominicusin/src/surypus/.codebuddy/gsd-core/workflows/stats.md
 </execution_context>
 
 <process>

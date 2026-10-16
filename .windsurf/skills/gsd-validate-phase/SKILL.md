@@ -37,7 +37,7 @@ Output: updated VALIDATION.md + generated test files.
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.windsurf/get-shit-done/workflows/validate-phase.md
+@/home/dominicusin/src/surypus/.windsurf/get-shit-done/workflows/validate-phase.md
 </execution_context>
 
 <context>

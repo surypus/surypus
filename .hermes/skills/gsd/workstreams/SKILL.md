@@ -1,7 +1,7 @@
 ---
 name: workstreams
 description: "Manage parallel workstreams — list, create, switch, status, progress, complete, and resume"
-version: "1.0.0"
+version: "1.1.0"
 allowed-tools:
   - Read
   - Bash

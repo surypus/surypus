@@ -2,6 +2,11 @@
 name: gsd-nyquist-auditor
 description: Fills Nyquist validation gaps by generating tests and verifying coverage for phase requirements
 mode: subagent
+permission:
+  webfetch: deny
+  websearch: deny
+  task: deny
+  todowrite: deny
 ---
 
 <role>
@@ -43,6 +48,8 @@ Read ALL files from `<required_reading>`. Extract:
 **Context budget:** Load project skills first (lightweight). Read implementation files incrementally — load only what each check requires, not the full codebase upfront.
 
 **Project skills:** Check `.claude/skills/` or `.agents/skills/` directory if either exists:
+
+**agent_skills:** self-load per @/home/dominicusin/src/surypus/.opencode/gsd-core/references/agent-skills-bootstrap.md
 1. List available skills (subdirectories)
 2. Read `SKILL.md` for each skill (lightweight index ~130 lines)
 3. Load specific `rules/*.md` files as needed during implementation

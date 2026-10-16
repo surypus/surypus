@@ -13,7 +13,7 @@ Accepts an optional topic argument: `/gsd-explore authentication strategy`
 </objective>
 
 <execution_context>
-@.github/get-shit-done/workflows/explore.md
+@.github/gsd-core/workflows/explore.md
 </execution_context>
 
 <process>

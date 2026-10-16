@@ -1,7 +1,7 @@
 ---
 name: workspace
 description: "Manage GSD workspaces — create, list, or remove isolated workspace environments"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[--new | --list | --remove] [name]"
 allowed-tools:
   - Read
@@ -31,10 +31,10 @@ Mode routing:
 </routing>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/new-workspace.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/list-workspaces.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/remove-workspace.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/new-workspace.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/list-workspaces.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/remove-workspace.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>

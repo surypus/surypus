@@ -8,9 +8,9 @@ Orchestrator only does: init, loop control, parse CYCLE_SUMMARY for HIGH count, 
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/revision-loop.md
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/gates.md
-@/home/domini/src/My/Surypus/.gemini/get-shit-done/references/agent-contracts.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/revision-loop.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/gates.md
+@/home/dominicusin/src/surypus/.gemini/get-shit-done/references/agent-contracts.md
 </required_reading>
 
 <process>
@@ -43,7 +43,18 @@ echo "$ARGUMENTS" | grep -qE '\-\-ws\s+\S+' && GSD_WS=$(echo "$ARGUMENTS" | grep
 ## 1.5. Config Gate (feature disabled by default)
 
 ```bash
-CONVERGENCE_ENABLED=$(gsd-sdk query config-get workflow.plan_review_convergence 2>/dev/null || echo "false")
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then
+  GSD_SDK="node $GSD_TOOLS"
+elif command -v gsd-sdk >/dev/null 2>&1; then
+  GSD_SDK="gsd-sdk"
+else
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx get-shit-done-cc@latest --claude --local" >&2
+  exit 1
+fi
+CONVERGENCE_ENABLED=$($GSD_SDK query config-get workflow.plan_review_convergence 2>/dev/null || echo "false")
 ```
 
 **If `CONVERGENCE_ENABLED` is not `"true"`:** Display and exit:
@@ -62,7 +73,7 @@ Then re-run: /gsd:plan-review-convergence {PHASE}
 ## 2. Initialize
 
 ```bash
-INIT=$(node "/home/domini/src/My/Surypus/.gemini/get-shit-done/bin/gsd-tools.cjs" init plan-phase "$PHASE")
+INIT=$(node "/home/dominicusin/src/surypus/.gemini/get-shit-done/bin/gsd-tools.cjs" init plan-phase "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -75,7 +86,7 @@ Set `TEXT_MODE=true` if `--text` is present in $ARGUMENTS OR `text_mode` from in
 ## 3. Validate Phase + Pre-flight Gate
 
 ```bash
-PHASE_INFO=$(node "/home/domini/src/My/Surypus/.gemini/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase "${PHASE}")
+PHASE_INFO=$(node "/home/dominicusin/src/surypus/.gemini/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase "${PHASE}")
 ```
 
 **If `found` is false:** Error with available phases. Exit.
@@ -213,7 +224,7 @@ fi
 **If HIGH_COUNT == 0 (converged):**
 
 ```bash
-node "/home/domini/src/My/Surypus/.gemini/get-shit-done/bin/gsd-tools.cjs" state planned-phase --phase "${PHASE}" --name "${phase_name}" --plans "${PLAN_COUNT}"
+node "/home/dominicusin/src/surypus/.gemini/get-shit-done/bin/gsd-tools.cjs" state planned-phase --phase "${PHASE}" --name "${phase_name}" --plans "${PLAN_COUNT}"
 ```
 
 Display:

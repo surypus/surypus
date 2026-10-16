@@ -1,7 +1,7 @@
 ---
 name: profile-user
 description: "Generate developer behavioral profile and create Claude-discoverable artifacts"
-version: "1.0.0"
+version: "1.1.0"
 argument-hint: "[--questionnaire] [--refresh]"
 allowed-tools:
   - Read
@@ -21,8 +21,8 @@ Routes to the profile-user workflow which orchestrates the full flow: consent ga
 </objective>
 
 <execution_context>
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/workflows/profile-user.md
-@/home/domini/src/My/Surypus/.hermes/get-shit-done/references/ui-brand.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/workflows/profile-user.md
+@/home/dominicusin/src/surypus/.hermes/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>
