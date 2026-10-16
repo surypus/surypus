@@ -480,6 +480,11 @@ bd ready
   - Now delegate to Data.Pool.destroyAllResources
   - Added DAL.PoolSpec (2 tests; pool creation is lazy, so no live database needed)
 
+- [x] Remove the last two dead stubs (2026-10-16)
+  - Surypus.Database.Pool: whole module was a stub (createDatabasePool/ping/release/runMigrations), zero importers
+  - DAL.Schema.migrateAll: no-op that shadowed the real migration in Surypus.DB.Schema.runMigrations
+  - No `return ()` / `undefined` / `TODO` stub patterns remain anywhere in src/
+
 ## Stats
 
 | Status | Count |
@@ -519,4 +524,5 @@ bd ready
 | Done (New: GraphQL migration plan) | 1 |
 | Done (Dead stub removal ×6) | 1 |
 | Done (New: closePool real teardown) | 1 |
-| **Total** | **94** |
+| Done (Dead stub removal ×8) | 1 |
+| **Total** | **95** |
