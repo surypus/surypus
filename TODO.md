@@ -468,6 +468,13 @@ bd ready
   - Documented the 11 REST→GraphQL operation mappings, variable schema, and deprecation timeline
   - Added docs/GRAPHQL_MIGRATION.md and registered it in extra-doc-files
 
+- [x] Remove 6 dead stub modules (2026-10-16)
+  - Surypus.Domain.Observability.Domain, Infrastructure.WebSocket.InventoryBroadcast,
+    Kafka.Producer, DAL.Migration, System.SchedulerJob, System.HealthCheck
+  - All had zero importers (HealthCheck only imported by dead SchedulerJob)
+  - All were pure no-ops (return () stubs)
+  - 382 exposed modules remaining (was 388)
+
 ## Stats
 
 | Status | Count |
@@ -505,4 +512,5 @@ bd ready
 | Done (New: RedisCache + ReadModel wiring) | 1 |
 | Done (New: Stub cleanup + ExternalAPI client) | 1 |
 | Done (New: GraphQL migration plan) | 1 |
-| **Total** | **92** |
+| Done (Dead stub removal ×6) | 1 |
+| **Total** | **93** |

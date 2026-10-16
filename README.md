@@ -25,7 +25,7 @@ vertical slice, not broad feature coverage.
   exercised by tests, not deployed.
 - **CI: green** — 13 workflows pass on `main` (build + tests, CodeQL, HLint,
   Fourmolu, Hadolint, secret scanning, coverage, supply-chain checks, docs).
-- **389 library modules** in `src/`: 388 exposed in `exposed-modules` of
+- **383 library modules** in `src/`: 382 exposed in `exposed-modules` of
   `Surypus.cabal`, plus one internal helper (`Service.Workflow`).
 - **756 test examples, 0 failures** across 47 test modules.
 - Stack resolver: `lts-22.21` (GHC **9.6.5**); local development uses GHC
