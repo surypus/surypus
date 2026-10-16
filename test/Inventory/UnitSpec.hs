@@ -38,6 +38,10 @@ meter = mkUnit 1 "m" "meter" UTLength 1.0 Nothing
 kilometer :: Unit
 kilometer = mkUnit 2 "km" "kilometer" UTLength 1000.0 (Just 1)
 
+-- Derived unit: hectometer (ratio 100, base = meter)
+hectometer :: Unit
+hectometer = mkUnit 7 "hm" "hectometer" UTLength 100.0 (Just 1)
+
 -- Base unit: gram (ratio 1, no parent)
 gram :: Unit
 gram = mkUnit 3 "g" "gram" UTWeight 1.0 Nothing
@@ -56,62 +60,70 @@ minute = mkUnit 6 "min" "minute" UTTime 60.0 (Just 5)
 
 spec :: Spec
 spec = describe "Inventory.Unit.convertUnit" $ do
-  describe "same unit (BUG)" $ do
-    -- BUG: convertUnit returns Nothing when from == to (same unit).
-    -- Both guards fail: uBaseId from == Just (uId to) and vice versa
-    -- require a baseId link, but base units have baseId = Nothing.
-    -- See TASK-036.
-    it "meter to meter" $ do
-      pendingWith "convertUnit returns Nothing for same-unit conversion (TASK-036)"
+  describe "same unit" $ do
+    it "is the identity for a base unit" $
+      convertUnit 5.0 meter meter `shouldBe` Just 5.0
+
+    it "is the identity for a derived unit" $
+      convertUnit 5.0 kilometer kilometer `shouldBe` Just 5.0
+
+    it "is the identity for zero" $
+      convertUnit 0.0 gram gram `shouldBe` Just 0.0
 
   describe "derived to base" $ do
-    it "converts kilometers to meters (multiply by ratio)" $ do
+    it "converts kilometers to meters (multiply by ratio)" $
       convertUnit 5.0 kilometer meter `shouldBe` Just 5000.0
 
-    it "converts kilograms to grams (multiply by ratio)" $ do
+    it "converts kilograms to grams (multiply by ratio)" $
       convertUnit 3.0 kilogram gram `shouldBe` Just 3000.0
 
-    it "converts minutes to seconds (multiply by ratio)" $ do
+    it "converts minutes to seconds (multiply by ratio)" $
       convertUnit 2.0 minute second `shouldBe` Just 120.0
 
-    it "handles zero quantity derived-to-base" $ do
+    it "handles zero quantity derived-to-base" $
       convertUnit 0.0 kilometer meter `shouldBe` Just 0.0
 
-  describe "base to derived (BUG)" $ do
-    -- BUG: convertUnit divides by uRatio `from` instead of uRatio `to`,
-    -- so base→derived returns the input unchanged (e.g. 5000 m → 5000 "km"
-    -- instead of 5 km). See TASK-036.
-    it "meters to kilometers" $ do
-      pendingWith "convertUnit uses wrong ratio for base→derived (TASK-036)"
-    it "grams to kilograms" $ do
-      pendingWith "convertUnit uses wrong ratio for base→derived (TASK-036)"
-    it "seconds to minutes" $ do
-      pendingWith "convertUnit uses wrong ratio for base→derived (TASK-036)"
+  describe "base to derived" $ do
+    it "converts meters to kilometers (divide by the derived ratio)" $
+      convertUnit 5000.0 meter kilometer `shouldBe` Just 5.0
+
+    it "converts grams to kilograms" $
+      convertUnit 3000.0 gram kilogram `shouldBe` Just 3.0
+
+    it "converts seconds to minutes" $
+      convertUnit 120.0 second minute `shouldBe` Just 2.0
+
+    it "handles zero quantity base-to-derived" $
+      convertUnit 0.0 meter kilometer `shouldBe` Just 0.0
+
+  describe "derived to derived (shared base)" $ do
+    it "converts through the shared base" $
+      convertUnit 1.0 kilometer hectometer `shouldBe` Just 10.0
+
+    it "is the inverse of the reverse direction" $
+      convertUnit 10.0 hectometer kilometer `shouldBe` Just 1.0
 
   describe "incompatible units" $ do
-    it "returns Nothing for meter to gram (different types)" $ do
+    it "returns Nothing for meter to gram (different types)" $
       convertUnit 100.0 meter gram `shouldBe` Nothing
 
-    it "returns Nothing for meter to second (different types)" $ do
+    it "returns Nothing for meter to second (different types)" $
       convertUnit 100.0 meter second `shouldBe` Nothing
 
-    it "returns Nothing for kilogram to kilometer (different types)" $ do
+    it "returns Nothing for kilogram to kilometer (different types)" $
       convertUnit 1.0 kilogram kilometer `shouldBe` Nothing
 
-  describe "BUG: base-to-derived uses wrong ratio" $ do
-    -- Known bug: convertUnit divides by uRatio `from` instead of uRatio `to`
-    -- when converting base→derived. 5000 m should be 5 km but returns 5000.0.
-    -- See TASK-036. These tests document the correct expected behaviour.
-    it "base→derived should divide by the derived unit's ratio" $ do
-      pendingWith "known bug: convertUnit divides by uRatio from instead of uRatio to (TASK-036)"
-
-  describe "round-trip (derived→base only, correct path)" $ do
+  describe "round-trip" $ do
     it "kilometer→meter→kilometer round-trips" $ do
       let original = 5.0
           Just base = convertUnit original kilometer meter
-      -- First step is correct (5 km → 5000 m); second step hits the BUG above.
-      -- Pinning the correct first step here.
+          Just back = convertUnit base meter kilometer
       base `shouldBe` 5000.0
+      back `shouldBe` 5.0
+
+    it "is an involution on the identity" $ do
+      let Just once = convertUnit 7.5 meter meter
+      convertUnit once meter meter `shouldBe` Just 7.5
 
   describe "properties" $ do
     it "never returns negative for non-negative input" $ do
@@ -133,3 +145,11 @@ spec = describe "Inventory.Unit.convertUnit" $ do
     it "incompatible units always return Nothing" $ do
       property $ \(_n :: Double) ->
         convertUnit 100.0 meter gram == Nothing
+
+    it "base→derived is the inverse of derived→base" $ do
+      property $ \n -> n > 0 ==>
+        let Just base = convertUnit n kilometer meter
+            Just back = convertUnit base meter kilometer
+            -- the round-trip goes through a Double multiply then divide
+            tolerance = 1e-9 * max 1 (abs n)
+        in abs (back - n) < tolerance
