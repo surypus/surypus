@@ -475,6 +475,11 @@ bd ready
   - All were pure no-ops (return () stubs)
   - 382 exposed modules remaining (was 388)
 
+- [x] Make closePool actually close the pool (2026-10-16)
+  - DAL.Database.closePool and DAL.ORMPool.closePool were `return ()` — connections leaked
+  - Now delegate to Data.Pool.destroyAllResources
+  - Added DAL.PoolSpec (2 tests; pool creation is lazy, so no live database needed)
+
 ## Stats
 
 | Status | Count |
@@ -513,4 +518,5 @@ bd ready
 | Done (New: Stub cleanup + ExternalAPI client) | 1 |
 | Done (New: GraphQL migration plan) | 1 |
 | Done (Dead stub removal ×6) | 1 |
-| **Total** | **93** |
+| Done (New: closePool real teardown) | 1 |
+| **Total** | **94** |

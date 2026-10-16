@@ -49,6 +49,7 @@ import qualified TranscendenceSpec
 import qualified AdditionalTests
 import qualified DAL.TypesSpec
 import qualified DAL.DBSpec
+import qualified DAL.PoolSpec
 
 main :: IO ()
 main = hspec $ do
@@ -96,4 +97,5 @@ main = hspec $ do
   TranscendenceSpec.spec
   DAL.TypesSpec.spec
   DAL.DBSpec.spec
+  DAL.PoolSpec.spec
   Domain.InvariantsSpec.spec

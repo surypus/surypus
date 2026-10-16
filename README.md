@@ -27,7 +27,7 @@ vertical slice, not broad feature coverage.
   Fourmolu, Hadolint, secret scanning, coverage, supply-chain checks, docs).
 - **383 library modules** in `src/`: 382 exposed in `exposed-modules` of
   `Surypus.cabal`, plus one internal helper (`Service.Workflow`).
-- **756 test examples, 0 failures** across 47 test modules.
+- **758 test examples, 0 failures** across 48 test modules.
 - Stack resolver: `lts-22.21` (GHC **9.6.5**); local development uses GHC
   9.10.3.
 

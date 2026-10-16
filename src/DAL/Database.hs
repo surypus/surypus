@@ -19,6 +19,7 @@ import Database.Persist.Postgresql (ConnectionPool, createPostgresqlPool)
 import Database.Persist.Sql (SqlPersistT, runSqlPool, PersistValue(..), rawExecute)
 import Control.Monad.Logger (runNoLoggingT)
 import Data.ByteString.Char8 (pack)
+import Data.Pool (destroyAllResources)
 import System.IO.Unsafe (unsafePerformIO)
 
 type Pool = ConnectionPool
@@ -42,7 +43,7 @@ createPool :: IO ConnectionPool
 createPool = runNoLoggingT $ createPostgresqlPool (pack "host=localhost port=5432 dbname=surypus user=postgres password=postgres") 10
 
 closePool :: ConnectionPool -> IO ()
-closePool _ = return ()
+closePool = destroyAllResources
 
 runDb :: ConnectionPool -> SqlPersistT IO a -> IO a
 runDb pool action = do

@@ -8,10 +8,11 @@ module DAL.ORMPool
 
 import Control.Monad.Logger (runNoLoggingT)
 import Data.ByteString.Char8 (pack)
+import Data.Pool (destroyAllResources)
 import Database.Persist.Postgresql (createPostgresqlPool, ConnectionPool)
 
 createPool :: IO ConnectionPool
 createPool = runNoLoggingT $ createPostgresqlPool (pack "host=localhost port=5432 dbname=surypus user=postgres password=postgres") 10
 
 closePool :: ConnectionPool -> IO ()
-closePool _ = return ()
+closePool = destroyAllResources
