@@ -4,7 +4,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
 
-module Surypus.API.GraphQL (GraphQLAPI, GraphQLQuery(..), GraphQLResponse(..), graphqlHandler) where
+module Surypus.API.GraphQL (GraphQLAPI, GraphQLQuery(..), GraphQLResponse(..), graphqlHandler, resolveQuery) where
 
 import Control.Monad.IO.Class (liftIO)
 import DAL.Pool (ConnectionPool)

@@ -34,6 +34,7 @@ import qualified Inventory.UnitSpec
 import qualified Inventory.OperationsSpec
 import qualified HR.OperationsSpec
 import qualified Integration.API.ExternalAPISpec
+import qualified Surypus.API.GraphQLSpec
 import qualified Service.WorkflowEngineSpec
 import qualified Phase2Phase3.AccountingEventsSpec
 import qualified Phase2Phase3.AccountingReadModelSpec
@@ -82,6 +83,7 @@ main = hspec $ do
   Inventory.UnitSpec.spec
   HR.OperationsSpec.spec
   Integration.API.ExternalAPISpec.spec
+  Surypus.API.GraphQLSpec.spec
   Service.WorkflowEngineSpec.spec
   Phase2Phase3.AccountingEventsSpec.spec
   Phase2Phase3.AccountingReadModelSpec.spec
