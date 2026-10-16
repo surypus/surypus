@@ -16,6 +16,7 @@ module Core.Accounting.ReadModel
   , replayAccountEvents
   , rebuildAccountBalance
   , getCurrentBalance
+  , getCurrentBalanceCached
   , getAccountReadModel
 
     -- * Event Application
@@ -35,6 +36,7 @@ import qualified Data.Aeson as A
 import qualified Data.Aeson.KeyMap as KM
 import qualified DAL.EventStore as ES
 import DAL.ORMPool (ConnectionPool)
+import qualified Core.Accounting.RedisCache as RedisCache
 
 -- | Unwrap the payload of a tagged-union event as written by
 -- 'Infrastructure.EventStore.Accounting.appendAccountingEvent': @toJSON event@
@@ -297,6 +299,25 @@ rebuildAccountBalance pool accountId aggType = do
 -- | Get current balance for an account
 getCurrentBalance :: ConnectionPool -> Int64 -> Text -> IO (Either Text Double)
 getCurrentBalance pool = rebuildAccountBalance pool
+
+-- | Get the current balance, consulting the Redis cache first (US-3-3).
+--
+-- A cache miss - or any Redis failure - falls back to rebuilding from the event
+-- store, so the caller always gets a consistent answer. A freshly rebuilt value
+-- is written back with the cache's TTL.
+getCurrentBalanceCached :: RedisCache.RedisCache -> ConnectionPool -> Int64 -> Text -> IO (Either Text Double)
+getCurrentBalanceCached cache pool accountId aggType = do
+  cached <- RedisCache.getCachedBalance cache accountId
+  case cached of
+    Left _ -> rebuildAccountBalance pool accountId aggType
+    Right (Just balance) -> pure (Right balance)
+    Right Nothing -> do
+      result <- rebuildAccountBalance pool accountId aggType
+      case result of
+        Right balance -> do
+          _ <- RedisCache.putCachedBalance cache accountId balance
+          pure result
+        Left _ -> pure result
 
 -- | Get full account read model
 getAccountReadModel :: ConnectionPool -> Int64 -> Text -> IO (Either Text AccountReadModel)

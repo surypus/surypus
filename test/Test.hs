@@ -10,6 +10,7 @@ import qualified Finance.BillSpec
 import qualified Surypus.ValidationSpec
 import qualified Core.PayrollSpec
 import qualified Core.Accounting.CacheSpec
+import qualified Core.Accounting.RedisCacheSpec
 import qualified System.RateLimiterSpec
 import qualified System.CacheSpec
 import qualified System.CircuitBreakerSpec
@@ -64,6 +65,7 @@ main = hspec $ do
   System.RetrySpec.spec
   JWTSpec.spec
   Core.Accounting.CacheSpec.spec
+  Core.Accounting.RedisCacheSpec.spec
   ConfigSpec.spec
   ObservabilitySpec.spec
   MigrationDryRunSpec.spec

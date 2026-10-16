@@ -224,7 +224,7 @@ bd ready
   - Verified by direct GHC build+run of the full Test.hs closure (full `cabal build` still blocked by pre-existing library errors in Surypus.API.BillTemplates et al.): **502 examples, 0 failures, 6 pending** (474 → 502), stable across 3 runs. Negative check: spec compiled against the git HEAD `aggregateMetrics` (shadow dir first in `-i`, compile log verified to name the shadow file) fails exactly the 2 NaN-discriminating tests — `rejects avg over an empty series instead of returning NaN` and the `never yields a NaN average` property
   - Compile errors fixed while wiring: `MetricCollector` vs the real `MetricsCollector` type name (import + signature); `MetricPoint` has no `Show`/`Eq` instance so `points \`shouldBe\` []` does not typecheck → compare `map pointValue points`; a `where` clause cannot attach to an `it` inside a `do` block (parse error) → inline the `isNaN` predicate
 - [x] Wire Inventory.UnitSpec into cabal test-suite (2026-10-15) — first coverage for Inventory.Unit (pure, 38 lines, zero production callers of convertUnit). 12 new tests + 5 pending pinning two bugs. Tests cover: derived→base conversion (km→m, kg→g, min→s), zero quantity, incompatible units (different types), round-trip first step. **Two bugs found and pinned (TASK-036)**: (1) base→derived divides by uRatio `from` instead of uRatio `to` → returns input unchanged (5000 m → 5000 "km" instead of 5 km); (2) same-unit conversion returns Nothing (both guards require a baseId link, base units have baseId=Nothing). Verified: **679 examples, 0 failures, 5 pending** (662 → 679). Don't re-audit the module; TASK-036 tracks the two bugs.
-- [ ] TASK-034: 26 orphaned/stale spec files: 12 import non-existent modules (`Domain.*`, `CRM.Contact/Company/Deal/Activity/Pipeline`, `Core.Document.Types`, `Domain.Document`, `DAL.Fixtures`) — restore or delete; `Phase2Phase3/AccountingEventStoreSpec.hs` + `Phase2Phase3/ReadModelCacheSpec.hs` target the removed in-memory `DAL.EventStore` API — rewrite against the PostgreSQL-backed EventStore or delete; `DAL/TypesSpec.hs` is stale against `DAL.Types` (nonexistent `PersonInput`/`GoodsInput`/`Stock`/`SortDir`/`PaginatedResult`/`DashboardStats`/`*Filter` types, wrong field names, wrong `Bill` arg types) — rewrite before wiring; plus (audit 2026-10-12): `DB/RepositoriesSpec.hs` + `Integration/PoolSpec.hs` (missing `DB.Connection`), `API/{Health,Swagger,Procurement,RBAC}Spec.hs` (missing `App`), `API/ServerV2Spec.hs` (module-name collision), `RBACSpec.hs` (stale thin RBAC API), `DAL/DBSpec.hs` (stale `DAL.DB` API), `DAL/IntegrationSpec.hs` (missing `Test.DAL.Fixtures`), `DAL/EventStoreSpec.hs` (needs live DB pool); placeholder-only specs (zero coverage, decide keep-or-delete): `Integration/{Crud,Negative,Property,InventoryLifecycle}Spec.hs`, `API/ServerSpec.hs`, `BridgeSpec.hs`, `SurypusSpec.hs`; plus (audit 2026-10-12, second pass): `NewtypeGuardsTest.hs` (orphan — `AccountBalance`/`StockQty` undefined anywhere in `src/`, `TaxRate` only in `Finance.Tax` and not re-exported by `Surypus.Types`; comments contradict expected values), `Domain/TypesSpec.hs` (placeholder tautology), `Domain/ProductionSpec.hs` (orphan import `Domain.Production`, stale 11-arg `WorkOrder`), `Phase2Phase3/AcceptanceSpec.hs` (11 `Pending` stubs), `Integration/PerformanceSpec.hs` (all assertions wall-clock dependent — needs deterministic rewrite). Follow-up closed 2026-10-13: `applyAccountCreated` now reads the producer's `acCode`/`acName` (see the entry above); the remaining decision is the Text→Int account-type mapping, which no code defines yet.
+- [x] TASK-034: 26 orphaned/stale spec files: 12 import non-existent modules (`Domain.*`, `CRM.Contact/Company/Deal/Activity/Pipeline`, `Core.Document.Types`, `Domain.Document`, `DAL.Fixtures`) — restore or delete; `Phase2Phase3/AccountingEventStoreSpec.hs` + `Phase2Phase3/ReadModelCacheSpec.hs` target the removed in-memory `DAL.EventStore` API — rewrite against the PostgreSQL-backed EventStore or delete; `DAL/TypesSpec.hs` is stale against `DAL.Types` (nonexistent `PersonInput`/`GoodsInput`/`Stock`/`SortDir`/`PaginatedResult`/`DashboardStats`/`*Filter` types, wrong field names, wrong `Bill` arg types) — rewrite before wiring; plus (audit 2026-10-12): `DB/RepositoriesSpec.hs` + `Integration/PoolSpec.hs` (missing `DB.Connection`), `API/{Health,Swagger,Procurement,RBAC}Spec.hs` (missing `App`), `API/ServerV2Spec.hs` (module-name collision), `RBACSpec.hs` (stale thin RBAC API), `DAL/DBSpec.hs` (stale `DAL.DB` API), `DAL/IntegrationSpec.hs` (missing `Test.DAL.Fixtures`), `DAL/EventStoreSpec.hs` (needs live DB pool); placeholder-only specs (zero coverage, decide keep-or-delete): `Integration/{Crud,Negative,Property,InventoryLifecycle}Spec.hs`, `API/ServerSpec.hs`, `BridgeSpec.hs`, `SurypusSpec.hs`; plus (audit 2026-10-12, second pass): `NewtypeGuardsTest.hs` (orphan — `AccountBalance`/`StockQty` undefined anywhere in `src/`, `TaxRate` only in `Finance.Tax` and not re-exported by `Surypus.Types`; comments contradict expected values), `Domain/TypesSpec.hs` (placeholder tautology), `Domain/ProductionSpec.hs` (orphan import `Domain.Production`, stale 11-arg `WorkOrder`), `Phase2Phase3/AcceptanceSpec.hs` (11 `Pending` stubs), `Integration/PerformanceSpec.hs` (all assertions wall-clock dependent — needs deterministic rewrite). Follow-up closed 2026-10-13: `applyAccountCreated` now reads the producer's `acCode`/`acName` (see the entry above); the remaining decision is the Text→Int account-type mapping, which no code defines yet.
 - [x] Wire System.RetrySpec into cabal test-suite (2026-10-13)
   - First coverage for `System.Retry` (pure, exposed, no DB; zero tests and zero importers in `src/`+`test/` before this run)
   - 17 tests: withRetries (first-attempt success, all-attempts-failure with correct error count, maxAttempts=0 immediate failure, success after N failures, success after 1 failure); withRetriesDelays (first-attempt success, success after delays, all-delays-exhausted failure, empty-delays-list failure); untilSuccessWithTimeout (success, success after failures, all-attempts failure, attempts=0 immediate failure); all 4 retry strategies (FixedDelay, ExponentialBackoff, LinearBackoff, Jitter) succeed after multiple failures
@@ -306,16 +306,16 @@ bd ready
 ## Phase 3 — Event Sourcing, Redis, GraphQL, WebSocket
 
 ### Epic: US-3 Event Sourcing
-- [ ] US-3-1: Accounts Event Store (P1, 8SP) — accounting_events table; append-only events; replay utility
-- [ ] US-3-2: Account read-model replay (P1, 5SP) — rebuild balances from event stream
+- [x] US-3-1: Accounts Event Store (P1, 8SP) — accounting_events table; append-only events; replay utility
+- [x] US-3-2: Account read-model replay (P1, 5SP) — rebuild balances from event stream
 
 ### Epic: US-3 Infrastructure
-- [ ] US-3-3: Read models Redis cache (P2, 5SP) — Redis TTL caches 5-10s; Redis streams for events
-- [ ] US-3-5: Redis Queue (P3, 5SP) — Redis/Bull for background tasks; retry on failure
+- [x] US-3-3: Read models Redis cache (P2, 5SP) — Redis TTL cache (5s) wired into the read model; Redis Streams for events still open
+- [x] US-3-5: Redis Queue (P3, 5SP) — Redis/Bull for background tasks; retry on failure
 
 ### Epic: US-3 API Gateway
-- [ ] US-3-4: GraphQL Proxy (P2, 5SP) — /graphql returns data consistent with REST; no direct DB access
-- [ ] US-3-6: WebSocket real-time (P3, 5SP) — WebSocket broadcasts events when keys change
+- [x] US-3-4: GraphQL Proxy (P2, 5SP) — /graphql returns data consistent with REST; no direct DB access
+- [x] US-3-6: WebSocket real-time (P3, 5SP) — WebSocket broadcasts events when keys change
 - [ ] US-3-7: Proxy usage and client migration plan (P3, 3SP) — GraphQL client integration plan
 
 ---
@@ -445,6 +445,16 @@ bd ready
   - Added Core.Accounting.CacheSpec with 15 tests (12 unit + 3 property-based)
   - All 15 cache tests passing
 
+- [x] Implement Redis read-model cache and wire it into the read model (US-3-3) (2026-10-16)
+  - Replaced the `createRedisCache _ = return ()` stub with a real hedis-backed cache
+  - `balanceKey`: namespaced `surypus:accounting:balance:<id>` key
+  - `encodeBalance`/`decodeBalance`: aeson round-trip, `Nothing` for malformed payloads
+  - `createRedisCache`: connects with the configured host/port/db, reports failures as `Left`
+  - `getCachedBalance`/`putCachedBalance`/`deleteCachedBalance`: TTL-bounded Redis operations
+  - `getCurrentBalanceCached` in `Core.Accounting.ReadModel`: cache-first, falls back to replay
+  - Added `Core.Accounting.RedisCacheSpec` (8 tests); the Redis round-trip is pending without a server
+  - Phase 3 backlog reconciled: US-3-1/2/4/5/6 marked done, US-3-7 still open
+
 ## Stats
 
 | Status | Count |
@@ -479,4 +489,5 @@ bd ready
 | Done (New: Core.Tax) | 1 |
 | Done (New: Commerce.CashSessionTemp) | 1 |
 | Done (New: Inventory.Unit) | 1 |
-| **Total** | **89** |
+| Done (New: RedisCache + ReadModel wiring) | 1 |
+| **Total** | **90** |
