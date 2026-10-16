@@ -11,7 +11,9 @@ module Surypus.WebSocket (
   broadcastToInventoryRoom,
   broadcastInventoryEvent,
   broadcastToDashboardRoom,
-  broadcastDashboardEvent
+  broadcastDashboardEvent,
+  inventoryEventJSON,
+  dashboardEventJSON
 ) where
 
 import Control.Concurrent.STM
@@ -19,8 +21,6 @@ import Control.Exception (finally)
 import Control.Monad (forever)
 import Data.Aeson (Value, encode, object, (.=))
 import Data.Int (Int64)
-import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as M
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
 import Data.Text (Text)
@@ -81,25 +81,37 @@ broadcastGlobal handler = broadcastToRoom handler "global"
 broadcastToInventoryRoom :: WebSocketHandler -> Text -> IO ()
 broadcastToInventoryRoom handler = broadcastToRoom handler "inventory"
 
+-- | Build the JSON payload for an inventory event.
+inventoryEventJSON :: Int64 -> Text -> Value -> Text
+inventoryEventJSON goodsId eventType eventValue =
+  TE.decodeUtf8 $ LBS.toStrict $ encode eventObj
+  where
+    eventObj = object
+      [ "goodsId" .= goodsId
+      , "eventType" .= eventType
+      , "data" .= eventValue
+      ]
+
 -- | Broadcast inventory event as JSON
 broadcastInventoryEvent :: WebSocketHandler -> Int64 -> Text -> Value -> IO ()
-broadcastInventoryEvent handler goodsId eventType eventValue = do
-  let eventObj = object
-        [ "goodsId" .= goodsId
-        , "eventType" .= eventType
-        , "data" .= eventValue
-        ]
-  broadcastToInventoryRoom handler (TE.decodeUtf8 $ LBS.toStrict $ encode eventObj)
+broadcastInventoryEvent handler goodsId eventType eventValue =
+  broadcastToInventoryRoom handler (inventoryEventJSON goodsId eventType eventValue)
 
 -- | Broadcast to dashboard room specifically
 broadcastToDashboardRoom :: WebSocketHandler -> Text -> IO ()
 broadcastToDashboardRoom handler = broadcastToRoom handler "dashboard"
 
+-- | Build the JSON payload for a dashboard event.
+dashboardEventJSON :: Text -> Value -> Text
+dashboardEventJSON eventType eventValue =
+  TE.decodeUtf8 $ LBS.toStrict $ encode eventObj
+  where
+    eventObj = object
+      [ "eventType" .= eventType
+      , "data" .= eventValue
+      ]
+
 -- | Broadcast dashboard KPI update as JSON
 broadcastDashboardEvent :: WebSocketHandler -> Text -> Value -> IO ()
-broadcastDashboardEvent handler eventType eventValue = do
-  let eventObj = object
-        [ "eventType" .= eventType
-        , "data" .= eventValue
-        ]
-  broadcastToDashboardRoom handler (TE.decodeUtf8 $ LBS.toStrict $ encode eventObj)
+broadcastDashboardEvent handler eventType eventValue =
+  broadcastToDashboardRoom handler (dashboardEventJSON eventType eventValue)

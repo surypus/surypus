@@ -36,6 +36,7 @@ import qualified HR.OperationsSpec
 import qualified Integration.API.ExternalAPISpec
 import qualified Surypus.API.GraphQLSpec
 import qualified Surypus.JWTSpec
+import qualified Surypus.WebSocketSpec
 import qualified Service.WorkflowEngineSpec
 import qualified Phase2Phase3.AccountingEventsSpec
 import qualified Phase2Phase3.AccountingReadModelSpec
@@ -86,6 +87,7 @@ main = hspec $ do
   Integration.API.ExternalAPISpec.spec
   Surypus.API.GraphQLSpec.spec
   Surypus.JWTSpec.spec
+  Surypus.WebSocketSpec.spec
   Service.WorkflowEngineSpec.spec
   Phase2Phase3.AccountingEventsSpec.spec
   Phase2Phase3.AccountingReadModelSpec.spec
