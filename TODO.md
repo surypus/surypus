@@ -455,6 +455,15 @@ bd ready
   - Added `Core.Accounting.RedisCacheSpec` (8 tests); the Redis round-trip is pending without a server
   - Phase 3 backlog reconciled: US-3-1/2/4/5/6 marked done, US-3-7 still open
 
+- [x] Remove dead stub modules and implement the external API client (2026-10-16)
+  - Deleted `DAL.SchemaStubs` (duplicate of the entities in `DAL.Schema`, zero importers)
+  - Deleted `JobWorkerApp` (printed "Job worker not implemented", zero importers)
+  - `Integration.API.ExternalAPI`: replaced `apiGet`/`apiPost` returning `Left "Not implemented"`
+    with a real http-conduit client (explicit Manager, Bearer auth, non-2xx -> Left,
+    retry with linear backoff)
+  - Added `Integration.API.ExternalAPISpec` (7 tests)
+  - Added http-client/http-client-tls/http-types as direct library dependencies
+
 ## Stats
 
 | Status | Count |
@@ -490,4 +499,5 @@ bd ready
 | Done (New: Commerce.CashSessionTemp) | 1 |
 | Done (New: Inventory.Unit) | 1 |
 | Done (New: RedisCache + ReadModel wiring) | 1 |
-| **Total** | **90** |
+| Done (New: Stub cleanup + ExternalAPI client) | 1 |
+| **Total** | **91** |
