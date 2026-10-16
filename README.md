@@ -23,7 +23,7 @@ vertical slice, not broad feature coverage.
 
 - **Prototype stage** — the library and executables build; the API surface is
   exercised by tests, not deployed.
-- **CI: green** — 13 workflows pass on `main` (build + tests, CodeQL, HLint,
+- **CI: green** — 27 workflows pass on `main` (build + tests, CodeQL, HLint,
   Fourmolu, Hadolint, secret scanning, coverage, supply-chain checks, docs).
 - **382 library modules** in `src/`: 381 exposed in `exposed-modules` of
   `Surypus.cabal`, plus one internal helper (`Service.Workflow`).
@@ -49,7 +49,7 @@ cabal test
 ## Repository layout
 
 ```
-src/     library modules (390), organised by domain (Finance, Commerce, HR, ...)
+src/     library modules (382), organised by domain (Finance, Commerce, HR, ...)
 app/     executables (surypus-server, ...)
 test/    Hspec test suite (test/Test.hs is the aggregator entry point)
 tools/   build and documentation helpers
