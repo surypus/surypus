@@ -39,7 +39,7 @@ You don't need to be an expert in Haskell or formal verification! We welcome:
 
 ### Where do I start?
 
-1. Read [CONTRIBUTING.md](../CONTRIBUTING.md)
+1. Read [CONTRIBUTING.md](https://github.com/surypus/surypus/blob/main/CONTRIBUTING.md)
 2. Set up local development environment
 3. Look for issues labeled ["good first issue"](../../labels/good%20first%20issue)
 4. Join [GitHub Discussions](https://github.com/surypus/surypus/discussions)
@@ -50,7 +50,7 @@ You don't need to be an expert in Haskell or formal verification! We welcome:
 
 ### How do I set up Surypus locally?
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md#local-development) for complete setup instructions.
+See [CONTRIBUTING.md](https://github.com/surypus/surypus/blob/main/CONTRIBUTING.md#local-development) for complete setup instructions.
 
 Quick start:
 
@@ -85,7 +85,7 @@ We're happy to help!
 5. Update documentation
 6. Submit a PR
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md#making-contributions) for details.
+See [CONTRIBUTING.md](https://github.com/surypus/surypus/blob/main/CONTRIBUTING.md#making-contributions) for details.
 
 ### Do I need to sign a CLA?
 
@@ -98,7 +98,7 @@ No. By submitting a PR, you agree that your contribution will be licensed under 
 3. You make the changes
 4. They approve and merge
 
-See [CODE_REVIEW_GUIDELINES.md](../CODE_REVIEW_GUIDELINES.md) for review standards.
+See [CODE_REVIEW_GUIDELINES.md](https://github.com/surypus/surypus/blob/main/CODE_REVIEW_GUIDELINES.md) for review standards.
 
 ### How long does review take?
 
@@ -152,7 +152,7 @@ Be sure to explain:
 - **General questions** - [GitHub Discussions](../../discussions/new?category=q-a)
 - **Bug reports** - [GitHub Issues](../../issues/new/choose)
 - **Feature requests** - [GitHub Issues](../../issues/new?template=feature_request.yml)
-- **Security issues** - Email the security team (see [SECURITY.md](../SECURITY.md))
+- **Security issues** - Email the security team (see [SECURITY.md](https://github.com/surypus/surypus/blob/main/SECURITY.md))
 
 ### Can I present Surypus at a conference?
 

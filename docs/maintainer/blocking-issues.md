@@ -43,9 +43,9 @@ You may have a blocking issue if:
 
 First, review the relevant policies:
 
-- [Response times](CONTRIBUTING.md#response-times)
-- [Code review guidelines](CODE_REVIEW_GUIDELINES.md)
-- [This blocking issues policy](BLOCKING_ISSUES.md)
+- [Response times](https://github.com/surypus/surypus/blob/main/CONTRIBUTING.md#response-times)
+- [Code review guidelines](https://github.com/surypus/surypus/blob/main/CODE_REVIEW_GUIDELINES.md)
+- [This blocking issues policy](https://github.com/surypus/surypus/issues?q=label%3Ablocking)
 
 Understanding the expectations can help you determine if your issue is truly blocking.
 

@@ -20,7 +20,7 @@ Our flagship project — a distributed, type-safe accounting and event-sourcing 
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](contributing/contributing.md) for details.
+We welcome contributions! Please see our [Contributing Guide](https://github.com/surypus/surypus/blob/main/CONTRIBUTING.md) for details.
 
 ## Security
 

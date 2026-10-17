@@ -54,7 +54,7 @@ This document tracks the health and growth of the Surypus community.
 
 ## Monthly Review
 
-This dashboard is reviewed monthly. See [project-metrics.yml](../.github/workflows/project-metrics.yml) for automated reports.
+This dashboard is reviewed monthly. See [project-metrics.yml](https://github.com/surypus/surypus/blob/main/.github/workflows/project-metrics.yml) for automated reports.
 
 ---
 
