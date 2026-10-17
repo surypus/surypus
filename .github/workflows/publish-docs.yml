@@ -1,0 +1,43 @@
+name: Publish Documentation
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    concurrency: pages-build
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install mkdocs-material mkdocstrings
+
+      - run: |
+          python3 tools/beads-sync-github.py --wiki-dir docs
+          mkdir -p docs/pages/tasks
+          cp wiki/Home.md docs/pages/tasks/Home.md
+          cp wiki/Plans.md docs/pages/tasks/Plans.md
+          cp wiki/Backlog.md docs/pages/tasks/Backlog.md
+
+      - uses: actions/configure-pages@v4
+
+      - uses: actions/deploy-pages@v4
+        with:
+          artifact-name: github-pages-artifact
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
