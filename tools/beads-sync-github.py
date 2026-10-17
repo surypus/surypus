@@ -177,6 +177,137 @@ def sync_project(issues: list[dict], dry_run: bool) -> tuple[int, int]:
     return added, skipped
 
 
+def project_status_fields(project_id: str) -> tuple[str, dict[str, str]]:
+    """Return the project's Status field id and its option-id map."""
+    query = """
+    query($id:ID!) {
+      node(id:$id) {
+        ... on ProjectV2 {
+          fields(first:20) {
+            nodes {
+              ... on ProjectV2SingleSelectField {
+                id name
+                options { id name }
+              }
+            }
+          }
+        }
+      }
+    }"""
+    data = gh("api", "graphql", "-f", f"query={query}", "-F", f"id={project_id}", json_out=True)
+    for field in data["data"]["node"]["fields"]["nodes"]:
+        if field.get("name") == "Status":
+            return field["id"], {o["name"]: o["id"] for o in field["options"]}
+    raise RuntimeError("project has no Status field")
+
+
+def sync_status(issues: list[dict], project_id: str, dry_run: bool) -> tuple[int, int]:
+    """Set the project Status field from each issue's beads status."""
+    field_id, options = project_status_fields(project_id)
+    wanted = {
+        "open": "Todo",
+        "in_progress": "In Progress",
+        "closed": "Done",
+    }
+
+    query = """
+    query($id:ID!) {
+      node(id:$id) {
+        ... on ProjectV2 {
+          items(first:100) {
+            nodes { id fieldValues(first:20) {
+              nodes { __typename
+                ... on ProjectV2ItemFieldSingleSelectValue { name } }
+            } }
+          }
+        }
+      }
+    }"""
+    data = gh("api", "graphql", "-f", f"query={query}", "-F", f"id={project_id}", json_out=True)
+    items = data["data"]["node"]["items"]["nodes"]
+    item_number = project_item_numbers(project_id)
+
+    # issue number -> beads status, read from the mirrored issue bodies
+    number_status = issue_status_by_number(issues)
+
+    set_ = skipped = failed = 0
+    for item in items:
+        current = next(
+            (
+                fv["name"]
+                for fv in item["fieldValues"]["nodes"]
+                if fv["__typename"] == "ProjectV2ItemFieldSingleSelectValue"
+            ),
+            None,
+        )
+        number = item_number.get(item["id"])
+        if number is None:
+            skipped += 1
+            continue
+        status = number_status.get(number)
+        if status is None:
+            skipped += 1
+            continue
+        target = wanted[status]
+        if current == target:
+            skipped += 1
+            continue
+        if dry_run:
+            print(f"  would set {number} -> {target}")
+            set_ += 1
+            continue
+        mutation = (
+            "mutation($p:ID!,$i:ID!,$f:ID!,$o:String!){"
+            "updateProjectV2ItemFieldValue(input:{projectId:$p,itemId:$i,"
+            "fieldId:$f,value:{singleSelectOptionId:$o}}){projectV2Item{id}}}"
+        )
+        result = subprocess.run(
+            ["gh", "api", "graphql", "-f", f"query={mutation}",
+             "-F", f"p={project_id}", "-F", f"i={item['id']}",
+             "-F", f"f={field_id}", "-F", f"o={options[target]}"],
+            capture_output=True, text=True,
+        )
+        if "projectV2Item" in result.stdout:
+            set_ += 1
+        else:
+            failed += 1
+    return set_, failed
+
+
+def issue_status_by_number(issues: list[dict]) -> dict[int, str]:
+    """Map GitHub issue number to the beads status of the issue it mirrors."""
+    out: dict[int, str] = {}
+    for issue in issues:
+        number = gh(
+            "issue", "list", "--state", "all", "--search", f'"{issue["id"]}"',
+            "--json", "number", "--jq", ".[0].number",
+        ).strip()
+        if number:
+            out[int(number)] = issue["status"]
+    return out
+
+
+def project_item_numbers(project_id: str) -> dict[str, int]:
+    """Map project item id -> GitHub issue number."""
+    query = """
+    query($id:ID!) {
+      node(id:$id) {
+        ... on ProjectV2 {
+          items(first:100) {
+            nodes { id content { __typename ... on Issue { number } } }
+          }
+        }
+      }
+    }"""
+    data = gh("api", "graphql", "-f", f"query={query}", "-F", f"id={project_id}", json_out=True)
+    out = {}
+    for item in data["data"]["node"]["items"]["nodes"]:
+        content = item.get("content") or {}
+        if content.get("__typename") == "Issue":
+            out[item["id"]] = content["number"]
+    return out
+
+
 def write_wiki(issues: list[dict], out_dir: Path) -> list[Path]:
     """Render the wiki pages from the beads data."""
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -297,6 +428,10 @@ def main() -> int:
     print("\n== Project ==")
     added, skipped = sync_project(issues, args.dry_run)
     print(f"added {added}, already on board {skipped}")
+
+    print("\n== Project status ==")
+    set_, failed = sync_status(issues, PROJECT_ID, args.dry_run)
+    print(f"status updated {set_}, failed {failed}")
 
     print("\n== Wiki ==")
     written = write_wiki(issues, Path(args.wiki_dir))
