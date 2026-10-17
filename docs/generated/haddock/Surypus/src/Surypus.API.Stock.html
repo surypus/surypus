@@ -1,0 +1,416 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.API.Stock.html"><span class="hs-identifier">Surypus.API.Stock</span></a></span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Surypus.API.Stock.html#getLowStock"><span class="hs-identifier">getLowStock</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.Stock.html#getStockSummary"><span class="hs-identifier">getStockSummary</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.Stock.html#getValuation"><span class="hs-identifier">getValuation</span></a></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.Stock.html#LowStockAlert"><span class="hs-identifier">LowStockAlert</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.Stock.html#StockSummary"><span class="hs-identifier">StockSummary</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.Stock.html#StockValuationRow"><span class="hs-identifier">StockValuationRow</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Control.Monad.IO.Class.html"><span class="hs-identifier">Control.Monad.IO.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Control.Monad.IO.Class.html#liftIO"><span class="hs-identifier">liftIO</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.Pool.html"><span class="hs-identifier">DAL.Pool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier">ConnectionPool</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="DAL.Queries.html"><span class="hs-identifier">DAL.Queries</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Q</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.Types.html"><span class="hs-identifier">DAL.Types</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#Goods"><span class="hs-identifier">Goods</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier">QueryResult</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">FromJSON</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Text.Read.html"><span class="hs-identifier">Text.Read</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Text.Read.html#readMaybe"><span class="hs-identifier">readMaybe</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.html"><span class="hs-identifier">Database.Persist.Sql</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier">runSqlPool</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier">rawSql</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier">Single</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">data</span><span> </span><span id="LowStockAlert"><span class="annot"><a href="Surypus.API.Stock.html#LowStockAlert"><span class="hs-identifier hs-var">LowStockAlert</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LowStockAlert"><span class="annot"><a href="Surypus.API.Stock.html#LowStockAlert"><span class="hs-identifier hs-var">LowStockAlert</span></a></span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="lsaGoodsId"><span class="annot"><span class="annottext">LowStockAlert -&gt; Int64
+</span><a href="Surypus.API.Stock.html#lsaGoodsId"><span class="hs-identifier hs-var hs-var">lsaGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="lsaGoodsName"><span class="annot"><span class="annottext">LowStockAlert -&gt; Text
+</span><a href="Surypus.API.Stock.html#lsaGoodsName"><span class="hs-identifier hs-var hs-var">lsaGoodsName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="lsaGoodsCode"><span class="annot"><span class="annottext">LowStockAlert -&gt; Maybe Text
+</span><a href="Surypus.API.Stock.html#lsaGoodsCode"><span class="hs-identifier hs-var hs-var">lsaGoodsCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="lsaCurrentStock"><span class="annot"><span class="annottext">LowStockAlert -&gt; Double
+</span><a href="Surypus.API.Stock.html#lsaCurrentStock"><span class="hs-identifier hs-var hs-var">lsaCurrentStock</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="lsaMinLevel"><span class="annot"><span class="annottext">LowStockAlert -&gt; Double
+</span><a href="Surypus.API.Stock.html#lsaMinLevel"><span class="hs-identifier hs-var hs-var">lsaMinLevel</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="lsaSeverity"><span class="annot"><span class="annottext">LowStockAlert -&gt; Text
+</span><a href="Surypus.API.Stock.html#lsaSeverity"><span class="hs-identifier hs-var hs-var">lsaSeverity</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680307894"><span id="local-6989586621680307908"><span id="local-6989586621680307912"><span class="annot"><span class="annottext">Int -&gt; LowStockAlert -&gt; ShowS
+[LowStockAlert] -&gt; ShowS
+LowStockAlert -&gt; String
+(Int -&gt; LowStockAlert -&gt; ShowS)
+-&gt; (LowStockAlert -&gt; String)
+-&gt; ([LowStockAlert] -&gt; ShowS)
+-&gt; Show LowStockAlert
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LowStockAlert -&gt; ShowS
+showsPrec :: Int -&gt; LowStockAlert -&gt; ShowS
+$cshow :: LowStockAlert -&gt; String
+show :: LowStockAlert -&gt; String
+$cshowList :: [LowStockAlert] -&gt; ShowS
+showList :: [LowStockAlert] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680307917"><span id="local-6989586621680307929"><span class="annot"><span class="annottext">LowStockAlert -&gt; LowStockAlert -&gt; Bool
+(LowStockAlert -&gt; LowStockAlert -&gt; Bool)
+-&gt; (LowStockAlert -&gt; LowStockAlert -&gt; Bool) -&gt; Eq LowStockAlert
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LowStockAlert -&gt; LowStockAlert -&gt; Bool
+== :: LowStockAlert -&gt; LowStockAlert -&gt; Bool
+$c/= :: LowStockAlert -&gt; LowStockAlert -&gt; Bool
+/= :: LowStockAlert -&gt; LowStockAlert -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680307934"><span id="local-6989586621680307936"><span class="annot"><span class="annottext">(forall x. LowStockAlert -&gt; Rep LowStockAlert x)
+-&gt; (forall x. Rep LowStockAlert x -&gt; LowStockAlert)
+-&gt; Generic LowStockAlert
+forall x. Rep LowStockAlert x -&gt; LowStockAlert
+forall x. LowStockAlert -&gt; Rep LowStockAlert x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. LowStockAlert -&gt; Rep LowStockAlert x
+from :: forall x. LowStockAlert -&gt; Rep LowStockAlert x
+$cto :: forall x. Rep LowStockAlert x -&gt; LowStockAlert
+to :: forall x. Rep LowStockAlert x -&gt; LowStockAlert
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680307942"><span id="local-6989586621680307949"><span id="local-6989586621680307952"><span id="local-6989586621680307955"><span id="local-6989586621680307958"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.API.Stock.html#LowStockAlert"><span class="hs-identifier hs-type">LowStockAlert</span></a></span></span></span></span></span></span><span>
+</span><span id="line-35"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680308123"><span id="local-6989586621680308130"><span id="local-6989586621680308133"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.API.Stock.html#LowStockAlert"><span class="hs-identifier hs-type">LowStockAlert</span></a></span></span></span></span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">data</span><span> </span><span id="StockSummary"><span class="annot"><a href="Surypus.API.Stock.html#StockSummary"><span class="hs-identifier hs-var">StockSummary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="StockSummary"><span class="annot"><a href="Surypus.API.Stock.html#StockSummary"><span class="hs-identifier hs-var">StockSummary</span></a></span></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="ssTotalItems"><span class="annot"><span class="annottext">StockSummary -&gt; Double
+</span><a href="Surypus.API.Stock.html#ssTotalItems"><span class="hs-identifier hs-var hs-var">ssTotalItems</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="ssLowStockCount"><span class="annot"><span class="annottext">StockSummary -&gt; Int
+</span><a href="Surypus.API.Stock.html#ssLowStockCount"><span class="hs-identifier hs-var hs-var">ssLowStockCount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680308243"><span id="local-6989586621680308249"><span id="local-6989586621680308253"><span class="annot"><span class="annottext">Int -&gt; StockSummary -&gt; ShowS
+[StockSummary] -&gt; ShowS
+StockSummary -&gt; String
+(Int -&gt; StockSummary -&gt; ShowS)
+-&gt; (StockSummary -&gt; String)
+-&gt; ([StockSummary] -&gt; ShowS)
+-&gt; Show StockSummary
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; StockSummary -&gt; ShowS
+showsPrec :: Int -&gt; StockSummary -&gt; ShowS
+$cshow :: StockSummary -&gt; String
+show :: StockSummary -&gt; String
+$cshowList :: [StockSummary] -&gt; ShowS
+showList :: [StockSummary] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680308256"><span id="local-6989586621680308261"><span class="annot"><span class="annottext">StockSummary -&gt; StockSummary -&gt; Bool
+(StockSummary -&gt; StockSummary -&gt; Bool)
+-&gt; (StockSummary -&gt; StockSummary -&gt; Bool) -&gt; Eq StockSummary
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: StockSummary -&gt; StockSummary -&gt; Bool
+== :: StockSummary -&gt; StockSummary -&gt; Bool
+$c/= :: StockSummary -&gt; StockSummary -&gt; Bool
+/= :: StockSummary -&gt; StockSummary -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680308265"><span id="local-6989586621680308267"><span class="annot"><span class="annottext">(forall x. StockSummary -&gt; Rep StockSummary x)
+-&gt; (forall x. Rep StockSummary x -&gt; StockSummary)
+-&gt; Generic StockSummary
+forall x. Rep StockSummary x -&gt; StockSummary
+forall x. StockSummary -&gt; Rep StockSummary x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. StockSummary -&gt; Rep StockSummary x
+from :: forall x. StockSummary -&gt; Rep StockSummary x
+$cto :: forall x. Rep StockSummary x -&gt; StockSummary
+to :: forall x. Rep StockSummary x -&gt; StockSummary
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680308270"><span id="local-6989586621680308277"><span id="local-6989586621680308280"><span id="local-6989586621680308283"><span id="local-6989586621680308286"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.API.Stock.html#StockSummary"><span class="hs-identifier hs-type">StockSummary</span></a></span></span></span></span></span></span><span>
+</span><span id="line-42"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680308351"><span id="local-6989586621680308358"><span id="local-6989586621680308361"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.API.Stock.html#StockSummary"><span class="hs-identifier hs-type">StockSummary</span></a></span></span></span></span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="hs-keyword">data</span><span> </span><span id="StockValuationRow"><span class="annot"><a href="Surypus.API.Stock.html#StockValuationRow"><span class="hs-identifier hs-var">StockValuationRow</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="StockValuationRow"><span class="annot"><a href="Surypus.API.Stock.html#StockValuationRow"><span class="hs-identifier hs-var">StockValuationRow</span></a></span></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="svrGoodsId"><span class="annot"><span class="annottext">StockValuationRow -&gt; Int64
+</span><a href="Surypus.API.Stock.html#svrGoodsId"><span class="hs-identifier hs-var hs-var">svrGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="svrGoodsName"><span class="annot"><span class="annottext">StockValuationRow -&gt; Text
+</span><a href="Surypus.API.Stock.html#svrGoodsName"><span class="hs-identifier hs-var hs-var">svrGoodsName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="svrGoodsCode"><span class="annot"><span class="annottext">StockValuationRow -&gt; Maybe Text
+</span><a href="Surypus.API.Stock.html#svrGoodsCode"><span class="hs-identifier hs-var hs-var">svrGoodsCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="svrQuantity"><span class="annot"><span class="annottext">StockValuationRow -&gt; Double
+</span><a href="Surypus.API.Stock.html#svrQuantity"><span class="hs-identifier hs-var hs-var">svrQuantity</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="svrCost"><span class="annot"><span class="annottext">StockValuationRow -&gt; Double
+</span><a href="Surypus.API.Stock.html#svrCost"><span class="hs-identifier hs-var hs-var">svrCost</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="svrTotalValue"><span class="annot"><span class="annottext">StockValuationRow -&gt; Double
+</span><a href="Surypus.API.Stock.html#svrTotalValue"><span class="hs-identifier hs-var hs-var">svrTotalValue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680308418"><span id="local-6989586621680308427"><span id="local-6989586621680308431"><span class="annot"><span class="annottext">Int -&gt; StockValuationRow -&gt; ShowS
+[StockValuationRow] -&gt; ShowS
+StockValuationRow -&gt; String
+(Int -&gt; StockValuationRow -&gt; ShowS)
+-&gt; (StockValuationRow -&gt; String)
+-&gt; ([StockValuationRow] -&gt; ShowS)
+-&gt; Show StockValuationRow
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; StockValuationRow -&gt; ShowS
+showsPrec :: Int -&gt; StockValuationRow -&gt; ShowS
+$cshow :: StockValuationRow -&gt; String
+show :: StockValuationRow -&gt; String
+$cshowList :: [StockValuationRow] -&gt; ShowS
+showList :: [StockValuationRow] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680308434"><span id="local-6989586621680308442"><span class="annot"><span class="annottext">StockValuationRow -&gt; StockValuationRow -&gt; Bool
+(StockValuationRow -&gt; StockValuationRow -&gt; Bool)
+-&gt; (StockValuationRow -&gt; StockValuationRow -&gt; Bool)
+-&gt; Eq StockValuationRow
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: StockValuationRow -&gt; StockValuationRow -&gt; Bool
+== :: StockValuationRow -&gt; StockValuationRow -&gt; Bool
+$c/= :: StockValuationRow -&gt; StockValuationRow -&gt; Bool
+/= :: StockValuationRow -&gt; StockValuationRow -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680308446"><span id="local-6989586621680308448"><span class="annot"><span class="annottext">(forall x. StockValuationRow -&gt; Rep StockValuationRow x)
+-&gt; (forall x. Rep StockValuationRow x -&gt; StockValuationRow)
+-&gt; Generic StockValuationRow
+forall x. Rep StockValuationRow x -&gt; StockValuationRow
+forall x. StockValuationRow -&gt; Rep StockValuationRow x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. StockValuationRow -&gt; Rep StockValuationRow x
+from :: forall x. StockValuationRow -&gt; Rep StockValuationRow x
+$cto :: forall x. Rep StockValuationRow x -&gt; StockValuationRow
+to :: forall x. Rep StockValuationRow x -&gt; StockValuationRow
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680308451"><span id="local-6989586621680308458"><span id="local-6989586621680308461"><span id="local-6989586621680308464"><span id="local-6989586621680308467"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.API.Stock.html#StockValuationRow"><span class="hs-identifier hs-type">StockValuationRow</span></a></span></span></span></span></span></span><span>
+</span><span id="line-53"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680308591"><span id="local-6989586621680308598"><span id="local-6989586621680308601"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.API.Stock.html#StockValuationRow"><span class="hs-identifier hs-type">StockValuationRow</span></a></span></span></span></span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="annot"><a href="Surypus.API.Stock.html#getLowStock"><span class="hs-identifier hs-type">getLowStock</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Surypus.API.Stock.html#LowStockAlert"><span class="hs-identifier hs-type">LowStockAlert</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span id="getLowStock"><span class="annot"><span class="annottext">getLowStock :: ConnectionPool -&gt; IO (QueryResult [LowStockAlert])
+</span><a href="Surypus.API.Stock.html#getLowStock"><span class="hs-identifier hs-var hs-var">getLowStock</span></a></span></span><span> </span><span id="local-6989586621680308685"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680308685"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-57"></span><span>  </span><span id="local-6989586621680308686"><span class="annot"><a href="#local-6989586621680308686"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool -&gt; IO (QueryResult [Goods])
+</span><a href="DAL.Queries.html#getLowStockGoods"><span class="hs-identifier hs-var">Q.getLowStockGoods</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680308685"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680308686"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-59"></span><span>    </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span id="local-6989586621680308689"><span class="annot"><span class="annottext">[Goods]
+</span><a href="#local-6989586621680308689"><span class="hs-identifier hs-var">goods</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-60"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680308690"><span class="annot"><span class="annottext">alerts :: [LowStockAlert]
+</span><a href="#local-6989586621680308690"><span class="hs-identifier hs-var hs-var">alerts</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Goods -&gt; LowStockAlert) -&gt; [Goods] -&gt; [LowStockAlert]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#map"><span class="hs-identifier hs-var">map</span></a></span><span> </span><span class="annot"><span class="annottext">Goods -&gt; LowStockAlert
+</span><a href="#local-6989586621680308691"><span class="hs-identifier hs-var">goodsToAlert</span></a></span><span> </span><span class="annot"><span class="annottext">[Goods]
+</span><a href="#local-6989586621680308689"><span class="hs-identifier hs-var">goods</span></a></span><span>
+</span><span id="line-61"></span><span>      </span><span class="annot"><span class="annottext">QueryResult [LowStockAlert] -&gt; IO (QueryResult [LowStockAlert])
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult [LowStockAlert] -&gt; IO (QueryResult [LowStockAlert]))
+-&gt; QueryResult [LowStockAlert] -&gt; IO (QueryResult [LowStockAlert])
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[LowStockAlert] -&gt; QueryResult [LowStockAlert]
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="annot"><span class="annottext">[LowStockAlert]
+</span><a href="#local-6989586621680308690"><span class="hs-identifier hs-var">alerts</span></a></span><span>
+</span><span id="line-62"></span><span>    </span><span class="annot"><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-type">QueryError</span></a></span><span> </span><span id="local-6989586621680308693"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680308693"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult [LowStockAlert] -&gt; IO (QueryResult [LowStockAlert])
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult [LowStockAlert] -&gt; IO (QueryResult [LowStockAlert]))
+-&gt; QueryResult [LowStockAlert] -&gt; IO (QueryResult [LowStockAlert])
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; QueryResult [LowStockAlert]
+forall a. Text -&gt; QueryResult a
+</span><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-var">QueryError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680308693"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-64"></span><span>    </span><span class="annot"><a href="#local-6989586621680308694"><span class="hs-identifier hs-type">parseNum</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-65"></span><span>    </span><span id="local-6989586621680308694"><span class="annot"><span class="annottext">parseNum :: Maybe Text -&gt; Double
+</span><a href="#local-6989586621680308694"><span class="hs-identifier hs-var hs-var">parseNum</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; (Text -&gt; Double) -&gt; Maybe Text -&gt; Double
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Maybe.html#maybe"><span class="hs-identifier hs-var">maybe</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; (Double -&gt; Double) -&gt; Maybe Double -&gt; Double
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Maybe.html#maybe"><span class="hs-identifier hs-var">maybe</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double
+forall a. a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#id"><span class="hs-identifier hs-var">id</span></a></span><span> </span><span class="annot"><span class="annottext">(Maybe Double -&gt; Double)
+-&gt; (Text -&gt; Maybe Double) -&gt; Text -&gt; Double
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Maybe Double
+forall a. Read a =&gt; String -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Text.Read.html#readMaybe"><span class="hs-identifier hs-var">readMaybe</span></a></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Maybe Double)
+-&gt; (Text -&gt; String) -&gt; Text -&gt; Maybe Double
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Show.html#unpack"><span class="hs-identifier hs-var">T.unpack</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span>    </span><span id="local-6989586621680308691"><span class="annot"><span class="annottext">goodsToAlert :: Goods -&gt; LowStockAlert
+</span><a href="#local-6989586621680308691"><span class="hs-identifier hs-var hs-var">goodsToAlert</span></a></span></span><span> </span><span id="local-6989586621680308707"><span class="annot"><span class="annottext">Goods
+</span><a href="#local-6989586621680308707"><span class="hs-identifier hs-var">g</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+-&gt; Text -&gt; Maybe Text -&gt; Double -&gt; Double -&gt; Text -&gt; LowStockAlert
+</span><a href="Surypus.API.Stock.html#LowStockAlert"><span class="hs-identifier hs-var">LowStockAlert</span></a></span><span>
+</span><span id="line-68"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Int64
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#fromIntegral"><span class="hs-identifier hs-var">fromIntegral</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Goods -&gt; Int
+</span><a href="DAL.Types.html#goodsId"><span class="hs-identifier hs-var">goodsId</span></a></span><span> </span><span class="annot"><span class="annottext">Goods
+</span><a href="#local-6989586621680308707"><span class="hs-identifier hs-var">g</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Goods -&gt; Text
+</span><a href="DAL.Types.html#goodsName"><span class="hs-identifier hs-var">goodsName</span></a></span><span> </span><span class="annot"><span class="annottext">Goods
+</span><a href="#local-6989586621680308707"><span class="hs-identifier hs-var">g</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-70"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Goods -&gt; Maybe Text
+</span><a href="DAL.Types.html#goodsCode"><span class="hs-identifier hs-var">goodsCode</span></a></span><span> </span><span class="annot"><span class="annottext">Goods
+</span><a href="#local-6989586621680308707"><span class="hs-identifier hs-var">g</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Maybe Text -&gt; Double
+</span><a href="#local-6989586621680308694"><span class="hs-identifier hs-var">parseNum</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Goods -&gt; Maybe Text
+</span><a href="DAL.Types.html#goodsMinStock"><span class="hs-identifier hs-var">goodsMinStock</span></a></span><span> </span><span class="annot"><span class="annottext">Goods
+</span><a href="#local-6989586621680308707"><span class="hs-identifier hs-var">g</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">2</span></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Maybe Text -&gt; Double
+</span><a href="#local-6989586621680308694"><span class="hs-identifier hs-var">parseNum</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Goods -&gt; Maybe Text
+</span><a href="DAL.Types.html#goodsMinStock"><span class="hs-identifier hs-var">goodsMinStock</span></a></span><span> </span><span class="annot"><span class="annottext">Goods
+</span><a href="#local-6989586621680308707"><span class="hs-identifier hs-var">g</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-73"></span><span>      </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;warning&quot;</span></span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span class="annot"><a href="Surypus.API.Stock.html#getStockSummary"><span class="hs-identifier hs-type">getStockSummary</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Stock.html#StockSummary"><span class="hs-identifier hs-type">StockSummary</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span><span id="getStockSummary"><span class="annot"><span class="annottext">getStockSummary :: ConnectionPool -&gt; IO (QueryResult StockSummary)
+</span><a href="Surypus.API.Stock.html#getStockSummary"><span class="hs-identifier hs-var hs-var">getStockSummary</span></a></span></span><span> </span><span id="local-6989586621680308713"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680308713"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-77"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680308715"><span class="annot"><span class="annottext">sql :: Text
+</span><a href="#local-6989586621680308715"><span class="hs-identifier hs-var hs-var hs-var">sql</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT COALESCE(SUM(qtty), 0), COUNT(*) FILTER (WHERE qtty &lt; 10) FROM stock&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-78"></span><span>  </span><span id="local-6989586621680308716"><span class="annot"><a href="#local-6989586621680308716"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">IO [(Single Double, Single Int64)]
+-&gt; IO [(Single Double, Single Int64)]
+forall a. IO a -&gt; IO a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Control.Monad.IO.Class.html#liftIO"><span class="hs-identifier hs-var">liftIO</span></a></span><span> </span><span class="annot"><span class="annottext">(IO [(Single Double, Single Int64)]
+ -&gt; IO [(Single Double, Single Int64)])
+-&gt; IO [(Single Double, Single Int64)]
+-&gt; IO [(Single Double, Single Int64)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">ReaderT SqlBackend IO [(Single Double, Single Int64)]
+-&gt; ConnectionPool -&gt; IO [(Single Double, Single Int64)]
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; ReaderT SqlBackend IO [(Single Double, Single Int64)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680308715"><span class="hs-identifier hs-var">sql</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680308713"><span class="hs-identifier hs-var">pool</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680308716"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-80"></span><span>    </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680308718"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680308718"><span class="hs-identifier hs-var">total</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680308719"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680308719"><span class="hs-identifier hs-var">low</span></a></span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult StockSummary -&gt; IO (QueryResult StockSummary)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult StockSummary -&gt; IO (QueryResult StockSummary))
+-&gt; QueryResult StockSummary -&gt; IO (QueryResult StockSummary)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">StockSummary -&gt; QueryResult StockSummary
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; Int -&gt; StockSummary
+</span><a href="Surypus.API.Stock.html#StockSummary"><span class="hs-identifier hs-var">StockSummary</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680308718"><span class="hs-identifier hs-var">total</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int64 -&gt; Int
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#fromIntegral"><span class="hs-identifier hs-var">fromIntegral</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680308719"><span class="hs-identifier hs-var">low</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-81"></span><span>    </span><span class="annot"><span class="annottext">[(Single Double, Single Int64)]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult StockSummary -&gt; IO (QueryResult StockSummary)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult StockSummary -&gt; IO (QueryResult StockSummary))
+-&gt; QueryResult StockSummary -&gt; IO (QueryResult StockSummary)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">StockSummary -&gt; QueryResult StockSummary
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; Int -&gt; StockSummary
+</span><a href="Surypus.API.Stock.html#StockSummary"><span class="hs-identifier hs-var">StockSummary</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span class="hs-special">)</span><span>
+</span><span id="line-82"></span><span>
+</span><span id="line-83"></span><span class="annot"><a href="Surypus.API.Stock.html#getValuation"><span class="hs-identifier hs-type">getValuation</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Surypus.API.Stock.html#StockValuationRow"><span class="hs-identifier hs-type">StockValuationRow</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-84"></span><span id="getValuation"><span class="annot"><span class="annottext">getValuation :: ConnectionPool -&gt; IO (QueryResult [StockValuationRow])
+</span><a href="Surypus.API.Stock.html#getValuation"><span class="hs-identifier hs-var hs-var">getValuation</span></a></span></span><span> </span><span id="local-6989586621680308720"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680308720"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-comment">-- Use lots table for actual FIFO-weighted average valuation</span><span>
+</span><span id="line-86"></span><span>  </span><span class="hs-comment">-- Total value = quantity * average cost from lots</span><span>
+</span><span id="line-87"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680308722"><span class="annot"><span class="annottext">sql :: Text
+</span><a href="#local-6989586621680308722"><span class="hs-identifier hs-var hs-var hs-var">sql</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT g.id, g.name, g.code, \
+            \COALESCE(SUM(l.rest), 0) as total_qty, \
+            \COALESCE(AVG(l.cost), 0) as avg_cost, \
+            \(COALESCE(SUM(l.rest), 0) * COALESCE(AVG(l.cost), 0)) as total_value \
+            \FROM goods g \
+            \LEFT JOIN lot l ON g.id = l.goods_id \
+            \GROUP BY g.id, g.name, g.code \
+            \ORDER BY g.name&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-95"></span><span>  </span><span id="local-6989586621680308723"><span class="annot"><a href="#local-6989586621680308723"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">IO
+  [(Single Int64, Single Text, Single (Maybe Text), Single Double,
+    Single Double, Single Double)]
+-&gt; IO
+     [(Single Int64, Single Text, Single (Maybe Text), Single Double,
+       Single Double, Single Double)]
+forall a. IO a -&gt; IO a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Control.Monad.IO.Class.html#liftIO"><span class="hs-identifier hs-var">liftIO</span></a></span><span> </span><span class="annot"><span class="annottext">(IO
+   [(Single Int64, Single Text, Single (Maybe Text), Single Double,
+     Single Double, Single Double)]
+ -&gt; IO
+      [(Single Int64, Single Text, Single (Maybe Text), Single Double,
+        Single Double, Single Double)])
+-&gt; IO
+     [(Single Int64, Single Text, Single (Maybe Text), Single Double,
+       Single Double, Single Double)]
+-&gt; IO
+     [(Single Int64, Single Text, Single (Maybe Text), Single Double,
+       Single Double, Single Double)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">ReaderT
+  SqlBackend
+  IO
+  [(Single Int64, Single Text, Single (Maybe Text), Single Double,
+    Single Double, Single Double)]
+-&gt; ConnectionPool
+-&gt; IO
+     [(Single Int64, Single Text, Single (Maybe Text), Single Double,
+       Single Double, Single Double)]
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; ReaderT
+     SqlBackend
+     IO
+     [(Single Int64, Single Text, Single (Maybe Text), Single Double,
+       Single Double, Single Double)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680308722"><span class="hs-identifier hs-var">sql</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680308720"><span class="hs-identifier hs-var">pool</span></a></span><span class="hs-special">)</span><span> </span><span>
+</span><span id="line-96"></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-97"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680308724"><span class="annot"><a href="#local-6989586621680308724"><span class="hs-identifier hs-var hs-var">rows</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Single Int64, Single Text, Single (Maybe Text), Single Double,
+  Single Double, Single Double)
+ -&gt; StockValuationRow)
+-&gt; [(Single Int64, Single Text, Single (Maybe Text), Single Double,
+     Single Double, Single Double)]
+-&gt; [StockValuationRow]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#map"><span class="hs-identifier hs-var">map</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680308725"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680308725"><span class="hs-identifier hs-var">gid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680308726"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680308726"><span class="hs-identifier hs-var">gn</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680308727"><span class="annot"><span class="annottext">Maybe Text
+</span><a href="#local-6989586621680308727"><span class="hs-identifier hs-var">gc</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680308728"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680308728"><span class="hs-identifier hs-var">qty</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680308729"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680308729"><span class="hs-identifier hs-var">cost</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680308730"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680308730"><span class="hs-identifier hs-var">total</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-98"></span><span>        </span><span class="annot"><span class="annottext">Int64
+-&gt; Text
+-&gt; Maybe Text
+-&gt; Double
+-&gt; Double
+-&gt; Double
+-&gt; StockValuationRow
+</span><a href="Surypus.API.Stock.html#StockValuationRow"><span class="hs-identifier hs-var">StockValuationRow</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680308725"><span class="hs-identifier hs-var">gid</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680308726"><span class="hs-identifier hs-var">gn</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Text
+</span><a href="#local-6989586621680308727"><span class="hs-identifier hs-var">gc</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680308728"><span class="hs-identifier hs-var">qty</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680308729"><span class="hs-identifier hs-var">cost</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680308730"><span class="hs-identifier hs-var">total</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(Single Int64, Single Text, Single (Maybe Text), Single Double,
+  Single Double, Single Double)]
+</span><a href="#local-6989586621680308723"><span class="hs-identifier hs-var">result</span></a></span><span>
+</span><span id="line-99"></span><span>  </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-type">return</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-type">$</span></a></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680308724"><span class="hs-identifier hs-type">rows</span></a></span><span>
+</span><span id="line-100"></span></pre></body></html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html"><span class="hs-identifier">Surypus.Infra.SqlGen.DSL</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- Minimal DSL scaffold for SQL generation</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.List.html"><span class="hs-identifier">Data.List</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.OldList.html#intercalate"><span class="hs-identifier">intercalate</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">newtype</span><span> </span><span id="DSL"><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="DSL"><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680317133"><span id="local-6989586621680317140"><span id="local-6989586621680317144"><span class="annot"><span class="annottext">Int -&gt; DSL -&gt; ShowS
+[DSL] -&gt; ShowS
+DSL -&gt; [Char]
+(Int -&gt; DSL -&gt; ShowS)
+-&gt; (DSL -&gt; [Char]) -&gt; ([DSL] -&gt; ShowS) -&gt; Show DSL
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; [Char]) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DSL -&gt; ShowS
+showsPrec :: Int -&gt; DSL -&gt; ShowS
+$cshow :: DSL -&gt; [Char]
+show :: DSL -&gt; [Char]
+$cshowList :: [DSL] -&gt; ShowS
+showList :: [DSL] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680317150"><span id="local-6989586621680317156"><span class="annot"><span class="annottext">DSL -&gt; DSL -&gt; Bool
+(DSL -&gt; DSL -&gt; Bool) -&gt; (DSL -&gt; DSL -&gt; Bool) -&gt; Eq DSL
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: DSL -&gt; DSL -&gt; Bool
+== :: DSL -&gt; DSL -&gt; Bool
+$c/= :: DSL -&gt; DSL -&gt; Bool
+/= :: DSL -&gt; DSL -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-type">render</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-type">DSL</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span>
+</span><span id="line-10"></span><span id="render"><span class="annot"><span class="annottext">render :: DSL -&gt; [Char]
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var hs-var">render</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-type">DSL</span></a></span><span> </span><span id="local-6989586621680317165"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317165"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317165"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-comment">-- Convenience constructors</span><span>
+</span><span id="line-13"></span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#select"><span class="hs-identifier hs-type">select</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-type">DSL</span></a></span><span>
+</span><span id="line-14"></span><span id="select"><span class="annot"><span class="annottext">select :: [Char] -&gt; [Char] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#select"><span class="hs-identifier hs-var hs-var">select</span></a></span></span><span> </span><span id="local-6989586621680317167"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317167"><span class="hs-identifier hs-var">table</span></a></span></span><span> </span><span id="local-6989586621680317168"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317168"><span class="hs-identifier hs-var">column</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; DSL) -&gt; [Char] -&gt; DSL
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;SELECT &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317168"><span class="hs-identifier hs-var">column</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot; FROM &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317167"><span class="hs-identifier hs-var">table</span></a></span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-comment">-- DSL helpers to compose SQL statements</span><span>
+</span><span id="line-17"></span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#createTable"><span class="hs-identifier hs-type">createTable</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-type">DSL</span></a></span><span>
+</span><span id="line-18"></span><span id="createTable"><span class="annot"><span class="annottext">createTable :: [Char] -&gt; [([Char], [Char])] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#createTable"><span class="hs-identifier hs-var hs-var">createTable</span></a></span></span><span> </span><span id="local-6989586621680317170"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317170"><span class="hs-identifier hs-var">table</span></a></span></span><span> </span><span id="local-6989586621680317171"><span class="annot"><span class="annottext">[([Char], [Char])]
+</span><a href="#local-6989586621680317171"><span class="hs-identifier hs-var">cols</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; DSL) -&gt; [Char] -&gt; DSL
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span>
+</span><span id="line-19"></span><span>  </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;CREATE TABLE IF NOT EXISTS &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317170"><span class="hs-identifier hs-var">table</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot; (&quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span>
+</span><span id="line-20"></span><span>  </span><span class="annot"><span class="annottext">[Char] -&gt; [[Char]] -&gt; [Char]
+forall a. [a] -&gt; [[a]] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.OldList.html#intercalate"><span class="hs-identifier hs-var">intercalate</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;, &quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(([Char], [Char]) -&gt; [Char]) -&gt; [([Char], [Char])] -&gt; [[Char]]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#map"><span class="hs-identifier hs-var">map</span></a></span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621680317172"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317172"><span class="hs-identifier hs-var">n</span></a></span></span><span class="hs-special">,</span><span id="local-6989586621680317173"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317173"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317172"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317173"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[([Char], [Char])]
+</span><a href="#local-6989586621680317171"><span class="hs-identifier hs-var">cols</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span>
+</span><span id="line-23"></span><span>  </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;);&quot;</span></span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-type">multi</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-type">DSL</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-type">DSL</span></a></span><span>
+</span><span id="line-26"></span><span id="multi"><span class="annot"><span class="annottext">multi :: [DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var hs-var">multi</span></a></span></span><span> </span><span id="local-6989586621680317175"><span class="annot"><span class="annottext">[DSL]
+</span><a href="#local-6989586621680317175"><span class="hs-identifier hs-var">ds</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; DSL) -&gt; [Char] -&gt; DSL
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [[Char]] -&gt; [Char]
+forall a. [a] -&gt; [[a]] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.OldList.html#intercalate"><span class="hs-identifier hs-var">intercalate</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;\n&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(DSL -&gt; [Char]) -&gt; [DSL] -&gt; [[Char]]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#map"><span class="hs-identifier hs-var">map</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-type">DSL</span></a></span><span> </span><span id="local-6989586621680317176"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317176"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317176"><span class="hs-identifier hs-var">s</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[DSL]
+</span><a href="#local-6989586621680317175"><span class="hs-identifier hs-var">ds</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- Add a column to an existing table (ALTER TABLE ... ADD COLUMN ...)</span><span>
+</span><span id="line-29"></span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-type">alterTableAddColumn</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-type">DSL</span></a></span><span>
+</span><span id="line-30"></span><span id="alterTableAddColumn"><span class="annot"><span class="annottext">alterTableAddColumn :: [Char] -&gt; ([Char], [Char]) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var hs-var">alterTableAddColumn</span></a></span></span><span> </span><span id="local-6989586621680317178"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317178"><span class="hs-identifier hs-var">table</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680317179"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317179"><span class="hs-identifier hs-var">name</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680317180"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317180"><span class="hs-identifier hs-var">kind</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; DSL) -&gt; [Char] -&gt; DSL
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span>
+</span><span id="line-31"></span><span>  </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;ALTER TABLE &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317178"><span class="hs-identifier hs-var">table</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot; ADD COLUMN &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317179"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317180"><span class="hs-identifier hs-var">kind</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;;&quot;</span></span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-comment">-- Drop a table if exists (helper for migrations)</span><span>
+</span><span id="line-34"></span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#dropTable"><span class="hs-identifier hs-type">dropTable</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-type">DSL</span></a></span><span>
+</span><span id="line-35"></span><span id="dropTable"><span class="annot"><span class="annottext">dropTable :: [Char] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#dropTable"><span class="hs-identifier hs-var hs-var">dropTable</span></a></span></span><span> </span><span id="local-6989586621680317182"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317182"><span class="hs-identifier hs-var">table</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; DSL) -&gt; [Char] -&gt; DSL
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;DROP TABLE IF EXISTS &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317182"><span class="hs-identifier hs-var">table</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;;&quot;</span></span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="hs-comment">-- Rename a table</span><span>
+</span><span id="line-38"></span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#renameTable"><span class="hs-identifier hs-type">renameTable</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-type">DSL</span></a></span><span>
+</span><span id="line-39"></span><span id="renameTable"><span class="annot"><span class="annottext">renameTable :: [Char] -&gt; [Char] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#renameTable"><span class="hs-identifier hs-var hs-var">renameTable</span></a></span></span><span> </span><span id="local-6989586621680317184"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317184"><span class="hs-identifier hs-var">oldName</span></a></span></span><span> </span><span id="local-6989586621680317185"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317185"><span class="hs-identifier hs-var">newName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; DSL) -&gt; [Char] -&gt; DSL
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;ALTER TABLE &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317184"><span class="hs-identifier hs-var">oldName</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot; RENAME TO &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317185"><span class="hs-identifier hs-var">newName</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;;&quot;</span></span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="hs-comment">-- Add a named constraint (foreign key, check, etc.)</span><span>
+</span><span id="line-42"></span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#addConstraint"><span class="hs-identifier hs-type">addConstraint</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-type">DSL</span></a></span><span>
+</span><span id="line-43"></span><span id="addConstraint"><span class="annot"><span class="annottext">addConstraint :: [Char] -&gt; [Char] -&gt; [Char] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#addConstraint"><span class="hs-identifier hs-var hs-var">addConstraint</span></a></span></span><span> </span><span id="local-6989586621680317187"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317187"><span class="hs-identifier hs-var">table</span></a></span></span><span> </span><span id="local-6989586621680317188"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317188"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621680317189"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317189"><span class="hs-identifier hs-var">constraint</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; DSL) -&gt; [Char] -&gt; DSL
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;ALTER TABLE &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317187"><span class="hs-identifier hs-var">table</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot; ADD CONSTRAINT &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317188"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317189"><span class="hs-identifier hs-var">constraint</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;;&quot;</span></span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="hs-comment">-- Drop a constraint by name</span><span>
+</span><span id="line-46"></span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#dropConstraint"><span class="hs-identifier hs-type">dropConstraint</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-type">DSL</span></a></span><span>
+</span><span id="line-47"></span><span id="dropConstraint"><span class="annot"><span class="annottext">dropConstraint :: [Char] -&gt; [Char] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#dropConstraint"><span class="hs-identifier hs-var hs-var">dropConstraint</span></a></span></span><span> </span><span id="local-6989586621680317191"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317191"><span class="hs-identifier hs-var">table</span></a></span></span><span> </span><span id="local-6989586621680317192"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317192"><span class="hs-identifier hs-var">constraintName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; DSL) -&gt; [Char] -&gt; DSL
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;ALTER TABLE &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317191"><span class="hs-identifier hs-var">table</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot; DROP CONSTRAINT &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680317192"><span class="hs-identifier hs-var">constraintName</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%2B%2B"><span class="hs-operator hs-var">++</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;;&quot;</span></span><span>
+</span><span id="line-48"></span></pre></body></html>

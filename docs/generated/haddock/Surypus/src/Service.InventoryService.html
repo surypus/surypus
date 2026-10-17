@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="annot"><span class="hs-comment">-- | Inventory Service (Phase 1: stub)</span></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Service.InventoryService.html"><span class="hs-identifier">Service.InventoryService</span></a></span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Service.InventoryService.html#InventoryDocType"><span class="hs-identifier">InventoryDocType</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Service.InventoryService.html#InventoryDocStatus"><span class="hs-identifier">InventoryDocStatus</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Service.InventoryService.html#InventoryDocLine"><span class="hs-identifier">InventoryDocLine</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Service.InventoryService.html#InventoryDoc"><span class="hs-identifier">InventoryDoc</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Service.InventoryService.html#StockMovement"><span class="hs-identifier">StockMovement</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Service.InventoryService.html#postInventoryDoc"><span class="hs-identifier">postInventoryDoc</span></a></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Service.InventoryService.html#generateMovements"><span class="hs-identifier">generateMovements</span></a></span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Service.InventoryService.html#calculateStockBalance"><span class="hs-identifier">calculateStockBalance</span></a></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Service.InventoryService.html#getStockSnapshot"><span class="hs-identifier">getStockSnapshot</span></a></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="annot"><span class="hs-comment">-- | Inventory document type</span></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">data</span><span> </span><span id="InventoryDocType"><span class="annot"><a href="Service.InventoryService.html#InventoryDocType"><span class="hs-identifier hs-var">InventoryDocType</span></a></span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="ReceiptDoc"><span class="annot"><a href="Service.InventoryService.html#ReceiptDoc"><span class="hs-identifier hs-var">ReceiptDoc</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="IssueDoc"><span class="annot"><a href="Service.InventoryService.html#IssueDoc"><span class="hs-identifier hs-var">IssueDoc</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="AdjustmentDoc"><span class="annot"><a href="Service.InventoryService.html#AdjustmentDoc"><span class="hs-identifier hs-var">AdjustmentDoc</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="InventoryDocType"><span class="annot"><a href="Service.InventoryService.html#InventoryDocType"><span class="hs-identifier hs-var">InventoryDocType</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680281072"><span id="local-6989586621680281074"><span id="local-6989586621680281078"><span class="annot"><span class="annottext">Int -&gt; InventoryDocType -&gt; ShowS
+[InventoryDocType] -&gt; ShowS
+InventoryDocType -&gt; String
+(Int -&gt; InventoryDocType -&gt; ShowS)
+-&gt; (InventoryDocType -&gt; String)
+-&gt; ([InventoryDocType] -&gt; ShowS)
+-&gt; Show InventoryDocType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; InventoryDocType -&gt; ShowS
+showsPrec :: Int -&gt; InventoryDocType -&gt; ShowS
+$cshow :: InventoryDocType -&gt; String
+show :: InventoryDocType -&gt; String
+$cshowList :: [InventoryDocType] -&gt; ShowS
+showList :: [InventoryDocType] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680281083"><span id="local-6989586621680281088"><span class="annot"><span class="annottext">InventoryDocType -&gt; InventoryDocType -&gt; Bool
+(InventoryDocType -&gt; InventoryDocType -&gt; Bool)
+-&gt; (InventoryDocType -&gt; InventoryDocType -&gt; Bool)
+-&gt; Eq InventoryDocType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: InventoryDocType -&gt; InventoryDocType -&gt; Bool
+== :: InventoryDocType -&gt; InventoryDocType -&gt; Bool
+$c/= :: InventoryDocType -&gt; InventoryDocType -&gt; Bool
+/= :: InventoryDocType -&gt; InventoryDocType -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="annot"><span class="hs-comment">-- | Inventory document status</span></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">data</span><span> </span><span id="InventoryDocStatus"><span class="annot"><a href="Service.InventoryService.html#InventoryDocStatus"><span class="hs-identifier hs-var">InventoryDocStatus</span></a></span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="DocDraft"><span class="annot"><a href="Service.InventoryService.html#DocDraft"><span class="hs-identifier hs-var">DocDraft</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="DocPosted"><span class="annot"><a href="Service.InventoryService.html#DocPosted"><span class="hs-identifier hs-var">DocPosted</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="DocCancelled"><span class="annot"><a href="Service.InventoryService.html#DocCancelled"><span class="hs-identifier hs-var">DocCancelled</span></a></span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680281096"><span id="local-6989586621680281098"><span id="local-6989586621680281102"><span class="annot"><span class="annottext">Int -&gt; InventoryDocStatus -&gt; ShowS
+[InventoryDocStatus] -&gt; ShowS
+InventoryDocStatus -&gt; String
+(Int -&gt; InventoryDocStatus -&gt; ShowS)
+-&gt; (InventoryDocStatus -&gt; String)
+-&gt; ([InventoryDocStatus] -&gt; ShowS)
+-&gt; Show InventoryDocStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; InventoryDocStatus -&gt; ShowS
+showsPrec :: Int -&gt; InventoryDocStatus -&gt; ShowS
+$cshow :: InventoryDocStatus -&gt; String
+show :: InventoryDocStatus -&gt; String
+$cshowList :: [InventoryDocStatus] -&gt; ShowS
+showList :: [InventoryDocStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680281105"><span id="local-6989586621680281109"><span class="annot"><span class="annottext">InventoryDocStatus -&gt; InventoryDocStatus -&gt; Bool
+(InventoryDocStatus -&gt; InventoryDocStatus -&gt; Bool)
+-&gt; (InventoryDocStatus -&gt; InventoryDocStatus -&gt; Bool)
+-&gt; Eq InventoryDocStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: InventoryDocStatus -&gt; InventoryDocStatus -&gt; Bool
+== :: InventoryDocStatus -&gt; InventoryDocStatus -&gt; Bool
+$c/= :: InventoryDocStatus -&gt; InventoryDocStatus -&gt; Bool
+/= :: InventoryDocStatus -&gt; InventoryDocStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="annot"><span class="hs-comment">-- | Inventory document line</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="InventoryDocLine"><span class="annot"><a href="Service.InventoryService.html#InventoryDocLine"><span class="hs-identifier hs-var">InventoryDocLine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="InventoryDocLine"><span class="annot"><a href="Service.InventoryService.html#InventoryDocLine"><span class="hs-identifier hs-var">InventoryDocLine</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="inventoryDocLineItemId"><span class="annot"><span class="annottext">InventoryDocLine -&gt; Int64
+</span><a href="Service.InventoryService.html#inventoryDocLineItemId"><span class="hs-identifier hs-var hs-var">inventoryDocLineItemId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="inventoryDocLineQty"><span class="annot"><span class="annottext">InventoryDocLine -&gt; Double
+</span><a href="Service.InventoryService.html#inventoryDocLineQty"><span class="hs-identifier hs-var hs-var">inventoryDocLineQty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="inventoryDocLinePrice"><span class="annot"><span class="annottext">InventoryDocLine -&gt; Double
+</span><a href="Service.InventoryService.html#inventoryDocLinePrice"><span class="hs-identifier hs-var hs-var">inventoryDocLinePrice</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680281117"><span id="local-6989586621680281126"><span id="local-6989586621680281130"><span class="annot"><span class="annottext">Int -&gt; InventoryDocLine -&gt; ShowS
+[InventoryDocLine] -&gt; ShowS
+InventoryDocLine -&gt; String
+(Int -&gt; InventoryDocLine -&gt; ShowS)
+-&gt; (InventoryDocLine -&gt; String)
+-&gt; ([InventoryDocLine] -&gt; ShowS)
+-&gt; Show InventoryDocLine
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; InventoryDocLine -&gt; ShowS
+showsPrec :: Int -&gt; InventoryDocLine -&gt; ShowS
+$cshow :: InventoryDocLine -&gt; String
+show :: InventoryDocLine -&gt; String
+$cshowList :: [InventoryDocLine] -&gt; ShowS
+showList :: [InventoryDocLine] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680281133"><span id="local-6989586621680281140"><span class="annot"><span class="annottext">InventoryDocLine -&gt; InventoryDocLine -&gt; Bool
+(InventoryDocLine -&gt; InventoryDocLine -&gt; Bool)
+-&gt; (InventoryDocLine -&gt; InventoryDocLine -&gt; Bool)
+-&gt; Eq InventoryDocLine
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: InventoryDocLine -&gt; InventoryDocLine -&gt; Bool
+== :: InventoryDocLine -&gt; InventoryDocLine -&gt; Bool
+$c/= :: InventoryDocLine -&gt; InventoryDocLine -&gt; Bool
+/= :: InventoryDocLine -&gt; InventoryDocLine -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="annot"><span class="hs-comment">-- | Inventory document</span></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">data</span><span> </span><span id="InventoryDoc"><span class="annot"><a href="Service.InventoryService.html#InventoryDoc"><span class="hs-identifier hs-var">InventoryDoc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="InventoryDoc"><span class="annot"><a href="Service.InventoryService.html#InventoryDoc"><span class="hs-identifier hs-var">InventoryDoc</span></a></span></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="inventoryDocId"><span class="annot"><span class="annottext">InventoryDoc -&gt; Int64
+</span><a href="Service.InventoryService.html#inventoryDocId"><span class="hs-identifier hs-var hs-var">inventoryDocId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="inventoryDocType"><span class="annot"><span class="annottext">InventoryDoc -&gt; InventoryDocType
+</span><a href="Service.InventoryService.html#inventoryDocType"><span class="hs-identifier hs-var hs-var">inventoryDocType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Service.InventoryService.html#InventoryDocType"><span class="hs-identifier hs-type">InventoryDocType</span></a></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="inventoryDocStatus"><span class="annot"><span class="annottext">InventoryDoc -&gt; InventoryDocStatus
+</span><a href="Service.InventoryService.html#inventoryDocStatus"><span class="hs-identifier hs-var hs-var">inventoryDocStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Service.InventoryService.html#InventoryDocStatus"><span class="hs-identifier hs-type">InventoryDocStatus</span></a></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="inventoryDocLines"><span class="annot"><span class="annottext">InventoryDoc -&gt; [InventoryDocLine]
+</span><a href="Service.InventoryService.html#inventoryDocLines"><span class="hs-identifier hs-var hs-var">inventoryDocLines</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="Service.InventoryService.html#InventoryDocLine"><span class="hs-identifier hs-type">InventoryDocLine</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680281149"><span id="local-6989586621680281158"><span id="local-6989586621680281162"><span class="annot"><span class="annottext">Int -&gt; InventoryDoc -&gt; ShowS
+[InventoryDoc] -&gt; ShowS
+InventoryDoc -&gt; String
+(Int -&gt; InventoryDoc -&gt; ShowS)
+-&gt; (InventoryDoc -&gt; String)
+-&gt; ([InventoryDoc] -&gt; ShowS)
+-&gt; Show InventoryDoc
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; InventoryDoc -&gt; ShowS
+showsPrec :: Int -&gt; InventoryDoc -&gt; ShowS
+$cshow :: InventoryDoc -&gt; String
+show :: InventoryDoc -&gt; String
+$cshowList :: [InventoryDoc] -&gt; ShowS
+showList :: [InventoryDoc] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680281165"><span id="local-6989586621680281173"><span class="annot"><span class="annottext">InventoryDoc -&gt; InventoryDoc -&gt; Bool
+(InventoryDoc -&gt; InventoryDoc -&gt; Bool)
+-&gt; (InventoryDoc -&gt; InventoryDoc -&gt; Bool) -&gt; Eq InventoryDoc
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: InventoryDoc -&gt; InventoryDoc -&gt; Bool
+== :: InventoryDoc -&gt; InventoryDoc -&gt; Bool
+$c/= :: InventoryDoc -&gt; InventoryDoc -&gt; Bool
+/= :: InventoryDoc -&gt; InventoryDoc -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="annot"><span class="hs-comment">-- | Stock movement</span></span><span>
+</span><span id="line-45"></span><span class="hs-keyword">data</span><span> </span><span id="StockMovement"><span class="annot"><a href="Service.InventoryService.html#StockMovement"><span class="hs-identifier hs-var">StockMovement</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="StockMovement"><span class="annot"><a href="Service.InventoryService.html#StockMovement"><span class="hs-identifier hs-var">StockMovement</span></a></span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="stockMovementItemId"><span class="annot"><span class="annottext">StockMovement -&gt; Int64
+</span><a href="Service.InventoryService.html#stockMovementItemId"><span class="hs-identifier hs-var hs-var">stockMovementItemId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="stockMovementQty"><span class="annot"><span class="annottext">StockMovement -&gt; Double
+</span><a href="Service.InventoryService.html#stockMovementQty"><span class="hs-identifier hs-var hs-var">stockMovementQty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680281180"><span id="local-6989586621680281185"><span id="local-6989586621680281189"><span class="annot"><span class="annottext">Int -&gt; StockMovement -&gt; ShowS
+[StockMovement] -&gt; ShowS
+StockMovement -&gt; String
+(Int -&gt; StockMovement -&gt; ShowS)
+-&gt; (StockMovement -&gt; String)
+-&gt; ([StockMovement] -&gt; ShowS)
+-&gt; Show StockMovement
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; StockMovement -&gt; ShowS
+showsPrec :: Int -&gt; StockMovement -&gt; ShowS
+$cshow :: StockMovement -&gt; String
+show :: StockMovement -&gt; String
+$cshowList :: [StockMovement] -&gt; ShowS
+showList :: [StockMovement] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680281192"><span id="local-6989586621680281196"><span class="annot"><span class="annottext">StockMovement -&gt; StockMovement -&gt; Bool
+(StockMovement -&gt; StockMovement -&gt; Bool)
+-&gt; (StockMovement -&gt; StockMovement -&gt; Bool) -&gt; Eq StockMovement
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: StockMovement -&gt; StockMovement -&gt; Bool
+== :: StockMovement -&gt; StockMovement -&gt; Bool
+$c/= :: StockMovement -&gt; StockMovement -&gt; Bool
+/= :: StockMovement -&gt; StockMovement -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="annot"><span class="hs-comment">-- | Post inventory document (stub)</span></span><span>
+</span><span id="line-51"></span><span class="annot"><a href="Service.InventoryService.html#postInventoryDoc"><span class="hs-identifier hs-type">postInventoryDoc</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Service.InventoryService.html#InventoryDoc"><span class="hs-identifier hs-type">InventoryDoc</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span id="postInventoryDoc"><span class="annot"><span class="annottext">postInventoryDoc :: InventoryDoc -&gt; IO (Either Text ())
+</span><a href="Service.InventoryService.html#postInventoryDoc"><span class="hs-identifier hs-var hs-var">postInventoryDoc</span></a></span></span><span> </span><span class="annot"><span class="annottext">InventoryDoc
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either Text () -&gt; IO (Either Text ())
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(Either Text () -&gt; IO (Either Text ()))
+-&gt; Either Text () -&gt; IO (Either Text ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">() -&gt; Either Text ()
+forall a b. b -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span class="annot"><span class="hs-comment">-- | Generate movements (stub)</span></span><span>
+</span><span id="line-55"></span><span class="annot"><a href="Service.InventoryService.html#generateMovements"><span class="hs-identifier hs-type">generateMovements</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Service.InventoryService.html#InventoryDoc"><span class="hs-identifier hs-type">InventoryDoc</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Service.InventoryService.html#StockMovement"><span class="hs-identifier hs-type">StockMovement</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-56"></span><span id="generateMovements"><span class="annot"><span class="annottext">generateMovements :: InventoryDoc -&gt; [StockMovement]
+</span><a href="Service.InventoryService.html#generateMovements"><span class="hs-identifier hs-var hs-var">generateMovements</span></a></span></span><span> </span><span class="annot"><span class="annottext">InventoryDoc
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="annot"><span class="hs-comment">-- | Calculate stock balance (stub)</span></span><span>
+</span><span id="line-59"></span><span class="annot"><a href="Service.InventoryService.html#calculateStockBalance"><span class="hs-identifier hs-type">calculateStockBalance</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-60"></span><span id="calculateStockBalance"><span class="annot"><span class="annottext">calculateStockBalance :: Int64 -&gt; IO Double
+</span><a href="Service.InventoryService.html#calculateStockBalance"><span class="hs-identifier hs-var hs-var">calculateStockBalance</span></a></span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; IO Double
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span class="annot"><span class="hs-comment">-- | Get stock snapshot (stub)</span></span><span>
+</span><span id="line-63"></span><span class="annot"><a href="Service.InventoryService.html#getStockSnapshot"><span class="hs-identifier hs-type">getStockSnapshot</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-64"></span><span id="getStockSnapshot"><span class="annot"><span class="annottext">getStockSnapshot :: IO [(Int64, Double)]
+</span><a href="Service.InventoryService.html#getStockSnapshot"><span class="hs-identifier hs-var hs-var">getStockSnapshot</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(Int64, Double)] -&gt; IO [(Int64, Double)]
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-65"></span></pre></body></html>

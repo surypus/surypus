@@ -1,0 +1,632 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680237247"><span id="local-6989586621680237248"></span></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- | Finance.CreditNote - Enhanced credit note management</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- This module provides type-safe credit note operations with formal verification</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Finance.CreditNote.html"><span class="hs-identifier">Finance.CreditNote</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Gregorian.html#fromGregorian"><span class="hs-identifier">fromGregorian</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-comment">-- import Surypus.Types (Decimal, NonNeg, mkNonNeg, unNonNeg)</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="annot"><span class="hs-comment">-- | Credit note with enhanced semantics</span></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">data</span><span> </span><span id="CreditNote"><span class="annot"><a href="Finance.CreditNote.html#CreditNote"><span class="hs-identifier hs-var">CreditNote</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CreditNote"><span class="annot"><a href="Finance.CreditNote.html#CreditNote"><span class="hs-identifier hs-var">CreditNote</span></a></span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="cnId"><span class="annot"><span class="annottext">CreditNote -&gt; CreditNoteId
+</span><a href="Finance.CreditNote.html#cnId"><span class="hs-identifier hs-var hs-var">cnId</span></a></span></span><span>           </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CreditNoteId"><span class="hs-identifier hs-type">CreditNoteId</span></a></span><span>
+</span><span id="line-18"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="cnNumber"><span class="annot"><span class="annottext">CreditNote -&gt; CreditNoteNumber
+</span><a href="Finance.CreditNote.html#cnNumber"><span class="hs-identifier hs-var hs-var">cnNumber</span></a></span></span><span>       </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CreditNoteNumber"><span class="hs-identifier hs-type">CreditNoteNumber</span></a></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="cnDate"><span class="annot"><span class="annottext">CreditNote -&gt; Day
+</span><a href="Finance.CreditNote.html#cnDate"><span class="hs-identifier hs-var hs-var">cnDate</span></a></span></span><span>         </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="cnAmount"><span class="annot"><span class="annottext">CreditNote -&gt; Double
+</span><a href="Finance.CreditNote.html#cnAmount"><span class="hs-identifier hs-var hs-var">cnAmount</span></a></span></span><span>       </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-comment">-- Amount always &gt;= 0</span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="cnCurrency"><span class="annot"><span class="annottext">CreditNote -&gt; CurrencyCode
+</span><a href="Finance.CreditNote.html#cnCurrency"><span class="hs-identifier hs-var hs-var">cnCurrency</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CurrencyCode"><span class="hs-identifier hs-type">CurrencyCode</span></a></span><span>
+</span><span id="line-22"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="cnReason"><span class="annot"><span class="annottext">CreditNote -&gt; Text
+</span><a href="Finance.CreditNote.html#cnReason"><span class="hs-identifier hs-var hs-var">cnReason</span></a></span></span><span>       </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-23"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="cnRelatedBill"><span class="annot"><span class="annottext">CreditNote -&gt; Maybe BillId
+</span><a href="Finance.CreditNote.html#cnRelatedBill"><span class="hs-identifier hs-var hs-var">cnRelatedBill</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="Finance.CreditNote.html#BillId"><span class="hs-identifier hs-type">BillId</span></a></span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="cnStatus"><span class="annot"><span class="annottext">CreditNote -&gt; CreditNoteStatus
+</span><a href="Finance.CreditNote.html#cnStatus"><span class="hs-identifier hs-var hs-var">cnStatus</span></a></span></span><span>       </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CreditNoteStatus"><span class="hs-identifier hs-type">CreditNoteStatus</span></a></span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="cnCreatedAt"><span class="annot"><span class="annottext">CreditNote -&gt; Day
+</span><a href="Finance.CreditNote.html#cnCreatedAt"><span class="hs-identifier hs-var hs-var">cnCreatedAt</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="cnUpdatedAt"><span class="annot"><span class="annottext">CreditNote -&gt; Maybe Day
+</span><a href="Finance.CreditNote.html#cnUpdatedAt"><span class="hs-identifier hs-var hs-var">cnUpdatedAt</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680237294"><span id="local-6989586621680237315"><span id="local-6989586621680237319"><span class="annot"><span class="annottext">Int -&gt; CreditNote -&gt; ShowS
+[CreditNote] -&gt; ShowS
+CreditNote -&gt; String
+(Int -&gt; CreditNote -&gt; ShowS)
+-&gt; (CreditNote -&gt; String)
+-&gt; ([CreditNote] -&gt; ShowS)
+-&gt; Show CreditNote
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CreditNote -&gt; ShowS
+showsPrec :: Int -&gt; CreditNote -&gt; ShowS
+$cshow :: CreditNote -&gt; String
+show :: CreditNote -&gt; String
+$cshowList :: [CreditNote] -&gt; ShowS
+showList :: [CreditNote] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680237325"><span id="local-6989586621680237345"><span class="annot"><span class="annottext">CreditNote -&gt; CreditNote -&gt; Bool
+(CreditNote -&gt; CreditNote -&gt; Bool)
+-&gt; (CreditNote -&gt; CreditNote -&gt; Bool) -&gt; Eq CreditNote
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CreditNote -&gt; CreditNote -&gt; Bool
+== :: CreditNote -&gt; CreditNote -&gt; Bool
+$c/= :: CreditNote -&gt; CreditNote -&gt; Bool
+/= :: CreditNote -&gt; CreditNote -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680237351"><span id="local-6989586621680237353"><span class="annot"><span class="annottext">(forall x. CreditNote -&gt; Rep CreditNote x)
+-&gt; (forall x. Rep CreditNote x -&gt; CreditNote) -&gt; Generic CreditNote
+forall x. Rep CreditNote x -&gt; CreditNote
+forall x. CreditNote -&gt; Rep CreditNote x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. CreditNote -&gt; Rep CreditNote x
+from :: forall x. CreditNote -&gt; Rep CreditNote x
+$cto :: forall x. Rep CreditNote x -&gt; CreditNote
+to :: forall x. Rep CreditNote x -&gt; CreditNote
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="annot"><span class="hs-comment">-- | Newtypes for type safety</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">newtype</span><span> </span><span id="CreditNoteId"><span class="annot"><a href="Finance.CreditNote.html#CreditNoteId"><span class="hs-identifier hs-var">CreditNoteId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CreditNoteId"><span class="annot"><a href="Finance.CreditNote.html#CreditNoteId"><span class="hs-identifier hs-var">CreditNoteId</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unCreditNoteId"><span class="annot"><span class="annottext">CreditNoteId -&gt; Int64
+</span><a href="Finance.CreditNote.html#unCreditNoteId"><span class="hs-identifier hs-var hs-var">unCreditNoteId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680237361"><span id="local-6989586621680237366"><span id="local-6989586621680237369"><span class="annot"><span class="annottext">Int -&gt; CreditNoteId -&gt; ShowS
+[CreditNoteId] -&gt; ShowS
+CreditNoteId -&gt; String
+(Int -&gt; CreditNoteId -&gt; ShowS)
+-&gt; (CreditNoteId -&gt; String)
+-&gt; ([CreditNoteId] -&gt; ShowS)
+-&gt; Show CreditNoteId
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CreditNoteId -&gt; ShowS
+showsPrec :: Int -&gt; CreditNoteId -&gt; ShowS
+$cshow :: CreditNoteId -&gt; String
+show :: CreditNoteId -&gt; String
+$cshowList :: [CreditNoteId] -&gt; ShowS
+showList :: [CreditNoteId] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680237372"><span id="local-6989586621680237377"><span class="annot"><span class="annottext">CreditNoteId -&gt; CreditNoteId -&gt; Bool
+(CreditNoteId -&gt; CreditNoteId -&gt; Bool)
+-&gt; (CreditNoteId -&gt; CreditNoteId -&gt; Bool) -&gt; Eq CreditNoteId
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CreditNoteId -&gt; CreditNoteId -&gt; Bool
+== :: CreditNoteId -&gt; CreditNoteId -&gt; Bool
+$c/= :: CreditNoteId -&gt; CreditNoteId -&gt; Bool
+/= :: CreditNoteId -&gt; CreditNoteId -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680237384"><span id="local-6989586621680237389"><span id="local-6989586621680237393"><span id="local-6989586621680237397"><span id="local-6989586621680237401"><span id="local-6989586621680237405"><span id="local-6989586621680237409"><span class="annot"><span class="annottext">Eq CreditNoteId
+Eq CreditNoteId =&gt;
+(CreditNoteId -&gt; CreditNoteId -&gt; Ordering)
+-&gt; (CreditNoteId -&gt; CreditNoteId -&gt; Bool)
+-&gt; (CreditNoteId -&gt; CreditNoteId -&gt; Bool)
+-&gt; (CreditNoteId -&gt; CreditNoteId -&gt; Bool)
+-&gt; (CreditNoteId -&gt; CreditNoteId -&gt; Bool)
+-&gt; (CreditNoteId -&gt; CreditNoteId -&gt; CreditNoteId)
+-&gt; (CreditNoteId -&gt; CreditNoteId -&gt; CreditNoteId)
+-&gt; Ord CreditNoteId
+CreditNoteId -&gt; CreditNoteId -&gt; Bool
+CreditNoteId -&gt; CreditNoteId -&gt; Ordering
+CreditNoteId -&gt; CreditNoteId -&gt; CreditNoteId
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: CreditNoteId -&gt; CreditNoteId -&gt; Ordering
+compare :: CreditNoteId -&gt; CreditNoteId -&gt; Ordering
+$c&lt; :: CreditNoteId -&gt; CreditNoteId -&gt; Bool
+&lt; :: CreditNoteId -&gt; CreditNoteId -&gt; Bool
+$c&lt;= :: CreditNoteId -&gt; CreditNoteId -&gt; Bool
+&lt;= :: CreditNoteId -&gt; CreditNoteId -&gt; Bool
+$c&gt; :: CreditNoteId -&gt; CreditNoteId -&gt; Bool
+&gt; :: CreditNoteId -&gt; CreditNoteId -&gt; Bool
+$c&gt;= :: CreditNoteId -&gt; CreditNoteId -&gt; Bool
+&gt;= :: CreditNoteId -&gt; CreditNoteId -&gt; Bool
+$cmax :: CreditNoteId -&gt; CreditNoteId -&gt; CreditNoteId
+max :: CreditNoteId -&gt; CreditNoteId -&gt; CreditNoteId
+$cmin :: CreditNoteId -&gt; CreditNoteId -&gt; CreditNoteId
+min :: CreditNoteId -&gt; CreditNoteId -&gt; CreditNoteId
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">newtype</span><span> </span><span id="CreditNoteNumber"><span class="annot"><a href="Finance.CreditNote.html#CreditNoteNumber"><span class="hs-identifier hs-var">CreditNoteNumber</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CreditNoteNumber"><span class="annot"><a href="Finance.CreditNote.html#CreditNoteNumber"><span class="hs-identifier hs-var">CreditNoteNumber</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unCreditNoteNumber"><span class="annot"><span class="annottext">CreditNoteNumber -&gt; Text
+</span><a href="Finance.CreditNote.html#unCreditNoteNumber"><span class="hs-identifier hs-var hs-var">unCreditNoteNumber</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680237423"><span id="local-6989586621680237427"><span id="local-6989586621680237430"><span class="annot"><span class="annottext">Int -&gt; CreditNoteNumber -&gt; ShowS
+[CreditNoteNumber] -&gt; ShowS
+CreditNoteNumber -&gt; String
+(Int -&gt; CreditNoteNumber -&gt; ShowS)
+-&gt; (CreditNoteNumber -&gt; String)
+-&gt; ([CreditNoteNumber] -&gt; ShowS)
+-&gt; Show CreditNoteNumber
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CreditNoteNumber -&gt; ShowS
+showsPrec :: Int -&gt; CreditNoteNumber -&gt; ShowS
+$cshow :: CreditNoteNumber -&gt; String
+show :: CreditNoteNumber -&gt; String
+$cshowList :: [CreditNoteNumber] -&gt; ShowS
+showList :: [CreditNoteNumber] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680237433"><span id="local-6989586621680237437"><span class="annot"><span class="annottext">CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool
+(CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool)
+-&gt; (CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool)
+-&gt; Eq CreditNoteNumber
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool
+== :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool
+$c/= :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool
+/= :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680237443"><span id="local-6989586621680237448"><span id="local-6989586621680237452"><span id="local-6989586621680237456"><span id="local-6989586621680237460"><span id="local-6989586621680237464"><span id="local-6989586621680237468"><span class="annot"><span class="annottext">Eq CreditNoteNumber
+Eq CreditNoteNumber =&gt;
+(CreditNoteNumber -&gt; CreditNoteNumber -&gt; Ordering)
+-&gt; (CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool)
+-&gt; (CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool)
+-&gt; (CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool)
+-&gt; (CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool)
+-&gt; (CreditNoteNumber -&gt; CreditNoteNumber -&gt; CreditNoteNumber)
+-&gt; (CreditNoteNumber -&gt; CreditNoteNumber -&gt; CreditNoteNumber)
+-&gt; Ord CreditNoteNumber
+CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool
+CreditNoteNumber -&gt; CreditNoteNumber -&gt; Ordering
+CreditNoteNumber -&gt; CreditNoteNumber -&gt; CreditNoteNumber
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; Ordering
+compare :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; Ordering
+$c&lt; :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool
+&lt; :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool
+$c&lt;= :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool
+&lt;= :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool
+$c&gt; :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool
+&gt; :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool
+$c&gt;= :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool
+&gt;= :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; Bool
+$cmax :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; CreditNoteNumber
+max :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; CreditNoteNumber
+$cmin :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; CreditNoteNumber
+min :: CreditNoteNumber -&gt; CreditNoteNumber -&gt; CreditNoteNumber
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">newtype</span><span> </span><span id="CurrencyCode"><span class="annot"><a href="Finance.CreditNote.html#CurrencyCode"><span class="hs-identifier hs-var">CurrencyCode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CurrencyCode"><span class="annot"><a href="Finance.CreditNote.html#CurrencyCode"><span class="hs-identifier hs-var">CurrencyCode</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unCurrencyCode"><span class="annot"><span class="annottext">CurrencyCode -&gt; Text
+</span><a href="Finance.CreditNote.html#unCurrencyCode"><span class="hs-identifier hs-var hs-var">unCurrencyCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680237475"><span id="local-6989586621680237479"><span id="local-6989586621680237482"><span class="annot"><span class="annottext">Int -&gt; CurrencyCode -&gt; ShowS
+[CurrencyCode] -&gt; ShowS
+CurrencyCode -&gt; String
+(Int -&gt; CurrencyCode -&gt; ShowS)
+-&gt; (CurrencyCode -&gt; String)
+-&gt; ([CurrencyCode] -&gt; ShowS)
+-&gt; Show CurrencyCode
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CurrencyCode -&gt; ShowS
+showsPrec :: Int -&gt; CurrencyCode -&gt; ShowS
+$cshow :: CurrencyCode -&gt; String
+show :: CurrencyCode -&gt; String
+$cshowList :: [CurrencyCode] -&gt; ShowS
+showList :: [CurrencyCode] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680237485"><span id="local-6989586621680237489"><span class="annot"><span class="annottext">CurrencyCode -&gt; CurrencyCode -&gt; Bool
+(CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool) -&gt; Eq CurrencyCode
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+== :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c/= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+/= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680237495"><span id="local-6989586621680237499"><span id="local-6989586621680237503"><span id="local-6989586621680237507"><span id="local-6989586621680237511"><span id="local-6989586621680237515"><span id="local-6989586621680237519"><span class="annot"><span class="annottext">Eq CurrencyCode
+Eq CurrencyCode =&gt;
+(CurrencyCode -&gt; CurrencyCode -&gt; Ordering)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode)
+-&gt; Ord CurrencyCode
+CurrencyCode -&gt; CurrencyCode -&gt; Bool
+CurrencyCode -&gt; CurrencyCode -&gt; Ordering
+CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: CurrencyCode -&gt; CurrencyCode -&gt; Ordering
+compare :: CurrencyCode -&gt; CurrencyCode -&gt; Ordering
+$c&lt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&lt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c&lt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&lt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c&gt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&gt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c&gt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&gt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$cmax :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+max :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+$cmin :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+min :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="hs-keyword">newtype</span><span> </span><span id="BillId"><span class="annot"><a href="Finance.CreditNote.html#BillId"><span class="hs-identifier hs-var">BillId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BillId"><span class="annot"><a href="Finance.CreditNote.html#BillId"><span class="hs-identifier hs-var">BillId</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unBillId"><span class="annot"><span class="annottext">BillId -&gt; Int64
+</span><a href="Finance.CreditNote.html#unBillId"><span class="hs-identifier hs-var hs-var">unBillId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680237526"><span id="local-6989586621680237530"><span id="local-6989586621680237533"><span class="annot"><span class="annottext">Int -&gt; BillId -&gt; ShowS
+[BillId] -&gt; ShowS
+BillId -&gt; String
+(Int -&gt; BillId -&gt; ShowS)
+-&gt; (BillId -&gt; String) -&gt; ([BillId] -&gt; ShowS) -&gt; Show BillId
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BillId -&gt; ShowS
+showsPrec :: Int -&gt; BillId -&gt; ShowS
+$cshow :: BillId -&gt; String
+show :: BillId -&gt; String
+$cshowList :: [BillId] -&gt; ShowS
+showList :: [BillId] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680237536"><span id="local-6989586621680237540"><span class="annot"><span class="annottext">BillId -&gt; BillId -&gt; Bool
+(BillId -&gt; BillId -&gt; Bool)
+-&gt; (BillId -&gt; BillId -&gt; Bool) -&gt; Eq BillId
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BillId -&gt; BillId -&gt; Bool
+== :: BillId -&gt; BillId -&gt; Bool
+$c/= :: BillId -&gt; BillId -&gt; Bool
+/= :: BillId -&gt; BillId -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680237546"><span id="local-6989586621680237550"><span id="local-6989586621680237554"><span id="local-6989586621680237558"><span id="local-6989586621680237562"><span id="local-6989586621680237566"><span id="local-6989586621680237570"><span class="annot"><span class="annottext">Eq BillId
+Eq BillId =&gt;
+(BillId -&gt; BillId -&gt; Ordering)
+-&gt; (BillId -&gt; BillId -&gt; Bool)
+-&gt; (BillId -&gt; BillId -&gt; Bool)
+-&gt; (BillId -&gt; BillId -&gt; Bool)
+-&gt; (BillId -&gt; BillId -&gt; Bool)
+-&gt; (BillId -&gt; BillId -&gt; BillId)
+-&gt; (BillId -&gt; BillId -&gt; BillId)
+-&gt; Ord BillId
+BillId -&gt; BillId -&gt; Bool
+BillId -&gt; BillId -&gt; Ordering
+BillId -&gt; BillId -&gt; BillId
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: BillId -&gt; BillId -&gt; Ordering
+compare :: BillId -&gt; BillId -&gt; Ordering
+$c&lt; :: BillId -&gt; BillId -&gt; Bool
+&lt; :: BillId -&gt; BillId -&gt; Bool
+$c&lt;= :: BillId -&gt; BillId -&gt; Bool
+&lt;= :: BillId -&gt; BillId -&gt; Bool
+$c&gt; :: BillId -&gt; BillId -&gt; Bool
+&gt; :: BillId -&gt; BillId -&gt; Bool
+$c&gt;= :: BillId -&gt; BillId -&gt; Bool
+&gt;= :: BillId -&gt; BillId -&gt; Bool
+$cmax :: BillId -&gt; BillId -&gt; BillId
+max :: BillId -&gt; BillId -&gt; BillId
+$cmin :: BillId -&gt; BillId -&gt; BillId
+min :: BillId -&gt; BillId -&gt; BillId
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="annot"><span class="hs-comment">-- | Credit note status</span></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">data</span><span> </span><span id="CreditNoteStatus"><span class="annot"><a href="Finance.CreditNote.html#CreditNoteStatus"><span class="hs-identifier hs-var">CreditNoteStatus</span></a></span></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="CNSIssued"><span class="annot"><a href="Finance.CreditNote.html#CNSIssued"><span class="hs-identifier hs-var">CNSIssued</span></a></span></span><span>    </span><span class="hs-comment">-- &#1042;&#1099;&#1089;&#1090;&#1072;&#1074;&#1083;&#1077;&#1085; (issued)</span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="CNSCancelled"><span class="annot"><a href="Finance.CreditNote.html#CNSCancelled"><span class="hs-identifier hs-var">CNSCancelled</span></a></span></span><span> </span><span class="hs-comment">-- &#1040;&#1085;&#1085;&#1091;&#1083;&#1080;&#1088;&#1086;&#1074;&#1072;&#1085; (cancelled)</span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="CNSApplied"><span class="annot"><a href="Finance.CreditNote.html#CNSApplied"><span class="hs-identifier hs-var">CNSApplied</span></a></span></span><span>    </span><span class="hs-comment">-- &#1055;&#1088;&#1080;&#1084;&#1077;&#1085;&#1105;&#1085; (applied)</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680237578"><span id="local-6989586621680237580"><span id="local-6989586621680237583"><span class="annot"><span class="annottext">Int -&gt; CreditNoteStatus -&gt; ShowS
+[CreditNoteStatus] -&gt; ShowS
+CreditNoteStatus -&gt; String
+(Int -&gt; CreditNoteStatus -&gt; ShowS)
+-&gt; (CreditNoteStatus -&gt; String)
+-&gt; ([CreditNoteStatus] -&gt; ShowS)
+-&gt; Show CreditNoteStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CreditNoteStatus -&gt; ShowS
+showsPrec :: Int -&gt; CreditNoteStatus -&gt; ShowS
+$cshow :: CreditNoteStatus -&gt; String
+show :: CreditNoteStatus -&gt; String
+$cshowList :: [CreditNoteStatus] -&gt; ShowS
+showList :: [CreditNoteStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680237586"><span id="local-6989586621680237591"><span class="annot"><span class="annottext">CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+(CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool)
+-&gt; (CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool)
+-&gt; Eq CreditNoteStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+== :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+$c/= :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+/= :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680237594"><span id="local-6989586621680237603"><span id="local-6989586621680237610"><span id="local-6989586621680237623"><span id="local-6989586621680237626"><span id="local-6989586621680237631"><span id="local-6989586621680237637"><span id="local-6989586621680237641"><span class="annot"><span class="annottext">Int -&gt; CreditNoteStatus
+CreditNoteStatus -&gt; Int
+CreditNoteStatus -&gt; [CreditNoteStatus]
+CreditNoteStatus -&gt; CreditNoteStatus
+CreditNoteStatus -&gt; CreditNoteStatus -&gt; [CreditNoteStatus]
+CreditNoteStatus
+-&gt; CreditNoteStatus -&gt; CreditNoteStatus -&gt; [CreditNoteStatus]
+(CreditNoteStatus -&gt; CreditNoteStatus)
+-&gt; (CreditNoteStatus -&gt; CreditNoteStatus)
+-&gt; (Int -&gt; CreditNoteStatus)
+-&gt; (CreditNoteStatus -&gt; Int)
+-&gt; (CreditNoteStatus -&gt; [CreditNoteStatus])
+-&gt; (CreditNoteStatus -&gt; CreditNoteStatus -&gt; [CreditNoteStatus])
+-&gt; (CreditNoteStatus -&gt; CreditNoteStatus -&gt; [CreditNoteStatus])
+-&gt; (CreditNoteStatus
+    -&gt; CreditNoteStatus -&gt; CreditNoteStatus -&gt; [CreditNoteStatus])
+-&gt; Enum CreditNoteStatus
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: CreditNoteStatus -&gt; CreditNoteStatus
+succ :: CreditNoteStatus -&gt; CreditNoteStatus
+$cpred :: CreditNoteStatus -&gt; CreditNoteStatus
+pred :: CreditNoteStatus -&gt; CreditNoteStatus
+$ctoEnum :: Int -&gt; CreditNoteStatus
+toEnum :: Int -&gt; CreditNoteStatus
+$cfromEnum :: CreditNoteStatus -&gt; Int
+fromEnum :: CreditNoteStatus -&gt; Int
+$cenumFrom :: CreditNoteStatus -&gt; [CreditNoteStatus]
+enumFrom :: CreditNoteStatus -&gt; [CreditNoteStatus]
+$cenumFromThen :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; [CreditNoteStatus]
+enumFromThen :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; [CreditNoteStatus]
+$cenumFromTo :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; [CreditNoteStatus]
+enumFromTo :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; [CreditNoteStatus]
+$cenumFromThenTo :: CreditNoteStatus
+-&gt; CreditNoteStatus -&gt; CreditNoteStatus -&gt; [CreditNoteStatus]
+enumFromThenTo :: CreditNoteStatus
+-&gt; CreditNoteStatus -&gt; CreditNoteStatus -&gt; [CreditNoteStatus]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680237649"><span id="local-6989586621680237651"><span class="annot"><span class="annottext">CreditNoteStatus
+CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bounded CreditNoteStatus
+forall a. a -&gt; a -&gt; Bounded a
+$cminBound :: CreditNoteStatus
+minBound :: CreditNoteStatus
+$cmaxBound :: CreditNoteStatus
+maxBound :: CreditNoteStatus
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Bounded"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680237659"><span id="local-6989586621680237663"><span id="local-6989586621680237667"><span id="local-6989586621680237671"><span id="local-6989586621680237674"><span id="local-6989586621680237677"><span id="local-6989586621680237680"><span class="annot"><span class="annottext">Eq CreditNoteStatus
+Eq CreditNoteStatus =&gt;
+(CreditNoteStatus -&gt; CreditNoteStatus -&gt; Ordering)
+-&gt; (CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool)
+-&gt; (CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool)
+-&gt; (CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool)
+-&gt; (CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool)
+-&gt; (CreditNoteStatus -&gt; CreditNoteStatus -&gt; CreditNoteStatus)
+-&gt; (CreditNoteStatus -&gt; CreditNoteStatus -&gt; CreditNoteStatus)
+-&gt; Ord CreditNoteStatus
+CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+CreditNoteStatus -&gt; CreditNoteStatus -&gt; Ordering
+CreditNoteStatus -&gt; CreditNoteStatus -&gt; CreditNoteStatus
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; Ordering
+compare :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; Ordering
+$c&lt; :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+&lt; :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+$c&lt;= :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+&lt;= :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+$c&gt; :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+&gt; :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+$c&gt;= :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+&gt;= :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+$cmax :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; CreditNoteStatus
+max :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; CreditNoteStatus
+$cmin :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; CreditNoteStatus
+min :: CreditNoteStatus -&gt; CreditNoteStatus -&gt; CreditNoteStatus
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="annot"><span class="hs-comment">-- | Smart constructor with validation</span></span><span>
+</span><span id="line-50"></span><span class="annot"><a href="Finance.CreditNote.html#createCreditNote"><span class="hs-identifier hs-type">createCreditNote</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CreditNoteId"><span class="hs-identifier hs-type">CreditNoteId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CreditNoteNumber"><span class="hs-identifier hs-type">CreditNoteNumber</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CurrencyCode"><span class="hs-identifier hs-type">CurrencyCode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CreditNote"><span class="hs-identifier hs-type">CreditNote</span></a></span><span>
+</span><span id="line-51"></span><span id="createCreditNote"><span class="annot"><span class="annottext">createCreditNote :: CreditNoteId
+-&gt; CreditNoteNumber
+-&gt; Day
+-&gt; Double
+-&gt; CurrencyCode
+-&gt; Text
+-&gt; CreditNote
+</span><a href="Finance.CreditNote.html#createCreditNote"><span class="hs-identifier hs-var hs-var">createCreditNote</span></a></span></span><span> </span><span id="local-6989586621680237683"><span class="annot"><span class="annottext">CreditNoteId
+</span><a href="#local-6989586621680237683"><span class="hs-identifier hs-var">cnid</span></a></span></span><span> </span><span id="local-6989586621680237684"><span class="annot"><span class="annottext">CreditNoteNumber
+</span><a href="#local-6989586621680237684"><span class="hs-identifier hs-var">num</span></a></span></span><span> </span><span id="local-6989586621680237685"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680237685"><span class="hs-identifier hs-var">date</span></a></span></span><span> </span><span id="local-6989586621680237686"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680237686"><span class="hs-identifier hs-var">amt</span></a></span></span><span> </span><span id="local-6989586621680237687"><span class="annot"><span class="annottext">CurrencyCode
+</span><a href="#local-6989586621680237687"><span class="hs-identifier hs-var">curr</span></a></span></span><span> </span><span id="local-6989586621680237688"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680237688"><span class="hs-identifier hs-var">reason</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CreditNote"><span class="hs-identifier hs-type">CreditNote</span></a></span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">cnId :: CreditNoteId
+</span><a href="Finance.CreditNote.html#cnId"><span class="hs-identifier hs-var">cnId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreditNoteId
+</span><a href="#local-6989586621680237683"><span class="hs-identifier hs-var">cnid</span></a></span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">cnNumber :: CreditNoteNumber
+</span><a href="Finance.CreditNote.html#cnNumber"><span class="hs-identifier hs-var">cnNumber</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreditNoteNumber
+</span><a href="#local-6989586621680237684"><span class="hs-identifier hs-var">num</span></a></span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">cnDate :: Day
+</span><a href="Finance.CreditNote.html#cnDate"><span class="hs-identifier hs-var">cnDate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680237685"><span class="hs-identifier hs-var">date</span></a></span><span>
+</span><span id="line-55"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">cnAmount :: Double
+</span><a href="Finance.CreditNote.html#cnAmount"><span class="hs-identifier hs-var">cnAmount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680237686"><span class="hs-identifier hs-var">amt</span></a></span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">cnCurrency :: CurrencyCode
+</span><a href="Finance.CreditNote.html#cnCurrency"><span class="hs-identifier hs-var">cnCurrency</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CurrencyCode
+</span><a href="#local-6989586621680237687"><span class="hs-identifier hs-var">curr</span></a></span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">cnReason :: Text
+</span><a href="Finance.CreditNote.html#cnReason"><span class="hs-identifier hs-var">cnReason</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680237688"><span class="hs-identifier hs-var">reason</span></a></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">cnRelatedBill :: Maybe BillId
+</span><a href="Finance.CreditNote.html#cnRelatedBill"><span class="hs-identifier hs-var">cnRelatedBill</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe BillId
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">cnStatus :: CreditNoteStatus
+</span><a href="Finance.CreditNote.html#cnStatus"><span class="hs-identifier hs-var">cnStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreditNoteStatus
+</span><a href="Finance.CreditNote.html#CNSIssued"><span class="hs-identifier hs-var">CNSIssued</span></a></span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">cnCreatedAt :: Day
+</span><a href="Finance.CreditNote.html#cnCreatedAt"><span class="hs-identifier hs-var">cnCreatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680237685"><span class="hs-identifier hs-var">date</span></a></span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">cnUpdatedAt :: Maybe Day
+</span><a href="Finance.CreditNote.html#cnUpdatedAt"><span class="hs-identifier hs-var">cnUpdatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Day
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="annot"><span class="hs-comment">-- | Cancel credit note with invariant: only issued notes can be cancelled</span></span><span>
+</span><span id="line-65"></span><span class="annot"><a href="Finance.CreditNote.html#cancelCreditNote"><span class="hs-identifier hs-type">cancelCreditNote</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CreditNote"><span class="hs-identifier hs-type">CreditNote</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CreditNote"><span class="hs-identifier hs-type">CreditNote</span></a></span><span>
+</span><span id="line-66"></span><span id="cancelCreditNote"><span class="annot"><span class="annottext">cancelCreditNote :: CreditNote -&gt; Maybe CreditNote
+</span><a href="Finance.CreditNote.html#cancelCreditNote"><span class="hs-identifier hs-var hs-var">cancelCreditNote</span></a></span></span><span> </span><span id="local-6989586621680237690"><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237690"><span class="hs-identifier hs-var">cn</span></a></span></span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">CreditNote -&gt; CreditNoteStatus
+</span><a href="Finance.CreditNote.html#cnStatus"><span class="hs-identifier hs-var">cnStatus</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237690"><span class="hs-identifier hs-var">cn</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%2F%3D"><span class="hs-operator hs-var">/=</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNoteStatus
+</span><a href="Finance.CreditNote.html#CNSIssued"><span class="hs-identifier hs-var">CNSIssued</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe CreditNote
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreditNote -&gt; Maybe CreditNote
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">(CreditNote -&gt; Maybe CreditNote) -&gt; CreditNote -&gt; Maybe CreditNote
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237690"><span class="hs-identifier hs-var">cn</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#cnStatus"><span class="hs-identifier hs-var">cnStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CNSCancelled"><span class="hs-identifier hs-type">CNSCancelled</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#cnUpdatedAt"><span class="hs-identifier hs-var">cnUpdatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Gregorian.html#fromGregorian"><span class="hs-identifier hs-type">fromGregorian</span></a></span><span> </span><span class="annot"><span class="hs-number">2024</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="annot"><span class="hs-comment">-- | Apply credit note with invariant: amount &gt; 0 and status is issued</span></span><span>
+</span><span id="line-71"></span><span class="annot"><a href="Finance.CreditNote.html#applyCreditNote"><span class="hs-identifier hs-type">applyCreditNote</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CreditNote"><span class="hs-identifier hs-type">CreditNote</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CreditNote"><span class="hs-identifier hs-type">CreditNote</span></a></span><span>
+</span><span id="line-72"></span><span id="applyCreditNote"><span class="annot"><span class="annottext">applyCreditNote :: Double -&gt; CreditNote -&gt; Maybe CreditNote
+</span><a href="Finance.CreditNote.html#applyCreditNote"><span class="hs-identifier hs-var hs-var">applyCreditNote</span></a></span></span><span> </span><span id="local-6989586621680237692"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680237692"><span class="hs-identifier hs-var">amount</span></a></span></span><span> </span><span id="local-6989586621680237693"><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237693"><span class="hs-identifier hs-var">cn</span></a></span></span><span>
+</span><span id="line-73"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680237692"><span class="hs-identifier hs-var">amount</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe CreditNote
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">CreditNote -&gt; CreditNoteStatus
+</span><a href="Finance.CreditNote.html#cnStatus"><span class="hs-identifier hs-var">cnStatus</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237693"><span class="hs-identifier hs-var">cn</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%2F%3D"><span class="hs-operator hs-var">/=</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNoteStatus
+</span><a href="Finance.CreditNote.html#CNSIssued"><span class="hs-identifier hs-var">CNSIssued</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe CreditNote
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreditNote -&gt; Maybe CreditNote
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">(CreditNote -&gt; Maybe CreditNote) -&gt; CreditNote -&gt; Maybe CreditNote
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237693"><span class="hs-identifier hs-var">cn</span></a></span><span>
+</span><span id="line-76"></span><span>      </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#cnAmount"><span class="hs-identifier hs-var">cnAmount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#cnAmount"><span class="hs-identifier hs-var">cnAmount</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680237693"><span class="hs-identifier hs-type">cn</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-type">-</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680237692"><span class="hs-identifier hs-type">amount</span></a></span><span>
+</span><span id="line-77"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#cnStatus"><span class="hs-identifier hs-var">cnStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#cnAmount"><span class="hs-identifier hs-var">cnAmount</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680237693"><span class="hs-identifier hs-type">cn</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-type">-</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680237692"><span class="hs-identifier hs-type">amount</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-type">&lt;=</span></a></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CNSApplied"><span class="hs-identifier hs-type">CNSApplied</span></a></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#cnStatus"><span class="hs-identifier hs-var">cnStatus</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680237693"><span class="hs-identifier hs-type">cn</span></a></span><span>
+</span><span id="line-78"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#cnUpdatedAt"><span class="hs-identifier hs-var">cnUpdatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Gregorian.html#fromGregorian"><span class="hs-identifier hs-type">fromGregorian</span></a></span><span> </span><span class="annot"><span class="hs-number">2024</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
+</span><span id="line-79"></span><span>      </span><span class="hs-special">}</span><span>
+</span><span id="line-80"></span><span>
+</span><span id="line-81"></span><span class="annot"><span class="hs-comment">-- | Check if credit note is active</span></span><span>
+</span><span id="line-82"></span><span class="annot"><a href="Finance.CreditNote.html#isActiveCreditNote"><span class="hs-identifier hs-type">isActiveCreditNote</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CreditNote"><span class="hs-identifier hs-type">CreditNote</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-83"></span><span id="isActiveCreditNote"><span class="annot"><span class="annottext">isActiveCreditNote :: CreditNote -&gt; Bool
+</span><a href="Finance.CreditNote.html#isActiveCreditNote"><span class="hs-identifier hs-var hs-var">isActiveCreditNote</span></a></span></span><span> </span><span id="local-6989586621680237695"><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237695"><span class="hs-identifier hs-var">cn</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreditNote -&gt; CreditNoteStatus
+</span><a href="Finance.CreditNote.html#cnStatus"><span class="hs-identifier hs-var">cnStatus</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237695"><span class="hs-identifier hs-var">cn</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNoteStatus
+</span><a href="Finance.CreditNote.html#CNSIssued"><span class="hs-identifier hs-var">CNSIssued</span></a></span><span>
+</span><span id="line-84"></span><span>
+</span><span id="line-85"></span><span class="annot"><span class="hs-comment">-- | Check if credit note is fully applied</span></span><span>
+</span><span id="line-86"></span><span class="annot"><a href="Finance.CreditNote.html#isFullyApplied"><span class="hs-identifier hs-type">isFullyApplied</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CreditNote"><span class="hs-identifier hs-type">CreditNote</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-87"></span><span id="isFullyApplied"><span class="annot"><span class="annottext">isFullyApplied :: CreditNote -&gt; Bool
+</span><a href="Finance.CreditNote.html#isFullyApplied"><span class="hs-identifier hs-var hs-var">isFullyApplied</span></a></span></span><span> </span><span id="local-6989586621680237697"><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237697"><span class="hs-identifier hs-var">cn</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreditNote -&gt; CreditNoteStatus
+</span><a href="Finance.CreditNote.html#cnStatus"><span class="hs-identifier hs-var">cnStatus</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237697"><span class="hs-identifier hs-var">cn</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNoteStatus
+</span><a href="Finance.CreditNote.html#CNSApplied"><span class="hs-identifier hs-var">CNSApplied</span></a></span><span>
+</span><span id="line-88"></span><span>
+</span><span id="line-89"></span><span class="annot"><span class="hs-comment">-- | Pretty print credit note</span></span><span>
+</span><span id="line-90"></span><span class="annot"><a href="Finance.CreditNote.html#prettyCreditNote"><span class="hs-identifier hs-type">prettyCreditNote</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.CreditNote.html#CreditNote"><span class="hs-identifier hs-type">CreditNote</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-91"></span><span id="prettyCreditNote"><span class="annot"><span class="annottext">prettyCreditNote :: CreditNote -&gt; Text
+</span><a href="Finance.CreditNote.html#prettyCreditNote"><span class="hs-identifier hs-var hs-var">prettyCreditNote</span></a></span></span><span> </span><span id="local-6989586621680237699"><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237699"><span class="hs-identifier hs-var">cn</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreditNoteNumber -&gt; Text
+</span><a href="Finance.CreditNote.html#unCreditNoteNumber"><span class="hs-identifier hs-var">unCreditNoteNumber</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CreditNote -&gt; CreditNoteNumber
+</span><a href="Finance.CreditNote.html#cnNumber"><span class="hs-identifier hs-var">cnNumber</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237699"><span class="hs-identifier hs-var">cn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; - &quot;</span></span><span>
+</span><span id="line-92"></span><span>  </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#pack"><span class="hs-identifier hs-var">T.pack</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#show"><span class="hs-identifier hs-var">show</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CreditNote -&gt; Double
+</span><a href="Finance.CreditNote.html#cnAmount"><span class="hs-identifier hs-var">cnAmount</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237699"><span class="hs-identifier hs-var">cn</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; &quot;</span></span><span>
+</span><span id="line-93"></span><span>  </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">CurrencyCode -&gt; Text
+</span><a href="Finance.CreditNote.html#unCurrencyCode"><span class="hs-identifier hs-var">unCurrencyCode</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CreditNote -&gt; CurrencyCode
+</span><a href="Finance.CreditNote.html#cnCurrency"><span class="hs-identifier hs-var">cnCurrency</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237699"><span class="hs-identifier hs-var">cn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; - &quot;</span></span><span>
+</span><span id="line-94"></span><span>  </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#pack"><span class="hs-identifier hs-var">T.pack</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CreditNoteStatus -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#show"><span class="hs-identifier hs-var">show</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CreditNote -&gt; CreditNoteStatus
+</span><a href="Finance.CreditNote.html#cnStatus"><span class="hs-identifier hs-var">cnStatus</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237699"><span class="hs-identifier hs-var">cn</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-95"></span><span>
+</span><span id="line-96"></span><span class="annot"><span class="hs-comment">-- | Calculate total applied amount</span></span><span>
+</span><span id="line-97"></span><span class="annot"><a href="Finance.CreditNote.html#calculateAppliedAmount"><span class="hs-identifier hs-type">calculateAppliedAmount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Finance.CreditNote.html#CreditNote"><span class="hs-identifier hs-type">CreditNote</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-98"></span><span id="calculateAppliedAmount"><span class="annot"><span class="annottext">calculateAppliedAmount :: [CreditNote] -&gt; Double
+</span><a href="Finance.CreditNote.html#calculateAppliedAmount"><span class="hs-identifier hs-var hs-var">calculateAppliedAmount</span></a></span></span><span> </span><span id="local-6989586621680237703"><span class="annot"><span class="annottext">[CreditNote]
+</span><a href="#local-6989586621680237703"><span class="hs-identifier hs-var">notes</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-99"></span><span>  </span><span class="annot"><span class="annottext">[Double] -&gt; Double
+forall a. Num a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#sum"><span class="hs-identifier hs-var">sum</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">CreditNote -&gt; Double
+</span><a href="Finance.CreditNote.html#cnAmount"><span class="hs-identifier hs-var">cnAmount</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237705"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="local-6989586621680237705"><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237705"><span class="hs-identifier hs-var">n</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[CreditNote]
+</span><a href="#local-6989586621680237703"><span class="hs-identifier hs-var">notes</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">CreditNote -&gt; CreditNoteStatus
+</span><a href="Finance.CreditNote.html#cnStatus"><span class="hs-identifier hs-var">cnStatus</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNote
+</span><a href="#local-6989586621680237705"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNoteStatus -&gt; CreditNoteStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">CreditNoteStatus
+</span><a href="Finance.CreditNote.html#CNSApplied"><span class="hs-identifier hs-var">CNSApplied</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-100"></span></pre></body></html>

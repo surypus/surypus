@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Receipt module - Purchase receipts</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Logistics.Receipt.html"><span class="hs-identifier">Logistics.Receipt</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="annot"><span class="hs-comment">-- | Receipt - Purchase receipt (arrival)</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">data</span><span> </span><span id="Receipt"><span class="annot"><a href="Logistics.Receipt.html#Receipt"><span class="hs-identifier hs-var">Receipt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Receipt"><span class="annot"><a href="Logistics.Receipt.html#Receipt"><span class="hs-identifier hs-var">Receipt</span></a></span></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="rcId"><span class="annot"><span class="annottext">Receipt -&gt; Int64
+</span><a href="Logistics.Receipt.html#rcId"><span class="hs-identifier hs-var hs-var">rcId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="rcCode"><span class="annot"><span class="annottext">Receipt -&gt; Text
+</span><a href="Logistics.Receipt.html#rcCode"><span class="hs-identifier hs-var hs-var">rcCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="rcDate"><span class="annot"><span class="annottext">Receipt -&gt; Day
+</span><a href="Logistics.Receipt.html#rcDate"><span class="hs-identifier hs-var hs-var">rcDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="rcSupplierId"><span class="annot"><span class="annottext">Receipt -&gt; Int64
+</span><a href="Logistics.Receipt.html#rcSupplierId"><span class="hs-identifier hs-var hs-var">rcSupplierId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="rcLocationId"><span class="annot"><span class="annottext">Receipt -&gt; Int64
+</span><a href="Logistics.Receipt.html#rcLocationId"><span class="hs-identifier hs-var hs-var">rcLocationId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="rcStatus"><span class="annot"><span class="annottext">Receipt -&gt; ReceiptStatus
+</span><a href="Logistics.Receipt.html#rcStatus"><span class="hs-identifier hs-var hs-var">rcStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Logistics.Receipt.html#ReceiptStatus"><span class="hs-identifier hs-type">ReceiptStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span id="rcFlags"><span class="annot"><span class="annottext">Receipt -&gt; Int
+</span><a href="Logistics.Receipt.html#rcFlags"><span class="hs-identifier hs-var hs-var">rcFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680273327"><span id="local-6989586621680273343"><span id="local-6989586621680273347"><span class="annot"><span class="annottext">Int -&gt; Receipt -&gt; ShowS
+[Receipt] -&gt; ShowS
+Receipt -&gt; String
+(Int -&gt; Receipt -&gt; ShowS)
+-&gt; (Receipt -&gt; String) -&gt; ([Receipt] -&gt; ShowS) -&gt; Show Receipt
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Receipt -&gt; ShowS
+showsPrec :: Int -&gt; Receipt -&gt; ShowS
+$cshow :: Receipt -&gt; String
+show :: Receipt -&gt; String
+$cshowList :: [Receipt] -&gt; ShowS
+showList :: [Receipt] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680273352"><span id="local-6989586621680273366"><span class="annot"><span class="annottext">Receipt -&gt; Receipt -&gt; Bool
+(Receipt -&gt; Receipt -&gt; Bool)
+-&gt; (Receipt -&gt; Receipt -&gt; Bool) -&gt; Eq Receipt
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Receipt -&gt; Receipt -&gt; Bool
+== :: Receipt -&gt; Receipt -&gt; Bool
+$c/= :: Receipt -&gt; Receipt -&gt; Bool
+/= :: Receipt -&gt; Receipt -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">data</span><span> </span><span id="ReceiptStatus"><span class="annot"><a href="Logistics.Receipt.html#ReceiptStatus"><span class="hs-identifier hs-var">ReceiptStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RSDraft"><span class="annot"><a href="Logistics.Receipt.html#RSDraft"><span class="hs-identifier hs-var">RSDraft</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="RSReceived"><span class="annot"><a href="Logistics.Receipt.html#RSReceived"><span class="hs-identifier hs-var">RSReceived</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="RSChecked"><span class="annot"><a href="Logistics.Receipt.html#RSChecked"><span class="hs-identifier hs-var">RSChecked</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="RSAccepted"><span class="annot"><a href="Logistics.Receipt.html#RSAccepted"><span class="hs-identifier hs-var">RSAccepted</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="RSRejected"><span class="annot"><a href="Logistics.Receipt.html#RSRejected"><span class="hs-identifier hs-var">RSRejected</span></a></span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680273376"><span id="local-6989586621680273378"><span id="local-6989586621680273381"><span class="annot"><span class="annottext">Int -&gt; ReceiptStatus -&gt; ShowS
+[ReceiptStatus] -&gt; ShowS
+ReceiptStatus -&gt; String
+(Int -&gt; ReceiptStatus -&gt; ShowS)
+-&gt; (ReceiptStatus -&gt; String)
+-&gt; ([ReceiptStatus] -&gt; ShowS)
+-&gt; Show ReceiptStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ReceiptStatus -&gt; ShowS
+showsPrec :: Int -&gt; ReceiptStatus -&gt; ShowS
+$cshow :: ReceiptStatus -&gt; String
+show :: ReceiptStatus -&gt; String
+$cshowList :: [ReceiptStatus] -&gt; ShowS
+showList :: [ReceiptStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680273384"><span id="local-6989586621680273389"><span class="annot"><span class="annottext">ReceiptStatus -&gt; ReceiptStatus -&gt; Bool
+(ReceiptStatus -&gt; ReceiptStatus -&gt; Bool)
+-&gt; (ReceiptStatus -&gt; ReceiptStatus -&gt; Bool) -&gt; Eq ReceiptStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ReceiptStatus -&gt; ReceiptStatus -&gt; Bool
+== :: ReceiptStatus -&gt; ReceiptStatus -&gt; Bool
+$c/= :: ReceiptStatus -&gt; ReceiptStatus -&gt; Bool
+/= :: ReceiptStatus -&gt; ReceiptStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="annot"><span class="hs-comment">-- | Receipt line</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">data</span><span> </span><span id="ReceiptLine"><span class="annot"><a href="Logistics.Receipt.html#ReceiptLine"><span class="hs-identifier hs-var">ReceiptLine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ReceiptLine"><span class="annot"><a href="Logistics.Receipt.html#ReceiptLine"><span class="hs-identifier hs-var">ReceiptLine</span></a></span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="rlId"><span class="annot"><span class="annottext">ReceiptLine -&gt; Int64
+</span><a href="Logistics.Receipt.html#rlId"><span class="hs-identifier hs-var hs-var">rlId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="rlReceiptId"><span class="annot"><span class="annottext">ReceiptLine -&gt; Int64
+</span><a href="Logistics.Receipt.html#rlReceiptId"><span class="hs-identifier hs-var hs-var">rlReceiptId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="rlGoodsId"><span class="annot"><span class="annottext">ReceiptLine -&gt; Int64
+</span><a href="Logistics.Receipt.html#rlGoodsId"><span class="hs-identifier hs-var hs-var">rlGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="rlOrderedQtty"><span class="annot"><span class="annottext">ReceiptLine -&gt; Double
+</span><a href="Logistics.Receipt.html#rlOrderedQtty"><span class="hs-identifier hs-var hs-var">rlOrderedQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span id="rlReceivedQtty"><span class="annot"><span class="annottext">ReceiptLine -&gt; Double
+</span><a href="Logistics.Receipt.html#rlReceivedQtty"><span class="hs-identifier hs-var hs-var">rlReceivedQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-30"></span><span>    </span><span id="rlPrice"><span class="annot"><span class="annottext">ReceiptLine -&gt; Double
+</span><a href="Logistics.Receipt.html#rlPrice"><span class="hs-identifier hs-var hs-var">rlPrice</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-31"></span><span>    </span><span id="rlFlags"><span class="annot"><span class="annottext">ReceiptLine -&gt; Int
+</span><a href="Logistics.Receipt.html#rlFlags"><span class="hs-identifier hs-var hs-var">rlFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680273400"><span id="local-6989586621680273411"><span id="local-6989586621680273415"><span class="annot"><span class="annottext">Int -&gt; ReceiptLine -&gt; ShowS
+[ReceiptLine] -&gt; ShowS
+ReceiptLine -&gt; String
+(Int -&gt; ReceiptLine -&gt; ShowS)
+-&gt; (ReceiptLine -&gt; String)
+-&gt; ([ReceiptLine] -&gt; ShowS)
+-&gt; Show ReceiptLine
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ReceiptLine -&gt; ShowS
+showsPrec :: Int -&gt; ReceiptLine -&gt; ShowS
+$cshow :: ReceiptLine -&gt; String
+show :: ReceiptLine -&gt; String
+$cshowList :: [ReceiptLine] -&gt; ShowS
+showList :: [ReceiptLine] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680273418"><span id="local-6989586621680273427"><span class="annot"><span class="annottext">ReceiptLine -&gt; ReceiptLine -&gt; Bool
+(ReceiptLine -&gt; ReceiptLine -&gt; Bool)
+-&gt; (ReceiptLine -&gt; ReceiptLine -&gt; Bool) -&gt; Eq ReceiptLine
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ReceiptLine -&gt; ReceiptLine -&gt; Bool
+== :: ReceiptLine -&gt; ReceiptLine -&gt; Bool
+$c/= :: ReceiptLine -&gt; ReceiptLine -&gt; Bool
+/= :: ReceiptLine -&gt; ReceiptLine -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="annot"><span class="hs-comment">-- | Check if receipt matches order</span></span><span>
+</span><span id="line-36"></span><span class="annot"><a href="Logistics.Receipt.html#checkReceiptMatch"><span class="hs-identifier hs-type">checkReceiptMatch</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Logistics.Receipt.html#ReceiptLine"><span class="hs-identifier hs-type">ReceiptLine</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-37"></span><span id="checkReceiptMatch"><span class="annot"><span class="annottext">checkReceiptMatch :: ReceiptLine -&gt; Double -&gt; Bool
+</span><a href="Logistics.Receipt.html#checkReceiptMatch"><span class="hs-identifier hs-var hs-var">checkReceiptMatch</span></a></span></span><span> </span><span id="local-6989586621680273431"><span class="annot"><span class="annottext">ReceiptLine
+</span><a href="#local-6989586621680273431"><span class="hs-identifier hs-var">rl</span></a></span></span><span> </span><span id="local-6989586621680273432"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680273432"><span class="hs-identifier hs-var">ordered</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReceiptLine -&gt; Double
+</span><a href="Logistics.Receipt.html#rlReceivedQtty"><span class="hs-identifier hs-var">rlReceivedQtty</span></a></span><span> </span><span class="annot"><span class="annottext">ReceiptLine
+</span><a href="#local-6989586621680273431"><span class="hs-identifier hs-var">rl</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680273432"><span class="hs-identifier hs-var">ordered</span></a></span><span>
+</span><span id="line-38"></span></pre></body></html>

@@ -1,0 +1,876 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680234092"><span id="local-6989586621680234093"><span id="local-6989586621680234094"><span id="local-6989586621680234095"><span id="local-6989586621680234096"><span id="local-6989586621680234097"></span></span></span></span></span></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE RecordWildCards #-}</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- | Finance.Asset - Enhanced fixed assets with lifecycle management</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- This module provides type-safe asset tracking with depreciation and valuation</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Finance.Asset.html"><span class="hs-identifier">Finance.Asset</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">FromJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Gregorian.html#fromGregorian"><span class="hs-identifier">fromGregorian</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#diffDays"><span class="hs-identifier">diffDays</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="annot"><span class="hs-comment">-- | Asset classification with richer semantics</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">data</span><span> </span><span id="AssetClass"><span class="annot"><a href="Finance.Asset.html#AssetClass"><span class="hs-identifier hs-var">AssetClass</span></a></span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="BuildingAsset"><span class="annot"><a href="Finance.Asset.html#BuildingAsset"><span class="hs-identifier hs-var">BuildingAsset</span></a></span></span><span>    </span><span class="hs-comment">-- &#1047;&#1076;&#1072;&#1085;&#1080;&#1103; (buildings)</span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="EquipmentAsset"><span class="annot"><a href="Finance.Asset.html#EquipmentAsset"><span class="hs-identifier hs-var">EquipmentAsset</span></a></span></span><span>  </span><span class="hs-comment">-- &#1054;&#1073;&#1086;&#1088;&#1091;&#1076;&#1086;&#1074;&#1072;&#1085;&#1080;&#1077; (equipment)</span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="VehicleAsset"><span class="annot"><a href="Finance.Asset.html#VehicleAsset"><span class="hs-identifier hs-var">VehicleAsset</span></a></span></span><span>    </span><span class="hs-comment">-- &#1058;&#1088;&#1072;&#1085;&#1089;&#1087;&#1086;&#1088;&#1090; (vehicles)</span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="IntangibleAsset"><span class="annot"><a href="Finance.Asset.html#IntangibleAsset"><span class="hs-identifier hs-var">IntangibleAsset</span></a></span></span><span> </span><span class="hs-comment">-- &#1053;&#1077;&#1084;&#1072;&#1090;&#1077;&#1088;&#1080;&#1072;&#1083;&#1100;&#1085;&#1099;&#1077; (intangible)</span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="FinancialAsset"><span class="annot"><a href="Finance.Asset.html#FinancialAsset"><span class="hs-identifier hs-var">FinancialAsset</span></a></span></span><span>  </span><span class="hs-comment">-- &#1060;&#1080;&#1085;&#1072;&#1085;&#1089;&#1086;&#1074;&#1099;&#1077; (financial assets)</span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680234144"><span id="local-6989586621680234146"><span id="local-6989586621680234150"><span class="annot"><span class="annottext">Int -&gt; AssetClass -&gt; ShowS
+[AssetClass] -&gt; ShowS
+AssetClass -&gt; String
+(Int -&gt; AssetClass -&gt; ShowS)
+-&gt; (AssetClass -&gt; String)
+-&gt; ([AssetClass] -&gt; ShowS)
+-&gt; Show AssetClass
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AssetClass -&gt; ShowS
+showsPrec :: Int -&gt; AssetClass -&gt; ShowS
+$cshow :: AssetClass -&gt; String
+show :: AssetClass -&gt; String
+$cshowList :: [AssetClass] -&gt; ShowS
+showList :: [AssetClass] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234155"><span id="local-6989586621680234160"><span class="annot"><span class="annottext">AssetClass -&gt; AssetClass -&gt; Bool
+(AssetClass -&gt; AssetClass -&gt; Bool)
+-&gt; (AssetClass -&gt; AssetClass -&gt; Bool) -&gt; Eq AssetClass
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AssetClass -&gt; AssetClass -&gt; Bool
+== :: AssetClass -&gt; AssetClass -&gt; Bool
+$c/= :: AssetClass -&gt; AssetClass -&gt; Bool
+/= :: AssetClass -&gt; AssetClass -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234165"><span id="local-6989586621680234173"><span id="local-6989586621680234180"><span id="local-6989586621680234193"><span id="local-6989586621680234196"><span id="local-6989586621680234201"><span id="local-6989586621680234207"><span id="local-6989586621680234211"><span class="annot"><span class="annottext">Int -&gt; AssetClass
+AssetClass -&gt; Int
+AssetClass -&gt; [AssetClass]
+AssetClass -&gt; AssetClass
+AssetClass -&gt; AssetClass -&gt; [AssetClass]
+AssetClass -&gt; AssetClass -&gt; AssetClass -&gt; [AssetClass]
+(AssetClass -&gt; AssetClass)
+-&gt; (AssetClass -&gt; AssetClass)
+-&gt; (Int -&gt; AssetClass)
+-&gt; (AssetClass -&gt; Int)
+-&gt; (AssetClass -&gt; [AssetClass])
+-&gt; (AssetClass -&gt; AssetClass -&gt; [AssetClass])
+-&gt; (AssetClass -&gt; AssetClass -&gt; [AssetClass])
+-&gt; (AssetClass -&gt; AssetClass -&gt; AssetClass -&gt; [AssetClass])
+-&gt; Enum AssetClass
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: AssetClass -&gt; AssetClass
+succ :: AssetClass -&gt; AssetClass
+$cpred :: AssetClass -&gt; AssetClass
+pred :: AssetClass -&gt; AssetClass
+$ctoEnum :: Int -&gt; AssetClass
+toEnum :: Int -&gt; AssetClass
+$cfromEnum :: AssetClass -&gt; Int
+fromEnum :: AssetClass -&gt; Int
+$cenumFrom :: AssetClass -&gt; [AssetClass]
+enumFrom :: AssetClass -&gt; [AssetClass]
+$cenumFromThen :: AssetClass -&gt; AssetClass -&gt; [AssetClass]
+enumFromThen :: AssetClass -&gt; AssetClass -&gt; [AssetClass]
+$cenumFromTo :: AssetClass -&gt; AssetClass -&gt; [AssetClass]
+enumFromTo :: AssetClass -&gt; AssetClass -&gt; [AssetClass]
+$cenumFromThenTo :: AssetClass -&gt; AssetClass -&gt; AssetClass -&gt; [AssetClass]
+enumFromThenTo :: AssetClass -&gt; AssetClass -&gt; AssetClass -&gt; [AssetClass]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234219"><span id="local-6989586621680234221"><span class="annot"><span class="annottext">AssetClass
+AssetClass -&gt; AssetClass -&gt; Bounded AssetClass
+forall a. a -&gt; a -&gt; Bounded a
+$cminBound :: AssetClass
+minBound :: AssetClass
+$cmaxBound :: AssetClass
+maxBound :: AssetClass
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Bounded"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234229"><span id="local-6989586621680234233"><span id="local-6989586621680234237"><span id="local-6989586621680234241"><span id="local-6989586621680234244"><span id="local-6989586621680234247"><span id="local-6989586621680234250"><span class="annot"><span class="annottext">Eq AssetClass
+Eq AssetClass =&gt;
+(AssetClass -&gt; AssetClass -&gt; Ordering)
+-&gt; (AssetClass -&gt; AssetClass -&gt; Bool)
+-&gt; (AssetClass -&gt; AssetClass -&gt; Bool)
+-&gt; (AssetClass -&gt; AssetClass -&gt; Bool)
+-&gt; (AssetClass -&gt; AssetClass -&gt; Bool)
+-&gt; (AssetClass -&gt; AssetClass -&gt; AssetClass)
+-&gt; (AssetClass -&gt; AssetClass -&gt; AssetClass)
+-&gt; Ord AssetClass
+AssetClass -&gt; AssetClass -&gt; Bool
+AssetClass -&gt; AssetClass -&gt; Ordering
+AssetClass -&gt; AssetClass -&gt; AssetClass
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: AssetClass -&gt; AssetClass -&gt; Ordering
+compare :: AssetClass -&gt; AssetClass -&gt; Ordering
+$c&lt; :: AssetClass -&gt; AssetClass -&gt; Bool
+&lt; :: AssetClass -&gt; AssetClass -&gt; Bool
+$c&lt;= :: AssetClass -&gt; AssetClass -&gt; Bool
+&lt;= :: AssetClass -&gt; AssetClass -&gt; Bool
+$c&gt; :: AssetClass -&gt; AssetClass -&gt; Bool
+&gt; :: AssetClass -&gt; AssetClass -&gt; Bool
+$c&gt;= :: AssetClass -&gt; AssetClass -&gt; Bool
+&gt;= :: AssetClass -&gt; AssetClass -&gt; Bool
+$cmax :: AssetClass -&gt; AssetClass -&gt; AssetClass
+max :: AssetClass -&gt; AssetClass -&gt; AssetClass
+$cmin :: AssetClass -&gt; AssetClass -&gt; AssetClass
+min :: AssetClass -&gt; AssetClass -&gt; AssetClass
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="annot"><span class="hs-comment">-- | Asset lifecycle status</span></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">data</span><span> </span><span id="AssetStatus"><span class="annot"><a href="Finance.Asset.html#AssetStatus"><span class="hs-identifier hs-var">AssetStatus</span></a></span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="AssetActive"><span class="annot"><a href="Finance.Asset.html#AssetActive"><span class="hs-identifier hs-var">AssetActive</span></a></span></span><span>     </span><span class="hs-comment">-- &#1040;&#1082;&#1090;&#1080;&#1074;&#1077;&#1085; (active)</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="AssetInRepair"><span class="annot"><a href="Finance.Asset.html#AssetInRepair"><span class="hs-identifier hs-var">AssetInRepair</span></a></span></span><span>    </span><span class="hs-comment">-- &#1042; &#1088;&#1077;&#1084;&#1086;&#1085;&#1090;&#1077; (in repair)</span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="AssetWrittenOff"><span class="annot"><a href="Finance.Asset.html#AssetWrittenOff"><span class="hs-identifier hs-var">AssetWrittenOff</span></a></span></span><span> </span><span class="hs-comment">-- &#1057;&#1087;&#1080;&#1089;&#1072;&#1085; (written off)</span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="AssetSold"><span class="annot"><a href="Finance.Asset.html#AssetSold"><span class="hs-identifier hs-var">AssetSold</span></a></span></span><span>       </span><span class="hs-comment">-- &#1055;&#1088;&#1086;&#1076;&#1072;&#1085; (sold)</span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680234262"><span id="local-6989586621680234264"><span id="local-6989586621680234267"><span class="annot"><span class="annottext">Int -&gt; AssetStatus -&gt; ShowS
+[AssetStatus] -&gt; ShowS
+AssetStatus -&gt; String
+(Int -&gt; AssetStatus -&gt; ShowS)
+-&gt; (AssetStatus -&gt; String)
+-&gt; ([AssetStatus] -&gt; ShowS)
+-&gt; Show AssetStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AssetStatus -&gt; ShowS
+showsPrec :: Int -&gt; AssetStatus -&gt; ShowS
+$cshow :: AssetStatus -&gt; String
+show :: AssetStatus -&gt; String
+$cshowList :: [AssetStatus] -&gt; ShowS
+showList :: [AssetStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234270"><span id="local-6989586621680234274"><span class="annot"><span class="annottext">AssetStatus -&gt; AssetStatus -&gt; Bool
+(AssetStatus -&gt; AssetStatus -&gt; Bool)
+-&gt; (AssetStatus -&gt; AssetStatus -&gt; Bool) -&gt; Eq AssetStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AssetStatus -&gt; AssetStatus -&gt; Bool
+== :: AssetStatus -&gt; AssetStatus -&gt; Bool
+$c/= :: AssetStatus -&gt; AssetStatus -&gt; Bool
+/= :: AssetStatus -&gt; AssetStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234278"><span id="local-6989586621680234285"><span id="local-6989586621680234292"><span id="local-6989586621680234303"><span id="local-6989586621680234306"><span id="local-6989586621680234310"><span id="local-6989586621680234316"><span id="local-6989586621680234320"><span class="annot"><span class="annottext">Int -&gt; AssetStatus
+AssetStatus -&gt; Int
+AssetStatus -&gt; [AssetStatus]
+AssetStatus -&gt; AssetStatus
+AssetStatus -&gt; AssetStatus -&gt; [AssetStatus]
+AssetStatus -&gt; AssetStatus -&gt; AssetStatus -&gt; [AssetStatus]
+(AssetStatus -&gt; AssetStatus)
+-&gt; (AssetStatus -&gt; AssetStatus)
+-&gt; (Int -&gt; AssetStatus)
+-&gt; (AssetStatus -&gt; Int)
+-&gt; (AssetStatus -&gt; [AssetStatus])
+-&gt; (AssetStatus -&gt; AssetStatus -&gt; [AssetStatus])
+-&gt; (AssetStatus -&gt; AssetStatus -&gt; [AssetStatus])
+-&gt; (AssetStatus -&gt; AssetStatus -&gt; AssetStatus -&gt; [AssetStatus])
+-&gt; Enum AssetStatus
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: AssetStatus -&gt; AssetStatus
+succ :: AssetStatus -&gt; AssetStatus
+$cpred :: AssetStatus -&gt; AssetStatus
+pred :: AssetStatus -&gt; AssetStatus
+$ctoEnum :: Int -&gt; AssetStatus
+toEnum :: Int -&gt; AssetStatus
+$cfromEnum :: AssetStatus -&gt; Int
+fromEnum :: AssetStatus -&gt; Int
+$cenumFrom :: AssetStatus -&gt; [AssetStatus]
+enumFrom :: AssetStatus -&gt; [AssetStatus]
+$cenumFromThen :: AssetStatus -&gt; AssetStatus -&gt; [AssetStatus]
+enumFromThen :: AssetStatus -&gt; AssetStatus -&gt; [AssetStatus]
+$cenumFromTo :: AssetStatus -&gt; AssetStatus -&gt; [AssetStatus]
+enumFromTo :: AssetStatus -&gt; AssetStatus -&gt; [AssetStatus]
+$cenumFromThenTo :: AssetStatus -&gt; AssetStatus -&gt; AssetStatus -&gt; [AssetStatus]
+enumFromThenTo :: AssetStatus -&gt; AssetStatus -&gt; AssetStatus -&gt; [AssetStatus]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234323"><span id="local-6989586621680234325"><span class="annot"><span class="annottext">AssetStatus
+AssetStatus -&gt; AssetStatus -&gt; Bounded AssetStatus
+forall a. a -&gt; a -&gt; Bounded a
+$cminBound :: AssetStatus
+minBound :: AssetStatus
+$cmaxBound :: AssetStatus
+maxBound :: AssetStatus
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Bounded"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234330"><span id="local-6989586621680234334"><span id="local-6989586621680234338"><span id="local-6989586621680234342"><span id="local-6989586621680234345"><span id="local-6989586621680234348"><span id="local-6989586621680234351"><span class="annot"><span class="annottext">Eq AssetStatus
+Eq AssetStatus =&gt;
+(AssetStatus -&gt; AssetStatus -&gt; Ordering)
+-&gt; (AssetStatus -&gt; AssetStatus -&gt; Bool)
+-&gt; (AssetStatus -&gt; AssetStatus -&gt; Bool)
+-&gt; (AssetStatus -&gt; AssetStatus -&gt; Bool)
+-&gt; (AssetStatus -&gt; AssetStatus -&gt; Bool)
+-&gt; (AssetStatus -&gt; AssetStatus -&gt; AssetStatus)
+-&gt; (AssetStatus -&gt; AssetStatus -&gt; AssetStatus)
+-&gt; Ord AssetStatus
+AssetStatus -&gt; AssetStatus -&gt; Bool
+AssetStatus -&gt; AssetStatus -&gt; Ordering
+AssetStatus -&gt; AssetStatus -&gt; AssetStatus
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: AssetStatus -&gt; AssetStatus -&gt; Ordering
+compare :: AssetStatus -&gt; AssetStatus -&gt; Ordering
+$c&lt; :: AssetStatus -&gt; AssetStatus -&gt; Bool
+&lt; :: AssetStatus -&gt; AssetStatus -&gt; Bool
+$c&lt;= :: AssetStatus -&gt; AssetStatus -&gt; Bool
+&lt;= :: AssetStatus -&gt; AssetStatus -&gt; Bool
+$c&gt; :: AssetStatus -&gt; AssetStatus -&gt; Bool
+&gt; :: AssetStatus -&gt; AssetStatus -&gt; Bool
+$c&gt;= :: AssetStatus -&gt; AssetStatus -&gt; Bool
+&gt;= :: AssetStatus -&gt; AssetStatus -&gt; Bool
+$cmax :: AssetStatus -&gt; AssetStatus -&gt; AssetStatus
+max :: AssetStatus -&gt; AssetStatus -&gt; AssetStatus
+$cmin :: AssetStatus -&gt; AssetStatus -&gt; AssetStatus
+min :: AssetStatus -&gt; AssetStatus -&gt; AssetStatus
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="annot"><span class="hs-comment">-- | Enhanced fixed asset with type safety</span></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">data</span><span> </span><span id="Asset"><span class="annot"><a href="Finance.Asset.html#Asset"><span class="hs-identifier hs-var">Asset</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Asset"><span class="annot"><a href="Finance.Asset.html#Asset"><span class="hs-identifier hs-var">Asset</span></a></span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="assetId"><span class="annot"><span class="annottext">Asset -&gt; AssetId
+</span><a href="Finance.Asset.html#assetId"><span class="hs-identifier hs-var hs-var">assetId</span></a></span></span><span>        </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Asset.html#AssetId"><span class="hs-identifier hs-type">AssetId</span></a></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="assetCode"><span class="annot"><span class="annottext">Asset -&gt; AssetCode
+</span><a href="Finance.Asset.html#assetCode"><span class="hs-identifier hs-var hs-var">assetCode</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Asset.html#AssetCode"><span class="hs-identifier hs-type">AssetCode</span></a></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="assetName"><span class="annot"><span class="annottext">Asset -&gt; AssetName
+</span><a href="Finance.Asset.html#assetName"><span class="hs-identifier hs-var hs-var">assetName</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Asset.html#AssetName"><span class="hs-identifier hs-type">AssetName</span></a></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="assetClass"><span class="annot"><span class="annottext">Asset -&gt; AssetClass
+</span><a href="Finance.Asset.html#assetClass"><span class="hs-identifier hs-var hs-var">assetClass</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Asset.html#AssetClass"><span class="hs-identifier hs-type">AssetClass</span></a></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="parentAssetId"><span class="annot"><span class="annottext">Asset -&gt; Maybe AssetId
+</span><a href="Finance.Asset.html#parentAssetId"><span class="hs-identifier hs-var hs-var">parentAssetId</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="Finance.Asset.html#AssetId"><span class="hs-identifier hs-type">AssetId</span></a></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="purchaseDate"><span class="annot"><span class="annottext">Asset -&gt; Day
+</span><a href="Finance.Asset.html#purchaseDate"><span class="hs-identifier hs-var hs-var">purchaseDate</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="initialCost"><span class="annot"><span class="annottext">Asset -&gt; Double
+</span><a href="Finance.Asset.html#initialCost"><span class="hs-identifier hs-var hs-var">initialCost</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="salvageValue"><span class="annot"><span class="annottext">Asset -&gt; Double
+</span><a href="Finance.Asset.html#salvageValue"><span class="hs-identifier hs-var hs-var">salvageValue</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="usefulLife"><span class="annot"><span class="annottext">Asset -&gt; Int
+</span><a href="Finance.Asset.html#usefulLife"><span class="hs-identifier hs-var hs-var">usefulLife</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>  </span><span class="hs-comment">-- in years</span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="depreciationMethod"><span class="annot"><span class="annottext">Asset -&gt; DepreciationMethod
+</span><a href="Finance.Asset.html#depreciationMethod"><span class="hs-identifier hs-var hs-var">depreciationMethod</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Asset.html#DepreciationMethod"><span class="hs-identifier hs-type">DepreciationMethod</span></a></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="assetStatus"><span class="annot"><span class="annottext">Asset -&gt; AssetStatus
+</span><a href="Finance.Asset.html#assetStatus"><span class="hs-identifier hs-var hs-var">assetStatus</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Asset.html#AssetStatus"><span class="hs-identifier hs-type">AssetStatus</span></a></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="locationCode"><span class="annot"><span class="annottext">Asset -&gt; Maybe Text
+</span><a href="Finance.Asset.html#locationCode"><span class="hs-identifier hs-var hs-var">locationCode</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="responsiblePerson"><span class="annot"><span class="annottext">Asset -&gt; Maybe Int64
+</span><a href="Finance.Asset.html#responsiblePerson"><span class="hs-identifier hs-var hs-var">responsiblePerson</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="notes"><span class="annot"><span class="annottext">Asset -&gt; Maybe Text
+</span><a href="Finance.Asset.html#notes"><span class="hs-identifier hs-var hs-var">notes</span></a></span></span><span>          </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680234369"><span id="local-6989586621680234394"><span id="local-6989586621680234398"><span class="annot"><span class="annottext">Int -&gt; Asset -&gt; ShowS
+[Asset] -&gt; ShowS
+Asset -&gt; String
+(Int -&gt; Asset -&gt; ShowS)
+-&gt; (Asset -&gt; String) -&gt; ([Asset] -&gt; ShowS) -&gt; Show Asset
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Asset -&gt; ShowS
+showsPrec :: Int -&gt; Asset -&gt; ShowS
+$cshow :: Asset -&gt; String
+show :: Asset -&gt; String
+$cshowList :: [Asset] -&gt; ShowS
+showList :: [Asset] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234403"><span id="local-6989586621680234428"><span class="annot"><span class="annottext">Asset -&gt; Asset -&gt; Bool
+(Asset -&gt; Asset -&gt; Bool) -&gt; (Asset -&gt; Asset -&gt; Bool) -&gt; Eq Asset
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Asset -&gt; Asset -&gt; Bool
+== :: Asset -&gt; Asset -&gt; Bool
+$c/= :: Asset -&gt; Asset -&gt; Bool
+/= :: Asset -&gt; Asset -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234434"><span id="local-6989586621680234436"><span class="annot"><span class="annottext">(forall x. Asset -&gt; Rep Asset x)
+-&gt; (forall x. Rep Asset x -&gt; Asset) -&gt; Generic Asset
+forall x. Rep Asset x -&gt; Asset
+forall x. Asset -&gt; Rep Asset x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Asset -&gt; Rep Asset x
+from :: forall x. Asset -&gt; Rep Asset x
+$cto :: forall x. Rep Asset x -&gt; Asset
+to :: forall x. Rep Asset x -&gt; Asset
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="annot"><span class="hs-comment">-- | Newtypes for enhanced type safety</span></span><span>
+</span><span id="line-52"></span><span class="hs-keyword">newtype</span><span> </span><span id="AssetId"><span class="annot"><a href="Finance.Asset.html#AssetId"><span class="hs-identifier hs-var">AssetId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AssetId"><span class="annot"><a href="Finance.Asset.html#AssetId"><span class="hs-identifier hs-var">AssetId</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unAssetId"><span class="annot"><span class="annottext">AssetId -&gt; Int64
+</span><a href="Finance.Asset.html#unAssetId"><span class="hs-identifier hs-var hs-var">unAssetId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680234444"><span id="local-6989586621680234448"><span id="local-6989586621680234451"><span class="annot"><span class="annottext">Int -&gt; AssetId -&gt; ShowS
+[AssetId] -&gt; ShowS
+AssetId -&gt; String
+(Int -&gt; AssetId -&gt; ShowS)
+-&gt; (AssetId -&gt; String) -&gt; ([AssetId] -&gt; ShowS) -&gt; Show AssetId
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AssetId -&gt; ShowS
+showsPrec :: Int -&gt; AssetId -&gt; ShowS
+$cshow :: AssetId -&gt; String
+show :: AssetId -&gt; String
+$cshowList :: [AssetId] -&gt; ShowS
+showList :: [AssetId] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234454"><span id="local-6989586621680234458"><span class="annot"><span class="annottext">AssetId -&gt; AssetId -&gt; Bool
+(AssetId -&gt; AssetId -&gt; Bool)
+-&gt; (AssetId -&gt; AssetId -&gt; Bool) -&gt; Eq AssetId
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AssetId -&gt; AssetId -&gt; Bool
+== :: AssetId -&gt; AssetId -&gt; Bool
+$c/= :: AssetId -&gt; AssetId -&gt; Bool
+/= :: AssetId -&gt; AssetId -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234465"><span id="local-6989586621680234470"><span id="local-6989586621680234474"><span id="local-6989586621680234478"><span id="local-6989586621680234482"><span id="local-6989586621680234486"><span id="local-6989586621680234490"><span class="annot"><span class="annottext">Eq AssetId
+Eq AssetId =&gt;
+(AssetId -&gt; AssetId -&gt; Ordering)
+-&gt; (AssetId -&gt; AssetId -&gt; Bool)
+-&gt; (AssetId -&gt; AssetId -&gt; Bool)
+-&gt; (AssetId -&gt; AssetId -&gt; Bool)
+-&gt; (AssetId -&gt; AssetId -&gt; Bool)
+-&gt; (AssetId -&gt; AssetId -&gt; AssetId)
+-&gt; (AssetId -&gt; AssetId -&gt; AssetId)
+-&gt; Ord AssetId
+AssetId -&gt; AssetId -&gt; Bool
+AssetId -&gt; AssetId -&gt; Ordering
+AssetId -&gt; AssetId -&gt; AssetId
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: AssetId -&gt; AssetId -&gt; Ordering
+compare :: AssetId -&gt; AssetId -&gt; Ordering
+$c&lt; :: AssetId -&gt; AssetId -&gt; Bool
+&lt; :: AssetId -&gt; AssetId -&gt; Bool
+$c&lt;= :: AssetId -&gt; AssetId -&gt; Bool
+&lt;= :: AssetId -&gt; AssetId -&gt; Bool
+$c&gt; :: AssetId -&gt; AssetId -&gt; Bool
+&gt; :: AssetId -&gt; AssetId -&gt; Bool
+$c&gt;= :: AssetId -&gt; AssetId -&gt; Bool
+&gt;= :: AssetId -&gt; AssetId -&gt; Bool
+$cmax :: AssetId -&gt; AssetId -&gt; AssetId
+max :: AssetId -&gt; AssetId -&gt; AssetId
+$cmin :: AssetId -&gt; AssetId -&gt; AssetId
+min :: AssetId -&gt; AssetId -&gt; AssetId
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="hs-keyword">newtype</span><span> </span><span id="AssetCode"><span class="annot"><a href="Finance.Asset.html#AssetCode"><span class="hs-identifier hs-var">AssetCode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AssetCode"><span class="annot"><a href="Finance.Asset.html#AssetCode"><span class="hs-identifier hs-var">AssetCode</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unAssetCode"><span class="annot"><span class="annottext">AssetCode -&gt; Text
+</span><a href="Finance.Asset.html#unAssetCode"><span class="hs-identifier hs-var hs-var">unAssetCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680234499"><span id="local-6989586621680234503"><span id="local-6989586621680234506"><span class="annot"><span class="annottext">Int -&gt; AssetCode -&gt; ShowS
+[AssetCode] -&gt; ShowS
+AssetCode -&gt; String
+(Int -&gt; AssetCode -&gt; ShowS)
+-&gt; (AssetCode -&gt; String)
+-&gt; ([AssetCode] -&gt; ShowS)
+-&gt; Show AssetCode
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AssetCode -&gt; ShowS
+showsPrec :: Int -&gt; AssetCode -&gt; ShowS
+$cshow :: AssetCode -&gt; String
+show :: AssetCode -&gt; String
+$cshowList :: [AssetCode] -&gt; ShowS
+showList :: [AssetCode] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234509"><span id="local-6989586621680234513"><span class="annot"><span class="annottext">AssetCode -&gt; AssetCode -&gt; Bool
+(AssetCode -&gt; AssetCode -&gt; Bool)
+-&gt; (AssetCode -&gt; AssetCode -&gt; Bool) -&gt; Eq AssetCode
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AssetCode -&gt; AssetCode -&gt; Bool
+== :: AssetCode -&gt; AssetCode -&gt; Bool
+$c/= :: AssetCode -&gt; AssetCode -&gt; Bool
+/= :: AssetCode -&gt; AssetCode -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234519"><span id="local-6989586621680234524"><span id="local-6989586621680234528"><span id="local-6989586621680234532"><span id="local-6989586621680234536"><span id="local-6989586621680234540"><span id="local-6989586621680234544"><span class="annot"><span class="annottext">Eq AssetCode
+Eq AssetCode =&gt;
+(AssetCode -&gt; AssetCode -&gt; Ordering)
+-&gt; (AssetCode -&gt; AssetCode -&gt; Bool)
+-&gt; (AssetCode -&gt; AssetCode -&gt; Bool)
+-&gt; (AssetCode -&gt; AssetCode -&gt; Bool)
+-&gt; (AssetCode -&gt; AssetCode -&gt; Bool)
+-&gt; (AssetCode -&gt; AssetCode -&gt; AssetCode)
+-&gt; (AssetCode -&gt; AssetCode -&gt; AssetCode)
+-&gt; Ord AssetCode
+AssetCode -&gt; AssetCode -&gt; Bool
+AssetCode -&gt; AssetCode -&gt; Ordering
+AssetCode -&gt; AssetCode -&gt; AssetCode
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: AssetCode -&gt; AssetCode -&gt; Ordering
+compare :: AssetCode -&gt; AssetCode -&gt; Ordering
+$c&lt; :: AssetCode -&gt; AssetCode -&gt; Bool
+&lt; :: AssetCode -&gt; AssetCode -&gt; Bool
+$c&lt;= :: AssetCode -&gt; AssetCode -&gt; Bool
+&lt;= :: AssetCode -&gt; AssetCode -&gt; Bool
+$c&gt; :: AssetCode -&gt; AssetCode -&gt; Bool
+&gt; :: AssetCode -&gt; AssetCode -&gt; Bool
+$c&gt;= :: AssetCode -&gt; AssetCode -&gt; Bool
+&gt;= :: AssetCode -&gt; AssetCode -&gt; Bool
+$cmax :: AssetCode -&gt; AssetCode -&gt; AssetCode
+max :: AssetCode -&gt; AssetCode -&gt; AssetCode
+$cmin :: AssetCode -&gt; AssetCode -&gt; AssetCode
+min :: AssetCode -&gt; AssetCode -&gt; AssetCode
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="hs-keyword">newtype</span><span> </span><span id="AssetName"><span class="annot"><a href="Finance.Asset.html#AssetName"><span class="hs-identifier hs-var">AssetName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AssetName"><span class="annot"><a href="Finance.Asset.html#AssetName"><span class="hs-identifier hs-var">AssetName</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unAssetName"><span class="annot"><span class="annottext">AssetName -&gt; Text
+</span><a href="Finance.Asset.html#unAssetName"><span class="hs-identifier hs-var hs-var">unAssetName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680234551"><span id="local-6989586621680234555"><span id="local-6989586621680234558"><span class="annot"><span class="annottext">Int -&gt; AssetName -&gt; ShowS
+[AssetName] -&gt; ShowS
+AssetName -&gt; String
+(Int -&gt; AssetName -&gt; ShowS)
+-&gt; (AssetName -&gt; String)
+-&gt; ([AssetName] -&gt; ShowS)
+-&gt; Show AssetName
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AssetName -&gt; ShowS
+showsPrec :: Int -&gt; AssetName -&gt; ShowS
+$cshow :: AssetName -&gt; String
+show :: AssetName -&gt; String
+$cshowList :: [AssetName] -&gt; ShowS
+showList :: [AssetName] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234561"><span id="local-6989586621680234565"><span class="annot"><span class="annottext">AssetName -&gt; AssetName -&gt; Bool
+(AssetName -&gt; AssetName -&gt; Bool)
+-&gt; (AssetName -&gt; AssetName -&gt; Bool) -&gt; Eq AssetName
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AssetName -&gt; AssetName -&gt; Bool
+== :: AssetName -&gt; AssetName -&gt; Bool
+$c/= :: AssetName -&gt; AssetName -&gt; Bool
+/= :: AssetName -&gt; AssetName -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234571"><span id="local-6989586621680234575"><span id="local-6989586621680234579"><span id="local-6989586621680234583"><span id="local-6989586621680234587"><span id="local-6989586621680234591"><span id="local-6989586621680234595"><span class="annot"><span class="annottext">Eq AssetName
+Eq AssetName =&gt;
+(AssetName -&gt; AssetName -&gt; Ordering)
+-&gt; (AssetName -&gt; AssetName -&gt; Bool)
+-&gt; (AssetName -&gt; AssetName -&gt; Bool)
+-&gt; (AssetName -&gt; AssetName -&gt; Bool)
+-&gt; (AssetName -&gt; AssetName -&gt; Bool)
+-&gt; (AssetName -&gt; AssetName -&gt; AssetName)
+-&gt; (AssetName -&gt; AssetName -&gt; AssetName)
+-&gt; Ord AssetName
+AssetName -&gt; AssetName -&gt; Bool
+AssetName -&gt; AssetName -&gt; Ordering
+AssetName -&gt; AssetName -&gt; AssetName
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: AssetName -&gt; AssetName -&gt; Ordering
+compare :: AssetName -&gt; AssetName -&gt; Ordering
+$c&lt; :: AssetName -&gt; AssetName -&gt; Bool
+&lt; :: AssetName -&gt; AssetName -&gt; Bool
+$c&lt;= :: AssetName -&gt; AssetName -&gt; Bool
+&lt;= :: AssetName -&gt; AssetName -&gt; Bool
+$c&gt; :: AssetName -&gt; AssetName -&gt; Bool
+&gt; :: AssetName -&gt; AssetName -&gt; Bool
+$c&gt;= :: AssetName -&gt; AssetName -&gt; Bool
+&gt;= :: AssetName -&gt; AssetName -&gt; Bool
+$cmax :: AssetName -&gt; AssetName -&gt; AssetName
+max :: AssetName -&gt; AssetName -&gt; AssetName
+$cmin :: AssetName -&gt; AssetName -&gt; AssetName
+min :: AssetName -&gt; AssetName -&gt; AssetName
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span>
+</span><span id="line-61"></span><span class="annot"><span class="hs-comment">-- | Depreciation method</span></span><span>
+</span><span id="line-62"></span><span class="hs-keyword">data</span><span> </span><span id="DepreciationMethod"><span class="annot"><a href="Finance.Asset.html#DepreciationMethod"><span class="hs-identifier hs-var">DepreciationMethod</span></a></span></span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="StraightLine"><span class="annot"><a href="Finance.Asset.html#StraightLine"><span class="hs-identifier hs-var">StraightLine</span></a></span></span><span>       </span><span class="hs-comment">-- &#1051;&#1080;&#1085;&#1077;&#1081;&#1085;&#1099;&#1081; (straight-line)</span><span>
+</span><span id="line-64"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="DecliningBalance"><span class="annot"><a href="Finance.Asset.html#DecliningBalance"><span class="hs-identifier hs-var">DecliningBalance</span></a></span></span><span>  </span><span class="hs-comment">-- &#1059;&#1073;&#1099;&#1074;&#1072;&#1102;&#1097;&#1080;&#1081; &#1086;&#1089;&#1090;&#1072;&#1090;&#1086;&#1082; (declining balance)</span><span>
+</span><span id="line-65"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="UnitsOfProduction"><span class="annot"><a href="Finance.Asset.html#UnitsOfProduction"><span class="hs-identifier hs-var">UnitsOfProduction</span></a></span></span><span> </span><span class="hs-comment">-- &#1052;&#1077;&#1090;&#1086;&#1076; &#1077;&#1076;&#1080;&#1085;&#1080;&#1094; &#1087;&#1088;&#1086;&#1080;&#1079;&#1074;&#1086;&#1076;&#1089;&#1090;&#1074;&#1072; (units of production)</span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680234603"><span id="local-6989586621680234605"><span id="local-6989586621680234608"><span class="annot"><span class="annottext">Int -&gt; DepreciationMethod -&gt; ShowS
+[DepreciationMethod] -&gt; ShowS
+DepreciationMethod -&gt; String
+(Int -&gt; DepreciationMethod -&gt; ShowS)
+-&gt; (DepreciationMethod -&gt; String)
+-&gt; ([DepreciationMethod] -&gt; ShowS)
+-&gt; Show DepreciationMethod
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DepreciationMethod -&gt; ShowS
+showsPrec :: Int -&gt; DepreciationMethod -&gt; ShowS
+$cshow :: DepreciationMethod -&gt; String
+show :: DepreciationMethod -&gt; String
+$cshowList :: [DepreciationMethod] -&gt; ShowS
+showList :: [DepreciationMethod] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234611"><span id="local-6989586621680234615"><span class="annot"><span class="annottext">DepreciationMethod -&gt; DepreciationMethod -&gt; Bool
+(DepreciationMethod -&gt; DepreciationMethod -&gt; Bool)
+-&gt; (DepreciationMethod -&gt; DepreciationMethod -&gt; Bool)
+-&gt; Eq DepreciationMethod
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: DepreciationMethod -&gt; DepreciationMethod -&gt; Bool
+== :: DepreciationMethod -&gt; DepreciationMethod -&gt; Bool
+$c/= :: DepreciationMethod -&gt; DepreciationMethod -&gt; Bool
+/= :: DepreciationMethod -&gt; DepreciationMethod -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680234618"><span id="local-6989586621680234625"><span id="local-6989586621680234632"><span id="local-6989586621680234643"><span id="local-6989586621680234646"><span id="local-6989586621680234650"><span id="local-6989586621680234656"><span id="local-6989586621680234660"><span class="annot"><span class="annottext">Int -&gt; DepreciationMethod
+DepreciationMethod -&gt; Int
+DepreciationMethod -&gt; [DepreciationMethod]
+DepreciationMethod -&gt; DepreciationMethod
+DepreciationMethod -&gt; DepreciationMethod -&gt; [DepreciationMethod]
+DepreciationMethod
+-&gt; DepreciationMethod -&gt; DepreciationMethod -&gt; [DepreciationMethod]
+(DepreciationMethod -&gt; DepreciationMethod)
+-&gt; (DepreciationMethod -&gt; DepreciationMethod)
+-&gt; (Int -&gt; DepreciationMethod)
+-&gt; (DepreciationMethod -&gt; Int)
+-&gt; (DepreciationMethod -&gt; [DepreciationMethod])
+-&gt; (DepreciationMethod
+    -&gt; DepreciationMethod -&gt; [DepreciationMethod])
+-&gt; (DepreciationMethod
+    -&gt; DepreciationMethod -&gt; [DepreciationMethod])
+-&gt; (DepreciationMethod
+    -&gt; DepreciationMethod
+    -&gt; DepreciationMethod
+    -&gt; [DepreciationMethod])
+-&gt; Enum DepreciationMethod
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: DepreciationMethod -&gt; DepreciationMethod
+succ :: DepreciationMethod -&gt; DepreciationMethod
+$cpred :: DepreciationMethod -&gt; DepreciationMethod
+pred :: DepreciationMethod -&gt; DepreciationMethod
+$ctoEnum :: Int -&gt; DepreciationMethod
+toEnum :: Int -&gt; DepreciationMethod
+$cfromEnum :: DepreciationMethod -&gt; Int
+fromEnum :: DepreciationMethod -&gt; Int
+$cenumFrom :: DepreciationMethod -&gt; [DepreciationMethod]
+enumFrom :: DepreciationMethod -&gt; [DepreciationMethod]
+$cenumFromThen :: DepreciationMethod -&gt; DepreciationMethod -&gt; [DepreciationMethod]
+enumFromThen :: DepreciationMethod -&gt; DepreciationMethod -&gt; [DepreciationMethod]
+$cenumFromTo :: DepreciationMethod -&gt; DepreciationMethod -&gt; [DepreciationMethod]
+enumFromTo :: DepreciationMethod -&gt; DepreciationMethod -&gt; [DepreciationMethod]
+$cenumFromThenTo :: DepreciationMethod
+-&gt; DepreciationMethod -&gt; DepreciationMethod -&gt; [DepreciationMethod]
+enumFromThenTo :: DepreciationMethod
+-&gt; DepreciationMethod -&gt; DepreciationMethod -&gt; [DepreciationMethod]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-67"></span><span>
+</span><span id="line-68"></span><span class="annot"><span class="hs-comment">-- | Smart constructor with validation</span></span><span>
+</span><span id="line-69"></span><span class="annot"><a href="Finance.Asset.html#createAsset"><span class="hs-identifier hs-type">createAsset</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Asset.html#AssetId"><span class="hs-identifier hs-type">AssetId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Asset.html#AssetCode"><span class="hs-identifier hs-type">AssetCode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Asset.html#AssetName"><span class="hs-identifier hs-type">AssetName</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Asset.html#AssetClass"><span class="hs-identifier hs-type">AssetClass</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Asset.html#DepreciationMethod"><span class="hs-identifier hs-type">DepreciationMethod</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Asset.html#Asset"><span class="hs-identifier hs-type">Asset</span></a></span><span>
+</span><span id="line-70"></span><span id="createAsset"><span class="annot"><span class="annottext">createAsset :: AssetId
+-&gt; AssetCode
+-&gt; AssetName
+-&gt; AssetClass
+-&gt; Day
+-&gt; Double
+-&gt; Double
+-&gt; Int
+-&gt; DepreciationMethod
+-&gt; Asset
+</span><a href="Finance.Asset.html#createAsset"><span class="hs-identifier hs-var hs-var">createAsset</span></a></span></span><span> </span><span id="local-6989586621680234663"><span class="annot"><span class="annottext">AssetId
+</span><a href="#local-6989586621680234663"><span class="hs-identifier hs-var">aid</span></a></span></span><span> </span><span id="local-6989586621680234664"><span class="annot"><span class="annottext">AssetCode
+</span><a href="#local-6989586621680234664"><span class="hs-identifier hs-var">code</span></a></span></span><span> </span><span id="local-6989586621680234665"><span class="annot"><span class="annottext">AssetName
+</span><a href="#local-6989586621680234665"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621680234666"><span class="annot"><span class="annottext">AssetClass
+</span><a href="#local-6989586621680234666"><span class="hs-identifier hs-var">cls</span></a></span></span><span> </span><span id="local-6989586621680234667"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680234667"><span class="hs-identifier hs-var">date</span></a></span></span><span> </span><span id="local-6989586621680234668"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234668"><span class="hs-identifier hs-var">cost</span></a></span></span><span> </span><span id="local-6989586621680234669"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234669"><span class="hs-identifier hs-var">salvage</span></a></span></span><span> </span><span id="local-6989586621680234670"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680234670"><span class="hs-identifier hs-var">life</span></a></span></span><span> </span><span id="local-6989586621680234671"><span class="annot"><span class="annottext">DepreciationMethod
+</span><a href="#local-6989586621680234671"><span class="hs-identifier hs-var">method</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Asset.html#Asset"><span class="hs-identifier hs-type">Asset</span></a></span><span>
+</span><span id="line-71"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">assetId :: AssetId
+</span><a href="Finance.Asset.html#assetId"><span class="hs-identifier hs-var">assetId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AssetId
+</span><a href="#local-6989586621680234663"><span class="hs-identifier hs-var">aid</span></a></span><span>
+</span><span id="line-72"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">assetCode :: AssetCode
+</span><a href="Finance.Asset.html#assetCode"><span class="hs-identifier hs-var">assetCode</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AssetCode
+</span><a href="#local-6989586621680234664"><span class="hs-identifier hs-var">code</span></a></span><span>
+</span><span id="line-73"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">assetName :: AssetName
+</span><a href="Finance.Asset.html#assetName"><span class="hs-identifier hs-var">assetName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AssetName
+</span><a href="#local-6989586621680234665"><span class="hs-identifier hs-var">name</span></a></span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">assetClass :: AssetClass
+</span><a href="Finance.Asset.html#assetClass"><span class="hs-identifier hs-var">assetClass</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AssetClass
+</span><a href="#local-6989586621680234666"><span class="hs-identifier hs-var">cls</span></a></span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">parentAssetId :: Maybe AssetId
+</span><a href="Finance.Asset.html#parentAssetId"><span class="hs-identifier hs-var">parentAssetId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe AssetId
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">purchaseDate :: Day
+</span><a href="Finance.Asset.html#purchaseDate"><span class="hs-identifier hs-var">purchaseDate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680234667"><span class="hs-identifier hs-var">date</span></a></span><span>
+</span><span id="line-77"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">initialCost :: Double
+</span><a href="Finance.Asset.html#initialCost"><span class="hs-identifier hs-var">initialCost</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234668"><span class="hs-identifier hs-var">cost</span></a></span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">salvageValue :: Double
+</span><a href="Finance.Asset.html#salvageValue"><span class="hs-identifier hs-var">salvageValue</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234669"><span class="hs-identifier hs-var">salvage</span></a></span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">usefulLife :: Int
+</span><a href="Finance.Asset.html#usefulLife"><span class="hs-identifier hs-var">usefulLife</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680234670"><span class="hs-identifier hs-var">life</span></a></span><span>
+</span><span id="line-80"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">depreciationMethod :: DepreciationMethod
+</span><a href="Finance.Asset.html#depreciationMethod"><span class="hs-identifier hs-var">depreciationMethod</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DepreciationMethod
+</span><a href="#local-6989586621680234671"><span class="hs-identifier hs-var">method</span></a></span><span>
+</span><span id="line-81"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">assetStatus :: AssetStatus
+</span><a href="Finance.Asset.html#assetStatus"><span class="hs-identifier hs-var">assetStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AssetStatus
+</span><a href="Finance.Asset.html#AssetActive"><span class="hs-identifier hs-var">AssetActive</span></a></span><span>
+</span><span id="line-82"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">locationCode :: Maybe Text
+</span><a href="Finance.Asset.html#locationCode"><span class="hs-identifier hs-var">locationCode</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-83"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">responsiblePerson :: Maybe Int64
+</span><a href="Finance.Asset.html#responsiblePerson"><span class="hs-identifier hs-var">responsiblePerson</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Int64
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-84"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">notes :: Maybe Text
+</span><a href="Finance.Asset.html#notes"><span class="hs-identifier hs-var">notes</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-86"></span><span>
+</span><span id="line-87"></span><span class="annot"><span class="hs-comment">-- | Calculate current value (book value)</span></span><span>
+</span><span id="line-88"></span><span class="annot"><a href="Finance.Asset.html#currentBookValue"><span class="hs-identifier hs-type">currentBookValue</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Asset.html#Asset"><span class="hs-identifier hs-type">Asset</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-89"></span><span id="currentBookValue"><span class="annot"><span class="annottext">currentBookValue :: Asset -&gt; Day -&gt; Double
+</span><a href="Finance.Asset.html#currentBookValue"><span class="hs-identifier hs-var hs-var">currentBookValue</span></a></span></span><span> </span><span id="local-6989586621680234673"><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234673"><span class="hs-identifier hs-var">asset</span></a></span></span><span> </span><span id="local-6989586621680234674"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680234674"><span class="hs-identifier hs-var">today</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-90"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680234691"><span class="annot"><span class="annottext">ageInYears :: Int
+</span><a href="#local-6989586621680234691"><span class="hs-identifier hs-var hs-var">ageInYears</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Int
+forall b. Integral b =&gt; Double -&gt; b
+forall a b. (RealFrac a, Integral b) =&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#truncate"><span class="hs-identifier hs-var">truncate</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; Double
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#fromIntegral"><span class="hs-identifier hs-var">fromIntegral</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Day -&gt; Day -&gt; Integer
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#diffDays"><span class="hs-identifier hs-var">diffDays</span></a></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680234674"><span class="hs-identifier hs-var">today</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Asset -&gt; Day
+</span><a href="Finance.Asset.html#purchaseDate"><span class="hs-identifier hs-var">purchaseDate</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234673"><span class="hs-identifier hs-var">asset</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">365.25</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-91"></span><span>      </span><span id="local-6989586621680234694"><span class="annot"><span class="annottext">life :: Int
+</span><a href="#local-6989586621680234694"><span class="hs-identifier hs-var hs-var">life</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Asset -&gt; Int
+</span><a href="Finance.Asset.html#usefulLife"><span class="hs-identifier hs-var">usefulLife</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234673"><span class="hs-identifier hs-var">asset</span></a></span><span>
+</span><span id="line-92"></span><span>      </span><span id="local-6989586621680234695"><span class="annot"><span class="annottext">cost :: Double
+</span><a href="#local-6989586621680234695"><span class="hs-identifier hs-var hs-var">cost</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Asset -&gt; Double
+</span><a href="Finance.Asset.html#initialCost"><span class="hs-identifier hs-var">initialCost</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234673"><span class="hs-identifier hs-var">asset</span></a></span><span>
+</span><span id="line-93"></span><span>      </span><span id="local-6989586621680234696"><span class="annot"><span class="annottext">salvage :: Double
+</span><a href="#local-6989586621680234696"><span class="hs-identifier hs-var hs-var">salvage</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Asset -&gt; Double
+</span><a href="Finance.Asset.html#salvageValue"><span class="hs-identifier hs-var">salvageValue</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234673"><span class="hs-identifier hs-var">asset</span></a></span><span>
+</span><span id="line-94"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680234691"><span class="hs-identifier hs-var">ageInYears</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E%3D"><span class="hs-operator hs-var">&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680234694"><span class="hs-identifier hs-var">life</span></a></span><span>
+</span><span id="line-95"></span><span>        </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234696"><span class="hs-identifier hs-var">salvage</span></a></span><span>
+</span><span id="line-96"></span><span>        </span><span class="hs-keyword">else</span><span>
+</span><span id="line-97"></span><span>          </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680234698"><span class="annot"><span class="annottext">depreciable :: Double
+</span><a href="#local-6989586621680234698"><span class="hs-identifier hs-var hs-var">depreciable</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234695"><span class="hs-identifier hs-var">cost</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-var">-</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234696"><span class="hs-identifier hs-var">salvage</span></a></span><span>
+</span><span id="line-98"></span><span>              </span><span id="local-6989586621680234702"><span class="annot"><span class="annottext">annualDep :: Double
+</span><a href="#local-6989586621680234702"><span class="hs-identifier hs-var hs-var">annualDep</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234698"><span class="hs-identifier hs-var">depreciable</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Double
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#fromIntegral"><span class="hs-identifier hs-var">fromIntegral</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680234694"><span class="hs-identifier hs-var">life</span></a></span><span>
+</span><span id="line-99"></span><span>              </span><span id="local-6989586621680234706"><span class="annot"><span class="annottext">accumulatedDep :: Double
+</span><a href="#local-6989586621680234706"><span class="hs-identifier hs-var hs-var">accumulatedDep</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234702"><span class="hs-identifier hs-var">annualDep</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Double
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#fromIntegral"><span class="hs-identifier hs-var">fromIntegral</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680234691"><span class="hs-identifier hs-var">ageInYears</span></a></span><span>
+</span><span id="line-100"></span><span>              </span><span id="local-6989586621680234709"><span class="annot"><span class="annottext">bookValue :: Double
+</span><a href="#local-6989586621680234709"><span class="hs-identifier hs-var hs-var">bookValue</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234695"><span class="hs-identifier hs-var">cost</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-var">-</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234706"><span class="hs-identifier hs-var">accumulatedDep</span></a></span><span>
+</span><span id="line-101"></span><span>          </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#max"><span class="hs-identifier hs-var">max</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234709"><span class="hs-identifier hs-var">bookValue</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234696"><span class="hs-identifier hs-var">salvage</span></a></span><span>
+</span><span id="line-102"></span><span>
+</span><span id="line-103"></span><span class="annot"><span class="hs-comment">-- | Calculate annual depreciation expense</span></span><span>
+</span><span id="line-104"></span><span class="annot"><a href="Finance.Asset.html#annualDepreciation"><span class="hs-identifier hs-type">annualDepreciation</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Asset.html#Asset"><span class="hs-identifier hs-type">Asset</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-105"></span><span id="annualDepreciation"><span class="annot"><span class="annottext">annualDepreciation :: Asset -&gt; Double
+</span><a href="Finance.Asset.html#annualDepreciation"><span class="hs-identifier hs-var hs-var">annualDepreciation</span></a></span></span><span> </span><span id="local-6989586621680234711"><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234711"><span class="hs-identifier hs-var">asset</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-106"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680234712"><span class="annot"><span class="annottext">cost :: Double
+</span><a href="#local-6989586621680234712"><span class="hs-identifier hs-var hs-var">cost</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Asset -&gt; Double
+</span><a href="Finance.Asset.html#initialCost"><span class="hs-identifier hs-var">initialCost</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234711"><span class="hs-identifier hs-var">asset</span></a></span><span>
+</span><span id="line-107"></span><span>      </span><span id="local-6989586621680234713"><span class="annot"><span class="annottext">salvage :: Double
+</span><a href="#local-6989586621680234713"><span class="hs-identifier hs-var hs-var">salvage</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Asset -&gt; Double
+</span><a href="Finance.Asset.html#salvageValue"><span class="hs-identifier hs-var">salvageValue</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234711"><span class="hs-identifier hs-var">asset</span></a></span><span>
+</span><span id="line-108"></span><span>      </span><span id="local-6989586621680234716"><span class="annot"><span class="annottext">life :: Double
+</span><a href="#local-6989586621680234716"><span class="hs-identifier hs-var hs-var">life</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Double
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#fromIntegral"><span class="hs-identifier hs-var">fromIntegral</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Asset -&gt; Int
+</span><a href="Finance.Asset.html#usefulLife"><span class="hs-identifier hs-var">usefulLife</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234711"><span class="hs-identifier hs-var">asset</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-109"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234712"><span class="hs-identifier hs-var">cost</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-var">-</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234713"><span class="hs-identifier hs-var">salvage</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234716"><span class="hs-identifier hs-var">life</span></a></span><span>
+</span><span id="line-110"></span><span>
+</span><span id="line-111"></span><span class="annot"><span class="hs-comment">-- | Straight-line depreciation per day</span></span><span>
+</span><span id="line-112"></span><span class="annot"><a href="Finance.Asset.html#dailyDepreciation"><span class="hs-identifier hs-type">dailyDepreciation</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Asset.html#Asset"><span class="hs-identifier hs-type">Asset</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-113"></span><span id="dailyDepreciation"><span class="annot"><span class="annottext">dailyDepreciation :: Asset -&gt; Double
+</span><a href="Finance.Asset.html#dailyDepreciation"><span class="hs-identifier hs-var hs-var">dailyDepreciation</span></a></span></span><span> </span><span id="local-6989586621680234718"><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234718"><span class="hs-identifier hs-var">asset</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-114"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680234719"><span class="annot"><span class="annottext">annual :: Double
+</span><a href="#local-6989586621680234719"><span class="hs-identifier hs-var hs-var">annual</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Asset -&gt; Double
+</span><a href="Finance.Asset.html#annualDepreciation"><span class="hs-identifier hs-var">annualDepreciation</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234718"><span class="hs-identifier hs-var">asset</span></a></span><span>
+</span><span id="line-115"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234719"><span class="hs-identifier hs-var">annual</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">365.25</span></span><span>
+</span><span id="line-116"></span><span>
+</span><span id="line-117"></span><span class="annot"><span class="hs-comment">-- | Check if asset is fully depreciated</span></span><span>
+</span><span id="line-118"></span><span class="annot"><a href="Finance.Asset.html#isFullyDepreciated"><span class="hs-identifier hs-type">isFullyDepreciated</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Asset.html#Asset"><span class="hs-identifier hs-type">Asset</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-119"></span><span id="isFullyDepreciated"><span class="annot"><span class="annottext">isFullyDepreciated :: Asset -&gt; Day -&gt; Bool
+</span><a href="Finance.Asset.html#isFullyDepreciated"><span class="hs-identifier hs-var hs-var">isFullyDepreciated</span></a></span></span><span> </span><span id="local-6989586621680234721"><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234721"><span class="hs-identifier hs-var">asset</span></a></span></span><span> </span><span id="local-6989586621680234722"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680234722"><span class="hs-identifier hs-var">today</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-120"></span><span>  </span><span class="annot"><span class="annottext">Asset -&gt; Day -&gt; Double
+</span><a href="Finance.Asset.html#currentBookValue"><span class="hs-identifier hs-var">currentBookValue</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234721"><span class="hs-identifier hs-var">asset</span></a></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680234722"><span class="hs-identifier hs-var">today</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Asset -&gt; Double
+</span><a href="Finance.Asset.html#salvageValue"><span class="hs-identifier hs-var">salvageValue</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234721"><span class="hs-identifier hs-var">asset</span></a></span><span>
+</span><span id="line-121"></span><span>
+</span><span id="line-122"></span><span class="annot"><span class="hs-comment">-- | Check if asset needs repair (assumption: older than 80% of life)</span></span><span>
+</span><span id="line-123"></span><span class="annot"><a href="Finance.Asset.html#needsRepair"><span class="hs-identifier hs-type">needsRepair</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Asset.html#Asset"><span class="hs-identifier hs-type">Asset</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-124"></span><span id="needsRepair"><span class="annot"><span class="annottext">needsRepair :: Asset -&gt; Day -&gt; Bool
+</span><a href="Finance.Asset.html#needsRepair"><span class="hs-identifier hs-var hs-var">needsRepair</span></a></span></span><span> </span><span id="local-6989586621680234724"><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234724"><span class="hs-identifier hs-var">asset</span></a></span></span><span> </span><span id="local-6989586621680234725"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680234725"><span class="hs-identifier hs-var">today</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-125"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680234739"><span class="annot"><span class="annottext">ageInYears :: Int
+</span><a href="#local-6989586621680234739"><span class="hs-identifier hs-var hs-var">ageInYears</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Int
+forall b. Integral b =&gt; Double -&gt; b
+forall a b. (RealFrac a, Integral b) =&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#truncate"><span class="hs-identifier hs-var">truncate</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; Double
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#fromIntegral"><span class="hs-identifier hs-var">fromIntegral</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Day -&gt; Day -&gt; Integer
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#diffDays"><span class="hs-identifier hs-var">diffDays</span></a></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680234725"><span class="hs-identifier hs-var">today</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Asset -&gt; Day
+</span><a href="Finance.Asset.html#purchaseDate"><span class="hs-identifier hs-var">purchaseDate</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234724"><span class="hs-identifier hs-var">asset</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">365.25</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-126"></span><span>      </span><span id="local-6989586621680234740"><span class="annot"><span class="annottext">life :: Int
+</span><a href="#local-6989586621680234740"><span class="hs-identifier hs-var hs-var">life</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Asset -&gt; Int
+</span><a href="Finance.Asset.html#usefulLife"><span class="hs-identifier hs-var">usefulLife</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234724"><span class="hs-identifier hs-var">asset</span></a></span><span>
+</span><span id="line-127"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680234739"><span class="hs-identifier hs-var">ageInYears</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E"><span class="hs-operator hs-var">&gt;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680234740"><span class="hs-identifier hs-var">life</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">80</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Integral a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#div"><span class="hs-operator hs-var">`div`</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">100</span></span><span>
+</span><span id="line-128"></span><span>
+</span><span id="line-129"></span><span class="annot"><span class="hs-comment">-- | Write off asset (full depreciation or disposal)</span></span><span>
+</span><span id="line-130"></span><span class="annot"><a href="Finance.Asset.html#writeOffAsset"><span class="hs-identifier hs-type">writeOffAsset</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Asset.html#Asset"><span class="hs-identifier hs-type">Asset</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Asset.html#Asset"><span class="hs-identifier hs-type">Asset</span></a></span><span>
+</span><span id="line-131"></span><span id="writeOffAsset"><span class="annot"><span class="annottext">writeOffAsset :: Asset -&gt; Asset
+</span><a href="Finance.Asset.html#writeOffAsset"><span class="hs-identifier hs-var hs-var">writeOffAsset</span></a></span></span><span> </span><span id="local-6989586621680234743"><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234743"><span class="hs-identifier hs-var">asset</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234743"><span class="hs-identifier hs-var">asset</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.Asset.html#assetStatus"><span class="hs-identifier hs-var">assetStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Asset.html#AssetWrittenOff"><span class="hs-identifier hs-type">AssetWrittenOff</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-132"></span><span>
+</span><span id="line-133"></span><span class="annot"><span class="hs-comment">-- | Sell asset</span></span><span>
+</span><span id="line-134"></span><span class="annot"><a href="Finance.Asset.html#sellAsset"><span class="hs-identifier hs-type">sellAsset</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Asset.html#Asset"><span class="hs-identifier hs-type">Asset</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Asset.html#Asset"><span class="hs-identifier hs-type">Asset</span></a></span><span>
+</span><span id="line-135"></span><span id="sellAsset"><span class="annot"><span class="annottext">sellAsset :: Asset -&gt; Double -&gt; Asset
+</span><a href="Finance.Asset.html#sellAsset"><span class="hs-identifier hs-var hs-var">sellAsset</span></a></span></span><span> </span><span id="local-6989586621680234745"><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234745"><span class="hs-identifier hs-var">asset</span></a></span></span><span> </span><span id="local-6989586621680234746"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680234746"><span class="hs-identifier hs-var">salePrice</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234745"><span class="hs-identifier hs-var">asset</span></a></span><span>
+</span><span id="line-136"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.Asset.html#assetStatus"><span class="hs-identifier hs-var">assetStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Asset.html#AssetSold"><span class="hs-identifier hs-type">AssetSold</span></a></span><span>
+</span><span id="line-137"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Asset.html#notes"><span class="hs-identifier hs-var">notes</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-type">$</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;Sold for &quot;</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-type">&lt;&gt;</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#pack"><span class="hs-identifier hs-type">T.pack</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#show"><span class="hs-identifier hs-type">show</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680234746"><span class="hs-identifier hs-type">salePrice</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-138"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-139"></span><span>
+</span><span id="line-140"></span><span class="annot"><span class="hs-comment">-- | Pretty print asset</span></span><span>
+</span><span id="line-141"></span><span class="annot"><a href="Finance.Asset.html#prettyAsset"><span class="hs-identifier hs-type">prettyAsset</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Asset.html#Asset"><span class="hs-identifier hs-type">Asset</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-142"></span><span id="prettyAsset"><span class="annot"><span class="annottext">prettyAsset :: Asset -&gt; Text
+</span><a href="Finance.Asset.html#prettyAsset"><span class="hs-identifier hs-var hs-var">prettyAsset</span></a></span></span><span> </span><span id="local-6989586621680234750"><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234750"><span class="hs-identifier hs-var">asset</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AssetCode -&gt; Text
+</span><a href="Finance.Asset.html#unAssetCode"><span class="hs-identifier hs-var">unAssetCode</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Asset -&gt; AssetCode
+</span><a href="Finance.Asset.html#assetCode"><span class="hs-identifier hs-var">assetCode</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234750"><span class="hs-identifier hs-var">asset</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; - &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">AssetName -&gt; Text
+</span><a href="Finance.Asset.html#unAssetName"><span class="hs-identifier hs-var">unAssetName</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Asset -&gt; AssetName
+</span><a href="Finance.Asset.html#assetName"><span class="hs-identifier hs-var">assetName</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234750"><span class="hs-identifier hs-var">asset</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span>
+</span><span id="line-143"></span><span>  </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; (&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#pack"><span class="hs-identifier hs-var">T.pack</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AssetStatus -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#show"><span class="hs-identifier hs-var">show</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Asset -&gt; AssetStatus
+</span><a href="Finance.Asset.html#assetStatus"><span class="hs-identifier hs-var">assetStatus</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234750"><span class="hs-identifier hs-var">asset</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;), Cost: &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span>
+</span><span id="line-144"></span><span>  </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#pack"><span class="hs-identifier hs-var">T.pack</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#show"><span class="hs-identifier hs-var">show</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Asset -&gt; Double
+</span><a href="Finance.Asset.html#initialCost"><span class="hs-identifier hs-var">initialCost</span></a></span><span> </span><span class="annot"><span class="annottext">Asset
+</span><a href="#local-6989586621680234750"><span class="hs-identifier hs-var">asset</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-145"></span></pre></body></html>

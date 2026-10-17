@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Reports Module - Jasper/Pentaho integration</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Reports.Jasper.html"><span class="hs-identifier">Reports.Jasper</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Gregorian.html#fromGregorian"><span class="hs-identifier">fromGregorian</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="annot"><span class="hs-comment">-- | Report template</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">data</span><span> </span><span id="ReportTemplate"><span class="annot"><a href="Reports.Jasper.html#ReportTemplate"><span class="hs-identifier hs-var">ReportTemplate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ReportTemplate"><span class="annot"><a href="Reports.Jasper.html#ReportTemplate"><span class="hs-identifier hs-var">ReportTemplate</span></a></span></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="rtId"><span class="annot"><span class="annottext">ReportTemplate -&gt; Int64
+</span><a href="Reports.Jasper.html#rtId"><span class="hs-identifier hs-var hs-var">rtId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span id="rtCode"><span class="annot"><span class="annottext">ReportTemplate -&gt; String
+</span><a href="Reports.Jasper.html#rtCode"><span class="hs-identifier hs-var hs-var">rtCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="rtName"><span class="annot"><span class="annottext">ReportTemplate -&gt; String
+</span><a href="Reports.Jasper.html#rtName"><span class="hs-identifier hs-var hs-var">rtName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="rtType"><span class="annot"><span class="annottext">ReportTemplate -&gt; ReportType
+</span><a href="Reports.Jasper.html#rtType"><span class="hs-identifier hs-var hs-var">rtType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Reports.Jasper.html#ReportType"><span class="hs-identifier hs-type">ReportType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="rtJasperFile"><span class="annot"><span class="annottext">ReportTemplate -&gt; Maybe String
+</span><a href="Reports.Jasper.html#rtJasperFile"><span class="hs-identifier hs-var hs-var">rtJasperFile</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680279108"><span id="local-6989586621680279122"><span id="local-6989586621680279126"><span class="annot"><span class="annottext">Int -&gt; ReportTemplate -&gt; ShowS
+[ReportTemplate] -&gt; ShowS
+ReportTemplate -&gt; String
+(Int -&gt; ReportTemplate -&gt; ShowS)
+-&gt; (ReportTemplate -&gt; String)
+-&gt; ([ReportTemplate] -&gt; ShowS)
+-&gt; Show ReportTemplate
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ReportTemplate -&gt; ShowS
+showsPrec :: Int -&gt; ReportTemplate -&gt; ShowS
+$cshow :: ReportTemplate -&gt; String
+show :: ReportTemplate -&gt; String
+$cshowList :: [ReportTemplate] -&gt; ShowS
+showList :: [ReportTemplate] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680279132"><span id="local-6989586621680279144"><span class="annot"><span class="annottext">ReportTemplate -&gt; ReportTemplate -&gt; Bool
+(ReportTemplate -&gt; ReportTemplate -&gt; Bool)
+-&gt; (ReportTemplate -&gt; ReportTemplate -&gt; Bool) -&gt; Eq ReportTemplate
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ReportTemplate -&gt; ReportTemplate -&gt; Bool
+== :: ReportTemplate -&gt; ReportTemplate -&gt; Bool
+$c/= :: ReportTemplate -&gt; ReportTemplate -&gt; Bool
+/= :: ReportTemplate -&gt; ReportTemplate -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="annot"><span class="hs-comment">-- | Report types</span></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="ReportType"><span class="annot"><a href="Reports.Jasper.html#ReportType"><span class="hs-identifier hs-var">ReportType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RTSales"><span class="annot"><a href="Reports.Jasper.html#RTSales"><span class="hs-identifier hs-var">RTSales</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="RTInventory"><span class="annot"><a href="Reports.Jasper.html#RTInventory"><span class="hs-identifier hs-var">RTInventory</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="RTFinancial"><span class="annot"><a href="Reports.Jasper.html#RTFinancial"><span class="hs-identifier hs-var">RTFinancial</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="RTTax"><span class="annot"><a href="Reports.Jasper.html#RTTax"><span class="hs-identifier hs-var">RTTax</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="RTCustom"><span class="annot"><a href="Reports.Jasper.html#RTCustom"><span class="hs-identifier hs-var">RTCustom</span></a></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680279155"><span id="local-6989586621680279157"><span id="local-6989586621680279160"><span class="annot"><span class="annottext">Int -&gt; ReportType -&gt; ShowS
+[ReportType] -&gt; ShowS
+ReportType -&gt; String
+(Int -&gt; ReportType -&gt; ShowS)
+-&gt; (ReportType -&gt; String)
+-&gt; ([ReportType] -&gt; ShowS)
+-&gt; Show ReportType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ReportType -&gt; ShowS
+showsPrec :: Int -&gt; ReportType -&gt; ShowS
+$cshow :: ReportType -&gt; String
+show :: ReportType -&gt; String
+$cshowList :: [ReportType] -&gt; ShowS
+showList :: [ReportType] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680279163"><span id="local-6989586621680279168"><span class="annot"><span class="annottext">ReportType -&gt; ReportType -&gt; Bool
+(ReportType -&gt; ReportType -&gt; Bool)
+-&gt; (ReportType -&gt; ReportType -&gt; Bool) -&gt; Eq ReportType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ReportType -&gt; ReportType -&gt; Bool
+== :: ReportType -&gt; ReportType -&gt; Bool
+$c/= :: ReportType -&gt; ReportType -&gt; Bool
+/= :: ReportType -&gt; ReportType -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="annot"><span class="hs-comment">-- | Report parameters</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">data</span><span> </span><span id="ReportParams"><span class="annot"><a href="Reports.Jasper.html#ReportParams"><span class="hs-identifier hs-var">ReportParams</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ReportParams"><span class="annot"><a href="Reports.Jasper.html#ReportParams"><span class="hs-identifier hs-var">ReportParams</span></a></span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="rpDateFrom"><span class="annot"><span class="annottext">ReportParams -&gt; Day
+</span><a href="Reports.Jasper.html#rpDateFrom"><span class="hs-identifier hs-var hs-var">rpDateFrom</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="rpDateTo"><span class="annot"><span class="annottext">ReportParams -&gt; Day
+</span><a href="Reports.Jasper.html#rpDateTo"><span class="hs-identifier hs-var hs-var">rpDateTo</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680279174"><span id="local-6989586621680279180"><span id="local-6989586621680279184"><span class="annot"><span class="annottext">Int -&gt; ReportParams -&gt; ShowS
+[ReportParams] -&gt; ShowS
+ReportParams -&gt; String
+(Int -&gt; ReportParams -&gt; ShowS)
+-&gt; (ReportParams -&gt; String)
+-&gt; ([ReportParams] -&gt; ShowS)
+-&gt; Show ReportParams
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ReportParams -&gt; ShowS
+showsPrec :: Int -&gt; ReportParams -&gt; ShowS
+$cshow :: ReportParams -&gt; String
+show :: ReportParams -&gt; String
+$cshowList :: [ReportParams] -&gt; ShowS
+showList :: [ReportParams] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680279187"><span id="local-6989586621680279192"><span class="annot"><span class="annottext">ReportParams -&gt; ReportParams -&gt; Bool
+(ReportParams -&gt; ReportParams -&gt; Bool)
+-&gt; (ReportParams -&gt; ReportParams -&gt; Bool) -&gt; Eq ReportParams
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ReportParams -&gt; ReportParams -&gt; Bool
+== :: ReportParams -&gt; ReportParams -&gt; Bool
+$c/= :: ReportParams -&gt; ReportParams -&gt; Bool
+/= :: ReportParams -&gt; ReportParams -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="annot"><span class="hs-comment">-- | Report status</span></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">data</span><span> </span><span id="ReportStatus"><span class="annot"><a href="Reports.Jasper.html#ReportStatus"><span class="hs-identifier hs-var">ReportStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RSPending"><span class="annot"><a href="Reports.Jasper.html#RSPending"><span class="hs-identifier hs-var">RSPending</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="RSProcessing"><span class="annot"><a href="Reports.Jasper.html#RSProcessing"><span class="hs-identifier hs-var">RSProcessing</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="RSCompleted"><span class="annot"><a href="Reports.Jasper.html#RSCompleted"><span class="hs-identifier hs-var">RSCompleted</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="RSFailed"><span class="annot"><a href="Reports.Jasper.html#RSFailed"><span class="hs-identifier hs-var">RSFailed</span></a></span></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680279200"><span id="local-6989586621680279202"><span id="local-6989586621680279206"><span class="annot"><span class="annottext">Int -&gt; ReportStatus -&gt; ShowS
+[ReportStatus] -&gt; ShowS
+ReportStatus -&gt; String
+(Int -&gt; ReportStatus -&gt; ShowS)
+-&gt; (ReportStatus -&gt; String)
+-&gt; ([ReportStatus] -&gt; ShowS)
+-&gt; Show ReportStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ReportStatus -&gt; ShowS
+showsPrec :: Int -&gt; ReportStatus -&gt; ShowS
+$cshow :: ReportStatus -&gt; String
+show :: ReportStatus -&gt; String
+$cshowList :: [ReportStatus] -&gt; ShowS
+showList :: [ReportStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680279209"><span id="local-6989586621680279213"><span class="annot"><span class="annottext">ReportStatus -&gt; ReportStatus -&gt; Bool
+(ReportStatus -&gt; ReportStatus -&gt; Bool)
+-&gt; (ReportStatus -&gt; ReportStatus -&gt; Bool) -&gt; Eq ReportStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ReportStatus -&gt; ReportStatus -&gt; Bool
+== :: ReportStatus -&gt; ReportStatus -&gt; Bool
+$c/= :: ReportStatus -&gt; ReportStatus -&gt; Bool
+/= :: ReportStatus -&gt; ReportStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="annot"><span class="hs-comment">-- | Report job</span></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">data</span><span> </span><span id="ReportJob"><span class="annot"><a href="Reports.Jasper.html#ReportJob"><span class="hs-identifier hs-var">ReportJob</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ReportJob"><span class="annot"><a href="Reports.Jasper.html#ReportJob"><span class="hs-identifier hs-var">ReportJob</span></a></span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="rjId"><span class="annot"><span class="annottext">ReportJob -&gt; Int64
+</span><a href="Reports.Jasper.html#rjId"><span class="hs-identifier hs-var hs-var">rjId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>    </span><span id="rjTemplateId"><span class="annot"><span class="annottext">ReportJob -&gt; Int64
+</span><a href="Reports.Jasper.html#rjTemplateId"><span class="hs-identifier hs-var hs-var">rjTemplateId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-36"></span><span>    </span><span id="rjStatus"><span class="annot"><span class="annottext">ReportJob -&gt; ReportStatus
+</span><a href="Reports.Jasper.html#rjStatus"><span class="hs-identifier hs-var hs-var">rjStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Reports.Jasper.html#ReportStatus"><span class="hs-identifier hs-type">ReportStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-37"></span><span>    </span><span id="rjOutputPath"><span class="annot"><span class="annottext">ReportJob -&gt; Maybe String
+</span><a href="Reports.Jasper.html#rjOutputPath"><span class="hs-identifier hs-var hs-var">rjOutputPath</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-38"></span><span>    </span><span id="rjCreatedAt"><span class="annot"><span class="annottext">ReportJob -&gt; Day
+</span><a href="Reports.Jasper.html#rjCreatedAt"><span class="hs-identifier hs-var hs-var">rjCreatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680279223"><span id="local-6989586621680279232"><span id="local-6989586621680279236"><span class="annot"><span class="annottext">Int -&gt; ReportJob -&gt; ShowS
+[ReportJob] -&gt; ShowS
+ReportJob -&gt; String
+(Int -&gt; ReportJob -&gt; ShowS)
+-&gt; (ReportJob -&gt; String)
+-&gt; ([ReportJob] -&gt; ShowS)
+-&gt; Show ReportJob
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ReportJob -&gt; ShowS
+showsPrec :: Int -&gt; ReportJob -&gt; ShowS
+$cshow :: ReportJob -&gt; String
+show :: ReportJob -&gt; String
+$cshowList :: [ReportJob] -&gt; ShowS
+showList :: [ReportJob] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680279240"><span id="local-6989586621680279248"><span class="annot"><span class="annottext">ReportJob -&gt; ReportJob -&gt; Bool
+(ReportJob -&gt; ReportJob -&gt; Bool)
+-&gt; (ReportJob -&gt; ReportJob -&gt; Bool) -&gt; Eq ReportJob
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ReportJob -&gt; ReportJob -&gt; Bool
+== :: ReportJob -&gt; ReportJob -&gt; Bool
+$c/= :: ReportJob -&gt; ReportJob -&gt; Bool
+/= :: ReportJob -&gt; ReportJob -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="annot"><span class="hs-comment">-- | Available report templates</span></span><span>
+</span><span id="line-43"></span><span class="annot"><a href="Reports.Jasper.html#getReportTemplates"><span class="hs-identifier hs-type">getReportTemplates</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Reports.Jasper.html#ReportTemplate"><span class="hs-identifier hs-type">ReportTemplate</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-44"></span><span id="getReportTemplates"><span class="annot"><span class="annottext">getReportTemplates :: [ReportTemplate]
+</span><a href="Reports.Jasper.html#getReportTemplates"><span class="hs-identifier hs-var hs-var">getReportTemplates</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Int64
+-&gt; String -&gt; String -&gt; ReportType -&gt; Maybe String -&gt; ReportTemplate
+</span><a href="Reports.Jasper.html#ReportTemplate"><span class="hs-identifier hs-var">ReportTemplate</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;sales_daily&quot;</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Daily Sales&quot;</span></span><span> </span><span class="annot"><span class="annottext">ReportType
+</span><a href="Reports.Jasper.html#RTSales"><span class="hs-identifier hs-var">RTSales</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Maybe String
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;sales_daily.jrxml&quot;</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-46"></span><span>    </span><span class="annot"><span class="annottext">Int64
+-&gt; String -&gt; String -&gt; ReportType -&gt; Maybe String -&gt; ReportTemplate
+</span><a href="Reports.Jasper.html#ReportTemplate"><span class="hs-identifier hs-var">ReportTemplate</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;inventory&quot;</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Inventory Report&quot;</span></span><span> </span><span class="annot"><span class="annottext">ReportType
+</span><a href="Reports.Jasper.html#RTInventory"><span class="hs-identifier hs-var">RTInventory</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Maybe String
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;inventory.jrxml&quot;</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-47"></span><span>    </span><span class="annot"><span class="annottext">Int64
+-&gt; String -&gt; String -&gt; ReportType -&gt; Maybe String -&gt; ReportTemplate
+</span><a href="Reports.Jasper.html#ReportTemplate"><span class="hs-identifier hs-var">ReportTemplate</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">3</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;balance_sheet&quot;</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Balance Sheet&quot;</span></span><span> </span><span class="annot"><span class="annottext">ReportType
+</span><a href="Reports.Jasper.html#RTFinancial"><span class="hs-identifier hs-var">RTFinancial</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Maybe String
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;balance_sheet.jrxml&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="annot"><span class="hs-comment">-- | Create report job</span></span><span>
+</span><span id="line-51"></span><span class="annot"><a href="Reports.Jasper.html#createReportJob"><span class="hs-identifier hs-type">createReportJob</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Reports.Jasper.html#ReportJob"><span class="hs-identifier hs-type">ReportJob</span></a></span><span>
+</span><span id="line-52"></span><span id="createReportJob"><span class="annot"><span class="annottext">createReportJob :: Int64 -&gt; ReportJob
+</span><a href="Reports.Jasper.html#createReportJob"><span class="hs-identifier hs-var hs-var">createReportJob</span></a></span></span><span> </span><span id="local-6989586621680279254"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680279254"><span class="hs-identifier hs-var">tid</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-53"></span><span>  </span><span class="annot"><a href="Reports.Jasper.html#ReportJob"><span class="hs-identifier hs-type">ReportJob</span></a></span><span>
+</span><span id="line-54"></span><span>    </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">rjId :: Int64
+</span><a href="Reports.Jasper.html#rjId"><span class="hs-identifier hs-var">rjId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span class="hs-special">,</span><span>
+</span><span id="line-55"></span><span>      </span><span class="annot"><span class="annottext">rjTemplateId :: Int64
+</span><a href="Reports.Jasper.html#rjTemplateId"><span class="hs-identifier hs-var">rjTemplateId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680279254"><span class="hs-identifier hs-var">tid</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-56"></span><span>      </span><span class="annot"><span class="annottext">rjStatus :: ReportStatus
+</span><a href="Reports.Jasper.html#rjStatus"><span class="hs-identifier hs-var">rjStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ReportStatus
+</span><a href="Reports.Jasper.html#RSPending"><span class="hs-identifier hs-var">RSPending</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-57"></span><span>      </span><span class="annot"><span class="annottext">rjOutputPath :: Maybe String
+</span><a href="Reports.Jasper.html#rjOutputPath"><span class="hs-identifier hs-var">rjOutputPath</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe String
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-58"></span><span>      </span><span class="annot"><span class="annottext">rjCreatedAt :: Day
+</span><a href="Reports.Jasper.html#rjCreatedAt"><span class="hs-identifier hs-var">rjCreatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Int -&gt; Int -&gt; Day
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Gregorian.html#fromGregorian"><span class="hs-identifier hs-var">fromGregorian</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">2026</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">3</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">9</span></span><span>
+</span><span id="line-59"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-60"></span></pre></body></html>

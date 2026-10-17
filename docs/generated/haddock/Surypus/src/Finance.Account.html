@@ -1,0 +1,592 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680233557"><span id="local-6989586621680233558"><span id="local-6989586621680233559"><span id="local-6989586621680233560"></span></span></span></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- | Finance.Account - Chart of Accounts with rich types</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- This module defines the core account types with enhanced expressiveness</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Finance.Account.html"><span class="hs-identifier">Finance.Account</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="annot"><span class="hs-comment">-- | Enhanced Account classification with richer semantics</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">data</span><span> </span><span id="AccountClass"><span class="annot"><a href="Finance.Account.html#AccountClass"><span class="hs-identifier hs-var">AccountClass</span></a></span></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="AssetClass"><span class="annot"><a href="Finance.Account.html#AssetClass"><span class="hs-identifier hs-var">AssetClass</span></a></span></span><span>    </span><span class="hs-comment">-- &#1040;&#1082;&#1090;&#1080;&#1074;&#1099; (01-19): Resources owned</span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="LiabilityClass"><span class="annot"><a href="Finance.Account.html#LiabilityClass"><span class="hs-identifier hs-var">LiabilityClass</span></a></span></span><span> </span><span class="hs-comment">-- &#1055;&#1072;&#1089;&#1089;&#1080;&#1074;&#1099; (60-79): Obligations</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="EquityClass"><span class="annot"><a href="Finance.Account.html#EquityClass"><span class="hs-identifier hs-var">EquityClass</span></a></span></span><span>    </span><span class="hs-comment">-- &#1050;&#1072;&#1087;&#1080;&#1090;&#1072;&#1083; (80-89): Owner's equity</span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="RevenueClass"><span class="annot"><a href="Finance.Account.html#RevenueClass"><span class="hs-identifier hs-var">RevenueClass</span></a></span></span><span>  </span><span class="hs-comment">-- &#1044;&#1086;&#1093;&#1086;&#1076;&#1099; (90-99): Income streams</span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="ExpenseClass"><span class="annot"><a href="Finance.Account.html#ExpenseClass"><span class="hs-identifier hs-var">ExpenseClass</span></a></span></span><span> </span><span class="hs-comment">-- &#1056;&#1072;&#1089;&#1093;&#1086;&#1076;&#1099; (20-29, 44): Costs</span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680233576"><span id="local-6989586621680233578"><span id="local-6989586621680233582"><span class="annot"><span class="annottext">Int -&gt; AccountClass -&gt; ShowS
+[AccountClass] -&gt; ShowS
+AccountClass -&gt; String
+(Int -&gt; AccountClass -&gt; ShowS)
+-&gt; (AccountClass -&gt; String)
+-&gt; ([AccountClass] -&gt; ShowS)
+-&gt; Show AccountClass
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AccountClass -&gt; ShowS
+showsPrec :: Int -&gt; AccountClass -&gt; ShowS
+$cshow :: AccountClass -&gt; String
+show :: AccountClass -&gt; String
+$cshowList :: [AccountClass] -&gt; ShowS
+showList :: [AccountClass] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680233587"><span id="local-6989586621680233592"><span class="annot"><span class="annottext">AccountClass -&gt; AccountClass -&gt; Bool
+(AccountClass -&gt; AccountClass -&gt; Bool)
+-&gt; (AccountClass -&gt; AccountClass -&gt; Bool) -&gt; Eq AccountClass
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AccountClass -&gt; AccountClass -&gt; Bool
+== :: AccountClass -&gt; AccountClass -&gt; Bool
+$c/= :: AccountClass -&gt; AccountClass -&gt; Bool
+/= :: AccountClass -&gt; AccountClass -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680233597"><span id="local-6989586621680233606"><span id="local-6989586621680233613"><span id="local-6989586621680233627"><span id="local-6989586621680233630"><span id="local-6989586621680233635"><span id="local-6989586621680233641"><span id="local-6989586621680233645"><span class="annot"><span class="annottext">Int -&gt; AccountClass
+AccountClass -&gt; Int
+AccountClass -&gt; [AccountClass]
+AccountClass -&gt; AccountClass
+AccountClass -&gt; AccountClass -&gt; [AccountClass]
+AccountClass -&gt; AccountClass -&gt; AccountClass -&gt; [AccountClass]
+(AccountClass -&gt; AccountClass)
+-&gt; (AccountClass -&gt; AccountClass)
+-&gt; (Int -&gt; AccountClass)
+-&gt; (AccountClass -&gt; Int)
+-&gt; (AccountClass -&gt; [AccountClass])
+-&gt; (AccountClass -&gt; AccountClass -&gt; [AccountClass])
+-&gt; (AccountClass -&gt; AccountClass -&gt; [AccountClass])
+-&gt; (AccountClass -&gt; AccountClass -&gt; AccountClass -&gt; [AccountClass])
+-&gt; Enum AccountClass
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: AccountClass -&gt; AccountClass
+succ :: AccountClass -&gt; AccountClass
+$cpred :: AccountClass -&gt; AccountClass
+pred :: AccountClass -&gt; AccountClass
+$ctoEnum :: Int -&gt; AccountClass
+toEnum :: Int -&gt; AccountClass
+$cfromEnum :: AccountClass -&gt; Int
+fromEnum :: AccountClass -&gt; Int
+$cenumFrom :: AccountClass -&gt; [AccountClass]
+enumFrom :: AccountClass -&gt; [AccountClass]
+$cenumFromThen :: AccountClass -&gt; AccountClass -&gt; [AccountClass]
+enumFromThen :: AccountClass -&gt; AccountClass -&gt; [AccountClass]
+$cenumFromTo :: AccountClass -&gt; AccountClass -&gt; [AccountClass]
+enumFromTo :: AccountClass -&gt; AccountClass -&gt; [AccountClass]
+$cenumFromThenTo :: AccountClass -&gt; AccountClass -&gt; AccountClass -&gt; [AccountClass]
+enumFromThenTo :: AccountClass -&gt; AccountClass -&gt; AccountClass -&gt; [AccountClass]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680233653"><span id="local-6989586621680233655"><span class="annot"><span class="annottext">AccountClass
+AccountClass -&gt; AccountClass -&gt; Bounded AccountClass
+forall a. a -&gt; a -&gt; Bounded a
+$cminBound :: AccountClass
+minBound :: AccountClass
+$cmaxBound :: AccountClass
+maxBound :: AccountClass
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Bounded"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680233663"><span id="local-6989586621680233667"><span id="local-6989586621680233671"><span id="local-6989586621680233675"><span id="local-6989586621680233678"><span id="local-6989586621680233681"><span id="local-6989586621680233684"><span class="annot"><span class="annottext">Eq AccountClass
+Eq AccountClass =&gt;
+(AccountClass -&gt; AccountClass -&gt; Ordering)
+-&gt; (AccountClass -&gt; AccountClass -&gt; Bool)
+-&gt; (AccountClass -&gt; AccountClass -&gt; Bool)
+-&gt; (AccountClass -&gt; AccountClass -&gt; Bool)
+-&gt; (AccountClass -&gt; AccountClass -&gt; Bool)
+-&gt; (AccountClass -&gt; AccountClass -&gt; AccountClass)
+-&gt; (AccountClass -&gt; AccountClass -&gt; AccountClass)
+-&gt; Ord AccountClass
+AccountClass -&gt; AccountClass -&gt; Bool
+AccountClass -&gt; AccountClass -&gt; Ordering
+AccountClass -&gt; AccountClass -&gt; AccountClass
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: AccountClass -&gt; AccountClass -&gt; Ordering
+compare :: AccountClass -&gt; AccountClass -&gt; Ordering
+$c&lt; :: AccountClass -&gt; AccountClass -&gt; Bool
+&lt; :: AccountClass -&gt; AccountClass -&gt; Bool
+$c&lt;= :: AccountClass -&gt; AccountClass -&gt; Bool
+&lt;= :: AccountClass -&gt; AccountClass -&gt; Bool
+$c&gt; :: AccountClass -&gt; AccountClass -&gt; Bool
+&gt; :: AccountClass -&gt; AccountClass -&gt; Bool
+$c&gt;= :: AccountClass -&gt; AccountClass -&gt; Bool
+&gt;= :: AccountClass -&gt; AccountClass -&gt; Bool
+$cmax :: AccountClass -&gt; AccountClass -&gt; AccountClass
+max :: AccountClass -&gt; AccountClass -&gt; AccountClass
+$cmin :: AccountClass -&gt; AccountClass -&gt; AccountClass
+min :: AccountClass -&gt; AccountClass -&gt; AccountClass
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="annot"><span class="hs-comment">-- | Account nature: how the account behaves in accounting</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">data</span><span> </span><span id="AccountNature"><span class="annot"><a href="Finance.Account.html#AccountNature"><span class="hs-identifier hs-var">AccountNature</span></a></span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="DebitNature"><span class="annot"><a href="Finance.Account.html#DebitNature"><span class="hs-identifier hs-var">DebitNature</span></a></span></span><span>  </span><span class="hs-comment">-- &#1044;&#1077;&#1073;&#1077;&#1090;&#1086;&#1074;&#1072;&#1103; (normal balance)</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="CreditNature"><span class="annot"><a href="Finance.Account.html#CreditNature"><span class="hs-identifier hs-var">CreditNature</span></a></span></span><span> </span><span class="hs-comment">-- &#1050;&#1088;&#1077;&#1076;&#1080;&#1090;&#1086;&#1074;&#1072;&#1103; (normal balance)</span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680233694"><span id="local-6989586621680233696"><span id="local-6989586621680233700"><span class="annot"><span class="annottext">Int -&gt; AccountNature -&gt; ShowS
+[AccountNature] -&gt; ShowS
+AccountNature -&gt; String
+(Int -&gt; AccountNature -&gt; ShowS)
+-&gt; (AccountNature -&gt; String)
+-&gt; ([AccountNature] -&gt; ShowS)
+-&gt; Show AccountNature
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AccountNature -&gt; ShowS
+showsPrec :: Int -&gt; AccountNature -&gt; ShowS
+$cshow :: AccountNature -&gt; String
+show :: AccountNature -&gt; String
+$cshowList :: [AccountNature] -&gt; ShowS
+showList :: [AccountNature] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680233703"><span id="local-6989586621680233707"><span class="annot"><span class="annottext">AccountNature -&gt; AccountNature -&gt; Bool
+(AccountNature -&gt; AccountNature -&gt; Bool)
+-&gt; (AccountNature -&gt; AccountNature -&gt; Bool) -&gt; Eq AccountNature
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AccountNature -&gt; AccountNature -&gt; Bool
+== :: AccountNature -&gt; AccountNature -&gt; Bool
+$c/= :: AccountNature -&gt; AccountNature -&gt; Bool
+/= :: AccountNature -&gt; AccountNature -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680233711"><span id="local-6989586621680233718"><span id="local-6989586621680233725"><span id="local-6989586621680233736"><span id="local-6989586621680233739"><span id="local-6989586621680233743"><span id="local-6989586621680233749"><span id="local-6989586621680233753"><span class="annot"><span class="annottext">Int -&gt; AccountNature
+AccountNature -&gt; Int
+AccountNature -&gt; [AccountNature]
+AccountNature -&gt; AccountNature
+AccountNature -&gt; AccountNature -&gt; [AccountNature]
+AccountNature -&gt; AccountNature -&gt; AccountNature -&gt; [AccountNature]
+(AccountNature -&gt; AccountNature)
+-&gt; (AccountNature -&gt; AccountNature)
+-&gt; (Int -&gt; AccountNature)
+-&gt; (AccountNature -&gt; Int)
+-&gt; (AccountNature -&gt; [AccountNature])
+-&gt; (AccountNature -&gt; AccountNature -&gt; [AccountNature])
+-&gt; (AccountNature -&gt; AccountNature -&gt; [AccountNature])
+-&gt; (AccountNature
+    -&gt; AccountNature -&gt; AccountNature -&gt; [AccountNature])
+-&gt; Enum AccountNature
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: AccountNature -&gt; AccountNature
+succ :: AccountNature -&gt; AccountNature
+$cpred :: AccountNature -&gt; AccountNature
+pred :: AccountNature -&gt; AccountNature
+$ctoEnum :: Int -&gt; AccountNature
+toEnum :: Int -&gt; AccountNature
+$cfromEnum :: AccountNature -&gt; Int
+fromEnum :: AccountNature -&gt; Int
+$cenumFrom :: AccountNature -&gt; [AccountNature]
+enumFrom :: AccountNature -&gt; [AccountNature]
+$cenumFromThen :: AccountNature -&gt; AccountNature -&gt; [AccountNature]
+enumFromThen :: AccountNature -&gt; AccountNature -&gt; [AccountNature]
+$cenumFromTo :: AccountNature -&gt; AccountNature -&gt; [AccountNature]
+enumFromTo :: AccountNature -&gt; AccountNature -&gt; [AccountNature]
+$cenumFromThenTo :: AccountNature -&gt; AccountNature -&gt; AccountNature -&gt; [AccountNature]
+enumFromThenTo :: AccountNature -&gt; AccountNature -&gt; AccountNature -&gt; [AccountNature]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="annot"><span class="hs-comment">-- | Account entry with enhanced type safety</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="Account"><span class="annot"><a href="Finance.Account.html#Account"><span class="hs-identifier hs-var">Account</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Account"><span class="annot"><a href="Finance.Account.html#Account"><span class="hs-identifier hs-var">Account</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="accountId"><span class="annot"><span class="annottext">Account -&gt; AccountId
+</span><a href="Finance.Account.html#accountId"><span class="hs-identifier hs-var hs-var">accountId</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountId"><span class="hs-identifier hs-type">AccountId</span></a></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="accountCode"><span class="annot"><span class="annottext">Account -&gt; AccountCode
+</span><a href="Finance.Account.html#accountCode"><span class="hs-identifier hs-var hs-var">accountCode</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="accountName"><span class="annot"><span class="annottext">Account -&gt; AccountName
+</span><a href="Finance.Account.html#accountName"><span class="hs-identifier hs-var hs-var">accountName</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountName"><span class="hs-identifier hs-type">AccountName</span></a></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="accountClass"><span class="annot"><span class="annottext">Account -&gt; AccountClass
+</span><a href="Finance.Account.html#accountClass"><span class="hs-identifier hs-var hs-var">accountClass</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountClass"><span class="hs-identifier hs-type">AccountClass</span></a></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="accountNature"><span class="annot"><span class="annottext">Account -&gt; AccountNature
+</span><a href="Finance.Account.html#accountNature"><span class="hs-identifier hs-var hs-var">accountNature</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountNature"><span class="hs-identifier hs-type">AccountNature</span></a></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="parentAccountId"><span class="annot"><span class="annottext">Account -&gt; Maybe AccountId
+</span><a href="Finance.Account.html#parentAccountId"><span class="hs-identifier hs-var hs-var">parentAccountId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="Finance.Account.html#AccountId"><span class="hs-identifier hs-type">AccountId</span></a></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="isGroupAccount"><span class="annot"><span class="annottext">Account -&gt; Bool
+</span><a href="Finance.Account.html#isGroupAccount"><span class="hs-identifier hs-var hs-var">isGroupAccount</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="currencyAccount"><span class="annot"><span class="annottext">Account -&gt; Maybe Text
+</span><a href="Finance.Account.html#currencyAccount"><span class="hs-identifier hs-var hs-var">currencyAccount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>  </span><span class="hs-comment">-- CurrencyCode (simplified)</span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="isActive"><span class="annot"><span class="annottext">Account -&gt; Bool
+</span><a href="Finance.Account.html#isActive"><span class="hs-identifier hs-var hs-var">isActive</span></a></span></span><span>       </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="createdAt"><span class="annot"><span class="annottext">Account -&gt; Day
+</span><a href="Finance.Account.html#createdAt"><span class="hs-identifier hs-var hs-var">createdAt</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="updatedAt"><span class="annot"><span class="annottext">Account -&gt; Maybe Day
+</span><a href="Finance.Account.html#updatedAt"><span class="hs-identifier hs-var hs-var">updatedAt</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680233768"><span id="local-6989586621680233789"><span id="local-6989586621680233793"><span class="annot"><span class="annottext">Int -&gt; Account -&gt; ShowS
+[Account] -&gt; ShowS
+Account -&gt; String
+(Int -&gt; Account -&gt; ShowS)
+-&gt; (Account -&gt; String) -&gt; ([Account] -&gt; ShowS) -&gt; Show Account
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Account -&gt; ShowS
+showsPrec :: Int -&gt; Account -&gt; ShowS
+$cshow :: Account -&gt; String
+show :: Account -&gt; String
+$cshowList :: [Account] -&gt; ShowS
+showList :: [Account] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680233797"><span id="local-6989586621680233817"><span class="annot"><span class="annottext">Account -&gt; Account -&gt; Bool
+(Account -&gt; Account -&gt; Bool)
+-&gt; (Account -&gt; Account -&gt; Bool) -&gt; Eq Account
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Account -&gt; Account -&gt; Bool
+== :: Account -&gt; Account -&gt; Bool
+$c/= :: Account -&gt; Account -&gt; Bool
+/= :: Account -&gt; Account -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680233822"><span id="local-6989586621680233824"><span class="annot"><span class="annottext">(forall x. Account -&gt; Rep Account x)
+-&gt; (forall x. Rep Account x -&gt; Account) -&gt; Generic Account
+forall x. Rep Account x -&gt; Account
+forall x. Account -&gt; Rep Account x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Account -&gt; Rep Account x
+from :: forall x. Account -&gt; Rep Account x
+$cto :: forall x. Rep Account x -&gt; Account
+to :: forall x. Rep Account x -&gt; Account
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="annot"><span class="hs-comment">-- | Newtypes for enhanced type safety</span></span><span>
+</span><span id="line-45"></span><span class="hs-keyword">newtype</span><span> </span><span id="AccountId"><span class="annot"><a href="Finance.Account.html#AccountId"><span class="hs-identifier hs-var">AccountId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AccountId"><span class="annot"><a href="Finance.Account.html#AccountId"><span class="hs-identifier hs-var">AccountId</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unAccountId"><span class="annot"><span class="annottext">AccountId -&gt; Int64
+</span><a href="Finance.Account.html#unAccountId"><span class="hs-identifier hs-var hs-var">unAccountId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680233832"><span id="local-6989586621680233837"><span id="local-6989586621680233840"><span class="annot"><span class="annottext">Int -&gt; AccountId -&gt; ShowS
+[AccountId] -&gt; ShowS
+AccountId -&gt; String
+(Int -&gt; AccountId -&gt; ShowS)
+-&gt; (AccountId -&gt; String)
+-&gt; ([AccountId] -&gt; ShowS)
+-&gt; Show AccountId
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AccountId -&gt; ShowS
+showsPrec :: Int -&gt; AccountId -&gt; ShowS
+$cshow :: AccountId -&gt; String
+show :: AccountId -&gt; String
+$cshowList :: [AccountId] -&gt; ShowS
+showList :: [AccountId] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680233843"><span id="local-6989586621680233848"><span class="annot"><span class="annottext">AccountId -&gt; AccountId -&gt; Bool
+(AccountId -&gt; AccountId -&gt; Bool)
+-&gt; (AccountId -&gt; AccountId -&gt; Bool) -&gt; Eq AccountId
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AccountId -&gt; AccountId -&gt; Bool
+== :: AccountId -&gt; AccountId -&gt; Bool
+$c/= :: AccountId -&gt; AccountId -&gt; Bool
+/= :: AccountId -&gt; AccountId -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680233855"><span id="local-6989586621680233860"><span id="local-6989586621680233864"><span id="local-6989586621680233868"><span id="local-6989586621680233872"><span id="local-6989586621680233876"><span id="local-6989586621680233880"><span class="annot"><span class="annottext">Eq AccountId
+Eq AccountId =&gt;
+(AccountId -&gt; AccountId -&gt; Ordering)
+-&gt; (AccountId -&gt; AccountId -&gt; Bool)
+-&gt; (AccountId -&gt; AccountId -&gt; Bool)
+-&gt; (AccountId -&gt; AccountId -&gt; Bool)
+-&gt; (AccountId -&gt; AccountId -&gt; Bool)
+-&gt; (AccountId -&gt; AccountId -&gt; AccountId)
+-&gt; (AccountId -&gt; AccountId -&gt; AccountId)
+-&gt; Ord AccountId
+AccountId -&gt; AccountId -&gt; Bool
+AccountId -&gt; AccountId -&gt; Ordering
+AccountId -&gt; AccountId -&gt; AccountId
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: AccountId -&gt; AccountId -&gt; Ordering
+compare :: AccountId -&gt; AccountId -&gt; Ordering
+$c&lt; :: AccountId -&gt; AccountId -&gt; Bool
+&lt; :: AccountId -&gt; AccountId -&gt; Bool
+$c&lt;= :: AccountId -&gt; AccountId -&gt; Bool
+&lt;= :: AccountId -&gt; AccountId -&gt; Bool
+$c&gt; :: AccountId -&gt; AccountId -&gt; Bool
+&gt; :: AccountId -&gt; AccountId -&gt; Bool
+$c&gt;= :: AccountId -&gt; AccountId -&gt; Bool
+&gt;= :: AccountId -&gt; AccountId -&gt; Bool
+$cmax :: AccountId -&gt; AccountId -&gt; AccountId
+max :: AccountId -&gt; AccountId -&gt; AccountId
+$cmin :: AccountId -&gt; AccountId -&gt; AccountId
+min :: AccountId -&gt; AccountId -&gt; AccountId
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span class="hs-keyword">newtype</span><span> </span><span id="AccountCode"><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-var">AccountCode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AccountCode"><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-var">AccountCode</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unAccountCode"><span class="annot"><span class="annottext">AccountCode -&gt; Text
+</span><a href="Finance.Account.html#unAccountCode"><span class="hs-identifier hs-var hs-var">unAccountCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680233889"><span id="local-6989586621680233893"><span id="local-6989586621680233896"><span class="annot"><span class="annottext">Int -&gt; AccountCode -&gt; ShowS
+[AccountCode] -&gt; ShowS
+AccountCode -&gt; String
+(Int -&gt; AccountCode -&gt; ShowS)
+-&gt; (AccountCode -&gt; String)
+-&gt; ([AccountCode] -&gt; ShowS)
+-&gt; Show AccountCode
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AccountCode -&gt; ShowS
+showsPrec :: Int -&gt; AccountCode -&gt; ShowS
+$cshow :: AccountCode -&gt; String
+show :: AccountCode -&gt; String
+$cshowList :: [AccountCode] -&gt; ShowS
+showList :: [AccountCode] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680233899"><span id="local-6989586621680233903"><span class="annot"><span class="annottext">AccountCode -&gt; AccountCode -&gt; Bool
+(AccountCode -&gt; AccountCode -&gt; Bool)
+-&gt; (AccountCode -&gt; AccountCode -&gt; Bool) -&gt; Eq AccountCode
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AccountCode -&gt; AccountCode -&gt; Bool
+== :: AccountCode -&gt; AccountCode -&gt; Bool
+$c/= :: AccountCode -&gt; AccountCode -&gt; Bool
+/= :: AccountCode -&gt; AccountCode -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680233909"><span id="local-6989586621680233914"><span id="local-6989586621680233918"><span id="local-6989586621680233922"><span id="local-6989586621680233926"><span id="local-6989586621680233930"><span id="local-6989586621680233934"><span class="annot"><span class="annottext">Eq AccountCode
+Eq AccountCode =&gt;
+(AccountCode -&gt; AccountCode -&gt; Ordering)
+-&gt; (AccountCode -&gt; AccountCode -&gt; Bool)
+-&gt; (AccountCode -&gt; AccountCode -&gt; Bool)
+-&gt; (AccountCode -&gt; AccountCode -&gt; Bool)
+-&gt; (AccountCode -&gt; AccountCode -&gt; Bool)
+-&gt; (AccountCode -&gt; AccountCode -&gt; AccountCode)
+-&gt; (AccountCode -&gt; AccountCode -&gt; AccountCode)
+-&gt; Ord AccountCode
+AccountCode -&gt; AccountCode -&gt; Bool
+AccountCode -&gt; AccountCode -&gt; Ordering
+AccountCode -&gt; AccountCode -&gt; AccountCode
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: AccountCode -&gt; AccountCode -&gt; Ordering
+compare :: AccountCode -&gt; AccountCode -&gt; Ordering
+$c&lt; :: AccountCode -&gt; AccountCode -&gt; Bool
+&lt; :: AccountCode -&gt; AccountCode -&gt; Bool
+$c&lt;= :: AccountCode -&gt; AccountCode -&gt; Bool
+&lt;= :: AccountCode -&gt; AccountCode -&gt; Bool
+$c&gt; :: AccountCode -&gt; AccountCode -&gt; Bool
+&gt; :: AccountCode -&gt; AccountCode -&gt; Bool
+$c&gt;= :: AccountCode -&gt; AccountCode -&gt; Bool
+&gt;= :: AccountCode -&gt; AccountCode -&gt; Bool
+$cmax :: AccountCode -&gt; AccountCode -&gt; AccountCode
+max :: AccountCode -&gt; AccountCode -&gt; AccountCode
+$cmin :: AccountCode -&gt; AccountCode -&gt; AccountCode
+min :: AccountCode -&gt; AccountCode -&gt; AccountCode
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="hs-keyword">newtype</span><span> </span><span id="AccountName"><span class="annot"><a href="Finance.Account.html#AccountName"><span class="hs-identifier hs-var">AccountName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AccountName"><span class="annot"><a href="Finance.Account.html#AccountName"><span class="hs-identifier hs-var">AccountName</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unAccountName"><span class="annot"><span class="annottext">AccountName -&gt; Text
+</span><a href="Finance.Account.html#unAccountName"><span class="hs-identifier hs-var hs-var">unAccountName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680233941"><span id="local-6989586621680233945"><span id="local-6989586621680233948"><span class="annot"><span class="annottext">Int -&gt; AccountName -&gt; ShowS
+[AccountName] -&gt; ShowS
+AccountName -&gt; String
+(Int -&gt; AccountName -&gt; ShowS)
+-&gt; (AccountName -&gt; String)
+-&gt; ([AccountName] -&gt; ShowS)
+-&gt; Show AccountName
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AccountName -&gt; ShowS
+showsPrec :: Int -&gt; AccountName -&gt; ShowS
+$cshow :: AccountName -&gt; String
+show :: AccountName -&gt; String
+$cshowList :: [AccountName] -&gt; ShowS
+showList :: [AccountName] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680233951"><span id="local-6989586621680233955"><span class="annot"><span class="annottext">AccountName -&gt; AccountName -&gt; Bool
+(AccountName -&gt; AccountName -&gt; Bool)
+-&gt; (AccountName -&gt; AccountName -&gt; Bool) -&gt; Eq AccountName
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AccountName -&gt; AccountName -&gt; Bool
+== :: AccountName -&gt; AccountName -&gt; Bool
+$c/= :: AccountName -&gt; AccountName -&gt; Bool
+/= :: AccountName -&gt; AccountName -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680233961"><span id="local-6989586621680233965"><span id="local-6989586621680233969"><span id="local-6989586621680233973"><span id="local-6989586621680233977"><span id="local-6989586621680233981"><span id="local-6989586621680233985"><span class="annot"><span class="annottext">Eq AccountName
+Eq AccountName =&gt;
+(AccountName -&gt; AccountName -&gt; Ordering)
+-&gt; (AccountName -&gt; AccountName -&gt; Bool)
+-&gt; (AccountName -&gt; AccountName -&gt; Bool)
+-&gt; (AccountName -&gt; AccountName -&gt; Bool)
+-&gt; (AccountName -&gt; AccountName -&gt; Bool)
+-&gt; (AccountName -&gt; AccountName -&gt; AccountName)
+-&gt; (AccountName -&gt; AccountName -&gt; AccountName)
+-&gt; Ord AccountName
+AccountName -&gt; AccountName -&gt; Bool
+AccountName -&gt; AccountName -&gt; Ordering
+AccountName -&gt; AccountName -&gt; AccountName
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: AccountName -&gt; AccountName -&gt; Ordering
+compare :: AccountName -&gt; AccountName -&gt; Ordering
+$c&lt; :: AccountName -&gt; AccountName -&gt; Bool
+&lt; :: AccountName -&gt; AccountName -&gt; Bool
+$c&lt;= :: AccountName -&gt; AccountName -&gt; Bool
+&lt;= :: AccountName -&gt; AccountName -&gt; Bool
+$c&gt; :: AccountName -&gt; AccountName -&gt; Bool
+&gt; :: AccountName -&gt; AccountName -&gt; Bool
+$c&gt;= :: AccountName -&gt; AccountName -&gt; Bool
+&gt;= :: AccountName -&gt; AccountName -&gt; Bool
+$cmax :: AccountName -&gt; AccountName -&gt; AccountName
+max :: AccountName -&gt; AccountName -&gt; AccountName
+$cmin :: AccountName -&gt; AccountName -&gt; AccountName
+min :: AccountName -&gt; AccountName -&gt; AccountName
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span class="annot"><span class="hs-comment">-- | Validate account code format (e.g. &quot;1010&quot;, &quot;50&quot;)</span></span><span>
+</span><span id="line-55"></span><span class="annot"><a href="Finance.Account.html#validateAccountCode"><span class="hs-identifier hs-type">validateAccountCode</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span>
+</span><span id="line-56"></span><span id="validateAccountCode"><span class="annot"><span class="annottext">validateAccountCode :: AccountCode -&gt; Maybe AccountCode
+</span><a href="Finance.Account.html#validateAccountCode"><span class="hs-identifier hs-var hs-var">validateAccountCode</span></a></span></span><span> </span><span id="local-6989586621680233990"><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680233990"><span class="hs-identifier hs-var">code</span></a></span></span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#null"><span class="hs-identifier hs-var">T.null</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccountCode -&gt; Text
+</span><a href="Finance.Account.html#unAccountCode"><span class="hs-identifier hs-var">unAccountCode</span></a></span><span> </span><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680233990"><span class="hs-identifier hs-var">code</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe AccountCode
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#all"><span class="hs-identifier hs-var">T.all</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680233993"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621680233993"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621680233993"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; String -&gt; Bool
+forall a. Eq a =&gt; a -&gt; [a] -&gt; Bool
+forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#elem"><span class="hs-operator hs-var">`elem`</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;0123456789.&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#String"><span class="hs-identifier hs-type">String</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccountCode -&gt; Text
+</span><a href="Finance.Account.html#unAccountCode"><span class="hs-identifier hs-var">unAccountCode</span></a></span><span> </span><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680233990"><span class="hs-identifier hs-var">code</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccountCode -&gt; Maybe AccountCode
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680233990"><span class="hs-identifier hs-var">code</span></a></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe AccountCode
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-60"></span><span>
+</span><span id="line-61"></span><span class="annot"><span class="hs-comment">-- | Smart constructor for Account</span></span><span>
+</span><span id="line-62"></span><span class="annot"><a href="Finance.Account.html#createAccount"><span class="hs-identifier hs-type">createAccount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountId"><span class="hs-identifier hs-type">AccountId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountName"><span class="hs-identifier hs-type">AccountName</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountClass"><span class="hs-identifier hs-type">AccountClass</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Account.html#Account"><span class="hs-identifier hs-type">Account</span></a></span><span>
+</span><span id="line-63"></span><span id="createAccount"><span class="annot"><span class="annottext">createAccount :: Day
+-&gt; AccountId
+-&gt; AccountCode
+-&gt; AccountName
+-&gt; AccountClass
+-&gt; Account
+</span><a href="Finance.Account.html#createAccount"><span class="hs-identifier hs-var hs-var">createAccount</span></a></span></span><span> </span><span id="local-6989586621680233996"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680233996"><span class="hs-identifier hs-var">created</span></a></span></span><span> </span><span id="local-6989586621680233997"><span class="annot"><span class="annottext">AccountId
+</span><a href="#local-6989586621680233997"><span class="hs-identifier hs-var">aid</span></a></span></span><span> </span><span id="local-6989586621680233998"><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680233998"><span class="hs-identifier hs-var">code</span></a></span></span><span> </span><span id="local-6989586621680233999"><span class="annot"><span class="annottext">AccountName
+</span><a href="#local-6989586621680233999"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621680234000"><span class="annot"><span class="annottext">AccountClass
+</span><a href="#local-6989586621680234000"><span class="hs-identifier hs-var">cls</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Account.html#Account"><span class="hs-identifier hs-type">Account</span></a></span><span>
+</span><span id="line-64"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">accountId :: AccountId
+</span><a href="Finance.Account.html#accountId"><span class="hs-identifier hs-var">accountId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccountId
+</span><a href="#local-6989586621680233997"><span class="hs-identifier hs-var">aid</span></a></span><span>
+</span><span id="line-65"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">accountCode :: AccountCode
+</span><a href="Finance.Account.html#accountCode"><span class="hs-identifier hs-var">accountCode</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680233998"><span class="hs-identifier hs-var">code</span></a></span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">accountName :: AccountName
+</span><a href="Finance.Account.html#accountName"><span class="hs-identifier hs-var">accountName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccountName
+</span><a href="#local-6989586621680233999"><span class="hs-identifier hs-var">name</span></a></span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">accountClass :: AccountClass
+</span><a href="Finance.Account.html#accountClass"><span class="hs-identifier hs-var">accountClass</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccountClass
+</span><a href="#local-6989586621680234000"><span class="hs-identifier hs-var">cls</span></a></span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">accountNature :: AccountNature
+</span><a href="Finance.Account.html#accountNature"><span class="hs-identifier hs-var">accountNature</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">AccountClass
+</span><a href="#local-6989586621680234000"><span class="hs-identifier hs-var">cls</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-69"></span><span>      </span><span class="annot"><span class="annottext">AccountClass
+</span><a href="Finance.Account.html#AssetClass"><span class="hs-identifier hs-var">AssetClass</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccountNature
+</span><a href="Finance.Account.html#DebitNature"><span class="hs-identifier hs-var">DebitNature</span></a></span><span>
+</span><span id="line-70"></span><span>      </span><span class="annot"><span class="annottext">AccountClass
+</span><a href="Finance.Account.html#LiabilityClass"><span class="hs-identifier hs-var">LiabilityClass</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccountNature
+</span><a href="Finance.Account.html#CreditNature"><span class="hs-identifier hs-var">CreditNature</span></a></span><span>
+</span><span id="line-71"></span><span>      </span><span class="annot"><span class="annottext">AccountClass
+</span><a href="Finance.Account.html#EquityClass"><span class="hs-identifier hs-var">EquityClass</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccountNature
+</span><a href="Finance.Account.html#CreditNature"><span class="hs-identifier hs-var">CreditNature</span></a></span><span>
+</span><span id="line-72"></span><span>      </span><span class="annot"><span class="annottext">AccountClass
+</span><a href="Finance.Account.html#RevenueClass"><span class="hs-identifier hs-var">RevenueClass</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccountNature
+</span><a href="Finance.Account.html#CreditNature"><span class="hs-identifier hs-var">CreditNature</span></a></span><span>
+</span><span id="line-73"></span><span>      </span><span class="annot"><span class="annottext">AccountClass
+</span><a href="Finance.Account.html#ExpenseClass"><span class="hs-identifier hs-var">ExpenseClass</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">AccountNature
+</span><a href="Finance.Account.html#DebitNature"><span class="hs-identifier hs-var">DebitNature</span></a></span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">parentAccountId :: Maybe AccountId
+</span><a href="Finance.Account.html#parentAccountId"><span class="hs-identifier hs-var">parentAccountId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe AccountId
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">isGroupAccount :: Bool
+</span><a href="Finance.Account.html#isGroupAccount"><span class="hs-identifier hs-var">isGroupAccount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#False"><span class="hs-identifier hs-var">False</span></a></span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">currencyAccount :: Maybe Text
+</span><a href="Finance.Account.html#currencyAccount"><span class="hs-identifier hs-var">currencyAccount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-77"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">isActive :: Bool
+</span><a href="Finance.Account.html#isActive"><span class="hs-identifier hs-var">isActive</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#True"><span class="hs-identifier hs-var">True</span></a></span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">createdAt :: Day
+</span><a href="Finance.Account.html#createdAt"><span class="hs-identifier hs-var">createdAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680233996"><span class="hs-identifier hs-var">created</span></a></span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">updatedAt :: Maybe Day
+</span><a href="Finance.Account.html#updatedAt"><span class="hs-identifier hs-var">updatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Day
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-80"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-81"></span><span>
+</span><span id="line-82"></span><span class="annot"><span class="hs-comment">-- | Check if account is asset class</span></span><span>
+</span><span id="line-83"></span><span class="annot"><a href="Finance.Account.html#isAssetAccount"><span class="hs-identifier hs-type">isAssetAccount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Account.html#Account"><span class="hs-identifier hs-type">Account</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-84"></span><span id="isAssetAccount"><span class="annot"><span class="annottext">isAssetAccount :: Account -&gt; Bool
+</span><a href="Finance.Account.html#isAssetAccount"><span class="hs-identifier hs-var hs-var">isAssetAccount</span></a></span></span><span> </span><span id="local-6989586621680234002"><span class="annot"><span class="annottext">Account
+</span><a href="#local-6989586621680234002"><span class="hs-identifier hs-var">acc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Account -&gt; AccountClass
+</span><a href="Finance.Account.html#accountClass"><span class="hs-identifier hs-var">accountClass</span></a></span><span> </span><span class="annot"><span class="annottext">Account
+</span><a href="#local-6989586621680234002"><span class="hs-identifier hs-var">acc</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-85"></span><span>  </span><span class="annot"><span class="annottext">AccountClass
+</span><a href="Finance.Account.html#AssetClass"><span class="hs-identifier hs-var">AssetClass</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#True"><span class="hs-identifier hs-var">True</span></a></span><span>
+</span><span id="line-86"></span><span>  </span><span class="annot"><span class="annottext">AccountClass
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#False"><span class="hs-identifier hs-var">False</span></a></span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span class="annot"><span class="hs-comment">-- | Check if account is liability class</span></span><span>
+</span><span id="line-89"></span><span class="annot"><a href="Finance.Account.html#isLiabilityAccount"><span class="hs-identifier hs-type">isLiabilityAccount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Account.html#Account"><span class="hs-identifier hs-type">Account</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-90"></span><span id="isLiabilityAccount"><span class="annot"><span class="annottext">isLiabilityAccount :: Account -&gt; Bool
+</span><a href="Finance.Account.html#isLiabilityAccount"><span class="hs-identifier hs-var hs-var">isLiabilityAccount</span></a></span></span><span> </span><span id="local-6989586621680234004"><span class="annot"><span class="annottext">Account
+</span><a href="#local-6989586621680234004"><span class="hs-identifier hs-var">acc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Account -&gt; AccountClass
+</span><a href="Finance.Account.html#accountClass"><span class="hs-identifier hs-var">accountClass</span></a></span><span> </span><span class="annot"><span class="annottext">Account
+</span><a href="#local-6989586621680234004"><span class="hs-identifier hs-var">acc</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-91"></span><span>  </span><span class="annot"><span class="annottext">AccountClass
+</span><a href="Finance.Account.html#LiabilityClass"><span class="hs-identifier hs-var">LiabilityClass</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#True"><span class="hs-identifier hs-var">True</span></a></span><span>
+</span><span id="line-92"></span><span>  </span><span class="annot"><span class="annottext">AccountClass
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#False"><span class="hs-identifier hs-var">False</span></a></span><span>
+</span><span id="line-93"></span><span>
+</span><span id="line-94"></span><span class="annot"><span class="hs-comment">-- | Pretty print account</span></span><span>
+</span><span id="line-95"></span><span class="annot"><a href="Finance.Account.html#prettyAccount"><span class="hs-identifier hs-type">prettyAccount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Account.html#Account"><span class="hs-identifier hs-type">Account</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-96"></span><span id="prettyAccount"><span class="annot"><span class="annottext">prettyAccount :: Account -&gt; Text
+</span><a href="Finance.Account.html#prettyAccount"><span class="hs-identifier hs-var hs-var">prettyAccount</span></a></span></span><span> </span><span id="local-6989586621680234006"><span class="annot"><span class="annottext">Account
+</span><a href="#local-6989586621680234006"><span class="hs-identifier hs-var">acc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccountCode -&gt; Text
+</span><a href="Finance.Account.html#unAccountCode"><span class="hs-identifier hs-var">unAccountCode</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Account -&gt; AccountCode
+</span><a href="Finance.Account.html#accountCode"><span class="hs-identifier hs-var">accountCode</span></a></span><span> </span><span class="annot"><span class="annottext">Account
+</span><a href="#local-6989586621680234006"><span class="hs-identifier hs-var">acc</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; - &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">AccountName -&gt; Text
+</span><a href="Finance.Account.html#unAccountName"><span class="hs-identifier hs-var">unAccountName</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Account -&gt; AccountName
+</span><a href="Finance.Account.html#accountName"><span class="hs-identifier hs-var">accountName</span></a></span><span> </span><span class="annot"><span class="annottext">Account
+</span><a href="#local-6989586621680234006"><span class="hs-identifier hs-var">acc</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-97"></span></pre></body></html>

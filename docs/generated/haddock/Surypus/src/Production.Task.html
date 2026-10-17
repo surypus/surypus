@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Task module - Tasks management</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Production.Task.html"><span class="hs-identifier">Production.Task</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="annot"><span class="hs-comment">-- | Task - Task/issue</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">data</span><span> </span><span id="Task"><span class="annot"><a href="Production.Task.html#Task"><span class="hs-identifier hs-var">Task</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Task"><span class="annot"><a href="Production.Task.html#Task"><span class="hs-identifier hs-var">Task</span></a></span></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tskId"><span class="annot"><span class="annottext">Task -&gt; Int64
+</span><a href="Production.Task.html#tskId"><span class="hs-identifier hs-var hs-var">tskId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="tskTitle"><span class="annot"><span class="annottext">Task -&gt; Text
+</span><a href="Production.Task.html#tskTitle"><span class="hs-identifier hs-var hs-var">tskTitle</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="tskDescription"><span class="annot"><span class="annottext">Task -&gt; Text
+</span><a href="Production.Task.html#tskDescription"><span class="hs-identifier hs-var hs-var">tskDescription</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="tskAssigneeId"><span class="annot"><span class="annottext">Task -&gt; Int64
+</span><a href="Production.Task.html#tskAssigneeId"><span class="hs-identifier hs-var hs-var">tskAssigneeId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="tskStatus"><span class="annot"><span class="annottext">Task -&gt; TaskStatus
+</span><a href="Production.Task.html#tskStatus"><span class="hs-identifier hs-var hs-var">tskStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.Task.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="tskPriority"><span class="annot"><span class="annottext">Task -&gt; Priority
+</span><a href="Production.Task.html#tskPriority"><span class="hs-identifier hs-var hs-var">tskPriority</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.Task.html#Priority"><span class="hs-identifier hs-type">Priority</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span id="tskDueDate"><span class="annot"><span class="annottext">Task -&gt; Maybe Day
+</span><a href="Production.Task.html#tskDueDate"><span class="hs-identifier hs-var hs-var">tskDueDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680276647"><span id="local-6989586621680276664"><span id="local-6989586621680276668"><span class="annot"><span class="annottext">Int -&gt; Task -&gt; ShowS
+[Task] -&gt; ShowS
+Task -&gt; String
+(Int -&gt; Task -&gt; ShowS)
+-&gt; (Task -&gt; String) -&gt; ([Task] -&gt; ShowS) -&gt; Show Task
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Task -&gt; ShowS
+showsPrec :: Int -&gt; Task -&gt; ShowS
+$cshow :: Task -&gt; String
+show :: Task -&gt; String
+$cshowList :: [Task] -&gt; ShowS
+showList :: [Task] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680276674"><span id="local-6989586621680276689"><span class="annot"><span class="annottext">Task -&gt; Task -&gt; Bool
+(Task -&gt; Task -&gt; Bool) -&gt; (Task -&gt; Task -&gt; Bool) -&gt; Eq Task
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Task -&gt; Task -&gt; Bool
+== :: Task -&gt; Task -&gt; Bool
+$c/= :: Task -&gt; Task -&gt; Bool
+/= :: Task -&gt; Task -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">data</span><span> </span><span id="TaskStatus"><span class="annot"><a href="Production.Task.html#TaskStatus"><span class="hs-identifier hs-var">TaskStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TSOpen"><span class="annot"><a href="Production.Task.html#TSOpen"><span class="hs-identifier hs-var">TSOpen</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="TSInProgress"><span class="annot"><a href="Production.Task.html#TSInProgress"><span class="hs-identifier hs-var">TSInProgress</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="TSResolved"><span class="annot"><a href="Production.Task.html#TSResolved"><span class="hs-identifier hs-var">TSResolved</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="TSClosed"><span class="annot"><a href="Production.Task.html#TSClosed"><span class="hs-identifier hs-var">TSClosed</span></a></span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680276699"><span id="local-6989586621680276701"><span id="local-6989586621680276704"><span class="annot"><span class="annottext">Int -&gt; TaskStatus -&gt; ShowS
+[TaskStatus] -&gt; ShowS
+TaskStatus -&gt; String
+(Int -&gt; TaskStatus -&gt; ShowS)
+-&gt; (TaskStatus -&gt; String)
+-&gt; ([TaskStatus] -&gt; ShowS)
+-&gt; Show TaskStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TaskStatus -&gt; ShowS
+showsPrec :: Int -&gt; TaskStatus -&gt; ShowS
+$cshow :: TaskStatus -&gt; String
+show :: TaskStatus -&gt; String
+$cshowList :: [TaskStatus] -&gt; ShowS
+showList :: [TaskStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680276707"><span id="local-6989586621680276712"><span class="annot"><span class="annottext">TaskStatus -&gt; TaskStatus -&gt; Bool
+(TaskStatus -&gt; TaskStatus -&gt; Bool)
+-&gt; (TaskStatus -&gt; TaskStatus -&gt; Bool) -&gt; Eq TaskStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TaskStatus -&gt; TaskStatus -&gt; Bool
+== :: TaskStatus -&gt; TaskStatus -&gt; Bool
+$c/= :: TaskStatus -&gt; TaskStatus -&gt; Bool
+/= :: TaskStatus -&gt; TaskStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">data</span><span> </span><span id="Priority"><span class="annot"><a href="Production.Task.html#Priority"><span class="hs-identifier hs-var">Priority</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PLow"><span class="annot"><a href="Production.Task.html#PLow"><span class="hs-identifier hs-var">PLow</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PMedium"><span class="annot"><a href="Production.Task.html#PMedium"><span class="hs-identifier hs-var">PMedium</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PHigh"><span class="annot"><a href="Production.Task.html#PHigh"><span class="hs-identifier hs-var">PHigh</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PCritical"><span class="annot"><a href="Production.Task.html#PCritical"><span class="hs-identifier hs-var">PCritical</span></a></span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680276719"><span id="local-6989586621680276721"><span id="local-6989586621680276724"><span class="annot"><span class="annottext">Int -&gt; Priority -&gt; ShowS
+[Priority] -&gt; ShowS
+Priority -&gt; String
+(Int -&gt; Priority -&gt; ShowS)
+-&gt; (Priority -&gt; String) -&gt; ([Priority] -&gt; ShowS) -&gt; Show Priority
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Priority -&gt; ShowS
+showsPrec :: Int -&gt; Priority -&gt; ShowS
+$cshow :: Priority -&gt; String
+show :: Priority -&gt; String
+$cshowList :: [Priority] -&gt; ShowS
+showList :: [Priority] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680276727"><span id="local-6989586621680276731"><span class="annot"><span class="annottext">Priority -&gt; Priority -&gt; Bool
+(Priority -&gt; Priority -&gt; Bool)
+-&gt; (Priority -&gt; Priority -&gt; Bool) -&gt; Eq Priority
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Priority -&gt; Priority -&gt; Bool
+== :: Priority -&gt; Priority -&gt; Bool
+$c/= :: Priority -&gt; Priority -&gt; Bool
+/= :: Priority -&gt; Priority -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span></pre></body></html>

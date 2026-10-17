@@ -1,0 +1,464 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DeriveAnyClass #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DerivingStrategies #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE DuplicateRecordFields #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- LEGACY TYPES</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- Deprecated types for backward compatibility during migration</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- These will be removed in version 0.2.0</span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.Types.Legacy.html"><span class="hs-identifier">Surypus.Types.Legacy</span></a></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Surypus.Types.Legacy.html#BillLine"><span class="hs-identifier">BillLine</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="Surypus.Types.Legacy.html#Bill"><span class="hs-identifier">Bill</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="Surypus.Types.Legacy.html#PaymentStatus"><span class="hs-identifier">PaymentStatus</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span class="annot"><a href="Surypus.Types.Legacy.html#Payment"><span class="hs-identifier">Payment</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>    </span><span class="annot"><a href="Surypus.Types.Legacy.html#DashboardData"><span class="hs-identifier">DashboardData</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">FromJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">data</span><span> </span><span id="BillLine"><span class="annot"><a href="Surypus.Types.Legacy.html#BillLine"><span class="hs-identifier hs-var">BillLine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BillLine"><span class="annot"><a href="Surypus.Types.Legacy.html#BillLine"><span class="hs-identifier hs-var">BillLine</span></a></span></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="blId"><span class="annot"><span class="annottext">BillLine -&gt; Int64
+</span><a href="Surypus.Types.Legacy.html#blId"><span class="hs-identifier hs-var hs-var">blId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span id="blBillId"><span class="annot"><span class="annottext">BillLine -&gt; Int64
+</span><a href="Surypus.Types.Legacy.html#blBillId"><span class="hs-identifier hs-var hs-var">blBillId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-30"></span><span>    </span><span id="blGoodId"><span class="annot"><span class="annottext">BillLine -&gt; Int64
+</span><a href="Surypus.Types.Legacy.html#blGoodId"><span class="hs-identifier hs-var hs-var">blGoodId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-31"></span><span>    </span><span id="blQuantity"><span class="annot"><span class="annottext">BillLine -&gt; Int
+</span><a href="Surypus.Types.Legacy.html#blQuantity"><span class="hs-identifier hs-var hs-var">blQuantity</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-32"></span><span>    </span><span id="blPrice"><span class="annot"><span class="annottext">BillLine -&gt; Double
+</span><a href="Surypus.Types.Legacy.html#blPrice"><span class="hs-identifier hs-var hs-var">blPrice</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680330506"><span id="local-6989586621680330518"><span id="local-6989586621680330522"><span class="annot"><span class="annottext">Int -&gt; BillLine -&gt; ShowS
+[BillLine] -&gt; ShowS
+BillLine -&gt; String
+(Int -&gt; BillLine -&gt; ShowS)
+-&gt; (BillLine -&gt; String) -&gt; ([BillLine] -&gt; ShowS) -&gt; Show BillLine
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BillLine -&gt; ShowS
+showsPrec :: Int -&gt; BillLine -&gt; ShowS
+$cshow :: BillLine -&gt; String
+show :: BillLine -&gt; String
+$cshowList :: [BillLine] -&gt; ShowS
+showList :: [BillLine] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680330527"><span id="local-6989586621680330537"><span class="annot"><span class="annottext">BillLine -&gt; BillLine -&gt; Bool
+(BillLine -&gt; BillLine -&gt; Bool)
+-&gt; (BillLine -&gt; BillLine -&gt; Bool) -&gt; Eq BillLine
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BillLine -&gt; BillLine -&gt; Bool
+== :: BillLine -&gt; BillLine -&gt; Bool
+$c/= :: BillLine -&gt; BillLine -&gt; Bool
+/= :: BillLine -&gt; BillLine -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680330542"><span id="local-6989586621680330544"><span class="annot"><span class="annottext">(forall x. BillLine -&gt; Rep BillLine x)
+-&gt; (forall x. Rep BillLine x -&gt; BillLine) -&gt; Generic BillLine
+forall x. Rep BillLine x -&gt; BillLine
+forall x. BillLine -&gt; Rep BillLine x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. BillLine -&gt; Rep BillLine x
+from :: forall x. BillLine -&gt; Rep BillLine x
+$cto :: forall x. Rep BillLine x -&gt; BillLine
+to :: forall x. Rep BillLine x -&gt; BillLine
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">anyclass</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680330550"><span id="local-6989586621680330557"><span id="local-6989586621680330560"><span id="local-6989586621680330563"><span id="local-6989586621680330566"><span class="annot"><span class="annottext">[BillLine] -&gt; Value
+[BillLine] -&gt; Encoding
+BillLine -&gt; Bool
+BillLine -&gt; Value
+BillLine -&gt; Encoding
+(BillLine -&gt; Value)
+-&gt; (BillLine -&gt; Encoding)
+-&gt; ([BillLine] -&gt; Value)
+-&gt; ([BillLine] -&gt; Encoding)
+-&gt; (BillLine -&gt; Bool)
+-&gt; ToJSON BillLine
+forall a.
+(a -&gt; Value)
+-&gt; (a -&gt; Encoding)
+-&gt; ([a] -&gt; Value)
+-&gt; ([a] -&gt; Encoding)
+-&gt; (a -&gt; Bool)
+-&gt; ToJSON a
+$ctoJSON :: BillLine -&gt; Value
+toJSON :: BillLine -&gt; Value
+$ctoEncoding :: BillLine -&gt; Encoding
+toEncoding :: BillLine -&gt; Encoding
+$ctoJSONList :: [BillLine] -&gt; Value
+toJSONList :: [BillLine] -&gt; Value
+$ctoEncodingList :: [BillLine] -&gt; Encoding
+toEncodingList :: [BillLine] -&gt; Encoding
+$comitField :: BillLine -&gt; Bool
+omitField :: BillLine -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680330714"><span id="local-6989586621680330721"><span id="local-6989586621680330724"><span class="annot"><span class="annottext">Maybe BillLine
+Value -&gt; Parser [BillLine]
+Value -&gt; Parser BillLine
+(Value -&gt; Parser BillLine)
+-&gt; (Value -&gt; Parser [BillLine])
+-&gt; Maybe BillLine
+-&gt; FromJSON BillLine
+forall a.
+(Value -&gt; Parser a)
+-&gt; (Value -&gt; Parser [a]) -&gt; Maybe a -&gt; FromJSON a
+$cparseJSON :: Value -&gt; Parser BillLine
+parseJSON :: Value -&gt; Parser BillLine
+$cparseJSONList :: Value -&gt; Parser [BillLine]
+parseJSONList :: Value -&gt; Parser [BillLine]
+$comittedField :: Maybe BillLine
+omittedField :: Maybe BillLine
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">FromJSON</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">data</span><span> </span><span id="Bill"><span class="annot"><a href="Surypus.Types.Legacy.html#Bill"><span class="hs-identifier hs-var">Bill</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Bill"><span class="annot"><a href="Surypus.Types.Legacy.html#Bill"><span class="hs-identifier hs-var">Bill</span></a></span></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="billId"><span class="annot"><span class="annottext">Bill -&gt; Int64
+</span><a href="Surypus.Types.Legacy.html#billId"><span class="hs-identifier hs-var hs-var">billId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-39"></span><span>    </span><span id="number"><span class="annot"><span class="annottext">Bill -&gt; Text
+</span><a href="Surypus.Types.Legacy.html#number"><span class="hs-identifier hs-var hs-var">number</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-40"></span><span>    </span><span id="status"><span class="annot"><span class="annottext">Bill -&gt; Text
+</span><a href="Surypus.Types.Legacy.html#status"><span class="hs-identifier hs-var hs-var">status</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-41"></span><span>    </span><span id="amount"><span class="annot"><span class="annottext">Bill -&gt; Double
+</span><a href="Surypus.Types.Legacy.html#amount"><span class="hs-identifier hs-var hs-var">amount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-42"></span><span>    </span><span id="lines"><span class="annot"><span class="annottext">Bill -&gt; [BillLine]
+</span><a href="Surypus.Types.Legacy.html#lines"><span class="hs-identifier hs-var hs-var">lines</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Surypus.Types.Legacy.html#BillLine"><span class="hs-identifier hs-type">BillLine</span></a></span><span class="hs-special">]</span><span class="hs-special">,</span><span>
+</span><span id="line-43"></span><span>    </span><span id="createdAt"><span class="annot"><span class="annottext">Bill -&gt; UTCTime
+</span><a href="Surypus.Types.Legacy.html#createdAt"><span class="hs-identifier hs-var hs-var">createdAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680330828"><span id="local-6989586621680330841"><span id="local-6989586621680330845"><span class="annot"><span class="annottext">Int -&gt; Bill -&gt; ShowS
+[Bill] -&gt; ShowS
+Bill -&gt; String
+(Int -&gt; Bill -&gt; ShowS)
+-&gt; (Bill -&gt; String) -&gt; ([Bill] -&gt; ShowS) -&gt; Show Bill
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Bill -&gt; ShowS
+showsPrec :: Int -&gt; Bill -&gt; ShowS
+$cshow :: Bill -&gt; String
+show :: Bill -&gt; String
+$cshowList :: [Bill] -&gt; ShowS
+showList :: [Bill] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680330848"><span id="local-6989586621680330860"><span class="annot"><span class="annottext">Bill -&gt; Bill -&gt; Bool
+(Bill -&gt; Bill -&gt; Bool) -&gt; (Bill -&gt; Bill -&gt; Bool) -&gt; Eq Bill
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Bill -&gt; Bill -&gt; Bool
+== :: Bill -&gt; Bill -&gt; Bool
+$c/= :: Bill -&gt; Bill -&gt; Bool
+/= :: Bill -&gt; Bill -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680330864"><span id="local-6989586621680330866"><span class="annot"><span class="annottext">(forall x. Bill -&gt; Rep Bill x)
+-&gt; (forall x. Rep Bill x -&gt; Bill) -&gt; Generic Bill
+forall x. Rep Bill x -&gt; Bill
+forall x. Bill -&gt; Rep Bill x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Bill -&gt; Rep Bill x
+from :: forall x. Bill -&gt; Rep Bill x
+$cto :: forall x. Rep Bill x -&gt; Bill
+to :: forall x. Rep Bill x -&gt; Bill
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">anyclass</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680330869"><span id="local-6989586621680330876"><span id="local-6989586621680330879"><span id="local-6989586621680330882"><span id="local-6989586621680330885"><span class="annot"><span class="annottext">[Bill] -&gt; Value
+[Bill] -&gt; Encoding
+Bill -&gt; Bool
+Bill -&gt; Value
+Bill -&gt; Encoding
+(Bill -&gt; Value)
+-&gt; (Bill -&gt; Encoding)
+-&gt; ([Bill] -&gt; Value)
+-&gt; ([Bill] -&gt; Encoding)
+-&gt; (Bill -&gt; Bool)
+-&gt; ToJSON Bill
+forall a.
+(a -&gt; Value)
+-&gt; (a -&gt; Encoding)
+-&gt; ([a] -&gt; Value)
+-&gt; ([a] -&gt; Encoding)
+-&gt; (a -&gt; Bool)
+-&gt; ToJSON a
+$ctoJSON :: Bill -&gt; Value
+toJSON :: Bill -&gt; Value
+$ctoEncoding :: Bill -&gt; Encoding
+toEncoding :: Bill -&gt; Encoding
+$ctoJSONList :: [Bill] -&gt; Value
+toJSONList :: [Bill] -&gt; Value
+$ctoEncodingList :: [Bill] -&gt; Encoding
+toEncodingList :: [Bill] -&gt; Encoding
+$comitField :: Bill -&gt; Bool
+omitField :: Bill -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680331016"><span id="local-6989586621680331023"><span id="local-6989586621680331026"><span class="annot"><span class="annottext">Maybe Bill
+Value -&gt; Parser [Bill]
+Value -&gt; Parser Bill
+(Value -&gt; Parser Bill)
+-&gt; (Value -&gt; Parser [Bill]) -&gt; Maybe Bill -&gt; FromJSON Bill
+forall a.
+(Value -&gt; Parser a)
+-&gt; (Value -&gt; Parser [a]) -&gt; Maybe a -&gt; FromJSON a
+$cparseJSON :: Value -&gt; Parser Bill
+parseJSON :: Value -&gt; Parser Bill
+$cparseJSONList :: Value -&gt; Parser [Bill]
+parseJSONList :: Value -&gt; Parser [Bill]
+$comittedField :: Maybe Bill
+omittedField :: Maybe Bill
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">FromJSON</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span class="hs-keyword">data</span><span> </span><span id="PaymentStatus"><span class="annot"><a href="Surypus.Types.Legacy.html#PaymentStatus"><span class="hs-identifier hs-var">PaymentStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Pending"><span class="annot"><a href="Surypus.Types.Legacy.html#Pending"><span class="hs-identifier hs-var">Pending</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Confirmed"><span class="annot"><a href="Surypus.Types.Legacy.html#Confirmed"><span class="hs-identifier hs-var">Confirmed</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Settled"><span class="annot"><a href="Surypus.Types.Legacy.html#Settled"><span class="hs-identifier hs-var">Settled</span></a></span></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680331119"><span id="local-6989586621680331121"><span id="local-6989586621680331125"><span class="annot"><span class="annottext">Int -&gt; PaymentStatus -&gt; ShowS
+[PaymentStatus] -&gt; ShowS
+PaymentStatus -&gt; String
+(Int -&gt; PaymentStatus -&gt; ShowS)
+-&gt; (PaymentStatus -&gt; String)
+-&gt; ([PaymentStatus] -&gt; ShowS)
+-&gt; Show PaymentStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PaymentStatus -&gt; ShowS
+showsPrec :: Int -&gt; PaymentStatus -&gt; ShowS
+$cshow :: PaymentStatus -&gt; String
+show :: PaymentStatus -&gt; String
+$cshowList :: [PaymentStatus] -&gt; ShowS
+showList :: [PaymentStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680331128"><span id="local-6989586621680331133"><span class="annot"><span class="annottext">PaymentStatus -&gt; PaymentStatus -&gt; Bool
+(PaymentStatus -&gt; PaymentStatus -&gt; Bool)
+-&gt; (PaymentStatus -&gt; PaymentStatus -&gt; Bool) -&gt; Eq PaymentStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PaymentStatus -&gt; PaymentStatus -&gt; Bool
+== :: PaymentStatus -&gt; PaymentStatus -&gt; Bool
+$c/= :: PaymentStatus -&gt; PaymentStatus -&gt; Bool
+/= :: PaymentStatus -&gt; PaymentStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680331137"><span id="local-6989586621680331139"><span class="annot"><span class="annottext">(forall x. PaymentStatus -&gt; Rep PaymentStatus x)
+-&gt; (forall x. Rep PaymentStatus x -&gt; PaymentStatus)
+-&gt; Generic PaymentStatus
+forall x. Rep PaymentStatus x -&gt; PaymentStatus
+forall x. PaymentStatus -&gt; Rep PaymentStatus x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PaymentStatus -&gt; Rep PaymentStatus x
+from :: forall x. PaymentStatus -&gt; Rep PaymentStatus x
+$cto :: forall x. Rep PaymentStatus x -&gt; PaymentStatus
+to :: forall x. Rep PaymentStatus x -&gt; PaymentStatus
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">anyclass</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680331142"><span id="local-6989586621680331149"><span id="local-6989586621680331152"><span id="local-6989586621680331155"><span id="local-6989586621680331158"><span class="annot"><span class="annottext">[PaymentStatus] -&gt; Value
+[PaymentStatus] -&gt; Encoding
+PaymentStatus -&gt; Bool
+PaymentStatus -&gt; Value
+PaymentStatus -&gt; Encoding
+(PaymentStatus -&gt; Value)
+-&gt; (PaymentStatus -&gt; Encoding)
+-&gt; ([PaymentStatus] -&gt; Value)
+-&gt; ([PaymentStatus] -&gt; Encoding)
+-&gt; (PaymentStatus -&gt; Bool)
+-&gt; ToJSON PaymentStatus
+forall a.
+(a -&gt; Value)
+-&gt; (a -&gt; Encoding)
+-&gt; ([a] -&gt; Value)
+-&gt; ([a] -&gt; Encoding)
+-&gt; (a -&gt; Bool)
+-&gt; ToJSON a
+$ctoJSON :: PaymentStatus -&gt; Value
+toJSON :: PaymentStatus -&gt; Value
+$ctoEncoding :: PaymentStatus -&gt; Encoding
+toEncoding :: PaymentStatus -&gt; Encoding
+$ctoJSONList :: [PaymentStatus] -&gt; Value
+toJSONList :: [PaymentStatus] -&gt; Value
+$ctoEncodingList :: [PaymentStatus] -&gt; Encoding
+toEncodingList :: [PaymentStatus] -&gt; Encoding
+$comitField :: PaymentStatus -&gt; Bool
+omitField :: PaymentStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680331247"><span id="local-6989586621680331254"><span id="local-6989586621680331257"><span class="annot"><span class="annottext">Maybe PaymentStatus
+Value -&gt; Parser [PaymentStatus]
+Value -&gt; Parser PaymentStatus
+(Value -&gt; Parser PaymentStatus)
+-&gt; (Value -&gt; Parser [PaymentStatus])
+-&gt; Maybe PaymentStatus
+-&gt; FromJSON PaymentStatus
+forall a.
+(Value -&gt; Parser a)
+-&gt; (Value -&gt; Parser [a]) -&gt; Maybe a -&gt; FromJSON a
+$cparseJSON :: Value -&gt; Parser PaymentStatus
+parseJSON :: Value -&gt; Parser PaymentStatus
+$cparseJSONList :: Value -&gt; Parser [PaymentStatus]
+parseJSONList :: Value -&gt; Parser [PaymentStatus]
+$comittedField :: Maybe PaymentStatus
+omittedField :: Maybe PaymentStatus
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">FromJSON</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="hs-keyword">data</span><span> </span><span id="Payment"><span class="annot"><a href="Surypus.Types.Legacy.html#Payment"><span class="hs-identifier hs-var">Payment</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Payment"><span class="annot"><a href="Surypus.Types.Legacy.html#Payment"><span class="hs-identifier hs-var">Payment</span></a></span></span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="paymentId"><span class="annot"><span class="annottext">Payment -&gt; Int64
+</span><a href="Surypus.Types.Legacy.html#paymentId"><span class="hs-identifier hs-var hs-var">paymentId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-54"></span><span>    </span><span id="billId"><span class="annot"><span class="annottext">Payment -&gt; Int64
+</span><a href="Surypus.Types.Legacy.html#billId"><span class="hs-identifier hs-var hs-var">billId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-55"></span><span>    </span><span id="amount"><span class="annot"><span class="annottext">Payment -&gt; Double
+</span><a href="Surypus.Types.Legacy.html#amount"><span class="hs-identifier hs-var hs-var">amount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-56"></span><span>    </span><span id="status"><span class="annot"><span class="annottext">Payment -&gt; PaymentStatus
+</span><a href="Surypus.Types.Legacy.html#status"><span class="hs-identifier hs-var hs-var">status</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.Types.Legacy.html#PaymentStatus"><span class="hs-identifier hs-type">PaymentStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-57"></span><span>    </span><span id="createdAt"><span class="annot"><span class="annottext">Payment -&gt; UTCTime
+</span><a href="Surypus.Types.Legacy.html#createdAt"><span class="hs-identifier hs-var hs-var">createdAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680331335"><span id="local-6989586621680331343"><span id="local-6989586621680331347"><span class="annot"><span class="annottext">Int -&gt; Payment -&gt; ShowS
+[Payment] -&gt; ShowS
+Payment -&gt; String
+(Int -&gt; Payment -&gt; ShowS)
+-&gt; (Payment -&gt; String) -&gt; ([Payment] -&gt; ShowS) -&gt; Show Payment
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Payment -&gt; ShowS
+showsPrec :: Int -&gt; Payment -&gt; ShowS
+$cshow :: Payment -&gt; String
+show :: Payment -&gt; String
+$cshowList :: [Payment] -&gt; ShowS
+showList :: [Payment] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680331350"><span id="local-6989586621680331357"><span class="annot"><span class="annottext">Payment -&gt; Payment -&gt; Bool
+(Payment -&gt; Payment -&gt; Bool)
+-&gt; (Payment -&gt; Payment -&gt; Bool) -&gt; Eq Payment
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Payment -&gt; Payment -&gt; Bool
+== :: Payment -&gt; Payment -&gt; Bool
+$c/= :: Payment -&gt; Payment -&gt; Bool
+/= :: Payment -&gt; Payment -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680331361"><span id="local-6989586621680331363"><span class="annot"><span class="annottext">(forall x. Payment -&gt; Rep Payment x)
+-&gt; (forall x. Rep Payment x -&gt; Payment) -&gt; Generic Payment
+forall x. Rep Payment x -&gt; Payment
+forall x. Payment -&gt; Rep Payment x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Payment -&gt; Rep Payment x
+from :: forall x. Payment -&gt; Rep Payment x
+$cto :: forall x. Rep Payment x -&gt; Payment
+to :: forall x. Rep Payment x -&gt; Payment
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">anyclass</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680331366"><span id="local-6989586621680331373"><span id="local-6989586621680331376"><span id="local-6989586621680331379"><span id="local-6989586621680331382"><span class="annot"><span class="annottext">[Payment] -&gt; Value
+[Payment] -&gt; Encoding
+Payment -&gt; Bool
+Payment -&gt; Value
+Payment -&gt; Encoding
+(Payment -&gt; Value)
+-&gt; (Payment -&gt; Encoding)
+-&gt; ([Payment] -&gt; Value)
+-&gt; ([Payment] -&gt; Encoding)
+-&gt; (Payment -&gt; Bool)
+-&gt; ToJSON Payment
+forall a.
+(a -&gt; Value)
+-&gt; (a -&gt; Encoding)
+-&gt; ([a] -&gt; Value)
+-&gt; ([a] -&gt; Encoding)
+-&gt; (a -&gt; Bool)
+-&gt; ToJSON a
+$ctoJSON :: Payment -&gt; Value
+toJSON :: Payment -&gt; Value
+$ctoEncoding :: Payment -&gt; Encoding
+toEncoding :: Payment -&gt; Encoding
+$ctoJSONList :: [Payment] -&gt; Value
+toJSONList :: [Payment] -&gt; Value
+$ctoEncodingList :: [Payment] -&gt; Encoding
+toEncodingList :: [Payment] -&gt; Encoding
+$comitField :: Payment -&gt; Bool
+omitField :: Payment -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680331493"><span id="local-6989586621680331500"><span id="local-6989586621680331503"><span class="annot"><span class="annottext">Maybe Payment
+Value -&gt; Parser [Payment]
+Value -&gt; Parser Payment
+(Value -&gt; Parser Payment)
+-&gt; (Value -&gt; Parser [Payment]) -&gt; Maybe Payment -&gt; FromJSON Payment
+forall a.
+(Value -&gt; Parser a)
+-&gt; (Value -&gt; Parser [a]) -&gt; Maybe a -&gt; FromJSON a
+$cparseJSON :: Value -&gt; Parser Payment
+parseJSON :: Value -&gt; Parser Payment
+$cparseJSONList :: Value -&gt; Parser [Payment]
+parseJSONList :: Value -&gt; Parser [Payment]
+$comittedField :: Maybe Payment
+omittedField :: Maybe Payment
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">FromJSON</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span class="hs-keyword">data</span><span> </span><span id="DashboardData"><span class="annot"><a href="Surypus.Types.Legacy.html#DashboardData"><span class="hs-identifier hs-var">DashboardData</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="DashboardData"><span class="annot"><a href="Surypus.Types.Legacy.html#DashboardData"><span class="hs-identifier hs-var">DashboardData</span></a></span></span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="revenue"><span class="annot"><span class="annottext">DashboardData -&gt; Double
+</span><a href="Surypus.Types.Legacy.html#revenue"><span class="hs-identifier hs-var hs-var">revenue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-64"></span><span>    </span><span id="stockValue"><span class="annot"><span class="annottext">DashboardData -&gt; Double
+</span><a href="Surypus.Types.Legacy.html#stockValue"><span class="hs-identifier hs-var hs-var">stockValue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-65"></span><span>    </span><span id="pendingPayments"><span class="annot"><span class="annottext">DashboardData -&gt; Int
+</span><a href="Surypus.Types.Legacy.html#pendingPayments"><span class="hs-identifier hs-var hs-var">pendingPayments</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680331584"><span id="local-6989586621680331590"><span id="local-6989586621680331594"><span class="annot"><span class="annottext">Int -&gt; DashboardData -&gt; ShowS
+[DashboardData] -&gt; ShowS
+DashboardData -&gt; String
+(Int -&gt; DashboardData -&gt; ShowS)
+-&gt; (DashboardData -&gt; String)
+-&gt; ([DashboardData] -&gt; ShowS)
+-&gt; Show DashboardData
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DashboardData -&gt; ShowS
+showsPrec :: Int -&gt; DashboardData -&gt; ShowS
+$cshow :: DashboardData -&gt; String
+show :: DashboardData -&gt; String
+$cshowList :: [DashboardData] -&gt; ShowS
+showList :: [DashboardData] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680331597"><span id="local-6989586621680331602"><span class="annot"><span class="annottext">DashboardData -&gt; DashboardData -&gt; Bool
+(DashboardData -&gt; DashboardData -&gt; Bool)
+-&gt; (DashboardData -&gt; DashboardData -&gt; Bool) -&gt; Eq DashboardData
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: DashboardData -&gt; DashboardData -&gt; Bool
+== :: DashboardData -&gt; DashboardData -&gt; Bool
+$c/= :: DashboardData -&gt; DashboardData -&gt; Bool
+/= :: DashboardData -&gt; DashboardData -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680331606"><span id="local-6989586621680331608"><span class="annot"><span class="annottext">(forall x. DashboardData -&gt; Rep DashboardData x)
+-&gt; (forall x. Rep DashboardData x -&gt; DashboardData)
+-&gt; Generic DashboardData
+forall x. Rep DashboardData x -&gt; DashboardData
+forall x. DashboardData -&gt; Rep DashboardData x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. DashboardData -&gt; Rep DashboardData x
+from :: forall x. DashboardData -&gt; Rep DashboardData x
+$cto :: forall x. Rep DashboardData x -&gt; DashboardData
+to :: forall x. Rep DashboardData x -&gt; DashboardData
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">anyclass</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680331611"><span id="local-6989586621680331618"><span id="local-6989586621680331621"><span id="local-6989586621680331624"><span id="local-6989586621680331627"><span class="annot"><span class="annottext">[DashboardData] -&gt; Value
+[DashboardData] -&gt; Encoding
+DashboardData -&gt; Bool
+DashboardData -&gt; Value
+DashboardData -&gt; Encoding
+(DashboardData -&gt; Value)
+-&gt; (DashboardData -&gt; Encoding)
+-&gt; ([DashboardData] -&gt; Value)
+-&gt; ([DashboardData] -&gt; Encoding)
+-&gt; (DashboardData -&gt; Bool)
+-&gt; ToJSON DashboardData
+forall a.
+(a -&gt; Value)
+-&gt; (a -&gt; Encoding)
+-&gt; ([a] -&gt; Value)
+-&gt; ([a] -&gt; Encoding)
+-&gt; (a -&gt; Bool)
+-&gt; ToJSON a
+$ctoJSON :: DashboardData -&gt; Value
+toJSON :: DashboardData -&gt; Value
+$ctoEncoding :: DashboardData -&gt; Encoding
+toEncoding :: DashboardData -&gt; Encoding
+$ctoJSONList :: [DashboardData] -&gt; Value
+toJSONList :: [DashboardData] -&gt; Value
+$ctoEncodingList :: [DashboardData] -&gt; Encoding
+toEncodingList :: [DashboardData] -&gt; Encoding
+$comitField :: DashboardData -&gt; Bool
+omitField :: DashboardData -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680331704"><span id="local-6989586621680331711"><span id="local-6989586621680331714"><span class="annot"><span class="annottext">Maybe DashboardData
+Value -&gt; Parser [DashboardData]
+Value -&gt; Parser DashboardData
+(Value -&gt; Parser DashboardData)
+-&gt; (Value -&gt; Parser [DashboardData])
+-&gt; Maybe DashboardData
+-&gt; FromJSON DashboardData
+forall a.
+(Value -&gt; Parser a)
+-&gt; (Value -&gt; Parser [a]) -&gt; Maybe a -&gt; FromJSON a
+$cparseJSON :: Value -&gt; Parser DashboardData
+parseJSON :: Value -&gt; Parser DashboardData
+$cparseJSONList :: Value -&gt; Parser [DashboardData]
+parseJSONList :: Value -&gt; Parser [DashboardData]
+$comittedField :: Maybe DashboardData
+omittedField :: Maybe DashboardData
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">FromJSON</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span></pre></body></html>

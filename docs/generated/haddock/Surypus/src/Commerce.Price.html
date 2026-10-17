@@ -1,0 +1,620 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Price Module - Pricing and discounts</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Commerce.Price.html"><span class="hs-identifier">Commerce.Price</span></a></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.List.html"><span class="hs-identifier">Data.List</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#minimumBy"><span class="hs-identifier">minimumBy</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-10"></span><span class="hs-comment">-- PRICE TYPES</span><span>
+</span><span id="line-11"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">data</span><span> </span><span id="PriceType"><span class="annot"><a href="Commerce.Price.html#PriceType"><span class="hs-identifier hs-var">PriceType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PTRetail"><span class="annot"><a href="Commerce.Price.html#PTRetail"><span class="hs-identifier hs-var">PTRetail</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PTWholesale"><span class="annot"><a href="Commerce.Price.html#PTWholesale"><span class="hs-identifier hs-var">PTWholesale</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PTCost"><span class="annot"><a href="Commerce.Price.html#PTCost"><span class="hs-identifier hs-var">PTCost</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PTPurchase"><span class="annot"><a href="Commerce.Price.html#PTPurchase"><span class="hs-identifier hs-var">PTPurchase</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PTTransfer"><span class="annot"><a href="Commerce.Price.html#PTTransfer"><span class="hs-identifier hs-var">PTTransfer</span></a></span></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680200015"><span id="local-6989586621680200017"><span id="local-6989586621680200021"><span class="annot"><span class="annottext">Int -&gt; PriceType -&gt; ShowS
+[PriceType] -&gt; ShowS
+PriceType -&gt; String
+(Int -&gt; PriceType -&gt; ShowS)
+-&gt; (PriceType -&gt; String)
+-&gt; ([PriceType] -&gt; ShowS)
+-&gt; Show PriceType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PriceType -&gt; ShowS
+showsPrec :: Int -&gt; PriceType -&gt; ShowS
+$cshow :: PriceType -&gt; String
+show :: PriceType -&gt; String
+$cshowList :: [PriceType] -&gt; ShowS
+showList :: [PriceType] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680200026"><span id="local-6989586621680200031"><span class="annot"><span class="annottext">PriceType -&gt; PriceType -&gt; Bool
+(PriceType -&gt; PriceType -&gt; Bool)
+-&gt; (PriceType -&gt; PriceType -&gt; Bool) -&gt; Eq PriceType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PriceType -&gt; PriceType -&gt; Bool
+== :: PriceType -&gt; PriceType -&gt; Bool
+$c/= :: PriceType -&gt; PriceType -&gt; Bool
+/= :: PriceType -&gt; PriceType -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">data</span><span> </span><span id="Currency"><span class="annot"><a href="Commerce.Price.html#Currency"><span class="hs-identifier hs-var">Currency</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Currency"><span class="annot"><a href="Commerce.Price.html#Currency"><span class="hs-identifier hs-var">Currency</span></a></span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="curId"><span class="annot"><span class="annottext">Currency -&gt; Int64
+</span><a href="Commerce.Price.html#curId"><span class="hs-identifier hs-var hs-var">curId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>    </span><span id="curCode"><span class="annot"><span class="annottext">Currency -&gt; Text
+</span><a href="Commerce.Price.html#curCode"><span class="hs-identifier hs-var hs-var">curCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span id="curName"><span class="annot"><span class="annottext">Currency -&gt; Text
+</span><a href="Commerce.Price.html#curName"><span class="hs-identifier hs-var hs-var">curName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span id="curSymbol"><span class="annot"><span class="annottext">Currency -&gt; Text
+</span><a href="Commerce.Price.html#curSymbol"><span class="hs-identifier hs-var hs-var">curSymbol</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="curRateToBase"><span class="annot"><span class="annottext">Currency -&gt; Double
+</span><a href="Commerce.Price.html#curRateToBase"><span class="hs-identifier hs-var hs-var">curRateToBase</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="curIsBase"><span class="annot"><span class="annottext">Currency -&gt; Bool
+</span><a href="Commerce.Price.html#curIsBase"><span class="hs-identifier hs-var hs-var">curIsBase</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="curFlags"><span class="annot"><span class="annottext">Currency -&gt; Int
+</span><a href="Commerce.Price.html#curFlags"><span class="hs-identifier hs-var hs-var">curFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680200044"><span id="local-6989586621680200060"><span id="local-6989586621680200064"><span class="annot"><span class="annottext">Int -&gt; Currency -&gt; ShowS
+[Currency] -&gt; ShowS
+Currency -&gt; String
+(Int -&gt; Currency -&gt; ShowS)
+-&gt; (Currency -&gt; String) -&gt; ([Currency] -&gt; ShowS) -&gt; Show Currency
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Currency -&gt; ShowS
+showsPrec :: Int -&gt; Currency -&gt; ShowS
+$cshow :: Currency -&gt; String
+show :: Currency -&gt; String
+$cshowList :: [Currency] -&gt; ShowS
+showList :: [Currency] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680200067"><span id="local-6989586621680200080"><span class="annot"><span class="annottext">Currency -&gt; Currency -&gt; Bool
+(Currency -&gt; Currency -&gt; Bool)
+-&gt; (Currency -&gt; Currency -&gt; Bool) -&gt; Eq Currency
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Currency -&gt; Currency -&gt; Bool
+== :: Currency -&gt; Currency -&gt; Bool
+$c/= :: Currency -&gt; Currency -&gt; Bool
+/= :: Currency -&gt; Currency -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="annot"><span class="hs-comment">-- | Price list</span></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">data</span><span> </span><span id="PriceList"><span class="annot"><a href="Commerce.Price.html#PriceList"><span class="hs-identifier hs-var">PriceList</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PriceList"><span class="annot"><a href="Commerce.Price.html#PriceList"><span class="hs-identifier hs-var">PriceList</span></a></span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="plId"><span class="annot"><span class="annottext">PriceList -&gt; Int64
+</span><a href="Commerce.Price.html#plId"><span class="hs-identifier hs-var hs-var">plId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-30"></span><span>    </span><span id="plCode"><span class="annot"><span class="annottext">PriceList -&gt; Text
+</span><a href="Commerce.Price.html#plCode"><span class="hs-identifier hs-var hs-var">plCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-31"></span><span>    </span><span id="plName"><span class="annot"><span class="annottext">PriceList -&gt; Text
+</span><a href="Commerce.Price.html#plName"><span class="hs-identifier hs-var hs-var">plName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-32"></span><span>    </span><span id="plCurrencyId"><span class="annot"><span class="annottext">PriceList -&gt; Int64
+</span><a href="Commerce.Price.html#plCurrencyId"><span class="hs-identifier hs-var hs-var">plCurrencyId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-33"></span><span>    </span><span id="plValidFrom"><span class="annot"><span class="annottext">PriceList -&gt; Day
+</span><a href="Commerce.Price.html#plValidFrom"><span class="hs-identifier hs-var hs-var">plValidFrom</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-34"></span><span>    </span><span id="plValidTo"><span class="annot"><span class="annottext">PriceList -&gt; Maybe Day
+</span><a href="Commerce.Price.html#plValidTo"><span class="hs-identifier hs-var hs-var">plValidTo</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>    </span><span id="plFlags"><span class="annot"><span class="annottext">PriceList -&gt; PriceListFlags
+</span><a href="Commerce.Price.html#plFlags"><span class="hs-identifier hs-var hs-var">plFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Price.html#PriceListFlags"><span class="hs-identifier hs-type">PriceListFlags</span></a></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680200092"><span id="local-6989586621680200105"><span id="local-6989586621680200109"><span class="annot"><span class="annottext">Int -&gt; PriceList -&gt; ShowS
+[PriceList] -&gt; ShowS
+PriceList -&gt; String
+(Int -&gt; PriceList -&gt; ShowS)
+-&gt; (PriceList -&gt; String)
+-&gt; ([PriceList] -&gt; ShowS)
+-&gt; Show PriceList
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PriceList -&gt; ShowS
+showsPrec :: Int -&gt; PriceList -&gt; ShowS
+$cshow :: PriceList -&gt; String
+show :: PriceList -&gt; String
+$cshowList :: [PriceList] -&gt; ShowS
+showList :: [PriceList] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680200112"><span id="local-6989586621680200124"><span class="annot"><span class="annottext">PriceList -&gt; PriceList -&gt; Bool
+(PriceList -&gt; PriceList -&gt; Bool)
+-&gt; (PriceList -&gt; PriceList -&gt; Bool) -&gt; Eq PriceList
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PriceList -&gt; PriceList -&gt; Bool
+== :: PriceList -&gt; PriceList -&gt; Bool
+$c/= :: PriceList -&gt; PriceList -&gt; Bool
+/= :: PriceList -&gt; PriceList -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="hs-keyword">data</span><span> </span><span id="PriceListFlags"><span class="annot"><a href="Commerce.Price.html#PriceListFlags"><span class="hs-identifier hs-var">PriceListFlags</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PLFDisableAutoQuote"><span class="annot"><a href="Commerce.Price.html#PLFDisableAutoQuote"><span class="hs-identifier hs-var">PLFDisableAutoQuote</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PLFRoundDiscount"><span class="annot"><a href="Commerce.Price.html#PLFRoundDiscount"><span class="hs-identifier hs-var">PLFRoundDiscount</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PLFDiscountExclude"><span class="annot"><a href="Commerce.Price.html#PLFDiscountExclude"><span class="hs-identifier hs-var">PLFDiscountExclude</span></a></span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680200131"><span id="local-6989586621680200133"><span id="local-6989586621680200136"><span class="annot"><span class="annottext">Int -&gt; PriceListFlags -&gt; ShowS
+[PriceListFlags] -&gt; ShowS
+PriceListFlags -&gt; String
+(Int -&gt; PriceListFlags -&gt; ShowS)
+-&gt; (PriceListFlags -&gt; String)
+-&gt; ([PriceListFlags] -&gt; ShowS)
+-&gt; Show PriceListFlags
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PriceListFlags -&gt; ShowS
+showsPrec :: Int -&gt; PriceListFlags -&gt; ShowS
+$cshow :: PriceListFlags -&gt; String
+show :: PriceListFlags -&gt; String
+$cshowList :: [PriceListFlags] -&gt; ShowS
+showList :: [PriceListFlags] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680200139"><span id="local-6989586621680200143"><span class="annot"><span class="annottext">PriceListFlags -&gt; PriceListFlags -&gt; Bool
+(PriceListFlags -&gt; PriceListFlags -&gt; Bool)
+-&gt; (PriceListFlags -&gt; PriceListFlags -&gt; Bool) -&gt; Eq PriceListFlags
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PriceListFlags -&gt; PriceListFlags -&gt; Bool
+== :: PriceListFlags -&gt; PriceListFlags -&gt; Bool
+$c/= :: PriceListFlags -&gt; PriceListFlags -&gt; Bool
+/= :: PriceListFlags -&gt; PriceListFlags -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="annot"><span class="hs-comment">-- | Quotation (price for goods)</span></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">data</span><span> </span><span id="Quot"><span class="annot"><a href="Commerce.Price.html#Quot"><span class="hs-identifier hs-var">Quot</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Quot"><span class="annot"><a href="Commerce.Price.html#Quot"><span class="hs-identifier hs-var">Quot</span></a></span></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="qId"><span class="annot"><span class="annottext">Quot -&gt; Int64
+</span><a href="Commerce.Price.html#qId"><span class="hs-identifier hs-var hs-var">qId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-45"></span><span>    </span><span id="qGoodsId"><span class="annot"><span class="annottext">Quot -&gt; Int64
+</span><a href="Commerce.Price.html#qGoodsId"><span class="hs-identifier hs-var hs-var">qGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-46"></span><span>    </span><span id="qPriceListId"><span class="annot"><span class="annottext">Quot -&gt; Int64
+</span><a href="Commerce.Price.html#qPriceListId"><span class="hs-identifier hs-var hs-var">qPriceListId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-47"></span><span>    </span><span id="qPriceTypeId"><span class="annot"><span class="annottext">Quot -&gt; Int64
+</span><a href="Commerce.Price.html#qPriceTypeId"><span class="hs-identifier hs-var hs-var">qPriceTypeId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-48"></span><span>    </span><span id="qPrice"><span class="annot"><span class="annottext">Quot -&gt; Double
+</span><a href="Commerce.Price.html#qPrice"><span class="hs-identifier hs-var hs-var">qPrice</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-49"></span><span>    </span><span id="qMinQtty"><span class="annot"><span class="annottext">Quot -&gt; Double
+</span><a href="Commerce.Price.html#qMinQtty"><span class="hs-identifier hs-var hs-var">qMinQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-50"></span><span>    </span><span id="qCurrencyId"><span class="annot"><span class="annottext">Quot -&gt; Int64
+</span><a href="Commerce.Price.html#qCurrencyId"><span class="hs-identifier hs-var hs-var">qCurrencyId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-51"></span><span>    </span><span id="qDateFrom"><span class="annot"><span class="annottext">Quot -&gt; Day
+</span><a href="Commerce.Price.html#qDateFrom"><span class="hs-identifier hs-var hs-var">qDateFrom</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-52"></span><span>    </span><span id="qDateTo"><span class="annot"><span class="annottext">Quot -&gt; Maybe Day
+</span><a href="Commerce.Price.html#qDateTo"><span class="hs-identifier hs-var hs-var">qDateTo</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-53"></span><span>    </span><span id="qFlags"><span class="annot"><span class="annottext">Quot -&gt; QuotFlags
+</span><a href="Commerce.Price.html#qFlags"><span class="hs-identifier hs-var hs-var">qFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Price.html#QuotFlags"><span class="hs-identifier hs-type">QuotFlags</span></a></span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-55"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680200157"><span id="local-6989586621680200171"><span id="local-6989586621680200175"><span class="annot"><span class="annottext">Int -&gt; Quot -&gt; ShowS
+[Quot] -&gt; ShowS
+Quot -&gt; String
+(Int -&gt; Quot -&gt; ShowS)
+-&gt; (Quot -&gt; String) -&gt; ([Quot] -&gt; ShowS) -&gt; Show Quot
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Quot -&gt; ShowS
+showsPrec :: Int -&gt; Quot -&gt; ShowS
+$cshow :: Quot -&gt; String
+show :: Quot -&gt; String
+$cshowList :: [Quot] -&gt; ShowS
+showList :: [Quot] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680200178"><span id="local-6989586621680200191"><span class="annot"><span class="annottext">Quot -&gt; Quot -&gt; Bool
+(Quot -&gt; Quot -&gt; Bool) -&gt; (Quot -&gt; Quot -&gt; Bool) -&gt; Eq Quot
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Quot -&gt; Quot -&gt; Bool
+== :: Quot -&gt; Quot -&gt; Bool
+$c/= :: Quot -&gt; Quot -&gt; Bool
+/= :: Quot -&gt; Quot -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span>
+</span><span id="line-57"></span><span class="hs-keyword">data</span><span> </span><span id="QuotFlags"><span class="annot"><a href="Commerce.Price.html#QuotFlags"><span class="hs-identifier hs-var">QuotFlags</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="QFAutoCalc"><span class="annot"><a href="Commerce.Price.html#QFAutoCalc"><span class="hs-identifier hs-var">QFAutoCalc</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="QFLastPrice"><span class="annot"><a href="Commerce.Price.html#QFLastPrice"><span class="hs-identifier hs-var">QFLastPrice</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="QFManual"><span class="annot"><a href="Commerce.Price.html#QFManual"><span class="hs-identifier hs-var">QFManual</span></a></span></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680200198"><span id="local-6989586621680200200"><span id="local-6989586621680200203"><span class="annot"><span class="annottext">Int -&gt; QuotFlags -&gt; ShowS
+[QuotFlags] -&gt; ShowS
+QuotFlags -&gt; String
+(Int -&gt; QuotFlags -&gt; ShowS)
+-&gt; (QuotFlags -&gt; String)
+-&gt; ([QuotFlags] -&gt; ShowS)
+-&gt; Show QuotFlags
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; QuotFlags -&gt; ShowS
+showsPrec :: Int -&gt; QuotFlags -&gt; ShowS
+$cshow :: QuotFlags -&gt; String
+show :: QuotFlags -&gt; String
+$cshowList :: [QuotFlags] -&gt; ShowS
+showList :: [QuotFlags] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680200206"><span id="local-6989586621680200210"><span class="annot"><span class="annottext">QuotFlags -&gt; QuotFlags -&gt; Bool
+(QuotFlags -&gt; QuotFlags -&gt; Bool)
+-&gt; (QuotFlags -&gt; QuotFlags -&gt; Bool) -&gt; Eq QuotFlags
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: QuotFlags -&gt; QuotFlags -&gt; Bool
+== :: QuotFlags -&gt; QuotFlags -&gt; Bool
+$c/= :: QuotFlags -&gt; QuotFlags -&gt; Bool
+/= :: QuotFlags -&gt; QuotFlags -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-61"></span><span class="hs-comment">-- DISCOUNT TYPES</span><span>
+</span><span id="line-62"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="hs-keyword">data</span><span> </span><span id="Discount"><span class="annot"><a href="Commerce.Price.html#Discount"><span class="hs-identifier hs-var">Discount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Discount"><span class="annot"><a href="Commerce.Price.html#Discount"><span class="hs-identifier hs-var">Discount</span></a></span></span><span>
+</span><span id="line-65"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="dId"><span class="annot"><span class="annottext">Discount -&gt; Int64
+</span><a href="Commerce.Price.html#dId"><span class="hs-identifier hs-var hs-var">dId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-66"></span><span>    </span><span id="dCode"><span class="annot"><span class="annottext">Discount -&gt; Text
+</span><a href="Commerce.Price.html#dCode"><span class="hs-identifier hs-var hs-var">dCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-67"></span><span>    </span><span id="dName"><span class="annot"><span class="annottext">Discount -&gt; Text
+</span><a href="Commerce.Price.html#dName"><span class="hs-identifier hs-var hs-var">dName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-68"></span><span>    </span><span id="dValue"><span class="annot"><span class="annottext">Discount -&gt; Double
+</span><a href="Commerce.Price.html#dValue"><span class="hs-identifier hs-var hs-var">dValue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-69"></span><span>    </span><span id="dPercent"><span class="annot"><span class="annottext">Discount -&gt; Bool
+</span><a href="Commerce.Price.html#dPercent"><span class="hs-identifier hs-var hs-var">dPercent</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- True = %, False = absolute</span><span>
+</span><span id="line-70"></span><span>    </span><span id="dMinSum"><span class="annot"><span class="annottext">Discount -&gt; Double
+</span><a href="Commerce.Price.html#dMinSum"><span class="hs-identifier hs-var hs-var">dMinSum</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-71"></span><span>    </span><span id="dMaxDiscount"><span class="annot"><span class="annottext">Discount -&gt; Double
+</span><a href="Commerce.Price.html#dMaxDiscount"><span class="hs-identifier hs-var hs-var">dMaxDiscount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-72"></span><span>    </span><span id="dDateFrom"><span class="annot"><span class="annottext">Discount -&gt; Day
+</span><a href="Commerce.Price.html#dDateFrom"><span class="hs-identifier hs-var hs-var">dDateFrom</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-73"></span><span>    </span><span id="dDateTo"><span class="annot"><span class="annottext">Discount -&gt; Maybe Day
+</span><a href="Commerce.Price.html#dDateTo"><span class="hs-identifier hs-var hs-var">dDateTo</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-74"></span><span>    </span><span id="dFlags"><span class="annot"><span class="annottext">Discount -&gt; Int
+</span><a href="Commerce.Price.html#dFlags"><span class="hs-identifier hs-var hs-var">dFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680200224"><span id="local-6989586621680200237"><span id="local-6989586621680200241"><span class="annot"><span class="annottext">Int -&gt; Discount -&gt; ShowS
+[Discount] -&gt; ShowS
+Discount -&gt; String
+(Int -&gt; Discount -&gt; ShowS)
+-&gt; (Discount -&gt; String) -&gt; ([Discount] -&gt; ShowS) -&gt; Show Discount
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Discount -&gt; ShowS
+showsPrec :: Int -&gt; Discount -&gt; ShowS
+$cshow :: Discount -&gt; String
+show :: Discount -&gt; String
+$cshowList :: [Discount] -&gt; ShowS
+showList :: [Discount] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680200244"><span id="local-6989586621680200256"><span class="annot"><span class="annottext">Discount -&gt; Discount -&gt; Bool
+(Discount -&gt; Discount -&gt; Bool)
+-&gt; (Discount -&gt; Discount -&gt; Bool) -&gt; Eq Discount
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Discount -&gt; Discount -&gt; Bool
+== :: Discount -&gt; Discount -&gt; Bool
+$c/= :: Discount -&gt; Discount -&gt; Bool
+/= :: Discount -&gt; Discount -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span>
+</span><span id="line-78"></span><span class="hs-keyword">data</span><span> </span><span id="DiscountCard"><span class="annot"><a href="Commerce.Price.html#DiscountCard"><span class="hs-identifier hs-var">DiscountCard</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="DiscountCard"><span class="annot"><a href="Commerce.Price.html#DiscountCard"><span class="hs-identifier hs-var">DiscountCard</span></a></span></span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="dcId"><span class="annot"><span class="annottext">DiscountCard -&gt; Int64
+</span><a href="Commerce.Price.html#dcId"><span class="hs-identifier hs-var hs-var">dcId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-80"></span><span>    </span><span id="dcCode"><span class="annot"><span class="annottext">DiscountCard -&gt; Text
+</span><a href="Commerce.Price.html#dcCode"><span class="hs-identifier hs-var hs-var">dcCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-81"></span><span>    </span><span id="dcPersonId"><span class="annot"><span class="annottext">DiscountCard -&gt; Int64
+</span><a href="Commerce.Price.html#dcPersonId"><span class="hs-identifier hs-var hs-var">dcPersonId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-82"></span><span>    </span><span id="dcPercent"><span class="annot"><span class="annottext">DiscountCard -&gt; Double
+</span><a href="Commerce.Price.html#dcPercent"><span class="hs-identifier hs-var hs-var">dcPercent</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-83"></span><span>    </span><span id="dcExpires"><span class="annot"><span class="annottext">DiscountCard -&gt; Maybe Day
+</span><a href="Commerce.Price.html#dcExpires"><span class="hs-identifier hs-var hs-var">dcExpires</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-84"></span><span>    </span><span id="dcFlags"><span class="annot"><span class="annottext">DiscountCard -&gt; Int
+</span><a href="Commerce.Price.html#dcFlags"><span class="hs-identifier hs-var hs-var">dcFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-86"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680200267"><span id="local-6989586621680200277"><span id="local-6989586621680200281"><span class="annot"><span class="annottext">Int -&gt; DiscountCard -&gt; ShowS
+[DiscountCard] -&gt; ShowS
+DiscountCard -&gt; String
+(Int -&gt; DiscountCard -&gt; ShowS)
+-&gt; (DiscountCard -&gt; String)
+-&gt; ([DiscountCard] -&gt; ShowS)
+-&gt; Show DiscountCard
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DiscountCard -&gt; ShowS
+showsPrec :: Int -&gt; DiscountCard -&gt; ShowS
+$cshow :: DiscountCard -&gt; String
+show :: DiscountCard -&gt; String
+$cshowList :: [DiscountCard] -&gt; ShowS
+showList :: [DiscountCard] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680200284"><span id="local-6989586621680200293"><span class="annot"><span class="annottext">DiscountCard -&gt; DiscountCard -&gt; Bool
+(DiscountCard -&gt; DiscountCard -&gt; Bool)
+-&gt; (DiscountCard -&gt; DiscountCard -&gt; Bool) -&gt; Eq DiscountCard
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: DiscountCard -&gt; DiscountCard -&gt; Bool
+== :: DiscountCard -&gt; DiscountCard -&gt; Bool
+$c/= :: DiscountCard -&gt; DiscountCard -&gt; Bool
+/= :: DiscountCard -&gt; DiscountCard -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-89"></span><span class="hs-comment">-- PRICE CALCULATION FUNCTIONS</span><span>
+</span><span id="line-90"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-91"></span><span>
+</span><span id="line-92"></span><span class="hs-comment">-- | Get price with discount</span><span>
+</span><span id="line-93"></span><span class="hs-comment">--</span><span>
+</span><span id="line-94"></span><span class="hs-comment">-- The percentage branch is clamped at zero exactly like the absolute branch:</span><span>
+</span><span id="line-95"></span><span class="hs-comment">-- a discount can never push a price below zero. The module's own</span><span>
+</span><span id="line-96"></span><span class="hs-comment">-- 'validateDiscount' rejects a percentage above 100, so clamping keeps the</span><span>
+</span><span id="line-97"></span><span class="hs-comment">-- function total for callers that apply a 'Discount' without validating it</span><span>
+</span><span id="line-98"></span><span class="hs-comment">-- first (as 'calcFinalPrice' does).</span><span>
+</span><span id="line-99"></span><span class="annot"><a href="Commerce.Price.html#applyDiscount"><span class="hs-identifier hs-type">applyDiscount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Commerce.Price.html#Discount"><span class="hs-identifier hs-type">Discount</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-100"></span><span id="applyDiscount"><span class="annot"><span class="annottext">applyDiscount :: Double -&gt; Discount -&gt; Double
+</span><a href="Commerce.Price.html#applyDiscount"><span class="hs-identifier hs-var hs-var">applyDiscount</span></a></span></span><span> </span><span id="local-6989586621680200299"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200299"><span class="hs-identifier hs-var">price</span></a></span></span><span> </span><span id="local-6989586621680200300"><span class="annot"><span class="annottext">Discount
+</span><a href="#local-6989586621680200300"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-101"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Discount -&gt; Bool
+</span><a href="Commerce.Price.html#dPercent"><span class="hs-identifier hs-var">dPercent</span></a></span><span> </span><span class="annot"><span class="annottext">Discount
+</span><a href="#local-6989586621680200300"><span class="hs-identifier hs-var">d</span></a></span><span>
+</span><span id="line-102"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#max"><span class="hs-identifier hs-var">max</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200299"><span class="hs-identifier hs-var">price</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-var">-</span></a></span><span> </span><span class="annot"><span class="annottext">Discount -&gt; Double
+</span><a href="Commerce.Price.html#dValue"><span class="hs-identifier hs-var">dValue</span></a></span><span> </span><span class="annot"><span class="annottext">Discount
+</span><a href="#local-6989586621680200300"><span class="hs-identifier hs-var">d</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">100</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-103"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#max"><span class="hs-identifier hs-var">max</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200299"><span class="hs-identifier hs-var">price</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-var">-</span></a></span><span> </span><span class="annot"><span class="annottext">Discount -&gt; Double
+</span><a href="Commerce.Price.html#dValue"><span class="hs-identifier hs-var">dValue</span></a></span><span> </span><span class="annot"><span class="annottext">Discount
+</span><a href="#local-6989586621680200300"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-104"></span><span>
+</span><span id="line-105"></span><span class="annot"><span class="hs-comment">-- | Calculate discount percent from original price</span></span><span>
+</span><span id="line-106"></span><span class="annot"><a href="Commerce.Price.html#calcDiscountPercent"><span class="hs-identifier hs-type">calcDiscountPercent</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-107"></span><span id="calcDiscountPercent"><span class="annot"><span class="annottext">calcDiscountPercent :: Double -&gt; Double -&gt; Double
+</span><a href="Commerce.Price.html#calcDiscountPercent"><span class="hs-identifier hs-var hs-var">calcDiscountPercent</span></a></span></span><span> </span><span id="local-6989586621680200305"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200305"><span class="hs-identifier hs-var">original</span></a></span></span><span> </span><span id="local-6989586621680200306"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200306"><span class="hs-identifier hs-var">discounted</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-108"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200305"><span class="hs-identifier hs-var">original</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E"><span class="hs-operator hs-var">&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-109"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200305"><span class="hs-identifier hs-var">original</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-var">-</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200306"><span class="hs-identifier hs-var">discounted</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200305"><span class="hs-identifier hs-var">original</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">100</span></span><span>
+</span><span id="line-110"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-111"></span><span>
+</span><span id="line-112"></span><span class="annot"><span class="hs-comment">-- | Round price to currency precision</span></span><span>
+</span><span id="line-113"></span><span class="annot"><a href="Commerce.Price.html#roundPrice"><span class="hs-identifier hs-type">roundPrice</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-114"></span><span id="roundPrice"><span class="annot"><span class="annottext">roundPrice :: Int -&gt; Double -&gt; Double
+</span><a href="Commerce.Price.html#roundPrice"><span class="hs-identifier hs-var hs-var">roundPrice</span></a></span></span><span> </span><span id="local-6989586621680200309"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680200309"><span class="hs-identifier hs-var">prec</span></a></span></span><span> </span><span id="local-6989586621680200310"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200310"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Double
+forall a. Num a =&gt; Integer -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#fromInteger"><span class="hs-identifier hs-var">fromInteger</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; Integer
+forall b. Integral b =&gt; Double -&gt; b
+forall a b. (RealFrac a, Integral b) =&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#round"><span class="hs-identifier hs-var">round</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200310"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">10</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Int -&gt; Double
+forall a b. (Num a, Integral b) =&gt; a -&gt; b -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%5E"><span class="hs-operator hs-var">^</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680200309"><span class="hs-identifier hs-var">prec</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">10</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Int -&gt; Double
+forall a b. (Num a, Integral b) =&gt; a -&gt; b -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%5E"><span class="hs-operator hs-var">^</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680200309"><span class="hs-identifier hs-var">prec</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-115"></span><span>
+</span><span id="line-116"></span><span class="hs-comment">-- | Convert price to different currency</span><span>
+</span><span id="line-117"></span><span class="hs-comment">--</span><span>
+</span><span id="line-118"></span><span class="hs-comment">-- A zero divisor is not a valid conversion: the caller has supplied a missing</span><span>
+</span><span id="line-119"></span><span class="hs-comment">-- exchange rate, and dividing by it yields 'Infinity' (or 'NaN' when the</span><span>
+</span><span id="line-120"></span><span class="hs-comment">-- numerator is zero too) &#8212; a silent, non-comparable result. The division is</span><span>
+</span><span id="line-121"></span><span class="hs-comment">-- therefore guarded and a zero rate is reported instead.</span><span>
+</span><span id="line-122"></span><span class="annot"><a href="Commerce.Price.html#convertCurrency"><span class="hs-identifier hs-type">convertCurrency</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-123"></span><span id="convertCurrency"><span class="annot"><span class="annottext">convertCurrency :: Double -&gt; Double -&gt; Double -&gt; Double
+</span><a href="Commerce.Price.html#convertCurrency"><span class="hs-identifier hs-var hs-var">convertCurrency</span></a></span></span><span> </span><span id="local-6989586621680200314"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200314"><span class="hs-identifier hs-var">price</span></a></span></span><span> </span><span id="local-6989586621680200315"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200315"><span class="hs-identifier hs-var">rateFrom</span></a></span></span><span> </span><span id="local-6989586621680200316"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200316"><span class="hs-identifier hs-var">rateTo</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-124"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200316"><span class="hs-identifier hs-var">rateTo</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200314"><span class="hs-identifier hs-var">price</span></a></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200314"><span class="hs-identifier hs-var">price</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200315"><span class="hs-identifier hs-var">rateFrom</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200316"><span class="hs-identifier hs-var">rateTo</span></a></span><span>
+</span><span id="line-125"></span><span>
+</span><span id="line-126"></span><span class="annot"><span class="hs-comment">-- | Get price with VAT</span></span><span>
+</span><span id="line-127"></span><span class="annot"><a href="Commerce.Price.html#priceWithVAT"><span class="hs-identifier hs-type">priceWithVAT</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-128"></span><span id="priceWithVAT"><span class="annot"><span class="annottext">priceWithVAT :: Double -&gt; Double -&gt; Double
+</span><a href="Commerce.Price.html#priceWithVAT"><span class="hs-identifier hs-var hs-var">priceWithVAT</span></a></span></span><span> </span><span id="local-6989586621680200318"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200318"><span class="hs-identifier hs-var">price</span></a></span></span><span> </span><span id="local-6989586621680200319"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200319"><span class="hs-identifier hs-var">vatRate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200318"><span class="hs-identifier hs-var">price</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2B"><span class="hs-operator hs-var">+</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200319"><span class="hs-identifier hs-var">vatRate</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">100</span></span><span class="hs-special">)</span><span>
+</span><span id="line-129"></span><span>
+</span><span id="line-130"></span><span class="hs-comment">-- | Get price without VAT</span><span>
+</span><span id="line-131"></span><span class="hs-comment">--</span><span>
+</span><span id="line-132"></span><span class="hs-comment">-- A rate of -100 makes the divisor zero, which yields 'Infinity' for any</span><span>
+</span><span id="line-133"></span><span class="hs-comment">-- positive price &#8212; a silent, non-comparable result. A rate that would divide</span><span>
+</span><span id="line-134"></span><span class="hs-comment">-- by zero is rejected (the price is returned unchanged, which is what a</span><span>
+</span><span id="line-135"></span><span class="hs-comment">-- zero-VAT document means) rather than propagating an infinite amount.</span><span>
+</span><span id="line-136"></span><span class="annot"><a href="Commerce.Price.html#priceWithoutVAT"><span class="hs-identifier hs-type">priceWithoutVAT</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-137"></span><span id="priceWithoutVAT"><span class="annot"><span class="annottext">priceWithoutVAT :: Double -&gt; Double -&gt; Double
+</span><a href="Commerce.Price.html#priceWithoutVAT"><span class="hs-identifier hs-var hs-var">priceWithoutVAT</span></a></span></span><span> </span><span id="local-6989586621680200322"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200322"><span class="hs-identifier hs-var">price</span></a></span></span><span> </span><span id="local-6989586621680200323"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200323"><span class="hs-identifier hs-var">vatRate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-138"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680200328"><span class="annot"><span class="annottext">base :: Double
+</span><a href="#local-6989586621680200328"><span class="hs-identifier hs-var hs-var">base</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2B"><span class="hs-operator hs-var">+</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200323"><span class="hs-identifier hs-var">vatRate</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">100</span></span><span>
+</span><span id="line-139"></span><span>   </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200328"><span class="hs-identifier hs-var">base</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200322"><span class="hs-identifier hs-var">price</span></a></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200322"><span class="hs-identifier hs-var">price</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200328"><span class="hs-identifier hs-var">base</span></a></span><span>
+</span><span id="line-140"></span><span>
+</span><span id="line-141"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-142"></span><span class="hs-comment">-- QUOTATION FUNCTIONS</span><span>
+</span><span id="line-143"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-144"></span><span>
+</span><span id="line-145"></span><span class="annot"><span class="hs-comment">-- | Find best quotation for goods</span></span><span>
+</span><span id="line-146"></span><span class="annot"><a href="Commerce.Price.html#findBestQuot"><span class="hs-identifier hs-type">findBestQuot</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Commerce.Price.html#Quot"><span class="hs-identifier hs-type">Quot</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="Commerce.Price.html#Quot"><span class="hs-identifier hs-type">Quot</span></a></span><span>
+</span><span id="line-147"></span><span id="findBestQuot"><span class="annot"><span class="annottext">findBestQuot :: [Quot] -&gt; Double -&gt; Day -&gt; Maybe Quot
+</span><a href="Commerce.Price.html#findBestQuot"><span class="hs-identifier hs-var hs-var">findBestQuot</span></a></span></span><span> </span><span id="local-6989586621680200330"><span class="annot"><span class="annottext">[Quot]
+</span><a href="#local-6989586621680200330"><span class="hs-identifier hs-var">quots</span></a></span></span><span> </span><span id="local-6989586621680200331"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200331"><span class="hs-identifier hs-var">qty</span></a></span></span><span> </span><span id="local-6989586621680200332"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680200332"><span class="hs-identifier hs-var">date</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-148"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680200338"><span class="annot"><span class="annottext">valid :: [Quot]
+</span><a href="#local-6989586621680200338"><span class="hs-identifier hs-var hs-var">valid</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Quot -&gt; Bool) -&gt; [Quot] -&gt; [Quot]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#filter"><span class="hs-identifier hs-var">filter</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680200339"><span class="annot"><span class="annottext">Quot
+</span><a href="#local-6989586621680200339"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Quot -&gt; Day
+</span><a href="Commerce.Price.html#qDateFrom"><span class="hs-identifier hs-var">qDateFrom</span></a></span><span> </span><span class="annot"><span class="annottext">Quot
+</span><a href="#local-6989586621680200339"><span class="hs-identifier hs-var">q</span></a></span><span> </span><span class="annot"><span class="annottext">Day -&gt; Day -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680200332"><span class="hs-identifier hs-var">date</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%26%26"><span class="hs-operator hs-var">&amp;&amp;</span></a></span><span> </span><span class="annot"><span class="annottext">(Day -&gt; Bool) -&gt; Maybe Day -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#all"><span class="hs-identifier hs-var">all</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Day -&gt; Day -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E%3D"><span class="hs-operator hs-var">&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680200332"><span class="hs-identifier hs-var">date</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Quot -&gt; Maybe Day
+</span><a href="Commerce.Price.html#qDateTo"><span class="hs-identifier hs-var">qDateTo</span></a></span><span> </span><span class="annot"><span class="annottext">Quot
+</span><a href="#local-6989586621680200339"><span class="hs-identifier hs-var">q</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Quot]
+</span><a href="#local-6989586621680200330"><span class="hs-identifier hs-var">quots</span></a></span><span>
+</span><span id="line-149"></span><span>      </span><span id="local-6989586621680200344"><span class="annot"><span class="annottext">byQty :: [Quot]
+</span><a href="#local-6989586621680200344"><span class="hs-identifier hs-var hs-var">byQty</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Quot -&gt; Bool) -&gt; [Quot] -&gt; [Quot]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#filter"><span class="hs-identifier hs-var">filter</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680200345"><span class="annot"><span class="annottext">Quot
+</span><a href="#local-6989586621680200345"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Quot -&gt; Double
+</span><a href="Commerce.Price.html#qMinQtty"><span class="hs-identifier hs-var">qMinQtty</span></a></span><span> </span><span class="annot"><span class="annottext">Quot
+</span><a href="#local-6989586621680200345"><span class="hs-identifier hs-var">q</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200331"><span class="hs-identifier hs-var">qty</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Quot]
+</span><a href="#local-6989586621680200338"><span class="hs-identifier hs-var">valid</span></a></span><span>
+</span><span id="line-150"></span><span>   </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">[Quot]
+</span><a href="#local-6989586621680200344"><span class="hs-identifier hs-var">byQty</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-151"></span><span>        </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe Quot
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-152"></span><span>        </span><span class="annot"><span class="annottext">[Quot]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Quot -&gt; Maybe Quot
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Quot -&gt; Quot -&gt; Ordering) -&gt; [Quot] -&gt; Quot
+forall (t :: * -&gt; *) a.
+Foldable t =&gt;
+(a -&gt; a -&gt; Ordering) -&gt; t a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#minimumBy"><span class="hs-identifier hs-var">minimumBy</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680200346"><span class="annot"><span class="annottext">Quot
+</span><a href="#local-6989586621680200346"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span id="local-6989586621680200347"><span class="annot"><span class="annottext">Quot
+</span><a href="#local-6989586621680200347"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Ordering
+forall a. Ord a =&gt; a -&gt; a -&gt; Ordering
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#compare"><span class="hs-identifier hs-var">compare</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Quot -&gt; Double
+</span><a href="Commerce.Price.html#qPrice"><span class="hs-identifier hs-var">qPrice</span></a></span><span> </span><span class="annot"><span class="annottext">Quot
+</span><a href="#local-6989586621680200346"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Quot -&gt; Double
+</span><a href="Commerce.Price.html#qPrice"><span class="hs-identifier hs-var">qPrice</span></a></span><span> </span><span class="annot"><span class="annottext">Quot
+</span><a href="#local-6989586621680200347"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Quot]
+</span><a href="#local-6989586621680200344"><span class="hs-identifier hs-var">byQty</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-comment">-- hlint: ignore</span><span>
+</span><span id="line-153"></span><span>
+</span><span id="line-154"></span><span class="annot"><span class="hs-comment">-- | Calculate final price with all discounts</span></span><span>
+</span><span id="line-155"></span><span class="annot"><a href="Commerce.Price.html#calcFinalPrice"><span class="hs-identifier hs-type">calcFinalPrice</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Commerce.Price.html#Discount"><span class="hs-identifier hs-type">Discount</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-156"></span><span id="calcFinalPrice"><span class="annot"><span class="annottext">calcFinalPrice :: Double -&gt; Double -&gt; [Discount] -&gt; Double
+</span><a href="Commerce.Price.html#calcFinalPrice"><span class="hs-identifier hs-var hs-var">calcFinalPrice</span></a></span></span><span> </span><span id="local-6989586621680200349"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200349"><span class="hs-identifier hs-var">price</span></a></span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621680200350"><span class="annot"><span class="annottext">[Discount]
+</span><a href="#local-6989586621680200350"><span class="hs-identifier hs-var">discounts</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-157"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680200352"><span class="annot"><span class="annottext">applicable :: [Discount]
+</span><a href="#local-6989586621680200352"><span class="hs-identifier hs-var hs-var">applicable</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Discount -&gt; Bool) -&gt; [Discount] -&gt; [Discount]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#filter"><span class="hs-identifier hs-var">filter</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680200353"><span class="annot"><span class="annottext">Discount
+</span><a href="#local-6989586621680200353"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Discount -&gt; Double
+</span><a href="Commerce.Price.html#dMinSum"><span class="hs-identifier hs-var">dMinSum</span></a></span><span> </span><span class="annot"><span class="annottext">Discount
+</span><a href="#local-6989586621680200353"><span class="hs-identifier hs-var">d</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200349"><span class="hs-identifier hs-var">price</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Discount]
+</span><a href="#local-6989586621680200350"><span class="hs-identifier hs-var">discounts</span></a></span><span>
+</span><span id="line-158"></span><span>      </span><span id="local-6989586621680200355"><span class="annot"><span class="annottext">withDiscounts :: Double
+</span><a href="#local-6989586621680200355"><span class="hs-identifier hs-var hs-var">withDiscounts</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Discount -&gt; Double -&gt; Double) -&gt; Double -&gt; [Discount] -&gt; Double
+forall a b. (a -&gt; b -&gt; b) -&gt; b -&gt; [a] -&gt; b
+forall (t :: * -&gt; *) a b.
+Foldable t =&gt;
+(a -&gt; b -&gt; b) -&gt; b -&gt; t a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#foldr"><span class="hs-identifier hs-var">foldr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Double -&gt; Discount -&gt; Double) -&gt; Discount -&gt; Double -&gt; Double
+forall a b c. (a -&gt; b -&gt; c) -&gt; b -&gt; a -&gt; c
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#flip"><span class="hs-identifier hs-var">flip</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Discount -&gt; Double
+</span><a href="Commerce.Price.html#applyDiscount"><span class="hs-identifier hs-var">applyDiscount</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200349"><span class="hs-identifier hs-var">price</span></a></span><span> </span><span class="annot"><span class="annottext">[Discount]
+</span><a href="#local-6989586621680200352"><span class="hs-identifier hs-var">applicable</span></a></span><span>
+</span><span id="line-159"></span><span>   </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Double -&gt; Double
+</span><a href="Commerce.Price.html#roundPrice"><span class="hs-identifier hs-var">roundPrice</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200355"><span class="hs-identifier hs-var">withDiscounts</span></a></span><span>
+</span><span id="line-160"></span><span>
+</span><span id="line-161"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-162"></span><span class="hs-comment">-- VALIDATION</span><span>
+</span><span id="line-163"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-164"></span><span>
+</span><span id="line-165"></span><span class="annot"><a href="Commerce.Price.html#validatePrice"><span class="hs-identifier hs-type">validatePrice</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-166"></span><span id="validatePrice"><span class="annot"><span class="annottext">validatePrice :: Double -&gt; Bool
+</span><a href="Commerce.Price.html#validatePrice"><span class="hs-identifier hs-var hs-var">validatePrice</span></a></span></span><span> </span><span id="local-6989586621680200359"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200359"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680200359"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E%3D"><span class="hs-operator hs-var">&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-167"></span><span>
+</span><span id="line-168"></span><span class="annot"><a href="Commerce.Price.html#validateDiscount"><span class="hs-identifier hs-type">validateDiscount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Price.html#Discount"><span class="hs-identifier hs-type">Discount</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-169"></span><span id="validateDiscount"><span class="annot"><span class="annottext">validateDiscount :: Discount -&gt; Bool
+</span><a href="Commerce.Price.html#validateDiscount"><span class="hs-identifier hs-var hs-var">validateDiscount</span></a></span></span><span> </span><span id="local-6989586621680200360"><span class="annot"><span class="annottext">Discount
+</span><a href="#local-6989586621680200360"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Discount -&gt; Double
+</span><a href="Commerce.Price.html#dValue"><span class="hs-identifier hs-var">dValue</span></a></span><span> </span><span class="annot"><span class="annottext">Discount
+</span><a href="#local-6989586621680200360"><span class="hs-identifier hs-var">d</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E%3D"><span class="hs-operator hs-var">&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%26%26"><span class="hs-operator hs-var">&amp;&amp;</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#not"><span class="hs-identifier hs-var">not</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Discount -&gt; Bool
+</span><a href="Commerce.Price.html#dPercent"><span class="hs-identifier hs-var">dPercent</span></a></span><span> </span><span class="annot"><span class="annottext">Discount
+</span><a href="#local-6989586621680200360"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%7C%7C"><span class="hs-operator hs-var">||</span></a></span><span> </span><span class="annot"><span class="annottext">Discount -&gt; Double
+</span><a href="Commerce.Price.html#dValue"><span class="hs-identifier hs-var">dValue</span></a></span><span> </span><span class="annot"><span class="annottext">Discount
+</span><a href="#local-6989586621680200360"><span class="hs-identifier hs-var">d</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">100</span></span><span class="hs-special">)</span><span>
+</span><span id="line-170"></span><span>
+</span><span id="line-171"></span><span class="annot"><a href="Commerce.Price.html#validateQuot"><span class="hs-identifier hs-type">validateQuot</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Price.html#Quot"><span class="hs-identifier hs-type">Quot</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-172"></span><span id="validateQuot"><span class="annot"><span class="annottext">validateQuot :: Quot -&gt; Bool
+</span><a href="Commerce.Price.html#validateQuot"><span class="hs-identifier hs-var hs-var">validateQuot</span></a></span></span><span> </span><span id="local-6989586621680200364"><span class="annot"><span class="annottext">Quot
+</span><a href="#local-6989586621680200364"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Quot -&gt; Double
+</span><a href="Commerce.Price.html#qPrice"><span class="hs-identifier hs-var">qPrice</span></a></span><span> </span><span class="annot"><span class="annottext">Quot
+</span><a href="#local-6989586621680200364"><span class="hs-identifier hs-var">q</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E%3D"><span class="hs-operator hs-var">&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%26%26"><span class="hs-operator hs-var">&amp;&amp;</span></a></span><span> </span><span class="annot"><span class="annottext">Quot -&gt; Double
+</span><a href="Commerce.Price.html#qMinQtty"><span class="hs-identifier hs-var">qMinQtty</span></a></span><span> </span><span class="annot"><span class="annottext">Quot
+</span><a href="#local-6989586621680200364"><span class="hs-identifier hs-var">q</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E%3D"><span class="hs-operator hs-var">&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-173"></span></pre></body></html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Accounting Events - Core event types for accounting domain</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Domain.Accounting.Events.html"><span class="hs-identifier">Domain.Accounting.Events</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Domain.Accounting.Events.html#AccountingEvent"><span class="hs-identifier">AccountingEvent</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Domain.Accounting.Events.html#rebuildBalance"><span class="hs-identifier">rebuildBalance</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="annot"><span class="hs-comment">-- | Accounting event for a single entry</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">data</span><span> </span><span id="AccountingEvent"><span class="annot"><a href="Domain.Accounting.Events.html#AccountingEvent"><span class="hs-identifier hs-var">AccountingEvent</span></a></span></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="EntryCreated"><span class="annot"><a href="Domain.Accounting.Events.html#EntryCreated"><span class="hs-identifier hs-var">EntryCreated</span></a></span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680231033"><span id="local-6989586621680231048"><span id="local-6989586621680231052"><span class="annot"><span class="annottext">Int -&gt; AccountingEvent -&gt; ShowS
+[AccountingEvent] -&gt; ShowS
+AccountingEvent -&gt; String
+(Int -&gt; AccountingEvent -&gt; ShowS)
+-&gt; (AccountingEvent -&gt; String)
+-&gt; ([AccountingEvent] -&gt; ShowS)
+-&gt; Show AccountingEvent
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AccountingEvent -&gt; ShowS
+showsPrec :: Int -&gt; AccountingEvent -&gt; ShowS
+$cshow :: AccountingEvent -&gt; String
+show :: AccountingEvent -&gt; String
+$cshowList :: [AccountingEvent] -&gt; ShowS
+showList :: [AccountingEvent] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680231057"><span id="local-6989586621680231070"><span class="annot"><span class="annottext">AccountingEvent -&gt; AccountingEvent -&gt; Bool
+(AccountingEvent -&gt; AccountingEvent -&gt; Bool)
+-&gt; (AccountingEvent -&gt; AccountingEvent -&gt; Bool)
+-&gt; Eq AccountingEvent
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AccountingEvent -&gt; AccountingEvent -&gt; Bool
+== :: AccountingEvent -&gt; AccountingEvent -&gt; Bool
+$c/= :: AccountingEvent -&gt; AccountingEvent -&gt; Bool
+/= :: AccountingEvent -&gt; AccountingEvent -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="annot"><span class="hs-comment">-- | Rebuild account balance from a list of events</span></span><span>
+</span><span id="line-16"></span><span class="annot"><a href="Domain.Accounting.Events.html#rebuildBalance"><span class="hs-identifier hs-type">rebuildBalance</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Domain.Accounting.Events.html#AccountingEvent"><span class="hs-identifier hs-type">AccountingEvent</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-17"></span><span id="rebuildBalance"><span class="annot"><span class="annottext">rebuildBalance :: Text -&gt; [AccountingEvent] -&gt; Double
+</span><a href="Domain.Accounting.Events.html#rebuildBalance"><span class="hs-identifier hs-var hs-var">rebuildBalance</span></a></span></span><span> </span><span id="local-6989586621680231074"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680231074"><span class="hs-identifier hs-var">accCode</span></a></span></span><span> </span><span id="local-6989586621680231075"><span class="annot"><span class="annottext">[AccountingEvent]
+</span><a href="#local-6989586621680231075"><span class="hs-identifier hs-var">events</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680231074"><span class="hs-identifier hs-var">accCode</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Double -&gt; Double
+forall a b. a -&gt; b -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Prim.html#seq"><span class="hs-operator hs-var">`seq`</span></a></span><span> </span><span class="annot"><span class="annottext">[Double] -&gt; Double
+forall a. Num a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#sum"><span class="hs-identifier hs-var">sum</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(AccountingEvent -&gt; Double) -&gt; [AccountingEvent] -&gt; [Double]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#map"><span class="hs-identifier hs-var">map</span></a></span><span> </span><span class="annot"><span class="annottext">AccountingEvent -&gt; Double
+</span><a href="Domain.Accounting.Events.html#extractAmount"><span class="hs-identifier hs-var">extractAmount</span></a></span><span> </span><span class="annot"><span class="annottext">[AccountingEvent]
+</span><a href="#local-6989586621680231075"><span class="hs-identifier hs-var">events</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="annot"><a href="Domain.Accounting.Events.html#extractAmount"><span class="hs-identifier hs-type">extractAmount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Domain.Accounting.Events.html#AccountingEvent"><span class="hs-identifier hs-type">AccountingEvent</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-20"></span><span id="extractAmount"><span class="annot"><span class="annottext">extractAmount :: AccountingEvent -&gt; Double
+</span><a href="Domain.Accounting.Events.html#extractAmount"><span class="hs-identifier hs-var hs-var">extractAmount</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Domain.Accounting.Events.html#EntryCreated"><span class="hs-identifier hs-type">EntryCreated</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621680231078"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680231078"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span id="local-6989586621680231079"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680231079"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680231078"><span class="hs-identifier hs-var">d</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-var">-</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680231079"><span class="hs-identifier hs-var">c</span></a></span></pre></body></html>

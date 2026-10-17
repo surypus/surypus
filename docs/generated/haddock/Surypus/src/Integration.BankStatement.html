@@ -1,0 +1,791 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="annot"><span class="hs-comment">-- | Bank statement import &#8212; OFX and ISO 20022 (camt.053) parsing with auto-matching</span></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Integration.BankStatement.html"><span class="hs-identifier">Integration.BankStatement</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#BankTxn"><span class="hs-identifier">BankTxn</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#ImportResult"><span class="hs-identifier">ImportResult</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#MatchResult"><span class="hs-identifier">MatchResult</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#parseOFX"><span class="hs-identifier">parseOFX</span></a></span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#parseISO20022"><span class="hs-identifier">parseISO20022</span></a></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#importStatementLines"><span class="hs-identifier">importStatementLines</span></a></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#matchTransactionsToBills"><span class="hs-identifier">matchTransactionsToBills</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#flagUnmatchedTransactions"><span class="hs-identifier">flagUnmatchedTransactions</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">FromJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Value</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">encode</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">decode</span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.Database.html"><span class="hs-identifier">DAL.Database</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier">ConnectionPool</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Database.html#runDb"><span class="hs-identifier">runDb</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.Types.html"><span class="hs-identifier">DAL.Types</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier">QueryResult</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.html"><span class="hs-identifier">Database.Persist.Sql</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistValue"><span class="hs-identifier">PersistValue</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier">Single</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawExecute"><span class="hs-identifier">rawExecute</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier">rawSql</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#SqlPersistT"><span class="hs-identifier">SqlPersistT</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">data</span><span> </span><span id="BankTxn"><span class="annot"><a href="Integration.BankStatement.html#BankTxn"><span class="hs-identifier hs-var">BankTxn</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BankTxn"><span class="annot"><a href="Integration.BankStatement.html#BankTxn"><span class="hs-identifier hs-var">BankTxn</span></a></span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="btDate"><span class="annot"><span class="annottext">BankTxn -&gt; Text
+</span><a href="Integration.BankStatement.html#btDate"><span class="hs-identifier hs-var hs-var">btDate</span></a></span></span><span>        </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="btValueDate"><span class="annot"><span class="annottext">BankTxn -&gt; Maybe Text
+</span><a href="Integration.BankStatement.html#btValueDate"><span class="hs-identifier hs-var hs-var">btValueDate</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="btAmount"><span class="annot"><span class="annottext">BankTxn -&gt; Double
+</span><a href="Integration.BankStatement.html#btAmount"><span class="hs-identifier hs-var hs-var">btAmount</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="btCurrency"><span class="annot"><span class="annottext">BankTxn -&gt; Text
+</span><a href="Integration.BankStatement.html#btCurrency"><span class="hs-identifier hs-var hs-var">btCurrency</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="btDescription"><span class="annot"><span class="annottext">BankTxn -&gt; Maybe Text
+</span><a href="Integration.BankStatement.html#btDescription"><span class="hs-identifier hs-var hs-var">btDescription</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="btRef"><span class="annot"><span class="annottext">BankTxn -&gt; Maybe Text
+</span><a href="Integration.BankStatement.html#btRef"><span class="hs-identifier hs-var hs-var">btRef</span></a></span></span><span>         </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="btCounterparty"><span class="annot"><span class="annottext">BankTxn -&gt; Maybe Text
+</span><a href="Integration.BankStatement.html#btCounterparty"><span class="hs-identifier hs-var hs-var">btCounterparty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680261560"><span id="local-6989586621680261574"><span id="local-6989586621680261578"><span class="annot"><span class="annottext">Int -&gt; BankTxn -&gt; ShowS
+[BankTxn] -&gt; ShowS
+BankTxn -&gt; String
+(Int -&gt; BankTxn -&gt; ShowS)
+-&gt; (BankTxn -&gt; String) -&gt; ([BankTxn] -&gt; ShowS) -&gt; Show BankTxn
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BankTxn -&gt; ShowS
+showsPrec :: Int -&gt; BankTxn -&gt; ShowS
+$cshow :: BankTxn -&gt; String
+show :: BankTxn -&gt; String
+$cshowList :: [BankTxn] -&gt; ShowS
+showList :: [BankTxn] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680261583"><span id="local-6989586621680261595"><span class="annot"><span class="annottext">BankTxn -&gt; BankTxn -&gt; Bool
+(BankTxn -&gt; BankTxn -&gt; Bool)
+-&gt; (BankTxn -&gt; BankTxn -&gt; Bool) -&gt; Eq BankTxn
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BankTxn -&gt; BankTxn -&gt; Bool
+== :: BankTxn -&gt; BankTxn -&gt; Bool
+$c/= :: BankTxn -&gt; BankTxn -&gt; Bool
+/= :: BankTxn -&gt; BankTxn -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680261600"><span id="local-6989586621680261602"><span class="annot"><span class="annottext">(forall x. BankTxn -&gt; Rep BankTxn x)
+-&gt; (forall x. Rep BankTxn x -&gt; BankTxn) -&gt; Generic BankTxn
+forall x. Rep BankTxn x -&gt; BankTxn
+forall x. BankTxn -&gt; Rep BankTxn x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. BankTxn -&gt; Rep BankTxn x
+from :: forall x. BankTxn -&gt; Rep BankTxn x
+$cto :: forall x. Rep BankTxn x -&gt; BankTxn
+to :: forall x. Rep BankTxn x -&gt; BankTxn
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680261608"><span id="local-6989586621680261615"><span id="local-6989586621680261618"><span id="local-6989586621680261621"><span id="local-6989586621680261624"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Integration.BankStatement.html#BankTxn"><span class="hs-identifier hs-type">BankTxn</span></a></span></span></span></span></span></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680261798"><span id="local-6989586621680261805"><span id="local-6989586621680261808"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Integration.BankStatement.html#BankTxn"><span class="hs-identifier hs-type">BankTxn</span></a></span></span></span></span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="hs-keyword">data</span><span> </span><span id="ImportResult"><span class="annot"><a href="Integration.BankStatement.html#ImportResult"><span class="hs-identifier hs-var">ImportResult</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ImportResult"><span class="annot"><a href="Integration.BankStatement.html#ImportResult"><span class="hs-identifier hs-var">ImportResult</span></a></span></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="irImportId"><span class="annot"><span class="annottext">ImportResult -&gt; Text
+</span><a href="Integration.BankStatement.html#irImportId"><span class="hs-identifier hs-var hs-var">irImportId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="irRowCount"><span class="annot"><span class="annottext">ImportResult -&gt; Int
+</span><a href="Integration.BankStatement.html#irRowCount"><span class="hs-identifier hs-var hs-var">irRowCount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="irStatus"><span class="annot"><span class="annottext">ImportResult -&gt; Text
+</span><a href="Integration.BankStatement.html#irStatus"><span class="hs-identifier hs-var hs-var">irStatus</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680261925"><span id="local-6989586621680261932"><span id="local-6989586621680261936"><span class="annot"><span class="annottext">Int -&gt; ImportResult -&gt; ShowS
+[ImportResult] -&gt; ShowS
+ImportResult -&gt; String
+(Int -&gt; ImportResult -&gt; ShowS)
+-&gt; (ImportResult -&gt; String)
+-&gt; ([ImportResult] -&gt; ShowS)
+-&gt; Show ImportResult
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ImportResult -&gt; ShowS
+showsPrec :: Int -&gt; ImportResult -&gt; ShowS
+$cshow :: ImportResult -&gt; String
+show :: ImportResult -&gt; String
+$cshowList :: [ImportResult] -&gt; ShowS
+showList :: [ImportResult] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680261939"><span id="local-6989586621680261945"><span class="annot"><span class="annottext">ImportResult -&gt; ImportResult -&gt; Bool
+(ImportResult -&gt; ImportResult -&gt; Bool)
+-&gt; (ImportResult -&gt; ImportResult -&gt; Bool) -&gt; Eq ImportResult
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ImportResult -&gt; ImportResult -&gt; Bool
+== :: ImportResult -&gt; ImportResult -&gt; Bool
+$c/= :: ImportResult -&gt; ImportResult -&gt; Bool
+/= :: ImportResult -&gt; ImportResult -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680261949"><span id="local-6989586621680261951"><span class="annot"><span class="annottext">(forall x. ImportResult -&gt; Rep ImportResult x)
+-&gt; (forall x. Rep ImportResult x -&gt; ImportResult)
+-&gt; Generic ImportResult
+forall x. Rep ImportResult x -&gt; ImportResult
+forall x. ImportResult -&gt; Rep ImportResult x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. ImportResult -&gt; Rep ImportResult x
+from :: forall x. ImportResult -&gt; Rep ImportResult x
+$cto :: forall x. Rep ImportResult x -&gt; ImportResult
+to :: forall x. Rep ImportResult x -&gt; ImportResult
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680261954"><span id="local-6989586621680261961"><span id="local-6989586621680261964"><span id="local-6989586621680261967"><span id="local-6989586621680261970"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Integration.BankStatement.html#ImportResult"><span class="hs-identifier hs-type">ImportResult</span></a></span></span></span></span></span></span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="hs-keyword">data</span><span> </span><span id="MatchResult"><span class="annot"><a href="Integration.BankStatement.html#MatchResult"><span class="hs-identifier hs-var">MatchResult</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MatchResult"><span class="annot"><a href="Integration.BankStatement.html#MatchResult"><span class="hs-identifier hs-var">MatchResult</span></a></span></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="mrMatchedCount"><span class="annot"><span class="annottext">MatchResult -&gt; Int
+</span><a href="Integration.BankStatement.html#mrMatchedCount"><span class="hs-identifier hs-var hs-var">mrMatchedCount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="mrUnmatchedCount"><span class="annot"><span class="annottext">MatchResult -&gt; Int
+</span><a href="Integration.BankStatement.html#mrUnmatchedCount"><span class="hs-identifier hs-var hs-var">mrUnmatchedCount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="mrMatchedIds"><span class="annot"><span class="annottext">MatchResult -&gt; [Text]
+</span><a href="Integration.BankStatement.html#mrMatchedIds"><span class="hs-identifier hs-var hs-var">mrMatchedIds</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680262052"><span id="local-6989586621680262060"><span id="local-6989586621680262064"><span class="annot"><span class="annottext">Int -&gt; MatchResult -&gt; ShowS
+[MatchResult] -&gt; ShowS
+MatchResult -&gt; String
+(Int -&gt; MatchResult -&gt; ShowS)
+-&gt; (MatchResult -&gt; String)
+-&gt; ([MatchResult] -&gt; ShowS)
+-&gt; Show MatchResult
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; MatchResult -&gt; ShowS
+showsPrec :: Int -&gt; MatchResult -&gt; ShowS
+$cshow :: MatchResult -&gt; String
+show :: MatchResult -&gt; String
+$cshowList :: [MatchResult] -&gt; ShowS
+showList :: [MatchResult] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262067"><span id="local-6989586621680262074"><span class="annot"><span class="annottext">MatchResult -&gt; MatchResult -&gt; Bool
+(MatchResult -&gt; MatchResult -&gt; Bool)
+-&gt; (MatchResult -&gt; MatchResult -&gt; Bool) -&gt; Eq MatchResult
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: MatchResult -&gt; MatchResult -&gt; Bool
+== :: MatchResult -&gt; MatchResult -&gt; Bool
+$c/= :: MatchResult -&gt; MatchResult -&gt; Bool
+/= :: MatchResult -&gt; MatchResult -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262078"><span id="local-6989586621680262080"><span class="annot"><span class="annottext">(forall x. MatchResult -&gt; Rep MatchResult x)
+-&gt; (forall x. Rep MatchResult x -&gt; MatchResult)
+-&gt; Generic MatchResult
+forall x. Rep MatchResult x -&gt; MatchResult
+forall x. MatchResult -&gt; Rep MatchResult x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. MatchResult -&gt; Rep MatchResult x
+from :: forall x. MatchResult -&gt; Rep MatchResult x
+$cto :: forall x. Rep MatchResult x -&gt; MatchResult
+to :: forall x. Rep MatchResult x -&gt; MatchResult
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680262083"><span id="local-6989586621680262090"><span id="local-6989586621680262093"><span id="local-6989586621680262096"><span id="local-6989586621680262099"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Integration.BankStatement.html#MatchResult"><span class="hs-identifier hs-type">MatchResult</span></a></span></span></span></span></span></span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span class="hs-comment">-- | Parse OFX text into transactions.</span><span>
+</span><span id="line-55"></span><span class="hs-comment">-- OFX is SGML-like; we extract STMTTRN blocks with simple text scanning.</span><span>
+</span><span id="line-56"></span><span class="annot"><a href="Integration.BankStatement.html#parseOFX"><span class="hs-identifier hs-type">parseOFX</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Integration.BankStatement.html#BankTxn"><span class="hs-identifier hs-type">BankTxn</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-57"></span><span id="parseOFX"><span class="annot"><span class="annottext">parseOFX :: Text -&gt; [BankTxn]
+</span><a href="Integration.BankStatement.html#parseOFX"><span class="hs-identifier hs-var hs-var">parseOFX</span></a></span></span><span> </span><span id="local-6989586621680262177"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262177"><span class="hs-identifier hs-var">content</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680262180"><span class="annot"><span class="annottext">blocks :: [Text]
+</span><a href="#local-6989586621680262180"><span class="hs-identifier hs-var hs-var">blocks</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text -&gt; [Text]
+</span><a href="Integration.BankStatement.html#extractBlocks"><span class="hs-identifier hs-var">extractBlocks</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&lt;STMTTRN&gt;&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&lt;/STMTTRN&gt;&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262177"><span class="hs-identifier hs-var">content</span></a></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; BankTxn) -&gt; [Text] -&gt; [BankTxn]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#map"><span class="hs-identifier hs-var">map</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; BankTxn
+</span><a href="Integration.BankStatement.html#parseTxnBlock"><span class="hs-identifier hs-var">parseTxnBlock</span></a></span><span> </span><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621680262180"><span class="hs-identifier hs-var">blocks</span></a></span><span>
+</span><span id="line-60"></span><span>
+</span><span id="line-61"></span><span class="annot"><a href="Integration.BankStatement.html#extractBlocks"><span class="hs-identifier hs-type">extractBlocks</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-62"></span><span id="extractBlocks"><span class="annot"><span class="annottext">extractBlocks :: Text -&gt; Text -&gt; Text -&gt; [Text]
+</span><a href="Integration.BankStatement.html#extractBlocks"><span class="hs-identifier hs-var hs-var">extractBlocks</span></a></span></span><span> </span><span id="local-6989586621680262183"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262183"><span class="hs-identifier hs-var">open</span></a></span></span><span> </span><span id="local-6989586621680262184"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262184"><span class="hs-identifier hs-var">close</span></a></span></span><span> </span><span id="local-6989586621680262185"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262185"><span class="hs-identifier hs-var">txt</span></a></span></span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#null"><span class="hs-identifier hs-var">T.null</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262185"><span class="hs-identifier hs-var">txt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-64"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-65"></span><span>      </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">HasCallStack =&gt; Text -&gt; Text -&gt; (Text, Text)
+Text -&gt; Text -&gt; (Text, Text)
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#breakOn"><span class="hs-identifier hs-var">T.breakOn</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262183"><span class="hs-identifier hs-var">open</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262185"><span class="hs-identifier hs-var">txt</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-66"></span><span>        </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262188"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262188"><span class="hs-identifier hs-var">rest</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#null"><span class="hs-identifier hs-var">T.null</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262188"><span class="hs-identifier hs-var">rest</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-67"></span><span>        </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262189"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262189"><span class="hs-identifier hs-var">rest</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-68"></span><span>          </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680262190"><span class="annot"><span class="annottext">body :: Text
+</span><a href="#local-6989586621680262190"><span class="hs-identifier hs-var hs-var">body</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Text -&gt; Text
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#drop"><span class="hs-identifier hs-var">T.drop</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#length"><span class="hs-identifier hs-var">T.length</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262183"><span class="hs-identifier hs-var">open</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262189"><span class="hs-identifier hs-var">rest</span></a></span><span>
+</span><span id="line-69"></span><span>          </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">HasCallStack =&gt; Text -&gt; Text -&gt; (Text, Text)
+Text -&gt; Text -&gt; (Text, Text)
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#breakOn"><span class="hs-identifier hs-var">T.breakOn</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262184"><span class="hs-identifier hs-var">close</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262190"><span class="hs-identifier hs-var">body</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-70"></span><span>               </span><span class="hs-special">(</span><span id="local-6989586621680262193"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262193"><span class="hs-identifier hs-var">block</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262194"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262194"><span class="hs-identifier hs-var">remaining</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262193"><span class="hs-identifier hs-var">block</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; [Text] -&gt; [Text]
+forall a. a -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#%3A"><span class="hs-glyph hs-var">:</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text -&gt; [Text]
+</span><a href="Integration.BankStatement.html#extractBlocks"><span class="hs-identifier hs-var">extractBlocks</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262183"><span class="hs-identifier hs-var">open</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262184"><span class="hs-identifier hs-var">close</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Text -&gt; Text
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#drop"><span class="hs-identifier hs-var">T.drop</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#length"><span class="hs-identifier hs-var">T.length</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262184"><span class="hs-identifier hs-var">close</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262194"><span class="hs-identifier hs-var">remaining</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span>
+</span><span id="line-72"></span><span class="annot"><a href="Integration.BankStatement.html#parseTxnBlock"><span class="hs-identifier hs-type">parseTxnBlock</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#BankTxn"><span class="hs-identifier hs-type">BankTxn</span></a></span><span>
+</span><span id="line-73"></span><span id="parseTxnBlock"><span class="annot"><span class="annottext">parseTxnBlock :: Text -&gt; BankTxn
+</span><a href="Integration.BankStatement.html#parseTxnBlock"><span class="hs-identifier hs-var hs-var">parseTxnBlock</span></a></span></span><span> </span><span id="local-6989586621680262195"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262195"><span class="hs-identifier hs-var">block</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#BankTxn"><span class="hs-identifier hs-type">BankTxn</span></a></span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">btDate :: Text
+</span><a href="Integration.BankStatement.html#btDate"><span class="hs-identifier hs-var">btDate</span></a></span><span>        </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+</span><a href="Integration.BankStatement.html#getField"><span class="hs-identifier hs-var">getField</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;DTPOSTED&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262195"><span class="hs-identifier hs-var">block</span></a></span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">btValueDate :: Maybe Text
+</span><a href="Integration.BankStatement.html#btValueDate"><span class="hs-identifier hs-var">btValueDate</span></a></span><span>   </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe Text
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+</span><a href="Integration.BankStatement.html#getField"><span class="hs-identifier hs-var">getField</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;DTAVAIL&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262195"><span class="hs-identifier hs-var">block</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">btAmount :: Double
+</span><a href="Integration.BankStatement.html#btAmount"><span class="hs-identifier hs-var">btAmount</span></a></span><span>      </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; Double
+forall a. Read a =&gt; String -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Text.Read.html#read"><span class="hs-identifier hs-var">read</span></a></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Double) -&gt; String -&gt; Double
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Show.html#unpack"><span class="hs-identifier hs-var">T.unpack</span></a></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; String) -&gt; Text -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+</span><a href="Integration.BankStatement.html#getField"><span class="hs-identifier hs-var">getField</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;TRNAMT&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262195"><span class="hs-identifier hs-var">block</span></a></span><span>
+</span><span id="line-77"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">btCurrency :: Text
+</span><a href="Integration.BankStatement.html#btCurrency"><span class="hs-identifier hs-var">btCurrency</span></a></span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;RUB&quot;</span></span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">btDescription :: Maybe Text
+</span><a href="Integration.BankStatement.html#btDescription"><span class="hs-identifier hs-var">btDescription</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe Text
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+</span><a href="Integration.BankStatement.html#getField"><span class="hs-identifier hs-var">getField</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;MEMO&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262195"><span class="hs-identifier hs-var">block</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">btRef :: Maybe Text
+</span><a href="Integration.BankStatement.html#btRef"><span class="hs-identifier hs-var">btRef</span></a></span><span>         </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe Text
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+</span><a href="Integration.BankStatement.html#getField"><span class="hs-identifier hs-var">getField</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;FITID&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262195"><span class="hs-identifier hs-var">block</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-80"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">btCounterparty :: Maybe Text
+</span><a href="Integration.BankStatement.html#btCounterparty"><span class="hs-identifier hs-var">btCounterparty</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-81"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-82"></span><span>
+</span><span id="line-83"></span><span class="annot"><a href="Integration.BankStatement.html#getField"><span class="hs-identifier hs-type">getField</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-84"></span><span id="getField"><span class="annot"><span class="annottext">getField :: Text -&gt; Text -&gt; Text
+</span><a href="Integration.BankStatement.html#getField"><span class="hs-identifier hs-var hs-var">getField</span></a></span></span><span> </span><span id="local-6989586621680262199"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262199"><span class="hs-identifier hs-var">tag</span></a></span></span><span> </span><span id="local-6989586621680262200"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262200"><span class="hs-identifier hs-var">block</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">HasCallStack =&gt; Text -&gt; Text -&gt; (Text, Text)
+Text -&gt; Text -&gt; (Text, Text)
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#breakOn"><span class="hs-identifier hs-var">T.breakOn</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&lt;&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262199"><span class="hs-identifier hs-var">tag</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&gt;&quot;</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262200"><span class="hs-identifier hs-var">block</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-86"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262201"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262201"><span class="hs-identifier hs-var">rest</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#null"><span class="hs-identifier hs-var">T.null</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262201"><span class="hs-identifier hs-var">rest</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&quot;</span></span><span>
+</span><span id="line-87"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262202"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262202"><span class="hs-identifier hs-var">rest</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-88"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680262205"><span class="annot"><span class="annottext">val :: Text
+</span><a href="#local-6989586621680262205"><span class="hs-identifier hs-var hs-var">val</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Text -&gt; Text
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#drop"><span class="hs-identifier hs-var">T.drop</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#length"><span class="hs-identifier hs-var">T.length</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262199"><span class="hs-identifier hs-var">tag</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2B"><span class="hs-operator hs-var">+</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">2</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262202"><span class="hs-identifier hs-var">rest</span></a></span><span>
+</span><span id="line-89"></span><span>      </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; Text
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#takeWhile"><span class="hs-identifier hs-var">T.takeWhile</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%2F%3D"><span class="hs-operator hs-var">/=</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'&lt;'</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262205"><span class="hs-identifier hs-var">val</span></a></span><span>
+</span><span id="line-90"></span><span>
+</span><span id="line-91"></span><span class="hs-comment">-- | Parse ISO 20022 camt.053 XML into transactions.</span><span>
+</span><span id="line-92"></span><span class="hs-comment">-- Extracts Ntry/TxDtls blocks via simple text scanning.</span><span>
+</span><span id="line-93"></span><span class="annot"><a href="Integration.BankStatement.html#parseISO20022"><span class="hs-identifier hs-type">parseISO20022</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Integration.BankStatement.html#BankTxn"><span class="hs-identifier hs-type">BankTxn</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-94"></span><span id="parseISO20022"><span class="annot"><span class="annottext">parseISO20022 :: Text -&gt; [BankTxn]
+</span><a href="Integration.BankStatement.html#parseISO20022"><span class="hs-identifier hs-var hs-var">parseISO20022</span></a></span></span><span> </span><span id="local-6989586621680262209"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262209"><span class="hs-identifier hs-var">content</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-95"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680262212"><span class="annot"><span class="annottext">blocks :: [Text]
+</span><a href="#local-6989586621680262212"><span class="hs-identifier hs-var hs-var">blocks</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text -&gt; [Text]
+</span><a href="Integration.BankStatement.html#extractBlocks"><span class="hs-identifier hs-var">extractBlocks</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&lt;Ntry&gt;&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&lt;/Ntry&gt;&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262209"><span class="hs-identifier hs-var">content</span></a></span><span>
+</span><span id="line-96"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">(Text -&gt; BankTxn) -&gt; [Text] -&gt; [BankTxn]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#map"><span class="hs-identifier hs-var">map</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; BankTxn
+</span><a href="Integration.BankStatement.html#parseNtryBlock"><span class="hs-identifier hs-var">parseNtryBlock</span></a></span><span> </span><span class="annot"><span class="annottext">[Text]
+</span><a href="#local-6989586621680262212"><span class="hs-identifier hs-var">blocks</span></a></span><span>
+</span><span id="line-97"></span><span>
+</span><span id="line-98"></span><span class="annot"><a href="Integration.BankStatement.html#parseNtryBlock"><span class="hs-identifier hs-type">parseNtryBlock</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#BankTxn"><span class="hs-identifier hs-type">BankTxn</span></a></span><span>
+</span><span id="line-99"></span><span id="parseNtryBlock"><span class="annot"><span class="annottext">parseNtryBlock :: Text -&gt; BankTxn
+</span><a href="Integration.BankStatement.html#parseNtryBlock"><span class="hs-identifier hs-var hs-var">parseNtryBlock</span></a></span></span><span> </span><span id="local-6989586621680262214"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262214"><span class="hs-identifier hs-var">block</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#BankTxn"><span class="hs-identifier hs-type">BankTxn</span></a></span><span>
+</span><span id="line-100"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">btDate :: Text
+</span><a href="Integration.BankStatement.html#btDate"><span class="hs-identifier hs-var">btDate</span></a></span><span>        </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text -&gt; Text
+</span><a href="Integration.BankStatement.html#getXmlField"><span class="hs-identifier hs-var">getXmlField</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;BookgDt&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Dt&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262214"><span class="hs-identifier hs-var">block</span></a></span><span>
+</span><span id="line-101"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">btValueDate :: Maybe Text
+</span><a href="Integration.BankStatement.html#btValueDate"><span class="hs-identifier hs-var">btValueDate</span></a></span><span>   </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe Text
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text -&gt; Text
+</span><a href="Integration.BankStatement.html#getXmlField"><span class="hs-identifier hs-var">getXmlField</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;ValDt&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Dt&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262214"><span class="hs-identifier hs-var">block</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-102"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">btAmount :: Double
+</span><a href="Integration.BankStatement.html#btAmount"><span class="hs-identifier hs-var">btAmount</span></a></span><span>      </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; Double
+forall a. Read a =&gt; String -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Text.Read.html#read"><span class="hs-identifier hs-var">read</span></a></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Double) -&gt; String -&gt; Double
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; String
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Show.html#unpack"><span class="hs-identifier hs-var">T.unpack</span></a></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; String) -&gt; Text -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text -&gt; Text
+</span><a href="Integration.BankStatement.html#getXmlField"><span class="hs-identifier hs-var">getXmlField</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Amt&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262214"><span class="hs-identifier hs-var">block</span></a></span><span>
+</span><span id="line-103"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">btCurrency :: Text
+</span><a href="Integration.BankStatement.html#btCurrency"><span class="hs-identifier hs-var">btCurrency</span></a></span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;RUB&quot;</span></span><span>
+</span><span id="line-104"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">btDescription :: Maybe Text
+</span><a href="Integration.BankStatement.html#btDescription"><span class="hs-identifier hs-var">btDescription</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe Text
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text -&gt; Text
+</span><a href="Integration.BankStatement.html#getXmlField"><span class="hs-identifier hs-var">getXmlField</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;AddtlNtryInf&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262214"><span class="hs-identifier hs-var">block</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-105"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">btRef :: Maybe Text
+</span><a href="Integration.BankStatement.html#btRef"><span class="hs-identifier hs-var">btRef</span></a></span><span>         </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe Text
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text -&gt; Text
+</span><a href="Integration.BankStatement.html#getXmlField"><span class="hs-identifier hs-var">getXmlField</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;AcctSvcrRef&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262214"><span class="hs-identifier hs-var">block</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-106"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">btCounterparty :: Maybe Text
+</span><a href="Integration.BankStatement.html#btCounterparty"><span class="hs-identifier hs-var">btCounterparty</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe Text
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text -&gt; Text
+</span><a href="Integration.BankStatement.html#getXmlField"><span class="hs-identifier hs-var">getXmlField</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Nm&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262214"><span class="hs-identifier hs-var">block</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-107"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-108"></span><span>
+</span><span id="line-109"></span><span class="annot"><a href="Integration.BankStatement.html#persistTextMaybe"><span class="hs-identifier hs-type">persistTextMaybe</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistValue"><span class="hs-identifier hs-type">PersistValue</span></a></span><span>
+</span><span id="line-110"></span><span id="persistTextMaybe"><span class="annot"><span class="annottext">persistTextMaybe :: Maybe Text -&gt; PersistValue
+</span><a href="Integration.BankStatement.html#persistTextMaybe"><span class="hs-identifier hs-var hs-var">persistTextMaybe</span></a></span></span><span> </span><span class="annot"><span class="annottext">Maybe Text
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistNull"><span class="hs-identifier hs-var">PersistNull</span></a></span><span>
+</span><span id="line-111"></span><span class="annot"><a href="Integration.BankStatement.html#persistTextMaybe"><span class="hs-identifier hs-var">persistTextMaybe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621680262218"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262218"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262218"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-112"></span><span>
+</span><span id="line-113"></span><span class="annot"><a href="Integration.BankStatement.html#getXmlField"><span class="hs-identifier hs-type">getXmlField</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-114"></span><span id="getXmlField"><span class="annot"><span class="annottext">getXmlField :: Text -&gt; Text -&gt; Text -&gt; Text
+</span><a href="Integration.BankStatement.html#getXmlField"><span class="hs-identifier hs-var hs-var">getXmlField</span></a></span></span><span> </span><span id="local-6989586621680262220"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262220"><span class="hs-identifier hs-var">outer</span></a></span></span><span> </span><span id="local-6989586621680262221"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262221"><span class="hs-identifier hs-var">inner</span></a></span></span><span> </span><span id="local-6989586621680262222"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262222"><span class="hs-identifier hs-var">block</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-115"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680262223"><span class="annot"><span class="annottext">tag :: Text
+</span><a href="#local-6989586621680262223"><span class="hs-identifier hs-var hs-var">tag</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#null"><span class="hs-identifier hs-var">T.null</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262221"><span class="hs-identifier hs-var">inner</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262220"><span class="hs-identifier hs-var">outer</span></a></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262221"><span class="hs-identifier hs-var">inner</span></a></span><span>
+</span><span id="line-116"></span><span>      </span><span id="local-6989586621680262228"><span class="annot"><span class="annottext">open :: Text
+</span><a href="#local-6989586621680262228"><span class="hs-identifier hs-var hs-var">open</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&lt;&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262223"><span class="hs-identifier hs-var">tag</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&gt;&quot;</span></span><span>
+</span><span id="line-117"></span><span>      </span><span id="local-6989586621680262233"><span class="annot"><span class="annottext">close :: Text
+</span><a href="#local-6989586621680262233"><span class="hs-identifier hs-var hs-var">close</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&lt;/&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262223"><span class="hs-identifier hs-var">tag</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-var">&lt;&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&gt;&quot;</span></span><span>
+</span><span id="line-118"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">HasCallStack =&gt; Text -&gt; Text -&gt; (Text, Text)
+Text -&gt; Text -&gt; (Text, Text)
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#breakOn"><span class="hs-identifier hs-var">T.breakOn</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262228"><span class="hs-identifier hs-var">open</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262222"><span class="hs-identifier hs-var">block</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-119"></span><span>       </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262234"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262234"><span class="hs-identifier hs-var">rest</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#null"><span class="hs-identifier hs-var">T.null</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262234"><span class="hs-identifier hs-var">rest</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&quot;</span></span><span>
+</span><span id="line-120"></span><span>       </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262235"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262235"><span class="hs-identifier hs-var">rest</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-121"></span><span>         </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680262236"><span class="annot"><span class="annottext">val :: Text
+</span><a href="#local-6989586621680262236"><span class="hs-identifier hs-var hs-var">val</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Text -&gt; Text
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#drop"><span class="hs-identifier hs-var">T.drop</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#length"><span class="hs-identifier hs-var">T.length</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262228"><span class="hs-identifier hs-var">open</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262235"><span class="hs-identifier hs-var">rest</span></a></span><span>
+</span><span id="line-122"></span><span>         </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; Text
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#takeWhile"><span class="hs-identifier hs-var">T.takeWhile</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%2F%3D"><span class="hs-operator hs-var">/=</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'&lt;'</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262236"><span class="hs-identifier hs-var">val</span></a></span><span>
+</span><span id="line-123"></span><span>
+</span><span id="line-124"></span><span class="annot"><span class="hs-comment">-- | Persist parsed transactions to DB under a new import record</span></span><span>
+</span><span id="line-125"></span><span class="annot"><a href="Integration.BankStatement.html#importStatementLines"><span class="hs-identifier hs-type">importStatementLines</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Integration.BankStatement.html#BankTxn"><span class="hs-identifier hs-type">BankTxn</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="annot"><a href="Integration.BankStatement.html#ImportResult"><span class="hs-identifier hs-type">ImportResult</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-126"></span><span id="importStatementLines"><span class="annot"><span class="annottext">importStatementLines :: ConnectionPool
+-&gt; Text -&gt; Text -&gt; [BankTxn] -&gt; IO (QueryResult ImportResult)
+</span><a href="Integration.BankStatement.html#importStatementLines"><span class="hs-identifier hs-var hs-var">importStatementLines</span></a></span></span><span> </span><span id="local-6989586621680262237"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680262237"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680262238"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262238"><span class="hs-identifier hs-var">tenantId</span></a></span></span><span> </span><span id="local-6989586621680262239"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262239"><span class="hs-identifier hs-var">filename</span></a></span></span><span> </span><span id="local-6989586621680262240"><span class="annot"><span class="annottext">[BankTxn]
+</span><a href="#local-6989586621680262240"><span class="hs-identifier hs-var">txns</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-127"></span><span>  </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT IO (QueryResult ImportResult)
+-&gt; IO (QueryResult ImportResult)
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680262237"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT IO (QueryResult ImportResult)
+ -&gt; IO (QueryResult ImportResult))
+-&gt; SqlPersistT IO (QueryResult ImportResult)
+-&gt; IO (QueryResult ImportResult)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-128"></span><span>    </span><span class="hs-comment">-- Use rawExecute for INSERT, then get the ID via a separate query</span><span>
+</span><span id="line-129"></span><span>    </span><span class="annot"><span class="annottext">Text -&gt; [PersistValue] -&gt; ReaderT SqlBackend IO ()
+forall (m :: * -&gt; *) backend.
+(MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m ()
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawExecute"><span class="hs-identifier hs-var">rawExecute</span></a></span><span>
+</span><span id="line-130"></span><span>      </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;INSERT INTO bank_statement_import (tenant_id, filename, format, total_rows, status) \
+      \VALUES (?, ?, 'OFX', ?, 'done')&quot;</span></span><span>
+</span><span id="line-132"></span><span>      </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262238"><span class="hs-identifier hs-var">tenantId</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262239"><span class="hs-identifier hs-var">filename</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistInt64"><span class="hs-identifier hs-var">PersistInt64</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Int64
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#fromIntegral"><span class="hs-identifier hs-var">fromIntegral</span></a></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Int64) -&gt; Int -&gt; Int64
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[BankTxn] -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#length"><span class="hs-identifier hs-var">length</span></a></span><span> </span><span class="annot"><span class="annottext">[BankTxn]
+</span><a href="#local-6989586621680262240"><span class="hs-identifier hs-var">txns</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-133"></span><span>    </span><span id="local-6989586621680262243"><span class="annot"><a href="#local-6989586621680262243"><span class="hs-identifier hs-var">importIds</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier">Single</span></span><span> </span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Text -&gt; [PersistValue] -&gt; ReaderT SqlBackend IO [Single Text]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-134"></span><span>      </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id FROM bank_statement_import WHERE tenant_id = ? AND filename = ? ORDER BY id DESC LIMIT 1&quot;</span></span><span>
+</span><span id="line-135"></span><span>      </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262238"><span class="hs-identifier hs-var">tenantId</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262239"><span class="hs-identifier hs-var">filename</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-136"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680262243"><span class="hs-identifier hs-type">importIds</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-137"></span><span>      </span><span class="hs-special">[</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680262245"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262245"><span class="hs-identifier hs-var">importId</span></a></span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-138"></span><span>        </span><span class="hs-keyword">let</span><span> </span><span class="annot"><a href="#local-6989586621680262246"><span class="hs-identifier hs-type">insertLine</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#BankTxn"><span class="hs-identifier hs-type">BankTxn</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#SqlPersistT"><span class="hs-identifier hs-type">SqlPersistT</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-139"></span><span>            </span><span id="local-6989586621680262246"><span class="annot"><span class="annottext">insertLine :: BankTxn -&gt; ReaderT SqlBackend IO ()
+</span><a href="#local-6989586621680262246"><span class="hs-identifier hs-var hs-var hs-var">insertLine</span></a></span></span><span> </span><span id="local-6989586621680262247"><span class="annot"><span class="annottext">BankTxn
+</span><a href="#local-6989586621680262247"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; [PersistValue] -&gt; ReaderT SqlBackend IO ()
+forall (m :: * -&gt; *) backend.
+(MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m ()
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawExecute"><span class="hs-identifier hs-var">rawExecute</span></a></span><span>
+</span><span id="line-140"></span><span>              </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;INSERT INTO bank_statement_line \
+              \(import_id, txn_date, value_date, amount, currency, description, ref_number, counterparty) \
+              \VALUES (?, ?, ?, ?, ?, ?, ?, ?)&quot;</span></span><span>
+</span><span id="line-143"></span><span>              </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262245"><span class="hs-identifier hs-var">importId</span></a></span><span>
+</span><span id="line-144"></span><span>              </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BankTxn -&gt; Text
+</span><a href="Integration.BankStatement.html#btDate"><span class="hs-identifier hs-var">btDate</span></a></span><span> </span><span class="annot"><span class="annottext">BankTxn
+</span><a href="#local-6989586621680262247"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-145"></span><span>              </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Maybe Text -&gt; PersistValue
+</span><a href="Integration.BankStatement.html#persistTextMaybe"><span class="hs-identifier hs-var">persistTextMaybe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BankTxn -&gt; Maybe Text
+</span><a href="Integration.BankStatement.html#btValueDate"><span class="hs-identifier hs-var">btValueDate</span></a></span><span> </span><span class="annot"><span class="annottext">BankTxn
+</span><a href="#local-6989586621680262247"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-146"></span><span>              </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistDouble"><span class="hs-identifier hs-var">PersistDouble</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BankTxn -&gt; Double
+</span><a href="Integration.BankStatement.html#btAmount"><span class="hs-identifier hs-var">btAmount</span></a></span><span> </span><span class="annot"><span class="annottext">BankTxn
+</span><a href="#local-6989586621680262247"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-147"></span><span>              </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BankTxn -&gt; Text
+</span><a href="Integration.BankStatement.html#btCurrency"><span class="hs-identifier hs-var">btCurrency</span></a></span><span> </span><span class="annot"><span class="annottext">BankTxn
+</span><a href="#local-6989586621680262247"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-148"></span><span>              </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Maybe Text -&gt; PersistValue
+</span><a href="Integration.BankStatement.html#persistTextMaybe"><span class="hs-identifier hs-var">persistTextMaybe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BankTxn -&gt; Maybe Text
+</span><a href="Integration.BankStatement.html#btDescription"><span class="hs-identifier hs-var">btDescription</span></a></span><span> </span><span class="annot"><span class="annottext">BankTxn
+</span><a href="#local-6989586621680262247"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-149"></span><span>              </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Maybe Text -&gt; PersistValue
+</span><a href="Integration.BankStatement.html#persistTextMaybe"><span class="hs-identifier hs-var">persistTextMaybe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BankTxn -&gt; Maybe Text
+</span><a href="Integration.BankStatement.html#btRef"><span class="hs-identifier hs-var">btRef</span></a></span><span> </span><span class="annot"><span class="annottext">BankTxn
+</span><a href="#local-6989586621680262247"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-150"></span><span>              </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Maybe Text -&gt; PersistValue
+</span><a href="Integration.BankStatement.html#persistTextMaybe"><span class="hs-identifier hs-var">persistTextMaybe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BankTxn -&gt; Maybe Text
+</span><a href="Integration.BankStatement.html#btCounterparty"><span class="hs-identifier hs-var">btCounterparty</span></a></span><span> </span><span class="annot"><span class="annottext">BankTxn
+</span><a href="#local-6989586621680262247"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-151"></span><span>              </span><span class="hs-special">]</span><span>
+</span><span id="line-152"></span><span>        </span><span class="annot"><span class="annottext">(BankTxn -&gt; ReaderT SqlBackend IO ())
+-&gt; [BankTxn] -&gt; ReaderT SqlBackend IO ()
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#mapM_"><span class="hs-identifier hs-var">mapM_</span></a></span><span> </span><span class="annot"><span class="annottext">BankTxn -&gt; ReaderT SqlBackend IO ()
+</span><a href="#local-6989586621680262246"><span class="hs-identifier hs-var">insertLine</span></a></span><span> </span><span class="annot"><span class="annottext">[BankTxn]
+</span><a href="#local-6989586621680262240"><span class="hs-identifier hs-var">txns</span></a></span><span>
+</span><span id="line-153"></span><span>        </span><span class="annot"><span class="annottext">QueryResult ImportResult
+-&gt; SqlPersistT IO (QueryResult ImportResult)
+forall a. a -&gt; ReaderT SqlBackend IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#pure"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult ImportResult
+ -&gt; SqlPersistT IO (QueryResult ImportResult))
+-&gt; QueryResult ImportResult
+-&gt; SqlPersistT IO (QueryResult ImportResult)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">ImportResult -&gt; QueryResult ImportResult
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="annot"><span class="annottext">(ImportResult -&gt; QueryResult ImportResult)
+-&gt; ImportResult -&gt; QueryResult ImportResult
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Int -&gt; Text -&gt; ImportResult
+</span><a href="Integration.BankStatement.html#ImportResult"><span class="hs-identifier hs-var">ImportResult</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262245"><span class="hs-identifier hs-var">importId</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[BankTxn] -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#length"><span class="hs-identifier hs-var">length</span></a></span><span> </span><span class="annot"><span class="annottext">[BankTxn]
+</span><a href="#local-6989586621680262240"><span class="hs-identifier hs-var">txns</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;done&quot;</span></span><span>
+</span><span id="line-154"></span><span>      </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult ImportResult
+-&gt; SqlPersistT IO (QueryResult ImportResult)
+forall a. a -&gt; ReaderT SqlBackend IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#pure"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult ImportResult
+ -&gt; SqlPersistT IO (QueryResult ImportResult))
+-&gt; QueryResult ImportResult
+-&gt; SqlPersistT IO (QueryResult ImportResult)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; QueryResult ImportResult
+forall a. Text -&gt; QueryResult a
+</span><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-var">QueryError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Failed to create import record&quot;</span></span><span>
+</span><span id="line-155"></span><span>      </span><span class="annot"><span class="annottext">[Single Text]
+</span><span class="hs-identifier">_</span></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult ImportResult
+-&gt; SqlPersistT IO (QueryResult ImportResult)
+forall a. a -&gt; ReaderT SqlBackend IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#pure"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult ImportResult
+ -&gt; SqlPersistT IO (QueryResult ImportResult))
+-&gt; QueryResult ImportResult
+-&gt; SqlPersistT IO (QueryResult ImportResult)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; QueryResult ImportResult
+forall a. Text -&gt; QueryResult a
+</span><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-var">QueryError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Multiple import records returned&quot;</span></span><span>
+</span><span id="line-156"></span><span>
+</span><span id="line-157"></span><span class="annot"><span class="hs-comment">-- | Match imported transactions to existing bills by amount and date</span></span><span>
+</span><span id="line-158"></span><span class="annot"><a href="Integration.BankStatement.html#matchTransactionsToBills"><span class="hs-identifier hs-type">matchTransactionsToBills</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="annot"><a href="Integration.BankStatement.html#MatchResult"><span class="hs-identifier hs-type">MatchResult</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-159"></span><span id="matchTransactionsToBills"><span class="annot"><span class="annottext">matchTransactionsToBills :: ConnectionPool -&gt; Text -&gt; IO (QueryResult MatchResult)
+</span><a href="Integration.BankStatement.html#matchTransactionsToBills"><span class="hs-identifier hs-var hs-var">matchTransactionsToBills</span></a></span></span><span> </span><span id="local-6989586621680262252"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680262252"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680262253"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262253"><span class="hs-identifier hs-var">importId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-160"></span><span>  </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT IO (QueryResult MatchResult)
+-&gt; IO (QueryResult MatchResult)
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680262252"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT IO (QueryResult MatchResult)
+ -&gt; IO (QueryResult MatchResult))
+-&gt; SqlPersistT IO (QueryResult MatchResult)
+-&gt; IO (QueryResult MatchResult)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-161"></span><span>    </span><span id="local-6989586621680262254"><span class="annot"><a href="#local-6989586621680262254"><span class="hs-identifier hs-var">txns</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; ReaderT
+     SqlBackend IO [(Single Text, Single Double, Single Text)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-162"></span><span>      </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id, amount, txn_date FROM bank_statement_line WHERE import_id = ?&quot;</span></span><span>
+</span><span id="line-163"></span><span>      </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262253"><span class="hs-identifier hs-var">importId</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-164"></span><span>    </span><span id="local-6989586621680262255"><span class="annot"><a href="#local-6989586621680262255"><span class="hs-identifier hs-var">bills</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-type">rawSql</span></a></span><span>
+</span><span id="line-165"></span><span>      </span><span class="annot"><span class="hs-string">&quot;SELECT id, amount, due_date FROM bill WHERE status = 'unpaid'&quot;</span></span><span>
+</span><span id="line-166"></span><span>      </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-167"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680262256"><span class="annot"><a href="#local-6989586621680262256"><span class="hs-identifier hs-var hs-var">matches</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(Text, Double, Text)] -&gt; [(Text, Double, Text)] -&gt; [(Text, Text)]
+</span><a href="Integration.BankStatement.html#findMatches"><span class="hs-identifier hs-var">findMatches</span></a></span><span>
+</span><span id="line-168"></span><span>          </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262258"><span class="hs-identifier hs-var">tid</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680262259"><span class="hs-identifier hs-var">amt</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262260"><span class="hs-identifier hs-var">dt</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680262258"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262258"><span class="hs-identifier hs-var">tid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680262259"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680262259"><span class="hs-identifier hs-var">amt</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680262260"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262260"><span class="hs-identifier hs-var">dt</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[(Single Text, Single Double, Single Text)]
+</span><a href="#local-6989586621680262254"><span class="hs-identifier hs-var">txns</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-169"></span><span>          </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262261"><span class="hs-identifier hs-var">bid</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680262262"><span class="hs-identifier hs-var">amt</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262263"><span class="hs-identifier hs-var">dt</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680262261"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262261"><span class="hs-identifier hs-var">bid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680262262"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680262262"><span class="hs-identifier hs-var">amt</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680262263"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262263"><span class="hs-identifier hs-var">dt</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[(Single Text, Single Double, Single Text)]
+</span><a href="#local-6989586621680262255"><span class="hs-identifier hs-var">bills</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-170"></span><span>    </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#mapM_"><span class="hs-identifier hs-type">mapM_</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621680262264"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262264"><span class="hs-identifier hs-var">bid</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262265"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262265"><span class="hs-identifier hs-var">txnDate</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-171"></span><span>      </span><span class="annot"><span class="annottext">Text -&gt; [PersistValue] -&gt; ReaderT SqlBackend IO ()
+forall (m :: * -&gt; *) backend.
+(MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m ()
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawExecute"><span class="hs-identifier hs-var">rawExecute</span></a></span><span>
+</span><span id="line-172"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;UPDATE bill SET status = 'paid', paid_date = ? WHERE id = ?&quot;</span></span><span>
+</span><span id="line-173"></span><span>        </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262265"><span class="hs-identifier hs-var">txnDate</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262264"><span class="hs-identifier hs-var">bid</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-174"></span><span>      </span><span class="annot"><a href="#local-6989586621680262256"><span class="hs-identifier hs-type">matches</span></a></span><span>
+</span><span id="line-175"></span><span>    </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#mapM_"><span class="hs-identifier hs-type">mapM_</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621680262266"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262266"><span class="hs-identifier hs-var">bid</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262267"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262267"><span class="hs-identifier hs-var">txnId</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-176"></span><span>      </span><span class="annot"><span class="annottext">Text -&gt; [PersistValue] -&gt; ReaderT SqlBackend IO ()
+forall (m :: * -&gt; *) backend.
+(MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m ()
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawExecute"><span class="hs-identifier hs-var">rawExecute</span></a></span><span>
+</span><span id="line-177"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;UPDATE bank_statement_line SET matched_bill_id = ? WHERE id = ?&quot;</span></span><span>
+</span><span id="line-178"></span><span>        </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262266"><span class="hs-identifier hs-var">bid</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262267"><span class="hs-identifier hs-var">txnId</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-179"></span><span>      </span><span class="annot"><a href="#local-6989586621680262256"><span class="hs-identifier hs-type">matches</span></a></span><span>
+</span><span id="line-180"></span><span>    </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#pure"><span class="hs-identifier hs-type">pure</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-type">$</span></a></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-type">$</span></a></span><span> </span><span class="annot"><a href="Integration.BankStatement.html#MatchResult"><span class="hs-identifier hs-type">MatchResult</span></a></span><span>
+</span><span id="line-181"></span><span>      </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#mrMatchedCount"><span class="hs-identifier hs-var">mrMatchedCount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#length"><span class="hs-identifier hs-type">length</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680262256"><span class="hs-identifier hs-type">matches</span></a></span><span>
+</span><span id="line-182"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#mrUnmatchedCount"><span class="hs-identifier hs-var">mrUnmatchedCount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#length"><span class="hs-identifier hs-type">length</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680262254"><span class="hs-identifier hs-type">txns</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-type">-</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#length"><span class="hs-identifier hs-type">length</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680262256"><span class="hs-identifier hs-type">matches</span></a></span><span>
+</span><span id="line-183"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.BankStatement.html#mrMatchedIds"><span class="hs-identifier hs-var">mrMatchedIds</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#map"><span class="hs-identifier hs-type">map</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Tuple.html#fst"><span class="hs-identifier hs-type">fst</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680262256"><span class="hs-identifier hs-type">matches</span></a></span><span>
+</span><span id="line-184"></span><span>      </span><span class="hs-special">}</span><span>
+</span><span id="line-185"></span><span>
+</span><span id="line-186"></span><span class="annot"><span class="hs-comment">-- | Find matches between transactions and bills</span></span><span>
+</span><span id="line-187"></span><span class="annot"><a href="Integration.BankStatement.html#findMatches"><span class="hs-identifier hs-type">findMatches</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-188"></span><span id="findMatches"><span class="annot"><span class="annottext">findMatches :: [(Text, Double, Text)] -&gt; [(Text, Double, Text)] -&gt; [(Text, Text)]
+</span><a href="Integration.BankStatement.html#findMatches"><span class="hs-identifier hs-var hs-var">findMatches</span></a></span></span><span> </span><span id="local-6989586621680262269"><span class="annot"><span class="annottext">[(Text, Double, Text)]
+</span><a href="#local-6989586621680262269"><span class="hs-identifier hs-var">txns</span></a></span></span><span> </span><span id="local-6989586621680262270"><span class="annot"><span class="annottext">[(Text, Double, Text)]
+</span><a href="#local-6989586621680262270"><span class="hs-identifier hs-var">bills</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-189"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680262279"><span class="annot"><span class="annottext">matches :: [(Text, Text)]
+</span><a href="#local-6989586621680262279"><span class="hs-identifier hs-var hs-var">matches</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262280"><span class="hs-identifier hs-var">billId</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262281"><span class="hs-identifier hs-var">txnId</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span>
+</span><span id="line-190"></span><span>                 </span><span class="hs-special">(</span><span id="local-6989586621680262281"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262281"><span class="hs-identifier hs-var">txnId</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262282"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680262282"><span class="hs-identifier hs-var">txnAmt</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262283"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262283"><span class="hs-identifier hs-var">txnDate</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[(Text, Double, Text)]
+</span><a href="#local-6989586621680262269"><span class="hs-identifier hs-var">txns</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-191"></span><span>                 </span><span class="hs-special">(</span><span id="local-6989586621680262280"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262280"><span class="hs-identifier hs-var">billId</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262284"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680262284"><span class="hs-identifier hs-var">billAmt</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262285"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262285"><span class="hs-identifier hs-var">billDate</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[(Text, Double, Text)]
+</span><a href="#local-6989586621680262270"><span class="hs-identifier hs-var">bills</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-192"></span><span>                 </span><span class="annot"><span class="annottext">Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#abs"><span class="hs-identifier hs-var">abs</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680262282"><span class="hs-identifier hs-var">txnAmt</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-var">-</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680262284"><span class="hs-identifier hs-var">billAmt</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C"><span class="hs-operator hs-var">&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0.01</span></span><span class="hs-special">,</span><span>
+</span><span id="line-193"></span><span>                 </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262283"><span class="hs-identifier hs-var">txnDate</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262285"><span class="hs-identifier hs-var">billDate</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-194"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">[(Text, Text)]
+</span><a href="#local-6989586621680262279"><span class="hs-identifier hs-var">matches</span></a></span><span>
+</span><span id="line-195"></span><span>
+</span><span id="line-196"></span><span class="annot"><span class="hs-comment">-- | Flag unmatched transactions for manual review</span></span><span>
+</span><span id="line-197"></span><span class="annot"><a href="Integration.BankStatement.html#flagUnmatchedTransactions"><span class="hs-identifier hs-type">flagUnmatchedTransactions</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-198"></span><span id="flagUnmatchedTransactions"><span class="annot"><span class="annottext">flagUnmatchedTransactions :: ConnectionPool -&gt; Text -&gt; IO (QueryResult ())
+</span><a href="Integration.BankStatement.html#flagUnmatchedTransactions"><span class="hs-identifier hs-var hs-var">flagUnmatchedTransactions</span></a></span></span><span> </span><span id="local-6989586621680262288"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680262288"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680262289"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262289"><span class="hs-identifier hs-var">importId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-199"></span><span>  </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT IO (QueryResult ()) -&gt; IO (QueryResult ())
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680262288"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT IO (QueryResult ()) -&gt; IO (QueryResult ()))
+-&gt; SqlPersistT IO (QueryResult ()) -&gt; IO (QueryResult ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-200"></span><span>    </span><span class="annot"><span class="annottext">Text -&gt; [PersistValue] -&gt; ReaderT SqlBackend IO ()
+forall (m :: * -&gt; *) backend.
+(MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m ()
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawExecute"><span class="hs-identifier hs-var">rawExecute</span></a></span><span>
+</span><span id="line-201"></span><span>      </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;UPDATE bank_statement_line SET needs_review = true \
+      \WHERE import_id = ? AND matched_bill_id IS NULL&quot;</span></span><span>
+</span><span id="line-203"></span><span>      </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680262289"><span class="hs-identifier hs-var">importId</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-204"></span><span>    </span><span class="annot"><span class="annottext">QueryResult () -&gt; SqlPersistT IO (QueryResult ())
+forall a. a -&gt; ReaderT SqlBackend IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#pure"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult () -&gt; SqlPersistT IO (QueryResult ()))
+-&gt; QueryResult () -&gt; SqlPersistT IO (QueryResult ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">() -&gt; QueryResult ()
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-205"></span></pre></body></html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Integration module - External integrations</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Integration.Integration.html"><span class="hs-identifier">Integration.Integration</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="annot"><span class="hs-comment">-- | EDIProvider - EDI exchange provider</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">data</span><span> </span><span id="EDIProvider"><span class="annot"><a href="Integration.Integration.html#EDIProvider"><span class="hs-identifier hs-var">EDIProvider</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="EDIProvider"><span class="annot"><a href="Integration.Integration.html#EDIProvider"><span class="hs-identifier hs-var">EDIProvider</span></a></span></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="ediId"><span class="annot"><span class="annottext">EDIProvider -&gt; Int64
+</span><a href="Integration.Integration.html#ediId"><span class="hs-identifier hs-var hs-var">ediId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span id="ediCode"><span class="annot"><span class="annottext">EDIProvider -&gt; Text
+</span><a href="Integration.Integration.html#ediCode"><span class="hs-identifier hs-var hs-var">ediCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="ediName"><span class="annot"><span class="annottext">EDIProvider -&gt; Text
+</span><a href="Integration.Integration.html#ediName"><span class="hs-identifier hs-var hs-var">ediName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="ediURL"><span class="annot"><span class="annottext">EDIProvider -&gt; Text
+</span><a href="Integration.Integration.html#ediURL"><span class="hs-identifier hs-var hs-var">ediURL</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="ediLogin"><span class="annot"><span class="annottext">EDIProvider -&gt; Text
+</span><a href="Integration.Integration.html#ediLogin"><span class="hs-identifier hs-var hs-var">ediLogin</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="ediFlags"><span class="annot"><span class="annottext">EDIProvider -&gt; Int
+</span><a href="Integration.Integration.html#ediFlags"><span class="hs-identifier hs-var hs-var">ediFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680263827"><span id="local-6989586621680263840"><span id="local-6989586621680263844"><span class="annot"><span class="annottext">Int -&gt; EDIProvider -&gt; ShowS
+[EDIProvider] -&gt; ShowS
+EDIProvider -&gt; String
+(Int -&gt; EDIProvider -&gt; ShowS)
+-&gt; (EDIProvider -&gt; String)
+-&gt; ([EDIProvider] -&gt; ShowS)
+-&gt; Show EDIProvider
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; EDIProvider -&gt; ShowS
+showsPrec :: Int -&gt; EDIProvider -&gt; ShowS
+$cshow :: EDIProvider -&gt; String
+show :: EDIProvider -&gt; String
+$cshowList :: [EDIProvider] -&gt; ShowS
+showList :: [EDIProvider] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680263849"><span id="local-6989586621680263860"><span class="annot"><span class="annottext">EDIProvider -&gt; EDIProvider -&gt; Bool
+(EDIProvider -&gt; EDIProvider -&gt; Bool)
+-&gt; (EDIProvider -&gt; EDIProvider -&gt; Bool) -&gt; Eq EDIProvider
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: EDIProvider -&gt; EDIProvider -&gt; Bool
+== :: EDIProvider -&gt; EDIProvider -&gt; Bool
+$c/= :: EDIProvider -&gt; EDIProvider -&gt; Bool
+/= :: EDIProvider -&gt; EDIProvider -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="annot"><span class="hs-comment">-- | Webhook - Webhook configuration</span></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">data</span><span> </span><span id="Webhook"><span class="annot"><a href="Integration.Integration.html#Webhook"><span class="hs-identifier hs-var">Webhook</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Webhook"><span class="annot"><a href="Integration.Integration.html#Webhook"><span class="hs-identifier hs-var">Webhook</span></a></span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="whId"><span class="annot"><span class="annottext">Webhook -&gt; Int64
+</span><a href="Integration.Integration.html#whId"><span class="hs-identifier hs-var hs-var">whId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="whURL"><span class="annot"><span class="annottext">Webhook -&gt; Text
+</span><a href="Integration.Integration.html#whURL"><span class="hs-identifier hs-var hs-var">whURL</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="whEvent"><span class="annot"><span class="annottext">Webhook -&gt; WebhookEvent
+</span><a href="Integration.Integration.html#whEvent"><span class="hs-identifier hs-var hs-var">whEvent</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.Integration.html#WebhookEvent"><span class="hs-identifier hs-type">WebhookEvent</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="whSecret"><span class="annot"><span class="annottext">Webhook -&gt; Text
+</span><a href="Integration.Integration.html#whSecret"><span class="hs-identifier hs-var hs-var">whSecret</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="whFlags"><span class="annot"><span class="annottext">Webhook -&gt; Int
+</span><a href="Integration.Integration.html#whFlags"><span class="hs-identifier hs-var hs-var">whFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680263871"><span id="local-6989586621680263880"><span id="local-6989586621680263884"><span class="annot"><span class="annottext">Int -&gt; Webhook -&gt; ShowS
+[Webhook] -&gt; ShowS
+Webhook -&gt; String
+(Int -&gt; Webhook -&gt; ShowS)
+-&gt; (Webhook -&gt; String) -&gt; ([Webhook] -&gt; ShowS) -&gt; Show Webhook
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Webhook -&gt; ShowS
+showsPrec :: Int -&gt; Webhook -&gt; ShowS
+$cshow :: Webhook -&gt; String
+show :: Webhook -&gt; String
+$cshowList :: [Webhook] -&gt; ShowS
+showList :: [Webhook] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680263887"><span id="local-6989586621680263895"><span class="annot"><span class="annottext">Webhook -&gt; Webhook -&gt; Bool
+(Webhook -&gt; Webhook -&gt; Bool)
+-&gt; (Webhook -&gt; Webhook -&gt; Bool) -&gt; Eq Webhook
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Webhook -&gt; Webhook -&gt; Bool
+== :: Webhook -&gt; Webhook -&gt; Bool
+$c/= :: Webhook -&gt; Webhook -&gt; Bool
+/= :: Webhook -&gt; Webhook -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">data</span><span> </span><span id="WebhookEvent"><span class="annot"><a href="Integration.Integration.html#WebhookEvent"><span class="hs-identifier hs-var">WebhookEvent</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="WEBillCreated"><span class="annot"><a href="Integration.Integration.html#WEBillCreated"><span class="hs-identifier hs-var">WEBillCreated</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="WEBillPosted"><span class="annot"><a href="Integration.Integration.html#WEBillPosted"><span class="hs-identifier hs-var">WEBillPosted</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="WEBillChanged"><span class="annot"><a href="Integration.Integration.html#WEBillChanged"><span class="hs-identifier hs-var">WEBillChanged</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="WEGoodsChanged"><span class="annot"><a href="Integration.Integration.html#WEGoodsChanged"><span class="hs-identifier hs-var">WEGoodsChanged</span></a></span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680263903"><span id="local-6989586621680263905"><span id="local-6989586621680263908"><span class="annot"><span class="annottext">Int -&gt; WebhookEvent -&gt; ShowS
+[WebhookEvent] -&gt; ShowS
+WebhookEvent -&gt; String
+(Int -&gt; WebhookEvent -&gt; ShowS)
+-&gt; (WebhookEvent -&gt; String)
+-&gt; ([WebhookEvent] -&gt; ShowS)
+-&gt; Show WebhookEvent
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; WebhookEvent -&gt; ShowS
+showsPrec :: Int -&gt; WebhookEvent -&gt; ShowS
+$cshow :: WebhookEvent -&gt; String
+show :: WebhookEvent -&gt; String
+$cshowList :: [WebhookEvent] -&gt; ShowS
+showList :: [WebhookEvent] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680263911"><span id="local-6989586621680263916"><span class="annot"><span class="annottext">WebhookEvent -&gt; WebhookEvent -&gt; Bool
+(WebhookEvent -&gt; WebhookEvent -&gt; Bool)
+-&gt; (WebhookEvent -&gt; WebhookEvent -&gt; Bool) -&gt; Eq WebhookEvent
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: WebhookEvent -&gt; WebhookEvent -&gt; Bool
+== :: WebhookEvent -&gt; WebhookEvent -&gt; Bool
+$c/= :: WebhookEvent -&gt; WebhookEvent -&gt; Bool
+/= :: WebhookEvent -&gt; WebhookEvent -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="annot"><span class="hs-comment">-- | SMSAccount - SMS provider</span></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">data</span><span> </span><span id="SMSAccount"><span class="annot"><a href="Integration.Integration.html#SMSAccount"><span class="hs-identifier hs-var">SMSAccount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SMSAccount"><span class="annot"><a href="Integration.Integration.html#SMSAccount"><span class="hs-identifier hs-var">SMSAccount</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="smsId"><span class="annot"><span class="annottext">SMSAccount -&gt; Int64
+</span><a href="Integration.Integration.html#smsId"><span class="hs-identifier hs-var hs-var">smsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-34"></span><span>    </span><span id="smsName"><span class="annot"><span class="annottext">SMSAccount -&gt; Text
+</span><a href="Integration.Integration.html#smsName"><span class="hs-identifier hs-var hs-var">smsName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>    </span><span id="smsProvider"><span class="annot"><span class="annottext">SMSAccount -&gt; Text
+</span><a href="Integration.Integration.html#smsProvider"><span class="hs-identifier hs-var hs-var">smsProvider</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-36"></span><span>    </span><span id="smsLogin"><span class="annot"><span class="annottext">SMSAccount -&gt; Text
+</span><a href="Integration.Integration.html#smsLogin"><span class="hs-identifier hs-var hs-var">smsLogin</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-37"></span><span>    </span><span id="smsPassword"><span class="annot"><span class="annottext">SMSAccount -&gt; Text
+</span><a href="Integration.Integration.html#smsPassword"><span class="hs-identifier hs-var hs-var">smsPassword</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680263925"><span id="local-6989586621680263933"><span id="local-6989586621680263937"><span class="annot"><span class="annottext">Int -&gt; SMSAccount -&gt; ShowS
+[SMSAccount] -&gt; ShowS
+SMSAccount -&gt; String
+(Int -&gt; SMSAccount -&gt; ShowS)
+-&gt; (SMSAccount -&gt; String)
+-&gt; ([SMSAccount] -&gt; ShowS)
+-&gt; Show SMSAccount
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; SMSAccount -&gt; ShowS
+showsPrec :: Int -&gt; SMSAccount -&gt; ShowS
+$cshow :: SMSAccount -&gt; String
+show :: SMSAccount -&gt; String
+$cshowList :: [SMSAccount] -&gt; ShowS
+showList :: [SMSAccount] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680263940"><span id="local-6989586621680263947"><span class="annot"><span class="annottext">SMSAccount -&gt; SMSAccount -&gt; Bool
+(SMSAccount -&gt; SMSAccount -&gt; Bool)
+-&gt; (SMSAccount -&gt; SMSAccount -&gt; Bool) -&gt; Eq SMSAccount
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: SMSAccount -&gt; SMSAccount -&gt; Bool
+== :: SMSAccount -&gt; SMSAccount -&gt; Bool
+$c/= :: SMSAccount -&gt; SMSAccount -&gt; Bool
+/= :: SMSAccount -&gt; SMSAccount -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="annot"><span class="hs-comment">-- | InternetAccount - Mail account</span></span><span>
+</span><span id="line-42"></span><span class="hs-keyword">data</span><span> </span><span id="InternetAccount"><span class="annot"><a href="Integration.Integration.html#InternetAccount"><span class="hs-identifier hs-var">InternetAccount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="InternetAccount"><span class="annot"><a href="Integration.Integration.html#InternetAccount"><span class="hs-identifier hs-var">InternetAccount</span></a></span></span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="iaId"><span class="annot"><span class="annottext">InternetAccount -&gt; Int64
+</span><a href="Integration.Integration.html#iaId"><span class="hs-identifier hs-var hs-var">iaId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-44"></span><span>    </span><span id="iaName"><span class="annot"><span class="annottext">InternetAccount -&gt; Text
+</span><a href="Integration.Integration.html#iaName"><span class="hs-identifier hs-var hs-var">iaName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-45"></span><span>    </span><span id="iaServer"><span class="annot"><span class="annottext">InternetAccount -&gt; Text
+</span><a href="Integration.Integration.html#iaServer"><span class="hs-identifier hs-var hs-var">iaServer</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-46"></span><span>    </span><span id="iaLogin"><span class="annot"><span class="annottext">InternetAccount -&gt; Text
+</span><a href="Integration.Integration.html#iaLogin"><span class="hs-identifier hs-var hs-var">iaLogin</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-47"></span><span>    </span><span id="iaPassword"><span class="annot"><span class="annottext">InternetAccount -&gt; Text
+</span><a href="Integration.Integration.html#iaPassword"><span class="hs-identifier hs-var hs-var">iaPassword</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-48"></span><span>    </span><span id="iaPort"><span class="annot"><span class="annottext">InternetAccount -&gt; Int
+</span><a href="Integration.Integration.html#iaPort"><span class="hs-identifier hs-var hs-var">iaPort</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-49"></span><span>    </span><span id="iaSSL"><span class="annot"><span class="annottext">InternetAccount -&gt; Bool
+</span><a href="Integration.Integration.html#iaSSL"><span class="hs-identifier hs-var hs-var">iaSSL</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680263959"><span id="local-6989586621680263970"><span id="local-6989586621680263974"><span class="annot"><span class="annottext">Int -&gt; InternetAccount -&gt; ShowS
+[InternetAccount] -&gt; ShowS
+InternetAccount -&gt; String
+(Int -&gt; InternetAccount -&gt; ShowS)
+-&gt; (InternetAccount -&gt; String)
+-&gt; ([InternetAccount] -&gt; ShowS)
+-&gt; Show InternetAccount
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; InternetAccount -&gt; ShowS
+showsPrec :: Int -&gt; InternetAccount -&gt; ShowS
+$cshow :: InternetAccount -&gt; String
+show :: InternetAccount -&gt; String
+$cshowList :: [InternetAccount] -&gt; ShowS
+showList :: [InternetAccount] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680263977"><span id="local-6989586621680263987"><span class="annot"><span class="annottext">InternetAccount -&gt; InternetAccount -&gt; Bool
+(InternetAccount -&gt; InternetAccount -&gt; Bool)
+-&gt; (InternetAccount -&gt; InternetAccount -&gt; Bool)
+-&gt; Eq InternetAccount
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: InternetAccount -&gt; InternetAccount -&gt; Bool
+== :: InternetAccount -&gt; InternetAccount -&gt; Bool
+$c/= :: InternetAccount -&gt; InternetAccount -&gt; Bool
+/= :: InternetAccount -&gt; InternetAccount -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span></pre></body></html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Production Service (Phase 1: stub)</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Production.Service.html"><span class="hs-identifier">Production.Service</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Production.Service.html#TechCard"><span class="hs-identifier">TechCard</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Production.Service.html#TechLine"><span class="hs-identifier">TechLine</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Production.Service.html#createTechCard"><span class="hs-identifier">createTechCard</span></a></span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Production.Service.html#createTechLine"><span class="hs-identifier">createTechLine</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Production.Service.html#validateTechCard"><span class="hs-identifier">validateTechCard</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Production.Service.html#validateTechLine"><span class="hs-identifier">validateTechLine</span></a></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="annot"><span class="hs-comment">-- | Tech card</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">data</span><span> </span><span id="TechCard"><span class="annot"><a href="Production.Service.html#TechCard"><span class="hs-identifier hs-var">TechCard</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TechCard"><span class="annot"><a href="Production.Service.html#TechCard"><span class="hs-identifier hs-var">TechCard</span></a></span></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="techCardId"><span class="annot"><span class="annottext">TechCard -&gt; Int
+</span><a href="Production.Service.html#techCardId"><span class="hs-identifier hs-var hs-var">techCardId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="techCardName"><span class="annot"><span class="annottext">TechCard -&gt; Text
+</span><a href="Production.Service.html#techCardName"><span class="hs-identifier hs-var hs-var">techCardName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680276483"><span id="local-6989586621680276491"><span id="local-6989586621680276495"><span class="annot"><span class="annottext">Int -&gt; TechCard -&gt; ShowS
+[TechCard] -&gt; ShowS
+TechCard -&gt; String
+(Int -&gt; TechCard -&gt; ShowS)
+-&gt; (TechCard -&gt; String) -&gt; ([TechCard] -&gt; ShowS) -&gt; Show TechCard
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TechCard -&gt; ShowS
+showsPrec :: Int -&gt; TechCard -&gt; ShowS
+$cshow :: TechCard -&gt; String
+show :: TechCard -&gt; String
+$cshowList :: [TechCard] -&gt; ShowS
+showList :: [TechCard] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680276500"><span id="local-6989586621680276506"><span class="annot"><span class="annottext">TechCard -&gt; TechCard -&gt; Bool
+(TechCard -&gt; TechCard -&gt; Bool)
+-&gt; (TechCard -&gt; TechCard -&gt; Bool) -&gt; Eq TechCard
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TechCard -&gt; TechCard -&gt; Bool
+== :: TechCard -&gt; TechCard -&gt; Bool
+$c/= :: TechCard -&gt; TechCard -&gt; Bool
+/= :: TechCard -&gt; TechCard -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="annot"><span class="hs-comment">-- | Tech line</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="TechLine"><span class="annot"><a href="Production.Service.html#TechLine"><span class="hs-identifier hs-var">TechLine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TechLine"><span class="annot"><a href="Production.Service.html#TechLine"><span class="hs-identifier hs-var">TechLine</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="techLineId"><span class="annot"><span class="annottext">TechLine -&gt; Int
+</span><a href="Production.Service.html#techLineId"><span class="hs-identifier hs-var hs-var">techLineId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="techLineName"><span class="annot"><span class="annottext">TechLine -&gt; Text
+</span><a href="Production.Service.html#techLineName"><span class="hs-identifier hs-var hs-var">techLineName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680276514"><span id="local-6989586621680276519"><span id="local-6989586621680276523"><span class="annot"><span class="annottext">Int -&gt; TechLine -&gt; ShowS
+[TechLine] -&gt; ShowS
+TechLine -&gt; String
+(Int -&gt; TechLine -&gt; ShowS)
+-&gt; (TechLine -&gt; String) -&gt; ([TechLine] -&gt; ShowS) -&gt; Show TechLine
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TechLine -&gt; ShowS
+showsPrec :: Int -&gt; TechLine -&gt; ShowS
+$cshow :: TechLine -&gt; String
+show :: TechLine -&gt; String
+$cshowList :: [TechLine] -&gt; ShowS
+showList :: [TechLine] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680276526"><span id="local-6989586621680276530"><span class="annot"><span class="annottext">TechLine -&gt; TechLine -&gt; Bool
+(TechLine -&gt; TechLine -&gt; Bool)
+-&gt; (TechLine -&gt; TechLine -&gt; Bool) -&gt; Eq TechLine
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TechLine -&gt; TechLine -&gt; Bool
+== :: TechLine -&gt; TechLine -&gt; Bool
+$c/= :: TechLine -&gt; TechLine -&gt; Bool
+/= :: TechLine -&gt; TechLine -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="annot"><span class="hs-comment">-- | Validate tech card (stub)</span></span><span>
+</span><span id="line-27"></span><span class="annot"><a href="Production.Service.html#validateTechCard"><span class="hs-identifier hs-type">validateTechCard</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.Service.html#TechCard"><span class="hs-identifier hs-type">TechCard</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span id="validateTechCard"><span class="annot"><span class="annottext">validateTechCard :: TechCard -&gt; Either Text ()
+</span><a href="Production.Service.html#validateTechCard"><span class="hs-identifier hs-var hs-var">validateTechCard</span></a></span></span><span> </span><span class="annot"><span class="annottext">TechCard
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; Either Text ()
+forall a b. b -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="annot"><span class="hs-comment">-- | Validate tech line (stub)</span></span><span>
+</span><span id="line-31"></span><span class="annot"><a href="Production.Service.html#validateTechLine"><span class="hs-identifier hs-type">validateTechLine</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.Service.html#TechLine"><span class="hs-identifier hs-type">TechLine</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span id="validateTechLine"><span class="annot"><span class="annottext">validateTechLine :: TechLine -&gt; Either Text ()
+</span><a href="Production.Service.html#validateTechLine"><span class="hs-identifier hs-var hs-var">validateTechLine</span></a></span></span><span> </span><span class="annot"><span class="annottext">TechLine
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; Either Text ()
+forall a b. b -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="annot"><span class="hs-comment">-- | Create tech card (stub)</span></span><span>
+</span><span id="line-35"></span><span class="annot"><a href="Production.Service.html#createTechCard"><span class="hs-identifier hs-type">createTechCard</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.Service.html#TechCard"><span class="hs-identifier hs-type">TechCard</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="annot"><a href="Production.Service.html#TechCard"><span class="hs-identifier hs-type">TechCard</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span id="createTechCard"><span class="annot"><span class="annottext">createTechCard :: TechCard -&gt; UTCTime -&gt; Text -&gt; IO (Either Text TechCard)
+</span><a href="Production.Service.html#createTechCard"><span class="hs-identifier hs-var hs-var">createTechCard</span></a></span></span><span> </span><span id="local-6989586621680276533"><span class="annot"><span class="annottext">TechCard
+</span><a href="#local-6989586621680276533"><span class="hs-identifier hs-var">techCard</span></a></span></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either Text TechCard -&gt; IO (Either Text TechCard)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(Either Text TechCard -&gt; IO (Either Text TechCard))
+-&gt; Either Text TechCard -&gt; IO (Either Text TechCard)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">TechCard -&gt; Either Text TechCard
+forall a b. b -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">TechCard
+</span><a href="#local-6989586621680276533"><span class="hs-identifier hs-var">techCard</span></a></span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="annot"><span class="hs-comment">-- | Create tech line (stub)</span></span><span>
+</span><span id="line-39"></span><span class="annot"><a href="Production.Service.html#createTechLine"><span class="hs-identifier hs-type">createTechLine</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.Service.html#TechLine"><span class="hs-identifier hs-type">TechLine</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="annot"><a href="Production.Service.html#TechLine"><span class="hs-identifier hs-type">TechLine</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span id="createTechLine"><span class="annot"><span class="annottext">createTechLine :: TechLine -&gt; UTCTime -&gt; Text -&gt; IO (Either Text TechLine)
+</span><a href="Production.Service.html#createTechLine"><span class="hs-identifier hs-var hs-var">createTechLine</span></a></span></span><span> </span><span id="local-6989586621680276534"><span class="annot"><span class="annottext">TechLine
+</span><a href="#local-6989586621680276534"><span class="hs-identifier hs-var">techLine</span></a></span></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either Text TechLine -&gt; IO (Either Text TechLine)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(Either Text TechLine -&gt; IO (Either Text TechLine))
+-&gt; Either Text TechLine -&gt; IO (Either Text TechLine)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">TechLine -&gt; Either Text TechLine
+forall a b. b -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">TechLine
+</span><a href="#local-6989586621680276534"><span class="hs-identifier hs-var">techLine</span></a></span><span>
+</span><span id="line-41"></span></pre></body></html>

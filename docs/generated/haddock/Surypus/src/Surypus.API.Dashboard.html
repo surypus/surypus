@@ -1,0 +1,433 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DuplicateRecordFields #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.API.Dashboard.html"><span class="hs-identifier">Surypus.API.Dashboard</span></a></span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Surypus.API.Dashboard.html#DashboardKPI"><span class="hs-identifier">DashboardKPI</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Surypus.API.Dashboard.html#RevenuePoint"><span class="hs-identifier">RevenuePoint</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Surypus.API.Dashboard.html#OrderStatus"><span class="hs-identifier">OrderStatus</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Surypus.API.Dashboard.html#StockSummary"><span class="hs-identifier">StockSummary</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Surypus.API.Dashboard.html#getDashboardKPI"><span class="hs-identifier">getDashboardKPI</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Surypus.API.Dashboard.html#getRevenueTrend"><span class="hs-identifier">getRevenueTrend</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Surypus.API.Dashboard.html#getOrderStatuses"><span class="hs-identifier">getOrderStatuses</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="Surypus.API.Dashboard.html#getStockSummary"><span class="hs-identifier">getStockSummary</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Control.Monad.IO.Class.html"><span class="hs-identifier">Control.Monad.IO.Class</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Control.Monad.IO.Class.html#liftIO"><span class="hs-identifier">liftIO</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.Types.html"><span class="hs-identifier">DAL.Types</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier">QueryResult</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.html"><span class="hs-identifier">Database.Persist.Sql</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier">ConnectionPool</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier">rawSql</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier">runSqlPool</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier">Single</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">data</span><span> </span><span id="DashboardKPI"><span class="annot"><a href="Surypus.API.Dashboard.html#DashboardKPI"><span class="hs-identifier hs-var">DashboardKPI</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="DashboardKPI"><span class="annot"><a href="Surypus.API.Dashboard.html#DashboardKPI"><span class="hs-identifier hs-var">DashboardKPI</span></a></span></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="kpiRevenue"><span class="annot"><span class="annottext">DashboardKPI -&gt; Double
+</span><a href="Surypus.API.Dashboard.html#kpiRevenue"><span class="hs-identifier hs-var hs-var">kpiRevenue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="kpiOrders"><span class="annot"><span class="annottext">DashboardKPI -&gt; Int64
+</span><a href="Surypus.API.Dashboard.html#kpiOrders"><span class="hs-identifier hs-var hs-var">kpiOrders</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="kpiActiveGoods"><span class="annot"><span class="annottext">DashboardKPI -&gt; Int64
+</span><a href="Surypus.API.Dashboard.html#kpiActiveGoods"><span class="hs-identifier hs-var hs-var">kpiActiveGoods</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-29"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="kpiPartners"><span class="annot"><span class="annottext">DashboardKPI -&gt; Int64
+</span><a href="Surypus.API.Dashboard.html#kpiPartners"><span class="hs-identifier hs-var hs-var">kpiPartners</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680291287"><span id="local-6989586621680291297"><span id="local-6989586621680291301"><span class="annot"><span class="annottext">Int -&gt; DashboardKPI -&gt; ShowS
+[DashboardKPI] -&gt; ShowS
+DashboardKPI -&gt; String
+(Int -&gt; DashboardKPI -&gt; ShowS)
+-&gt; (DashboardKPI -&gt; String)
+-&gt; ([DashboardKPI] -&gt; ShowS)
+-&gt; Show DashboardKPI
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DashboardKPI -&gt; ShowS
+showsPrec :: Int -&gt; DashboardKPI -&gt; ShowS
+$cshow :: DashboardKPI -&gt; String
+show :: DashboardKPI -&gt; String
+$cshowList :: [DashboardKPI] -&gt; ShowS
+showList :: [DashboardKPI] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680291306"><span id="local-6989586621680291314"><span class="annot"><span class="annottext">DashboardKPI -&gt; DashboardKPI -&gt; Bool
+(DashboardKPI -&gt; DashboardKPI -&gt; Bool)
+-&gt; (DashboardKPI -&gt; DashboardKPI -&gt; Bool) -&gt; Eq DashboardKPI
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: DashboardKPI -&gt; DashboardKPI -&gt; Bool
+== :: DashboardKPI -&gt; DashboardKPI -&gt; Bool
+$c/= :: DashboardKPI -&gt; DashboardKPI -&gt; Bool
+/= :: DashboardKPI -&gt; DashboardKPI -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680291319"><span id="local-6989586621680291321"><span class="annot"><span class="annottext">(forall x. DashboardKPI -&gt; Rep DashboardKPI x)
+-&gt; (forall x. Rep DashboardKPI x -&gt; DashboardKPI)
+-&gt; Generic DashboardKPI
+forall x. Rep DashboardKPI x -&gt; DashboardKPI
+forall x. DashboardKPI -&gt; Rep DashboardKPI x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. DashboardKPI -&gt; Rep DashboardKPI x
+from :: forall x. DashboardKPI -&gt; Rep DashboardKPI x
+$cto :: forall x. Rep DashboardKPI x -&gt; DashboardKPI
+to :: forall x. Rep DashboardKPI x -&gt; DashboardKPI
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680291327"><span id="local-6989586621680291334"><span id="local-6989586621680291337"><span id="local-6989586621680291340"><span id="local-6989586621680291343"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.API.Dashboard.html#DashboardKPI"><span class="hs-identifier hs-type">DashboardKPI</span></a></span></span></span></span></span></span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="hs-keyword">data</span><span> </span><span id="RevenuePoint"><span class="annot"><a href="Surypus.API.Dashboard.html#RevenuePoint"><span class="hs-identifier hs-var">RevenuePoint</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RevenuePoint"><span class="annot"><a href="Surypus.API.Dashboard.html#RevenuePoint"><span class="hs-identifier hs-var">RevenuePoint</span></a></span></span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="rpMonth"><span class="annot"><span class="annottext">RevenuePoint -&gt; Text
+</span><a href="Surypus.API.Dashboard.html#rpMonth"><span class="hs-identifier hs-var hs-var">rpMonth</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="rpRevenue"><span class="annot"><span class="annottext">RevenuePoint -&gt; Double
+</span><a href="Surypus.API.Dashboard.html#rpRevenue"><span class="hs-identifier hs-var hs-var">rpRevenue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="rpCount"><span class="annot"><span class="annottext">RevenuePoint -&gt; Int64
+</span><a href="Surypus.API.Dashboard.html#rpCount"><span class="hs-identifier hs-var hs-var">rpCount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-40"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680291478"><span id="local-6989586621680291485"><span id="local-6989586621680291489"><span class="annot"><span class="annottext">Int -&gt; RevenuePoint -&gt; ShowS
+[RevenuePoint] -&gt; ShowS
+RevenuePoint -&gt; String
+(Int -&gt; RevenuePoint -&gt; ShowS)
+-&gt; (RevenuePoint -&gt; String)
+-&gt; ([RevenuePoint] -&gt; ShowS)
+-&gt; Show RevenuePoint
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; RevenuePoint -&gt; ShowS
+showsPrec :: Int -&gt; RevenuePoint -&gt; ShowS
+$cshow :: RevenuePoint -&gt; String
+show :: RevenuePoint -&gt; String
+$cshowList :: [RevenuePoint] -&gt; ShowS
+showList :: [RevenuePoint] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680291492"><span id="local-6989586621680291498"><span class="annot"><span class="annottext">RevenuePoint -&gt; RevenuePoint -&gt; Bool
+(RevenuePoint -&gt; RevenuePoint -&gt; Bool)
+-&gt; (RevenuePoint -&gt; RevenuePoint -&gt; Bool) -&gt; Eq RevenuePoint
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: RevenuePoint -&gt; RevenuePoint -&gt; Bool
+== :: RevenuePoint -&gt; RevenuePoint -&gt; Bool
+$c/= :: RevenuePoint -&gt; RevenuePoint -&gt; Bool
+/= :: RevenuePoint -&gt; RevenuePoint -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680291502"><span id="local-6989586621680291504"><span class="annot"><span class="annottext">(forall x. RevenuePoint -&gt; Rep RevenuePoint x)
+-&gt; (forall x. Rep RevenuePoint x -&gt; RevenuePoint)
+-&gt; Generic RevenuePoint
+forall x. Rep RevenuePoint x -&gt; RevenuePoint
+forall x. RevenuePoint -&gt; Rep RevenuePoint x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. RevenuePoint -&gt; Rep RevenuePoint x
+from :: forall x. RevenuePoint -&gt; Rep RevenuePoint x
+$cto :: forall x. Rep RevenuePoint x -&gt; RevenuePoint
+to :: forall x. Rep RevenuePoint x -&gt; RevenuePoint
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680291507"><span id="local-6989586621680291514"><span id="local-6989586621680291517"><span id="local-6989586621680291520"><span id="local-6989586621680291523"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.API.Dashboard.html#RevenuePoint"><span class="hs-identifier hs-type">RevenuePoint</span></a></span></span></span></span></span></span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="hs-keyword">data</span><span> </span><span id="OrderStatus"><span class="annot"><a href="Surypus.API.Dashboard.html#OrderStatus"><span class="hs-identifier hs-var">OrderStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="OrderStatus"><span class="annot"><a href="Surypus.API.Dashboard.html#OrderStatus"><span class="hs-identifier hs-var">OrderStatus</span></a></span></span><span>
+</span><span id="line-45"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="osStatus"><span class="annot"><span class="annottext">OrderStatus -&gt; Text
+</span><a href="Surypus.API.Dashboard.html#osStatus"><span class="hs-identifier hs-var hs-var">osStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-46"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="osCount"><span class="annot"><span class="annottext">OrderStatus -&gt; Int64
+</span><a href="Surypus.API.Dashboard.html#osCount"><span class="hs-identifier hs-var hs-var">osCount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="osTotal"><span class="annot"><span class="annottext">OrderStatus -&gt; Double
+</span><a href="Surypus.API.Dashboard.html#osTotal"><span class="hs-identifier hs-var hs-var">osTotal</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-48"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-49"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680291608"><span id="local-6989586621680291614"><span id="local-6989586621680291618"><span class="annot"><span class="annottext">Int -&gt; OrderStatus -&gt; ShowS
+[OrderStatus] -&gt; ShowS
+OrderStatus -&gt; String
+(Int -&gt; OrderStatus -&gt; ShowS)
+-&gt; (OrderStatus -&gt; String)
+-&gt; ([OrderStatus] -&gt; ShowS)
+-&gt; Show OrderStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; OrderStatus -&gt; ShowS
+showsPrec :: Int -&gt; OrderStatus -&gt; ShowS
+$cshow :: OrderStatus -&gt; String
+show :: OrderStatus -&gt; String
+$cshowList :: [OrderStatus] -&gt; ShowS
+showList :: [OrderStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680291621"><span id="local-6989586621680291626"><span class="annot"><span class="annottext">OrderStatus -&gt; OrderStatus -&gt; Bool
+(OrderStatus -&gt; OrderStatus -&gt; Bool)
+-&gt; (OrderStatus -&gt; OrderStatus -&gt; Bool) -&gt; Eq OrderStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: OrderStatus -&gt; OrderStatus -&gt; Bool
+== :: OrderStatus -&gt; OrderStatus -&gt; Bool
+$c/= :: OrderStatus -&gt; OrderStatus -&gt; Bool
+/= :: OrderStatus -&gt; OrderStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680291630"><span id="local-6989586621680291632"><span class="annot"><span class="annottext">(forall x. OrderStatus -&gt; Rep OrderStatus x)
+-&gt; (forall x. Rep OrderStatus x -&gt; OrderStatus)
+-&gt; Generic OrderStatus
+forall x. Rep OrderStatus x -&gt; OrderStatus
+forall x. OrderStatus -&gt; Rep OrderStatus x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. OrderStatus -&gt; Rep OrderStatus x
+from :: forall x. OrderStatus -&gt; Rep OrderStatus x
+$cto :: forall x. Rep OrderStatus x -&gt; OrderStatus
+to :: forall x. Rep OrderStatus x -&gt; OrderStatus
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680291635"><span id="local-6989586621680291642"><span id="local-6989586621680291645"><span id="local-6989586621680291648"><span id="local-6989586621680291651"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.API.Dashboard.html#OrderStatus"><span class="hs-identifier hs-type">OrderStatus</span></a></span></span></span></span></span></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="hs-keyword">data</span><span> </span><span id="StockSummary"><span class="annot"><a href="Surypus.API.Dashboard.html#StockSummary"><span class="hs-identifier hs-var">StockSummary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="StockSummary"><span class="annot"><a href="Surypus.API.Dashboard.html#StockSummary"><span class="hs-identifier hs-var">StockSummary</span></a></span></span><span>
+</span><span id="line-54"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="ssTotalGoods"><span class="annot"><span class="annottext">StockSummary -&gt; Int64
+</span><a href="Surypus.API.Dashboard.html#ssTotalGoods"><span class="hs-identifier hs-var hs-var">ssTotalGoods</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-55"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="ssActiveGoods"><span class="annot"><span class="annottext">StockSummary -&gt; Int64
+</span><a href="Surypus.API.Dashboard.html#ssActiveGoods"><span class="hs-identifier hs-var hs-var">ssActiveGoods</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-56"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="ssCategories"><span class="annot"><span class="annottext">StockSummary -&gt; Int64
+</span><a href="Surypus.API.Dashboard.html#ssCategories"><span class="hs-identifier hs-var hs-var">ssCategories</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-57"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-58"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680291735"><span id="local-6989586621680291741"><span id="local-6989586621680291745"><span class="annot"><span class="annottext">Int -&gt; StockSummary -&gt; ShowS
+[StockSummary] -&gt; ShowS
+StockSummary -&gt; String
+(Int -&gt; StockSummary -&gt; ShowS)
+-&gt; (StockSummary -&gt; String)
+-&gt; ([StockSummary] -&gt; ShowS)
+-&gt; Show StockSummary
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; StockSummary -&gt; ShowS
+showsPrec :: Int -&gt; StockSummary -&gt; ShowS
+$cshow :: StockSummary -&gt; String
+show :: StockSummary -&gt; String
+$cshowList :: [StockSummary] -&gt; ShowS
+showList :: [StockSummary] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680291748"><span id="local-6989586621680291753"><span class="annot"><span class="annottext">StockSummary -&gt; StockSummary -&gt; Bool
+(StockSummary -&gt; StockSummary -&gt; Bool)
+-&gt; (StockSummary -&gt; StockSummary -&gt; Bool) -&gt; Eq StockSummary
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: StockSummary -&gt; StockSummary -&gt; Bool
+== :: StockSummary -&gt; StockSummary -&gt; Bool
+$c/= :: StockSummary -&gt; StockSummary -&gt; Bool
+/= :: StockSummary -&gt; StockSummary -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680291757"><span id="local-6989586621680291759"><span class="annot"><span class="annottext">(forall x. StockSummary -&gt; Rep StockSummary x)
+-&gt; (forall x. Rep StockSummary x -&gt; StockSummary)
+-&gt; Generic StockSummary
+forall x. Rep StockSummary x -&gt; StockSummary
+forall x. StockSummary -&gt; Rep StockSummary x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. StockSummary -&gt; Rep StockSummary x
+from :: forall x. StockSummary -&gt; Rep StockSummary x
+$cto :: forall x. Rep StockSummary x -&gt; StockSummary
+to :: forall x. Rep StockSummary x -&gt; StockSummary
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680291762"><span id="local-6989586621680291769"><span id="local-6989586621680291772"><span id="local-6989586621680291775"><span id="local-6989586621680291778"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.API.Dashboard.html#StockSummary"><span class="hs-identifier hs-type">StockSummary</span></a></span></span></span></span></span></span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span class="annot"><a href="Surypus.API.Dashboard.html#getDashboardKPI"><span class="hs-identifier hs-type">getDashboardKPI</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Dashboard.html#DashboardKPI"><span class="hs-identifier hs-type">DashboardKPI</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span id="getDashboardKPI"><span class="annot"><span class="annottext">getDashboardKPI :: ConnectionPool -&gt; IO (QueryResult DashboardKPI)
+</span><a href="Surypus.API.Dashboard.html#getDashboardKPI"><span class="hs-identifier hs-var hs-var">getDashboardKPI</span></a></span></span><span> </span><span id="local-6989586621680291851"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680291851"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-64"></span><span>    </span><span id="local-6989586621680291852"><span class="annot"><a href="#local-6989586621680291852"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO [(Single Double, Single Int64, Single Int64, Single Int64)]
+-&gt; IO [(Single Double, Single Int64, Single Int64, Single Int64)]
+forall a. IO a -&gt; IO a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Control.Monad.IO.Class.html#liftIO"><span class="hs-identifier hs-var">liftIO</span></a></span><span> </span><span class="annot"><span class="annottext">(IO [(Single Double, Single Int64, Single Int64, Single Int64)]
+ -&gt; IO [(Single Double, Single Int64, Single Int64, Single Int64)])
+-&gt; IO [(Single Double, Single Int64, Single Int64, Single Int64)]
+-&gt; IO [(Single Double, Single Int64, Single Int64, Single Int64)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">ReaderT
+  SqlBackend
+  IO
+  [(Single Double, Single Int64, Single Int64, Single Int64)]
+-&gt; ConnectionPool
+-&gt; IO [(Single Double, Single Int64, Single Int64, Single Int64)]
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span>
+</span><span id="line-65"></span><span>        </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; ReaderT
+     SqlBackend
+     IO
+     [(Single Double, Single Int64, Single Int64, Single Int64)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-66"></span><span>            </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT \
+            \  COALESCE((SELECT SUM(total_amount) FROM bills WHERE status = 'POSTED'), 0), \
+            \  COALESCE((SELECT COUNT(*) FROM bills), 0), \
+            \  COALESCE((SELECT COUNT(*) FROM goods WHERE is_active), 0), \
+            \  COALESCE((SELECT COUNT(*) FROM persons), 0)&quot;</span></span><span>
+</span><span id="line-71"></span><span>            </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680291851"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-72"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680291852"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-73"></span><span>        </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680291854"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680291854"><span class="hs-identifier hs-var">rev</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680291855"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680291855"><span class="hs-identifier hs-var">ord</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680291856"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680291856"><span class="hs-identifier hs-var">goods</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680291857"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680291857"><span class="hs-identifier hs-var">parts</span></a></span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-74"></span><span>            </span><span class="annot"><span class="annottext">QueryResult DashboardKPI -&gt; IO (QueryResult DashboardKPI)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult DashboardKPI -&gt; IO (QueryResult DashboardKPI))
+-&gt; QueryResult DashboardKPI -&gt; IO (QueryResult DashboardKPI)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">DashboardKPI -&gt; QueryResult DashboardKPI
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; Int64 -&gt; Int64 -&gt; Int64 -&gt; DashboardKPI
+</span><a href="Surypus.API.Dashboard.html#DashboardKPI"><span class="hs-identifier hs-var">DashboardKPI</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680291854"><span class="hs-identifier hs-var">rev</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680291855"><span class="hs-identifier hs-var">ord</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680291856"><span class="hs-identifier hs-var">goods</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680291857"><span class="hs-identifier hs-var">parts</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span><span>        </span><span class="annot"><span class="annottext">[(Single Double, Single Int64, Single Int64, Single Int64)]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult DashboardKPI -&gt; IO (QueryResult DashboardKPI)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult DashboardKPI -&gt; IO (QueryResult DashboardKPI))
+-&gt; QueryResult DashboardKPI -&gt; IO (QueryResult DashboardKPI)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">DashboardKPI -&gt; QueryResult DashboardKPI
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; Int64 -&gt; Int64 -&gt; Int64 -&gt; DashboardKPI
+</span><a href="Surypus.API.Dashboard.html#DashboardKPI"><span class="hs-identifier hs-var">DashboardKPI</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span><span>
+</span><span id="line-77"></span><span class="annot"><a href="Surypus.API.Dashboard.html#getRevenueTrend"><span class="hs-identifier hs-type">getRevenueTrend</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Surypus.API.Dashboard.html#RevenuePoint"><span class="hs-identifier hs-type">RevenuePoint</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-78"></span><span id="getRevenueTrend"><span class="annot"><span class="annottext">getRevenueTrend :: ConnectionPool -&gt; IO (QueryResult [RevenuePoint])
+</span><a href="Surypus.API.Dashboard.html#getRevenueTrend"><span class="hs-identifier hs-var hs-var">getRevenueTrend</span></a></span></span><span> </span><span id="local-6989586621680291859"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680291859"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-79"></span><span>    </span><span id="local-6989586621680291860"><span class="annot"><a href="#local-6989586621680291860"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO [(Single Text, Single Double, Single Int64)]
+-&gt; IO [(Single Text, Single Double, Single Int64)]
+forall a. IO a -&gt; IO a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Control.Monad.IO.Class.html#liftIO"><span class="hs-identifier hs-var">liftIO</span></a></span><span> </span><span class="annot"><span class="annottext">(IO [(Single Text, Single Double, Single Int64)]
+ -&gt; IO [(Single Text, Single Double, Single Int64)])
+-&gt; IO [(Single Text, Single Double, Single Int64)]
+-&gt; IO [(Single Text, Single Double, Single Int64)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">ReaderT SqlBackend IO [(Single Text, Single Double, Single Int64)]
+-&gt; ConnectionPool
+-&gt; IO [(Single Text, Single Double, Single Int64)]
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span>
+</span><span id="line-80"></span><span>        </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; ReaderT
+     SqlBackend IO [(Single Text, Single Double, Single Int64)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-81"></span><span>            </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT \
+            \  TO_CHAR(bill_date, 'YYYY-MM'), \
+            \  SUM(total_amount), \
+            \  COUNT(*) \
+            \FROM bills \
+            \WHERE bill_date &gt;= NOW() - INTERVAL '12 months' \
+            \GROUP BY TO_CHAR(bill_date, 'YYYY-MM') \
+            \ORDER BY 1&quot;</span></span><span>
+</span><span id="line-89"></span><span>            </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680291859"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-90"></span><span>    </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-type">return</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-type">$</span></a></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span>
+</span><span id="line-91"></span><span>        </span><span class="hs-special">[</span><span> </span><span class="annot"><a href="Surypus.API.Dashboard.html#RevenuePoint"><span class="hs-identifier hs-type">RevenuePoint</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680291861"><span class="hs-identifier hs-type">month</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680291862"><span class="hs-identifier hs-type">total</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680291863"><span class="hs-identifier hs-type">count</span></a></span><span>
+</span><span id="line-92"></span><span>        </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680291861"><span class="annot"><a href="#local-6989586621680291861"><span class="hs-identifier hs-var">month</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680291862"><span class="annot"><a href="#local-6989586621680291862"><span class="hs-identifier hs-var">total</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680291863"><span class="annot"><a href="#local-6989586621680291863"><span class="hs-identifier hs-var">count</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><a href="#local-6989586621680291860"><span class="hs-identifier hs-type">result</span></a></span><span>
+</span><span id="line-93"></span><span>        </span><span class="hs-special">]</span><span>
+</span><span id="line-94"></span><span>
+</span><span id="line-95"></span><span class="annot"><a href="Surypus.API.Dashboard.html#getOrderStatuses"><span class="hs-identifier hs-type">getOrderStatuses</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Surypus.API.Dashboard.html#OrderStatus"><span class="hs-identifier hs-type">OrderStatus</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-96"></span><span id="getOrderStatuses"><span class="annot"><span class="annottext">getOrderStatuses :: ConnectionPool -&gt; IO (QueryResult [OrderStatus])
+</span><a href="Surypus.API.Dashboard.html#getOrderStatuses"><span class="hs-identifier hs-var hs-var">getOrderStatuses</span></a></span></span><span> </span><span id="local-6989586621680291864"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680291864"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-97"></span><span>    </span><span id="local-6989586621680291865"><span class="annot"><a href="#local-6989586621680291865"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO [(Single Text, Single Int64, Single Double)]
+-&gt; IO [(Single Text, Single Int64, Single Double)]
+forall a. IO a -&gt; IO a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Control.Monad.IO.Class.html#liftIO"><span class="hs-identifier hs-var">liftIO</span></a></span><span> </span><span class="annot"><span class="annottext">(IO [(Single Text, Single Int64, Single Double)]
+ -&gt; IO [(Single Text, Single Int64, Single Double)])
+-&gt; IO [(Single Text, Single Int64, Single Double)]
+-&gt; IO [(Single Text, Single Int64, Single Double)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">ReaderT SqlBackend IO [(Single Text, Single Int64, Single Double)]
+-&gt; ConnectionPool
+-&gt; IO [(Single Text, Single Int64, Single Double)]
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span>
+</span><span id="line-98"></span><span>        </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; ReaderT
+     SqlBackend IO [(Single Text, Single Int64, Single Double)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-99"></span><span>            </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT status, COUNT(*), SUM(total_amount) \
+            \FROM bills GROUP BY status&quot;</span></span><span>
+</span><span id="line-101"></span><span>            </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680291864"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-102"></span><span>    </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-type">return</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-type">$</span></a></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span>
+</span><span id="line-103"></span><span>        </span><span class="hs-special">[</span><span> </span><span class="annot"><a href="Surypus.API.Dashboard.html#OrderStatus"><span class="hs-identifier hs-type">OrderStatus</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680291866"><span class="hs-identifier hs-type">status</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680291867"><span class="hs-identifier hs-type">count</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680291868"><span class="hs-identifier hs-type">total</span></a></span><span>
+</span><span id="line-104"></span><span>        </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680291866"><span class="annot"><a href="#local-6989586621680291866"><span class="hs-identifier hs-var">status</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680291867"><span class="annot"><a href="#local-6989586621680291867"><span class="hs-identifier hs-var">count</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680291868"><span class="annot"><a href="#local-6989586621680291868"><span class="hs-identifier hs-var">total</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><a href="#local-6989586621680291865"><span class="hs-identifier hs-type">result</span></a></span><span>
+</span><span id="line-105"></span><span>        </span><span class="hs-special">]</span><span>
+</span><span id="line-106"></span><span>
+</span><span id="line-107"></span><span class="annot"><a href="Surypus.API.Dashboard.html#getStockSummary"><span class="hs-identifier hs-type">getStockSummary</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Dashboard.html#StockSummary"><span class="hs-identifier hs-type">StockSummary</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-108"></span><span id="getStockSummary"><span class="annot"><span class="annottext">getStockSummary :: ConnectionPool -&gt; IO (QueryResult StockSummary)
+</span><a href="Surypus.API.Dashboard.html#getStockSummary"><span class="hs-identifier hs-var hs-var">getStockSummary</span></a></span></span><span> </span><span id="local-6989586621680291869"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680291869"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-109"></span><span>    </span><span id="local-6989586621680291870"><span class="annot"><a href="#local-6989586621680291870"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO [(Single Int64, Single Int64, Single Int64)]
+-&gt; IO [(Single Int64, Single Int64, Single Int64)]
+forall a. IO a -&gt; IO a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Control.Monad.IO.Class.html#liftIO"><span class="hs-identifier hs-var">liftIO</span></a></span><span> </span><span class="annot"><span class="annottext">(IO [(Single Int64, Single Int64, Single Int64)]
+ -&gt; IO [(Single Int64, Single Int64, Single Int64)])
+-&gt; IO [(Single Int64, Single Int64, Single Int64)]
+-&gt; IO [(Single Int64, Single Int64, Single Int64)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">ReaderT SqlBackend IO [(Single Int64, Single Int64, Single Int64)]
+-&gt; ConnectionPool
+-&gt; IO [(Single Int64, Single Int64, Single Int64)]
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span>
+</span><span id="line-110"></span><span>        </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; ReaderT
+     SqlBackend IO [(Single Int64, Single Int64, Single Int64)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-111"></span><span>            </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT COUNT(*), SUM(CASE WHEN is_active THEN 1 ELSE 0 END), \
+            \  COUNT(DISTINCT category_id) \
+            \FROM goods&quot;</span></span><span>
+</span><span id="line-114"></span><span>            </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680291869"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-115"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680291870"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-116"></span><span>        </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680291871"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680291871"><span class="hs-identifier hs-var">total</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680291872"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680291872"><span class="hs-identifier hs-var">active</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680291873"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680291873"><span class="hs-identifier hs-var">categories</span></a></span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-117"></span><span>            </span><span class="annot"><span class="annottext">QueryResult StockSummary -&gt; IO (QueryResult StockSummary)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult StockSummary -&gt; IO (QueryResult StockSummary))
+-&gt; QueryResult StockSummary -&gt; IO (QueryResult StockSummary)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">StockSummary -&gt; QueryResult StockSummary
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Int64 -&gt; StockSummary
+</span><a href="Surypus.API.Dashboard.html#StockSummary"><span class="hs-identifier hs-var">StockSummary</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680291871"><span class="hs-identifier hs-var">total</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680291872"><span class="hs-identifier hs-var">active</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680291873"><span class="hs-identifier hs-var">categories</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-118"></span><span>        </span><span class="annot"><span class="annottext">[(Single Int64, Single Int64, Single Int64)]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult StockSummary -&gt; IO (QueryResult StockSummary)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult StockSummary -&gt; IO (QueryResult StockSummary))
+-&gt; QueryResult StockSummary -&gt; IO (QueryResult StockSummary)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; QueryResult StockSummary
+forall a. Text -&gt; QueryResult a
+</span><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-var">QueryError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Failed to get stock summary&quot;</span></span><span>
+</span><span id="line-119"></span></pre></body></html>

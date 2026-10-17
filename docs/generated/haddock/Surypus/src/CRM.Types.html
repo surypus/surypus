@@ -1,0 +1,718 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-3"></span><span class="annot"><span class="hs-comment">-- | CRM Types - Core CRM domain types</span></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="CRM.Types.html"><span class="hs-identifier">CRM.Types</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="CRM.Types.html#Deal"><span class="hs-identifier">Deal</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="CRM.Types.html#DealInput"><span class="hs-identifier">DealInput</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="CRM.Types.html#DealStage"><span class="hs-identifier">DealStage</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="CRM.Types.html#Activity"><span class="hs-identifier">Activity</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="CRM.Types.html#ActivityInput"><span class="hs-identifier">ActivityInput</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="CRM.Types.html#ActivityType"><span class="hs-identifier">ActivityType</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="CRM.Types.html#Contact"><span class="hs-identifier">Contact</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="CRM.Types.html#ContactInput"><span class="hs-identifier">ContactInput</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="CRM.Types.html#Company"><span class="hs-identifier">Company</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="CRM.Types.html#CompanyInput"><span class="hs-identifier">CompanyInput</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="CRM.Types.html#PipelineForecast"><span class="hs-identifier">PipelineForecast</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="CRM.Types.html#DealStats"><span class="hs-identifier">DealStats</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">FromJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="annot"><span class="hs-comment">-- | Deal stage in the pipeline</span></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">data</span><span> </span><span id="DealStage"><span class="annot"><a href="CRM.Types.html#DealStage"><span class="hs-identifier hs-var">DealStage</span></a></span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Lead"><span class="annot"><a href="CRM.Types.html#Lead"><span class="hs-identifier hs-var">Lead</span></a></span></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Qualified"><span class="annot"><a href="CRM.Types.html#Qualified"><span class="hs-identifier hs-var">Qualified</span></a></span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Proposal"><span class="annot"><a href="CRM.Types.html#Proposal"><span class="hs-identifier hs-var">Proposal</span></a></span></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Negotiation"><span class="annot"><a href="CRM.Types.html#Negotiation"><span class="hs-identifier hs-var">Negotiation</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Won"><span class="annot"><a href="CRM.Types.html#Won"><span class="hs-identifier hs-var">Won</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Lost"><span class="annot"><a href="CRM.Types.html#Lost"><span class="hs-identifier hs-var">Lost</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680193256"><span id="local-6989586621680193258"><span id="local-6989586621680193262"><span class="annot"><span class="annottext">Int -&gt; DealStage -&gt; ShowS
+[DealStage] -&gt; ShowS
+DealStage -&gt; String
+(Int -&gt; DealStage -&gt; ShowS)
+-&gt; (DealStage -&gt; String)
+-&gt; ([DealStage] -&gt; ShowS)
+-&gt; Show DealStage
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DealStage -&gt; ShowS
+showsPrec :: Int -&gt; DealStage -&gt; ShowS
+$cshow :: DealStage -&gt; String
+show :: DealStage -&gt; String
+$cshowList :: [DealStage] -&gt; ShowS
+showList :: [DealStage] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680193267"><span id="local-6989586621680193272"><span class="annot"><span class="annottext">DealStage -&gt; DealStage -&gt; Bool
+(DealStage -&gt; DealStage -&gt; Bool)
+-&gt; (DealStage -&gt; DealStage -&gt; Bool) -&gt; Eq DealStage
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: DealStage -&gt; DealStage -&gt; Bool
+== :: DealStage -&gt; DealStage -&gt; Bool
+$c/= :: DealStage -&gt; DealStage -&gt; Bool
+/= :: DealStage -&gt; DealStage -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680193277"><span id="local-6989586621680193279"><span class="annot"><span class="annottext">(forall x. DealStage -&gt; Rep DealStage x)
+-&gt; (forall x. Rep DealStage x -&gt; DealStage) -&gt; Generic DealStage
+forall x. Rep DealStage x -&gt; DealStage
+forall x. DealStage -&gt; Rep DealStage x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. DealStage -&gt; Rep DealStage x
+from :: forall x. DealStage -&gt; Rep DealStage x
+$cto :: forall x. Rep DealStage x -&gt; DealStage
+to :: forall x. Rep DealStage x -&gt; DealStage
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680193285"><span id="local-6989586621680193289"><span id="local-6989586621680193292"><span id="local-6989586621680193301"><span class="annot"><span class="annottext">ReadPrec [DealStage]
+ReadPrec DealStage
+Int -&gt; ReadS DealStage
+ReadS [DealStage]
+(Int -&gt; ReadS DealStage)
+-&gt; ReadS [DealStage]
+-&gt; ReadPrec DealStage
+-&gt; ReadPrec [DealStage]
+-&gt; Read DealStage
+forall a.
+(Int -&gt; ReadS a)
+-&gt; ReadS [a] -&gt; ReadPrec a -&gt; ReadPrec [a] -&gt; Read a
+$creadsPrec :: Int -&gt; ReadS DealStage
+readsPrec :: Int -&gt; ReadS DealStage
+$creadList :: ReadS [DealStage]
+readList :: ReadS [DealStage]
+$creadPrec :: ReadPrec DealStage
+readPrec :: ReadPrec DealStage
+$creadListPrec :: ReadPrec [DealStage]
+readListPrec :: ReadPrec [DealStage]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Read.html#Read"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Read</span></a></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680193308"><span id="local-6989586621680193315"><span id="local-6989586621680193318"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#DealStage"><span class="hs-identifier hs-type">DealStage</span></a></span></span></span></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680193459"><span id="local-6989586621680193466"><span id="local-6989586621680193469"><span id="local-6989586621680193472"><span id="local-6989586621680193475"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#DealStage"><span class="hs-identifier hs-type">DealStage</span></a></span></span></span></span></span></span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="annot"><span class="hs-comment">-- | Deal (sales opportunity)</span></span><span>
+</span><span id="line-39"></span><span class="hs-keyword">data</span><span> </span><span id="Deal"><span class="annot"><a href="CRM.Types.html#Deal"><span class="hs-identifier hs-var">Deal</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Deal"><span class="annot"><a href="CRM.Types.html#Deal"><span class="hs-identifier hs-var">Deal</span></a></span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="dealId"><span class="annot"><span class="annottext">Deal -&gt; Int64
+</span><a href="CRM.Types.html#dealId"><span class="hs-identifier hs-var hs-var">dealId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealTitle"><span class="annot"><span class="annottext">Deal -&gt; Text
+</span><a href="CRM.Types.html#dealTitle"><span class="hs-identifier hs-var hs-var">dealTitle</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealDescription"><span class="annot"><span class="annottext">Deal -&gt; Maybe Text
+</span><a href="CRM.Types.html#dealDescription"><span class="hs-identifier hs-var hs-var">dealDescription</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealAmount"><span class="annot"><span class="annottext">Deal -&gt; Double
+</span><a href="CRM.Types.html#dealAmount"><span class="hs-identifier hs-var hs-var">dealAmount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealCurrency"><span class="annot"><span class="annottext">Deal -&gt; Text
+</span><a href="CRM.Types.html#dealCurrency"><span class="hs-identifier hs-var hs-var">dealCurrency</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealStage"><span class="annot"><span class="annottext">Deal -&gt; DealStage
+</span><a href="CRM.Types.html#dealStage"><span class="hs-identifier hs-var hs-var">dealStage</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="CRM.Types.html#DealStage"><span class="hs-identifier hs-type">DealStage</span></a></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealProbability"><span class="annot"><span class="annottext">Deal -&gt; Int
+</span><a href="CRM.Types.html#dealProbability"><span class="hs-identifier hs-var hs-var">dealProbability</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>  </span><span class="hs-comment">-- 0-100</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealContactId"><span class="annot"><span class="annottext">Deal -&gt; Maybe Int64
+</span><a href="CRM.Types.html#dealContactId"><span class="hs-identifier hs-var hs-var">dealContactId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealCompanyId"><span class="annot"><span class="annottext">Deal -&gt; Maybe Int64
+</span><a href="CRM.Types.html#dealCompanyId"><span class="hs-identifier hs-var hs-var">dealCompanyId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealOwnerId"><span class="annot"><span class="annottext">Deal -&gt; Maybe Int64
+</span><a href="CRM.Types.html#dealOwnerId"><span class="hs-identifier hs-var hs-var">dealOwnerId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealExpectedCloseDate"><span class="annot"><span class="annottext">Deal -&gt; Maybe UTCTime
+</span><a href="CRM.Types.html#dealExpectedCloseDate"><span class="hs-identifier hs-var hs-var">dealExpectedCloseDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealActualCloseDate"><span class="annot"><span class="annottext">Deal -&gt; Maybe UTCTime
+</span><a href="CRM.Types.html#dealActualCloseDate"><span class="hs-identifier hs-var hs-var">dealActualCloseDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealCreatedAt"><span class="annot"><span class="annottext">Deal -&gt; UTCTime
+</span><a href="CRM.Types.html#dealCreatedAt"><span class="hs-identifier hs-var hs-var">dealCreatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealUpdatedAt"><span class="annot"><span class="annottext">Deal -&gt; UTCTime
+</span><a href="CRM.Types.html#dealUpdatedAt"><span class="hs-identifier hs-var hs-var">dealUpdatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680193654"><span id="local-6989586621680193678"><span id="local-6989586621680193682"><span class="annot"><span class="annottext">Int -&gt; Deal -&gt; ShowS
+[Deal] -&gt; ShowS
+Deal -&gt; String
+(Int -&gt; Deal -&gt; ShowS)
+-&gt; (Deal -&gt; String) -&gt; ([Deal] -&gt; ShowS) -&gt; Show Deal
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Deal -&gt; ShowS
+showsPrec :: Int -&gt; Deal -&gt; ShowS
+$cshow :: Deal -&gt; String
+show :: Deal -&gt; String
+$cshowList :: [Deal] -&gt; ShowS
+showList :: [Deal] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680193686"><span id="local-6989586621680193708"><span class="annot"><span class="annottext">Deal -&gt; Deal -&gt; Bool
+(Deal -&gt; Deal -&gt; Bool) -&gt; (Deal -&gt; Deal -&gt; Bool) -&gt; Eq Deal
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Deal -&gt; Deal -&gt; Bool
+== :: Deal -&gt; Deal -&gt; Bool
+$c/= :: Deal -&gt; Deal -&gt; Bool
+/= :: Deal -&gt; Deal -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680193713"><span id="local-6989586621680193715"><span class="annot"><span class="annottext">(forall x. Deal -&gt; Rep Deal x)
+-&gt; (forall x. Rep Deal x -&gt; Deal) -&gt; Generic Deal
+forall x. Rep Deal x -&gt; Deal
+forall x. Deal -&gt; Rep Deal x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Deal -&gt; Rep Deal x
+from :: forall x. Deal -&gt; Rep Deal x
+$cto :: forall x. Rep Deal x -&gt; Deal
+to :: forall x. Rep Deal x -&gt; Deal
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680193718"><span id="local-6989586621680193725"><span id="local-6989586621680193728"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#Deal"><span class="hs-identifier hs-type">Deal</span></a></span></span></span></span><span>
+</span><span id="line-57"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680193911"><span id="local-6989586621680193918"><span id="local-6989586621680193921"><span id="local-6989586621680193924"><span id="local-6989586621680193927"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#Deal"><span class="hs-identifier hs-type">Deal</span></a></span></span></span></span></span></span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="annot"><span class="hs-comment">-- | Deal input for creation/update</span></span><span>
+</span><span id="line-60"></span><span class="hs-keyword">data</span><span> </span><span id="DealInput"><span class="annot"><a href="CRM.Types.html#DealInput"><span class="hs-identifier hs-var">DealInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="DealInput"><span class="annot"><a href="CRM.Types.html#DealInput"><span class="hs-identifier hs-var">DealInput</span></a></span></span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="dealInputTitle"><span class="annot"><span class="annottext">DealInput -&gt; Text
+</span><a href="CRM.Types.html#dealInputTitle"><span class="hs-identifier hs-var hs-var">dealInputTitle</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealInputDescription"><span class="annot"><span class="annottext">DealInput -&gt; Maybe Text
+</span><a href="CRM.Types.html#dealInputDescription"><span class="hs-identifier hs-var hs-var">dealInputDescription</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealInputAmount"><span class="annot"><span class="annottext">DealInput -&gt; Double
+</span><a href="CRM.Types.html#dealInputAmount"><span class="hs-identifier hs-var hs-var">dealInputAmount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-64"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealInputCurrency"><span class="annot"><span class="annottext">DealInput -&gt; Text
+</span><a href="CRM.Types.html#dealInputCurrency"><span class="hs-identifier hs-var hs-var">dealInputCurrency</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-65"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealInputStage"><span class="annot"><span class="annottext">DealInput -&gt; Maybe DealStage
+</span><a href="CRM.Types.html#dealInputStage"><span class="hs-identifier hs-var hs-var">dealInputStage</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="CRM.Types.html#DealStage"><span class="hs-identifier hs-type">DealStage</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealInputProbability"><span class="annot"><span class="annottext">DealInput -&gt; Maybe Int
+</span><a href="CRM.Types.html#dealInputProbability"><span class="hs-identifier hs-var hs-var">dealInputProbability</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealInputContactId"><span class="annot"><span class="annottext">DealInput -&gt; Maybe Int64
+</span><a href="CRM.Types.html#dealInputContactId"><span class="hs-identifier hs-var hs-var">dealInputContactId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealInputCompanyId"><span class="annot"><span class="annottext">DealInput -&gt; Maybe Int64
+</span><a href="CRM.Types.html#dealInputCompanyId"><span class="hs-identifier hs-var hs-var">dealInputCompanyId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealInputOwnerId"><span class="annot"><span class="annottext">DealInput -&gt; Maybe Int64
+</span><a href="CRM.Types.html#dealInputOwnerId"><span class="hs-identifier hs-var hs-var">dealInputOwnerId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dealInputExpectedCloseDate"><span class="annot"><span class="annottext">DealInput -&gt; Maybe UTCTime
+</span><a href="CRM.Types.html#dealInputExpectedCloseDate"><span class="hs-identifier hs-var hs-var">dealInputExpectedCloseDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680194201"><span id="local-6989586621680194218"><span id="local-6989586621680194222"><span class="annot"><span class="annottext">Int -&gt; DealInput -&gt; ShowS
+[DealInput] -&gt; ShowS
+DealInput -&gt; String
+(Int -&gt; DealInput -&gt; ShowS)
+-&gt; (DealInput -&gt; String)
+-&gt; ([DealInput] -&gt; ShowS)
+-&gt; Show DealInput
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DealInput -&gt; ShowS
+showsPrec :: Int -&gt; DealInput -&gt; ShowS
+$cshow :: DealInput -&gt; String
+show :: DealInput -&gt; String
+$cshowList :: [DealInput] -&gt; ShowS
+showList :: [DealInput] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680194225"><span id="local-6989586621680194241"><span class="annot"><span class="annottext">DealInput -&gt; DealInput -&gt; Bool
+(DealInput -&gt; DealInput -&gt; Bool)
+-&gt; (DealInput -&gt; DealInput -&gt; Bool) -&gt; Eq DealInput
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: DealInput -&gt; DealInput -&gt; Bool
+== :: DealInput -&gt; DealInput -&gt; Bool
+$c/= :: DealInput -&gt; DealInput -&gt; Bool
+/= :: DealInput -&gt; DealInput -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680194245"><span id="local-6989586621680194247"><span class="annot"><span class="annottext">(forall x. DealInput -&gt; Rep DealInput x)
+-&gt; (forall x. Rep DealInput x -&gt; DealInput) -&gt; Generic DealInput
+forall x. Rep DealInput x -&gt; DealInput
+forall x. DealInput -&gt; Rep DealInput x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. DealInput -&gt; Rep DealInput x
+from :: forall x. DealInput -&gt; Rep DealInput x
+$cto :: forall x. Rep DealInput x -&gt; DealInput
+to :: forall x. Rep DealInput x -&gt; DealInput
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680194250"><span id="local-6989586621680194257"><span id="local-6989586621680194260"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#DealInput"><span class="hs-identifier hs-type">DealInput</span></a></span></span></span></span><span>
+</span><span id="line-74"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680194386"><span id="local-6989586621680194393"><span id="local-6989586621680194396"><span id="local-6989586621680194399"><span id="local-6989586621680194402"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#DealInput"><span class="hs-identifier hs-type">DealInput</span></a></span></span></span></span></span></span><span>
+</span><span id="line-75"></span><span>
+</span><span id="line-76"></span><span class="annot"><span class="hs-comment">-- | Activity type</span></span><span>
+</span><span id="line-77"></span><span class="hs-keyword">data</span><span> </span><span id="ActivityType"><span class="annot"><a href="CRM.Types.html#ActivityType"><span class="hs-identifier hs-var">ActivityType</span></a></span></span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Call"><span class="annot"><a href="CRM.Types.html#Call"><span class="hs-identifier hs-var">Call</span></a></span></span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Email"><span class="annot"><a href="CRM.Types.html#Email"><span class="hs-identifier hs-var">Email</span></a></span></span><span>
+</span><span id="line-80"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Meeting"><span class="annot"><a href="CRM.Types.html#Meeting"><span class="hs-identifier hs-var">Meeting</span></a></span></span><span>
+</span><span id="line-81"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Task"><span class="annot"><a href="CRM.Types.html#Task"><span class="hs-identifier hs-var">Task</span></a></span></span><span>
+</span><span id="line-82"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Note"><span class="annot"><a href="CRM.Types.html#Note"><span class="hs-identifier hs-var">Note</span></a></span></span><span>
+</span><span id="line-83"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Demo"><span class="annot"><a href="CRM.Types.html#Demo"><span class="hs-identifier hs-var">Demo</span></a></span></span><span>
+</span><span id="line-84"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="FollowUp"><span class="annot"><a href="CRM.Types.html#FollowUp"><span class="hs-identifier hs-var">FollowUp</span></a></span></span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680194600"><span id="local-6989586621680194602"><span id="local-6989586621680194606"><span class="annot"><span class="annottext">Int -&gt; ActivityType -&gt; ShowS
+[ActivityType] -&gt; ShowS
+ActivityType -&gt; String
+(Int -&gt; ActivityType -&gt; ShowS)
+-&gt; (ActivityType -&gt; String)
+-&gt; ([ActivityType] -&gt; ShowS)
+-&gt; Show ActivityType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ActivityType -&gt; ShowS
+showsPrec :: Int -&gt; ActivityType -&gt; ShowS
+$cshow :: ActivityType -&gt; String
+show :: ActivityType -&gt; String
+$cshowList :: [ActivityType] -&gt; ShowS
+showList :: [ActivityType] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680194609"><span id="local-6989586621680194613"><span class="annot"><span class="annottext">ActivityType -&gt; ActivityType -&gt; Bool
+(ActivityType -&gt; ActivityType -&gt; Bool)
+-&gt; (ActivityType -&gt; ActivityType -&gt; Bool) -&gt; Eq ActivityType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ActivityType -&gt; ActivityType -&gt; Bool
+== :: ActivityType -&gt; ActivityType -&gt; Bool
+$c/= :: ActivityType -&gt; ActivityType -&gt; Bool
+/= :: ActivityType -&gt; ActivityType -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680194617"><span id="local-6989586621680194619"><span class="annot"><span class="annottext">(forall x. ActivityType -&gt; Rep ActivityType x)
+-&gt; (forall x. Rep ActivityType x -&gt; ActivityType)
+-&gt; Generic ActivityType
+forall x. Rep ActivityType x -&gt; ActivityType
+forall x. ActivityType -&gt; Rep ActivityType x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. ActivityType -&gt; Rep ActivityType x
+from :: forall x. ActivityType -&gt; Rep ActivityType x
+$cto :: forall x. Rep ActivityType x -&gt; ActivityType
+to :: forall x. Rep ActivityType x -&gt; ActivityType
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680194622"><span id="local-6989586621680194626"><span id="local-6989586621680194629"><span id="local-6989586621680194638"><span class="annot"><span class="annottext">ReadPrec [ActivityType]
+ReadPrec ActivityType
+Int -&gt; ReadS ActivityType
+ReadS [ActivityType]
+(Int -&gt; ReadS ActivityType)
+-&gt; ReadS [ActivityType]
+-&gt; ReadPrec ActivityType
+-&gt; ReadPrec [ActivityType]
+-&gt; Read ActivityType
+forall a.
+(Int -&gt; ReadS a)
+-&gt; ReadS [a] -&gt; ReadPrec a -&gt; ReadPrec [a] -&gt; Read a
+$creadsPrec :: Int -&gt; ReadS ActivityType
+readsPrec :: Int -&gt; ReadS ActivityType
+$creadList :: ReadS [ActivityType]
+readList :: ReadS [ActivityType]
+$creadPrec :: ReadPrec ActivityType
+readPrec :: ReadPrec ActivityType
+$creadListPrec :: ReadPrec [ActivityType]
+readListPrec :: ReadPrec [ActivityType]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Read.html#Read"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Read</span></a></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-86"></span><span>
+</span><span id="line-87"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680194641"><span id="local-6989586621680194648"><span id="local-6989586621680194651"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#ActivityType"><span class="hs-identifier hs-type">ActivityType</span></a></span></span></span></span><span>
+</span><span id="line-88"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680194784"><span id="local-6989586621680194791"><span id="local-6989586621680194794"><span id="local-6989586621680194797"><span id="local-6989586621680194800"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#ActivityType"><span class="hs-identifier hs-type">ActivityType</span></a></span></span></span></span></span></span><span>
+</span><span id="line-89"></span><span>
+</span><span id="line-90"></span><span class="annot"><span class="hs-comment">-- | Activity (interaction record)</span></span><span>
+</span><span id="line-91"></span><span class="hs-keyword">data</span><span> </span><span id="Activity"><span class="annot"><a href="CRM.Types.html#Activity"><span class="hs-identifier hs-var">Activity</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Activity"><span class="annot"><a href="CRM.Types.html#Activity"><span class="hs-identifier hs-var">Activity</span></a></span></span><span>
+</span><span id="line-92"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="activityId"><span class="annot"><span class="annottext">Activity -&gt; Int64
+</span><a href="CRM.Types.html#activityId"><span class="hs-identifier hs-var hs-var">activityId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-93"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityType"><span class="annot"><span class="annottext">Activity -&gt; ActivityType
+</span><a href="CRM.Types.html#activityType"><span class="hs-identifier hs-var hs-var">activityType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="CRM.Types.html#ActivityType"><span class="hs-identifier hs-type">ActivityType</span></a></span><span>
+</span><span id="line-94"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activitySubject"><span class="annot"><span class="annottext">Activity -&gt; Text
+</span><a href="CRM.Types.html#activitySubject"><span class="hs-identifier hs-var hs-var">activitySubject</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-95"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityDescription"><span class="annot"><span class="annottext">Activity -&gt; Maybe Text
+</span><a href="CRM.Types.html#activityDescription"><span class="hs-identifier hs-var hs-var">activityDescription</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-96"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityDealId"><span class="annot"><span class="annottext">Activity -&gt; Maybe Int64
+</span><a href="CRM.Types.html#activityDealId"><span class="hs-identifier hs-var hs-var">activityDealId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-97"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityContactId"><span class="annot"><span class="annottext">Activity -&gt; Maybe Int64
+</span><a href="CRM.Types.html#activityContactId"><span class="hs-identifier hs-var hs-var">activityContactId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-98"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityCompanyId"><span class="annot"><span class="annottext">Activity -&gt; Maybe Int64
+</span><a href="CRM.Types.html#activityCompanyId"><span class="hs-identifier hs-var hs-var">activityCompanyId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-99"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityOwnerId"><span class="annot"><span class="annottext">Activity -&gt; Maybe Int64
+</span><a href="CRM.Types.html#activityOwnerId"><span class="hs-identifier hs-var hs-var">activityOwnerId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-100"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityDueDate"><span class="annot"><span class="annottext">Activity -&gt; Maybe UTCTime
+</span><a href="CRM.Types.html#activityDueDate"><span class="hs-identifier hs-var hs-var">activityDueDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-101"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityCompletedAt"><span class="annot"><span class="annottext">Activity -&gt; Maybe UTCTime
+</span><a href="CRM.Types.html#activityCompletedAt"><span class="hs-identifier hs-var hs-var">activityCompletedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-102"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityCreatedAt"><span class="annot"><span class="annottext">Activity -&gt; UTCTime
+</span><a href="CRM.Types.html#activityCreatedAt"><span class="hs-identifier hs-var hs-var">activityCreatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span>
+</span><span id="line-103"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680194979"><span id="local-6989586621680194994"><span id="local-6989586621680194998"><span class="annot"><span class="annottext">Int -&gt; Activity -&gt; ShowS
+[Activity] -&gt; ShowS
+Activity -&gt; String
+(Int -&gt; Activity -&gt; ShowS)
+-&gt; (Activity -&gt; String) -&gt; ([Activity] -&gt; ShowS) -&gt; Show Activity
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Activity -&gt; ShowS
+showsPrec :: Int -&gt; Activity -&gt; ShowS
+$cshow :: Activity -&gt; String
+show :: Activity -&gt; String
+$cshowList :: [Activity] -&gt; ShowS
+showList :: [Activity] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680195001"><span id="local-6989586621680195015"><span class="annot"><span class="annottext">Activity -&gt; Activity -&gt; Bool
+(Activity -&gt; Activity -&gt; Bool)
+-&gt; (Activity -&gt; Activity -&gt; Bool) -&gt; Eq Activity
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Activity -&gt; Activity -&gt; Bool
+== :: Activity -&gt; Activity -&gt; Bool
+$c/= :: Activity -&gt; Activity -&gt; Bool
+/= :: Activity -&gt; Activity -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680195019"><span id="local-6989586621680195021"><span class="annot"><span class="annottext">(forall x. Activity -&gt; Rep Activity x)
+-&gt; (forall x. Rep Activity x -&gt; Activity) -&gt; Generic Activity
+forall x. Rep Activity x -&gt; Activity
+forall x. Activity -&gt; Rep Activity x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Activity -&gt; Rep Activity x
+from :: forall x. Activity -&gt; Rep Activity x
+$cto :: forall x. Rep Activity x -&gt; Activity
+to :: forall x. Rep Activity x -&gt; Activity
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-104"></span><span>
+</span><span id="line-105"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680195024"><span id="local-6989586621680195031"><span id="local-6989586621680195034"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#Activity"><span class="hs-identifier hs-type">Activity</span></a></span></span></span></span><span>
+</span><span id="line-106"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680195164"><span id="local-6989586621680195171"><span id="local-6989586621680195174"><span id="local-6989586621680195177"><span id="local-6989586621680195180"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#Activity"><span class="hs-identifier hs-type">Activity</span></a></span></span></span></span></span></span><span>
+</span><span id="line-107"></span><span>
+</span><span id="line-108"></span><span class="annot"><span class="hs-comment">-- | Activity input</span></span><span>
+</span><span id="line-109"></span><span class="hs-keyword">data</span><span> </span><span id="ActivityInput"><span class="annot"><a href="CRM.Types.html#ActivityInput"><span class="hs-identifier hs-var">ActivityInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ActivityInput"><span class="annot"><a href="CRM.Types.html#ActivityInput"><span class="hs-identifier hs-var">ActivityInput</span></a></span></span><span>
+</span><span id="line-110"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="activityInputType"><span class="annot"><span class="annottext">ActivityInput -&gt; ActivityType
+</span><a href="CRM.Types.html#activityInputType"><span class="hs-identifier hs-var hs-var">activityInputType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="CRM.Types.html#ActivityType"><span class="hs-identifier hs-type">ActivityType</span></a></span><span>
+</span><span id="line-111"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityInputSubject"><span class="annot"><span class="annottext">ActivityInput -&gt; Text
+</span><a href="CRM.Types.html#activityInputSubject"><span class="hs-identifier hs-var hs-var">activityInputSubject</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-112"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityInputDescription"><span class="annot"><span class="annottext">ActivityInput -&gt; Maybe Text
+</span><a href="CRM.Types.html#activityInputDescription"><span class="hs-identifier hs-var hs-var">activityInputDescription</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-113"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityInputDealId"><span class="annot"><span class="annottext">ActivityInput -&gt; Maybe Int64
+</span><a href="CRM.Types.html#activityInputDealId"><span class="hs-identifier hs-var hs-var">activityInputDealId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-114"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityInputContactId"><span class="annot"><span class="annottext">ActivityInput -&gt; Maybe Int64
+</span><a href="CRM.Types.html#activityInputContactId"><span class="hs-identifier hs-var hs-var">activityInputContactId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-115"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityInputCompanyId"><span class="annot"><span class="annottext">ActivityInput -&gt; Maybe Int64
+</span><a href="CRM.Types.html#activityInputCompanyId"><span class="hs-identifier hs-var hs-var">activityInputCompanyId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-116"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityInputOwnerId"><span class="annot"><span class="annottext">ActivityInput -&gt; Maybe Int64
+</span><a href="CRM.Types.html#activityInputOwnerId"><span class="hs-identifier hs-var hs-var">activityInputOwnerId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-117"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="activityInputDueDate"><span class="annot"><span class="annottext">ActivityInput -&gt; Maybe UTCTime
+</span><a href="CRM.Types.html#activityInputDueDate"><span class="hs-identifier hs-var hs-var">activityInputDueDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-118"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680195388"><span id="local-6989586621680195401"><span id="local-6989586621680195405"><span class="annot"><span class="annottext">Int -&gt; ActivityInput -&gt; ShowS
+[ActivityInput] -&gt; ShowS
+ActivityInput -&gt; String
+(Int -&gt; ActivityInput -&gt; ShowS)
+-&gt; (ActivityInput -&gt; String)
+-&gt; ([ActivityInput] -&gt; ShowS)
+-&gt; Show ActivityInput
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ActivityInput -&gt; ShowS
+showsPrec :: Int -&gt; ActivityInput -&gt; ShowS
+$cshow :: ActivityInput -&gt; String
+show :: ActivityInput -&gt; String
+$cshowList :: [ActivityInput] -&gt; ShowS
+showList :: [ActivityInput] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680195408"><span id="local-6989586621680195420"><span class="annot"><span class="annottext">ActivityInput -&gt; ActivityInput -&gt; Bool
+(ActivityInput -&gt; ActivityInput -&gt; Bool)
+-&gt; (ActivityInput -&gt; ActivityInput -&gt; Bool) -&gt; Eq ActivityInput
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ActivityInput -&gt; ActivityInput -&gt; Bool
+== :: ActivityInput -&gt; ActivityInput -&gt; Bool
+$c/= :: ActivityInput -&gt; ActivityInput -&gt; Bool
+/= :: ActivityInput -&gt; ActivityInput -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680195424"><span id="local-6989586621680195426"><span class="annot"><span class="annottext">(forall x. ActivityInput -&gt; Rep ActivityInput x)
+-&gt; (forall x. Rep ActivityInput x -&gt; ActivityInput)
+-&gt; Generic ActivityInput
+forall x. Rep ActivityInput x -&gt; ActivityInput
+forall x. ActivityInput -&gt; Rep ActivityInput x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. ActivityInput -&gt; Rep ActivityInput x
+from :: forall x. ActivityInput -&gt; Rep ActivityInput x
+$cto :: forall x. Rep ActivityInput x -&gt; ActivityInput
+to :: forall x. Rep ActivityInput x -&gt; ActivityInput
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-119"></span><span>
+</span><span id="line-120"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680195429"><span id="local-6989586621680195436"><span id="local-6989586621680195439"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#ActivityInput"><span class="hs-identifier hs-type">ActivityInput</span></a></span></span></span></span><span>
+</span><span id="line-121"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680195545"><span id="local-6989586621680195552"><span id="local-6989586621680195555"><span id="local-6989586621680195558"><span id="local-6989586621680195561"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#ActivityInput"><span class="hs-identifier hs-type">ActivityInput</span></a></span></span></span></span></span></span><span>
+</span><span id="line-122"></span><span>
+</span><span id="line-123"></span><span class="annot"><span class="hs-comment">-- | Contact (person in CRM)</span></span><span>
+</span><span id="line-124"></span><span class="hs-keyword">data</span><span> </span><span id="Contact"><span class="annot"><a href="CRM.Types.html#Contact"><span class="hs-identifier hs-var">Contact</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Contact"><span class="annot"><a href="CRM.Types.html#Contact"><span class="hs-identifier hs-var">Contact</span></a></span></span><span>
+</span><span id="line-125"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="contactId"><span class="annot"><span class="annottext">Contact -&gt; Int64
+</span><a href="CRM.Types.html#contactId"><span class="hs-identifier hs-var hs-var">contactId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-126"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="contactFirstName"><span class="annot"><span class="annottext">Contact -&gt; Text
+</span><a href="CRM.Types.html#contactFirstName"><span class="hs-identifier hs-var hs-var">contactFirstName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-127"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="contactLastName"><span class="annot"><span class="annottext">Contact -&gt; Maybe Text
+</span><a href="CRM.Types.html#contactLastName"><span class="hs-identifier hs-var hs-var">contactLastName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-128"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="contactEmail"><span class="annot"><span class="annottext">Contact -&gt; Maybe Text
+</span><a href="CRM.Types.html#contactEmail"><span class="hs-identifier hs-var hs-var">contactEmail</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-129"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="contactPhone"><span class="annot"><span class="annottext">Contact -&gt; Maybe Text
+</span><a href="CRM.Types.html#contactPhone"><span class="hs-identifier hs-var hs-var">contactPhone</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-130"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="contactCompanyId"><span class="annot"><span class="annottext">Contact -&gt; Maybe Int64
+</span><a href="CRM.Types.html#contactCompanyId"><span class="hs-identifier hs-var hs-var">contactCompanyId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-131"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="contactTitle"><span class="annot"><span class="annottext">Contact -&gt; Maybe Text
+</span><a href="CRM.Types.html#contactTitle"><span class="hs-identifier hs-var hs-var">contactTitle</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-132"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="contactCreatedAt"><span class="annot"><span class="annottext">Contact -&gt; UTCTime
+</span><a href="CRM.Types.html#contactCreatedAt"><span class="hs-identifier hs-var hs-var">contactCreatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span>
+</span><span id="line-133"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680195727"><span id="local-6989586621680195738"><span id="local-6989586621680195742"><span class="annot"><span class="annottext">Int -&gt; Contact -&gt; ShowS
+[Contact] -&gt; ShowS
+Contact -&gt; String
+(Int -&gt; Contact -&gt; ShowS)
+-&gt; (Contact -&gt; String) -&gt; ([Contact] -&gt; ShowS) -&gt; Show Contact
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Contact -&gt; ShowS
+showsPrec :: Int -&gt; Contact -&gt; ShowS
+$cshow :: Contact -&gt; String
+show :: Contact -&gt; String
+$cshowList :: [Contact] -&gt; ShowS
+showList :: [Contact] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680195745"><span id="local-6989586621680195755"><span class="annot"><span class="annottext">Contact -&gt; Contact -&gt; Bool
+(Contact -&gt; Contact -&gt; Bool)
+-&gt; (Contact -&gt; Contact -&gt; Bool) -&gt; Eq Contact
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Contact -&gt; Contact -&gt; Bool
+== :: Contact -&gt; Contact -&gt; Bool
+$c/= :: Contact -&gt; Contact -&gt; Bool
+/= :: Contact -&gt; Contact -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680195759"><span id="local-6989586621680195761"><span class="annot"><span class="annottext">(forall x. Contact -&gt; Rep Contact x)
+-&gt; (forall x. Rep Contact x -&gt; Contact) -&gt; Generic Contact
+forall x. Rep Contact x -&gt; Contact
+forall x. Contact -&gt; Rep Contact x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Contact -&gt; Rep Contact x
+from :: forall x. Contact -&gt; Rep Contact x
+$cto :: forall x. Rep Contact x -&gt; Contact
+to :: forall x. Rep Contact x -&gt; Contact
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-134"></span><span>
+</span><span id="line-135"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680195764"><span id="local-6989586621680195771"><span id="local-6989586621680195774"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#Contact"><span class="hs-identifier hs-type">Contact</span></a></span></span></span></span><span>
+</span><span id="line-136"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680195878"><span id="local-6989586621680195885"><span id="local-6989586621680195888"><span id="local-6989586621680195891"><span id="local-6989586621680195894"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#Contact"><span class="hs-identifier hs-type">Contact</span></a></span></span></span></span></span></span><span>
+</span><span id="line-137"></span><span>
+</span><span id="line-138"></span><span class="annot"><span class="hs-comment">-- | Contact input</span></span><span>
+</span><span id="line-139"></span><span class="hs-keyword">data</span><span> </span><span id="ContactInput"><span class="annot"><a href="CRM.Types.html#ContactInput"><span class="hs-identifier hs-var">ContactInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ContactInput"><span class="annot"><a href="CRM.Types.html#ContactInput"><span class="hs-identifier hs-var">ContactInput</span></a></span></span><span>
+</span><span id="line-140"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="contactInputFirstName"><span class="annot"><span class="annottext">ContactInput -&gt; Text
+</span><a href="CRM.Types.html#contactInputFirstName"><span class="hs-identifier hs-var hs-var">contactInputFirstName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-141"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="contactInputLastName"><span class="annot"><span class="annottext">ContactInput -&gt; Maybe Text
+</span><a href="CRM.Types.html#contactInputLastName"><span class="hs-identifier hs-var hs-var">contactInputLastName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-142"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="contactInputEmail"><span class="annot"><span class="annottext">ContactInput -&gt; Maybe Text
+</span><a href="CRM.Types.html#contactInputEmail"><span class="hs-identifier hs-var hs-var">contactInputEmail</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-143"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="contactInputPhone"><span class="annot"><span class="annottext">ContactInput -&gt; Maybe Text
+</span><a href="CRM.Types.html#contactInputPhone"><span class="hs-identifier hs-var hs-var">contactInputPhone</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-144"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="contactInputCompanyId"><span class="annot"><span class="annottext">ContactInput -&gt; Maybe Int64
+</span><a href="CRM.Types.html#contactInputCompanyId"><span class="hs-identifier hs-var hs-var">contactInputCompanyId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-145"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="contactInputTitle"><span class="annot"><span class="annottext">ContactInput -&gt; Maybe Text
+</span><a href="CRM.Types.html#contactInputTitle"><span class="hs-identifier hs-var hs-var">contactInputTitle</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-146"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680196056"><span id="local-6989586621680196066"><span id="local-6989586621680196070"><span class="annot"><span class="annottext">Int -&gt; ContactInput -&gt; ShowS
+[ContactInput] -&gt; ShowS
+ContactInput -&gt; String
+(Int -&gt; ContactInput -&gt; ShowS)
+-&gt; (ContactInput -&gt; String)
+-&gt; ([ContactInput] -&gt; ShowS)
+-&gt; Show ContactInput
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ContactInput -&gt; ShowS
+showsPrec :: Int -&gt; ContactInput -&gt; ShowS
+$cshow :: ContactInput -&gt; String
+show :: ContactInput -&gt; String
+$cshowList :: [ContactInput] -&gt; ShowS
+showList :: [ContactInput] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680196073"><span id="local-6989586621680196082"><span class="annot"><span class="annottext">ContactInput -&gt; ContactInput -&gt; Bool
+(ContactInput -&gt; ContactInput -&gt; Bool)
+-&gt; (ContactInput -&gt; ContactInput -&gt; Bool) -&gt; Eq ContactInput
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ContactInput -&gt; ContactInput -&gt; Bool
+== :: ContactInput -&gt; ContactInput -&gt; Bool
+$c/= :: ContactInput -&gt; ContactInput -&gt; Bool
+/= :: ContactInput -&gt; ContactInput -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680196086"><span id="local-6989586621680196088"><span class="annot"><span class="annottext">(forall x. ContactInput -&gt; Rep ContactInput x)
+-&gt; (forall x. Rep ContactInput x -&gt; ContactInput)
+-&gt; Generic ContactInput
+forall x. Rep ContactInput x -&gt; ContactInput
+forall x. ContactInput -&gt; Rep ContactInput x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. ContactInput -&gt; Rep ContactInput x
+from :: forall x. ContactInput -&gt; Rep ContactInput x
+$cto :: forall x. Rep ContactInput x -&gt; ContactInput
+to :: forall x. Rep ContactInput x -&gt; ContactInput
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-147"></span><span>
+</span><span id="line-148"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680196091"><span id="local-6989586621680196098"><span id="local-6989586621680196101"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#ContactInput"><span class="hs-identifier hs-type">ContactInput</span></a></span></span></span></span><span>
+</span><span id="line-149"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680196186"><span id="local-6989586621680196193"><span id="local-6989586621680196196"><span id="local-6989586621680196199"><span id="local-6989586621680196202"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#ContactInput"><span class="hs-identifier hs-type">ContactInput</span></a></span></span></span></span></span></span><span>
+</span><span id="line-150"></span><span>
+</span><span id="line-151"></span><span class="annot"><span class="hs-comment">-- | Company (organization in CRM)</span></span><span>
+</span><span id="line-152"></span><span class="hs-keyword">data</span><span> </span><span id="Company"><span class="annot"><a href="CRM.Types.html#Company"><span class="hs-identifier hs-var">Company</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Company"><span class="annot"><a href="CRM.Types.html#Company"><span class="hs-identifier hs-var">Company</span></a></span></span><span>
+</span><span id="line-153"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="companyId"><span class="annot"><span class="annottext">Company -&gt; Int64
+</span><a href="CRM.Types.html#companyId"><span class="hs-identifier hs-var hs-var">companyId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-154"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="companyName"><span class="annot"><span class="annottext">Company -&gt; Text
+</span><a href="CRM.Types.html#companyName"><span class="hs-identifier hs-var hs-var">companyName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-155"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="companyIndustry"><span class="annot"><span class="annottext">Company -&gt; Maybe Text
+</span><a href="CRM.Types.html#companyIndustry"><span class="hs-identifier hs-var hs-var">companyIndustry</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-156"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="companyWebsite"><span class="annot"><span class="annottext">Company -&gt; Maybe Text
+</span><a href="CRM.Types.html#companyWebsite"><span class="hs-identifier hs-var hs-var">companyWebsite</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-157"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="companyPhone"><span class="annot"><span class="annottext">Company -&gt; Maybe Text
+</span><a href="CRM.Types.html#companyPhone"><span class="hs-identifier hs-var hs-var">companyPhone</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-158"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="companyEmail"><span class="annot"><span class="annottext">Company -&gt; Maybe Text
+</span><a href="CRM.Types.html#companyEmail"><span class="hs-identifier hs-var hs-var">companyEmail</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-159"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="companyAddress"><span class="annot"><span class="annottext">Company -&gt; Maybe Text
+</span><a href="CRM.Types.html#companyAddress"><span class="hs-identifier hs-var hs-var">companyAddress</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-160"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="companyCreatedAt"><span class="annot"><span class="annottext">Company -&gt; UTCTime
+</span><a href="CRM.Types.html#companyCreatedAt"><span class="hs-identifier hs-var hs-var">companyCreatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span>
+</span><span id="line-161"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680196333"><span id="local-6989586621680196344"><span id="local-6989586621680196348"><span class="annot"><span class="annottext">Int -&gt; Company -&gt; ShowS
+[Company] -&gt; ShowS
+Company -&gt; String
+(Int -&gt; Company -&gt; ShowS)
+-&gt; (Company -&gt; String) -&gt; ([Company] -&gt; ShowS) -&gt; Show Company
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Company -&gt; ShowS
+showsPrec :: Int -&gt; Company -&gt; ShowS
+$cshow :: Company -&gt; String
+show :: Company -&gt; String
+$cshowList :: [Company] -&gt; ShowS
+showList :: [Company] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680196351"><span id="local-6989586621680196361"><span class="annot"><span class="annottext">Company -&gt; Company -&gt; Bool
+(Company -&gt; Company -&gt; Bool)
+-&gt; (Company -&gt; Company -&gt; Bool) -&gt; Eq Company
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Company -&gt; Company -&gt; Bool
+== :: Company -&gt; Company -&gt; Bool
+$c/= :: Company -&gt; Company -&gt; Bool
+/= :: Company -&gt; Company -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680196365"><span id="local-6989586621680196367"><span class="annot"><span class="annottext">(forall x. Company -&gt; Rep Company x)
+-&gt; (forall x. Rep Company x -&gt; Company) -&gt; Generic Company
+forall x. Rep Company x -&gt; Company
+forall x. Company -&gt; Rep Company x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Company -&gt; Rep Company x
+from :: forall x. Company -&gt; Rep Company x
+$cto :: forall x. Rep Company x -&gt; Company
+to :: forall x. Rep Company x -&gt; Company
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-162"></span><span>
+</span><span id="line-163"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680196370"><span id="local-6989586621680196377"><span id="local-6989586621680196380"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#Company"><span class="hs-identifier hs-type">Company</span></a></span></span></span></span><span>
+</span><span id="line-164"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680196483"><span id="local-6989586621680196490"><span id="local-6989586621680196493"><span id="local-6989586621680196496"><span id="local-6989586621680196499"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#Company"><span class="hs-identifier hs-type">Company</span></a></span></span></span></span></span></span><span>
+</span><span id="line-165"></span><span>
+</span><span id="line-166"></span><span class="annot"><span class="hs-comment">-- | Company input</span></span><span>
+</span><span id="line-167"></span><span class="hs-keyword">data</span><span> </span><span id="CompanyInput"><span class="annot"><a href="CRM.Types.html#CompanyInput"><span class="hs-identifier hs-var">CompanyInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CompanyInput"><span class="annot"><a href="CRM.Types.html#CompanyInput"><span class="hs-identifier hs-var">CompanyInput</span></a></span></span><span>
+</span><span id="line-168"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="companyInputName"><span class="annot"><span class="annottext">CompanyInput -&gt; Text
+</span><a href="CRM.Types.html#companyInputName"><span class="hs-identifier hs-var hs-var">companyInputName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-169"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="companyInputIndustry"><span class="annot"><span class="annottext">CompanyInput -&gt; Maybe Text
+</span><a href="CRM.Types.html#companyInputIndustry"><span class="hs-identifier hs-var hs-var">companyInputIndustry</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-170"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="companyInputWebsite"><span class="annot"><span class="annottext">CompanyInput -&gt; Maybe Text
+</span><a href="CRM.Types.html#companyInputWebsite"><span class="hs-identifier hs-var hs-var">companyInputWebsite</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-171"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="companyInputPhone"><span class="annot"><span class="annottext">CompanyInput -&gt; Maybe Text
+</span><a href="CRM.Types.html#companyInputPhone"><span class="hs-identifier hs-var hs-var">companyInputPhone</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-172"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="companyInputEmail"><span class="annot"><span class="annottext">CompanyInput -&gt; Maybe Text
+</span><a href="CRM.Types.html#companyInputEmail"><span class="hs-identifier hs-var hs-var">companyInputEmail</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-173"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="companyInputAddress"><span class="annot"><span class="annottext">CompanyInput -&gt; Maybe Text
+</span><a href="CRM.Types.html#companyInputAddress"><span class="hs-identifier hs-var hs-var">companyInputAddress</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-174"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680196658"><span id="local-6989586621680196667"><span id="local-6989586621680196671"><span class="annot"><span class="annottext">Int -&gt; CompanyInput -&gt; ShowS
+[CompanyInput] -&gt; ShowS
+CompanyInput -&gt; String
+(Int -&gt; CompanyInput -&gt; ShowS)
+-&gt; (CompanyInput -&gt; String)
+-&gt; ([CompanyInput] -&gt; ShowS)
+-&gt; Show CompanyInput
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CompanyInput -&gt; ShowS
+showsPrec :: Int -&gt; CompanyInput -&gt; ShowS
+$cshow :: CompanyInput -&gt; String
+show :: CompanyInput -&gt; String
+$cshowList :: [CompanyInput] -&gt; ShowS
+showList :: [CompanyInput] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680196674"><span id="local-6989586621680196682"><span class="annot"><span class="annottext">CompanyInput -&gt; CompanyInput -&gt; Bool
+(CompanyInput -&gt; CompanyInput -&gt; Bool)
+-&gt; (CompanyInput -&gt; CompanyInput -&gt; Bool) -&gt; Eq CompanyInput
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CompanyInput -&gt; CompanyInput -&gt; Bool
+== :: CompanyInput -&gt; CompanyInput -&gt; Bool
+$c/= :: CompanyInput -&gt; CompanyInput -&gt; Bool
+/= :: CompanyInput -&gt; CompanyInput -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680196686"><span id="local-6989586621680196688"><span class="annot"><span class="annottext">(forall x. CompanyInput -&gt; Rep CompanyInput x)
+-&gt; (forall x. Rep CompanyInput x -&gt; CompanyInput)
+-&gt; Generic CompanyInput
+forall x. Rep CompanyInput x -&gt; CompanyInput
+forall x. CompanyInput -&gt; Rep CompanyInput x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. CompanyInput -&gt; Rep CompanyInput x
+from :: forall x. CompanyInput -&gt; Rep CompanyInput x
+$cto :: forall x. Rep CompanyInput x -&gt; CompanyInput
+to :: forall x. Rep CompanyInput x -&gt; CompanyInput
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-175"></span><span>
+</span><span id="line-176"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680196691"><span id="local-6989586621680196698"><span id="local-6989586621680196701"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#CompanyInput"><span class="hs-identifier hs-type">CompanyInput</span></a></span></span></span></span><span>
+</span><span id="line-177"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680196784"><span id="local-6989586621680196791"><span id="local-6989586621680196794"><span id="local-6989586621680196797"><span id="local-6989586621680196800"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#CompanyInput"><span class="hs-identifier hs-type">CompanyInput</span></a></span></span></span></span></span></span><span>
+</span><span id="line-178"></span><span>
+</span><span id="line-179"></span><span class="annot"><span class="hs-comment">-- | Pipeline forecast</span></span><span>
+</span><span id="line-180"></span><span class="hs-keyword">data</span><span> </span><span id="PipelineForecast"><span class="annot"><a href="CRM.Types.html#PipelineForecast"><span class="hs-identifier hs-var">PipelineForecast</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PipelineForecast"><span class="annot"><a href="CRM.Types.html#PipelineForecast"><span class="hs-identifier hs-var">PipelineForecast</span></a></span></span><span>
+</span><span id="line-181"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="forecastTotalValue"><span class="annot"><span class="annottext">PipelineForecast -&gt; Double
+</span><a href="CRM.Types.html#forecastTotalValue"><span class="hs-identifier hs-var hs-var">forecastTotalValue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-182"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="forecastWeightedValue"><span class="annot"><span class="annottext">PipelineForecast -&gt; Double
+</span><a href="CRM.Types.html#forecastWeightedValue"><span class="hs-identifier hs-var hs-var">forecastWeightedValue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-183"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="forecastDealCount"><span class="annot"><span class="annottext">PipelineForecast -&gt; Int
+</span><a href="CRM.Types.html#forecastDealCount"><span class="hs-identifier hs-var hs-var">forecastDealCount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-184"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="forecastByStage"><span class="annot"><span class="annottext">PipelineForecast -&gt; [(DealStage, Double, Int)]
+</span><a href="CRM.Types.html#forecastByStage"><span class="hs-identifier hs-var hs-var">forecastByStage</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="CRM.Types.html#DealStage"><span class="hs-identifier hs-type">DealStage</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-185"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680196923"><span id="local-6989586621680196932"><span id="local-6989586621680196936"><span class="annot"><span class="annottext">Int -&gt; PipelineForecast -&gt; ShowS
+[PipelineForecast] -&gt; ShowS
+PipelineForecast -&gt; String
+(Int -&gt; PipelineForecast -&gt; ShowS)
+-&gt; (PipelineForecast -&gt; String)
+-&gt; ([PipelineForecast] -&gt; ShowS)
+-&gt; Show PipelineForecast
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PipelineForecast -&gt; ShowS
+showsPrec :: Int -&gt; PipelineForecast -&gt; ShowS
+$cshow :: PipelineForecast -&gt; String
+show :: PipelineForecast -&gt; String
+$cshowList :: [PipelineForecast] -&gt; ShowS
+showList :: [PipelineForecast] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680196941"><span id="local-6989586621680196949"><span class="annot"><span class="annottext">PipelineForecast -&gt; PipelineForecast -&gt; Bool
+(PipelineForecast -&gt; PipelineForecast -&gt; Bool)
+-&gt; (PipelineForecast -&gt; PipelineForecast -&gt; Bool)
+-&gt; Eq PipelineForecast
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PipelineForecast -&gt; PipelineForecast -&gt; Bool
+== :: PipelineForecast -&gt; PipelineForecast -&gt; Bool
+$c/= :: PipelineForecast -&gt; PipelineForecast -&gt; Bool
+/= :: PipelineForecast -&gt; PipelineForecast -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680196955"><span id="local-6989586621680196957"><span class="annot"><span class="annottext">(forall x. PipelineForecast -&gt; Rep PipelineForecast x)
+-&gt; (forall x. Rep PipelineForecast x -&gt; PipelineForecast)
+-&gt; Generic PipelineForecast
+forall x. Rep PipelineForecast x -&gt; PipelineForecast
+forall x. PipelineForecast -&gt; Rep PipelineForecast x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PipelineForecast -&gt; Rep PipelineForecast x
+from :: forall x. PipelineForecast -&gt; Rep PipelineForecast x
+$cto :: forall x. Rep PipelineForecast x -&gt; PipelineForecast
+to :: forall x. Rep PipelineForecast x -&gt; PipelineForecast
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-186"></span><span>
+</span><span id="line-187"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680196960"><span id="local-6989586621680196967"><span id="local-6989586621680196970"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#PipelineForecast"><span class="hs-identifier hs-type">PipelineForecast</span></a></span></span></span></span><span>
+</span><span id="line-188"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680197046"><span id="local-6989586621680197053"><span id="local-6989586621680197056"><span id="local-6989586621680197059"><span id="local-6989586621680197062"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#PipelineForecast"><span class="hs-identifier hs-type">PipelineForecast</span></a></span></span></span></span></span></span><span>
+</span><span id="line-189"></span><span>
+</span><span id="line-190"></span><span class="annot"><span class="hs-comment">-- | Deal statistics</span></span><span>
+</span><span id="line-191"></span><span class="hs-keyword">data</span><span> </span><span id="DealStats"><span class="annot"><a href="CRM.Types.html#DealStats"><span class="hs-identifier hs-var">DealStats</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="DealStats"><span class="annot"><a href="CRM.Types.html#DealStats"><span class="hs-identifier hs-var">DealStats</span></a></span></span><span>
+</span><span id="line-192"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="statsTotalDeals"><span class="annot"><span class="annottext">DealStats -&gt; Int
+</span><a href="CRM.Types.html#statsTotalDeals"><span class="hs-identifier hs-var hs-var">statsTotalDeals</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-193"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="statsOpenDeals"><span class="annot"><span class="annottext">DealStats -&gt; Int
+</span><a href="CRM.Types.html#statsOpenDeals"><span class="hs-identifier hs-var hs-var">statsOpenDeals</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-194"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="statsWonDeals"><span class="annot"><span class="annottext">DealStats -&gt; Int
+</span><a href="CRM.Types.html#statsWonDeals"><span class="hs-identifier hs-var hs-var">statsWonDeals</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-195"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="statsLostDeals"><span class="annot"><span class="annottext">DealStats -&gt; Int
+</span><a href="CRM.Types.html#statsLostDeals"><span class="hs-identifier hs-var hs-var">statsLostDeals</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-196"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="statsTotalValue"><span class="annot"><span class="annottext">DealStats -&gt; Double
+</span><a href="CRM.Types.html#statsTotalValue"><span class="hs-identifier hs-var hs-var">statsTotalValue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-197"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="statsWonValue"><span class="annot"><span class="annottext">DealStats -&gt; Double
+</span><a href="CRM.Types.html#statsWonValue"><span class="hs-identifier hs-var hs-var">statsWonValue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-198"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="statsConversionRate"><span class="annot"><span class="annottext">DealStats -&gt; Double
+</span><a href="CRM.Types.html#statsConversionRate"><span class="hs-identifier hs-var hs-var">statsConversionRate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-199"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680197171"><span id="local-6989586621680197181"><span id="local-6989586621680197185"><span class="annot"><span class="annottext">Int -&gt; DealStats -&gt; ShowS
+[DealStats] -&gt; ShowS
+DealStats -&gt; String
+(Int -&gt; DealStats -&gt; ShowS)
+-&gt; (DealStats -&gt; String)
+-&gt; ([DealStats] -&gt; ShowS)
+-&gt; Show DealStats
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DealStats -&gt; ShowS
+showsPrec :: Int -&gt; DealStats -&gt; ShowS
+$cshow :: DealStats -&gt; String
+show :: DealStats -&gt; String
+$cshowList :: [DealStats] -&gt; ShowS
+showList :: [DealStats] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680197188"><span id="local-6989586621680197197"><span class="annot"><span class="annottext">DealStats -&gt; DealStats -&gt; Bool
+(DealStats -&gt; DealStats -&gt; Bool)
+-&gt; (DealStats -&gt; DealStats -&gt; Bool) -&gt; Eq DealStats
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: DealStats -&gt; DealStats -&gt; Bool
+== :: DealStats -&gt; DealStats -&gt; Bool
+$c/= :: DealStats -&gt; DealStats -&gt; Bool
+/= :: DealStats -&gt; DealStats -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680197201"><span id="local-6989586621680197203"><span class="annot"><span class="annottext">(forall x. DealStats -&gt; Rep DealStats x)
+-&gt; (forall x. Rep DealStats x -&gt; DealStats) -&gt; Generic DealStats
+forall x. Rep DealStats x -&gt; DealStats
+forall x. DealStats -&gt; Rep DealStats x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. DealStats -&gt; Rep DealStats x
+from :: forall x. DealStats -&gt; Rep DealStats x
+$cto :: forall x. Rep DealStats x -&gt; DealStats
+to :: forall x. Rep DealStats x -&gt; DealStats
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-200"></span><span>
+</span><span id="line-201"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680197206"><span id="local-6989586621680197213"><span id="local-6989586621680197216"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#DealStats"><span class="hs-identifier hs-type">DealStats</span></a></span></span></span></span><span>
+</span><span id="line-202"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680197307"><span id="local-6989586621680197314"><span id="local-6989586621680197317"><span id="local-6989586621680197320"><span id="local-6989586621680197323"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="CRM.Types.html#DealStats"><span class="hs-identifier hs-type">DealStats</span></a></span></span></span></span></span></span><span>
+</span><span id="line-203"></span></pre></body></html>

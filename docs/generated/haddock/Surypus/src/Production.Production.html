@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="annot"><span class="hs-comment">-- | Production module - Manufacturing</span></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Production.Production.html"><span class="hs-identifier">Production.Production</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Production.Production.html#TechLine"><span class="hs-identifier">TechLine</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Production.Production.html#Processor"><span class="hs-identifier">Processor</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Production.Production.html#TSession"><span class="hs-identifier">TSession</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">FromJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="annot"><span class="hs-comment">-- | TechLine - Technology line (ingredient)</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">data</span><span> </span><span id="TechLine"><span class="annot"><a href="Production.Production.html#TechLine"><span class="hs-identifier hs-var">TechLine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TechLine"><span class="annot"><a href="Production.Production.html#TechLine"><span class="hs-identifier hs-var">TechLine</span></a></span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tlId"><span class="annot"><span class="annottext">TechLine -&gt; Int64
+</span><a href="Production.Production.html#tlId"><span class="hs-identifier hs-var hs-var">tlId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span id="tlTechId"><span class="annot"><span class="annottext">TechLine -&gt; Int64
+</span><a href="Production.Production.html#tlTechId"><span class="hs-identifier hs-var hs-var">tlTechId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span id="tlGoodsId"><span class="annot"><span class="annottext">TechLine -&gt; Int64
+</span><a href="Production.Production.html#tlGoodsId"><span class="hs-identifier hs-var hs-var">tlGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Input material</span><span>
+</span><span id="line-21"></span><span>    </span><span id="tlQtty"><span class="annot"><span class="annottext">TechLine -&gt; Double
+</span><a href="Production.Production.html#tlQtty"><span class="hs-identifier hs-var hs-var">tlQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="tlFlags"><span class="annot"><span class="annottext">TechLine -&gt; Int
+</span><a href="Production.Production.html#tlFlags"><span class="hs-identifier hs-var hs-var">tlFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680275280"><span id="local-6989586621680275292"><span id="local-6989586621680275296"><span class="annot"><span class="annottext">Int -&gt; TechLine -&gt; ShowS
+[TechLine] -&gt; ShowS
+TechLine -&gt; String
+(Int -&gt; TechLine -&gt; ShowS)
+-&gt; (TechLine -&gt; String) -&gt; ([TechLine] -&gt; ShowS) -&gt; Show TechLine
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TechLine -&gt; ShowS
+showsPrec :: Int -&gt; TechLine -&gt; ShowS
+$cshow :: TechLine -&gt; String
+show :: TechLine -&gt; String
+$cshowList :: [TechLine] -&gt; ShowS
+showList :: [TechLine] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680275301"><span id="local-6989586621680275311"><span class="annot"><span class="annottext">TechLine -&gt; TechLine -&gt; Bool
+(TechLine -&gt; TechLine -&gt; Bool)
+-&gt; (TechLine -&gt; TechLine -&gt; Bool) -&gt; Eq TechLine
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TechLine -&gt; TechLine -&gt; Bool
+== :: TechLine -&gt; TechLine -&gt; Bool
+$c/= :: TechLine -&gt; TechLine -&gt; Bool
+/= :: TechLine -&gt; TechLine -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680275316"><span id="local-6989586621680275318"><span class="annot"><span class="annottext">(forall x. TechLine -&gt; Rep TechLine x)
+-&gt; (forall x. Rep TechLine x -&gt; TechLine) -&gt; Generic TechLine
+forall x. Rep TechLine x -&gt; TechLine
+forall x. TechLine -&gt; Rep TechLine x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. TechLine -&gt; Rep TechLine x
+from :: forall x. TechLine -&gt; Rep TechLine x
+$cto :: forall x. Rep TechLine x -&gt; TechLine
+to :: forall x. Rep TechLine x -&gt; TechLine
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680275324"><span id="local-6989586621680275331"><span id="local-6989586621680275334"><span id="local-6989586621680275337"><span id="local-6989586621680275340"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Production.Production.html#TechLine"><span class="hs-identifier hs-type">TechLine</span></a></span></span></span></span></span></span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680275488"><span id="local-6989586621680275495"><span id="local-6989586621680275498"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Production.Production.html#TechLine"><span class="hs-identifier hs-type">TechLine</span></a></span></span></span></span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="annot"><span class="hs-comment">-- | Processor - Processing line</span></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">data</span><span> </span><span id="Processor"><span class="annot"><a href="Production.Production.html#Processor"><span class="hs-identifier hs-var">Processor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Processor"><span class="annot"><a href="Production.Production.html#Processor"><span class="hs-identifier hs-var">Processor</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="procId"><span class="annot"><span class="annottext">Processor -&gt; Int64
+</span><a href="Production.Production.html#procId"><span class="hs-identifier hs-var hs-var">procId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-33"></span><span>    </span><span id="procCode"><span class="annot"><span class="annottext">Processor -&gt; Text
+</span><a href="Production.Production.html#procCode"><span class="hs-identifier hs-var hs-var">procCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-34"></span><span>    </span><span id="procName"><span class="annot"><span class="annottext">Processor -&gt; Int64
+</span><a href="Production.Production.html#procName"><span class="hs-identifier hs-var hs-var">procName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>    </span><span id="procFlags"><span class="annot"><span class="annottext">Processor -&gt; Int
+</span><a href="Production.Production.html#procFlags"><span class="hs-identifier hs-var hs-var">procFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680275600"><span id="local-6989586621680275608"><span id="local-6989586621680275612"><span class="annot"><span class="annottext">Int -&gt; Processor -&gt; ShowS
+[Processor] -&gt; ShowS
+Processor -&gt; String
+(Int -&gt; Processor -&gt; ShowS)
+-&gt; (Processor -&gt; String)
+-&gt; ([Processor] -&gt; ShowS)
+-&gt; Show Processor
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Processor -&gt; ShowS
+showsPrec :: Int -&gt; Processor -&gt; ShowS
+$cshow :: Processor -&gt; String
+show :: Processor -&gt; String
+$cshowList :: [Processor] -&gt; ShowS
+showList :: [Processor] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680275615"><span id="local-6989586621680275622"><span class="annot"><span class="annottext">Processor -&gt; Processor -&gt; Bool
+(Processor -&gt; Processor -&gt; Bool)
+-&gt; (Processor -&gt; Processor -&gt; Bool) -&gt; Eq Processor
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Processor -&gt; Processor -&gt; Bool
+== :: Processor -&gt; Processor -&gt; Bool
+$c/= :: Processor -&gt; Processor -&gt; Bool
+/= :: Processor -&gt; Processor -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680275626"><span id="local-6989586621680275628"><span class="annot"><span class="annottext">(forall x. Processor -&gt; Rep Processor x)
+-&gt; (forall x. Rep Processor x -&gt; Processor) -&gt; Generic Processor
+forall x. Rep Processor x -&gt; Processor
+forall x. Processor -&gt; Rep Processor x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Processor -&gt; Rep Processor x
+from :: forall x. Processor -&gt; Rep Processor x
+$cto :: forall x. Rep Processor x -&gt; Processor
+to :: forall x. Rep Processor x -&gt; Processor
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680275631"><span id="local-6989586621680275638"><span id="local-6989586621680275641"><span id="local-6989586621680275644"><span id="local-6989586621680275647"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Production.Production.html#Processor"><span class="hs-identifier hs-type">Processor</span></a></span></span></span></span></span></span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680275743"><span id="local-6989586621680275750"><span id="local-6989586621680275753"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Production.Production.html#Processor"><span class="hs-identifier hs-type">Processor</span></a></span></span></span></span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><span class="hs-comment">-- | TSession - Processing session</span></span><span>
+</span><span id="line-44"></span><span class="hs-keyword">data</span><span> </span><span id="TSession"><span class="annot"><a href="Production.Production.html#TSession"><span class="hs-identifier hs-var">TSession</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TSession"><span class="annot"><a href="Production.Production.html#TSession"><span class="hs-identifier hs-var">TSession</span></a></span></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tsId"><span class="annot"><span class="annottext">TSession -&gt; Int64
+</span><a href="Production.Production.html#tsId"><span class="hs-identifier hs-var hs-var">tsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-46"></span><span>    </span><span id="tsProcessorId"><span class="annot"><span class="annottext">TSession -&gt; Int64
+</span><a href="Production.Production.html#tsProcessorId"><span class="hs-identifier hs-var hs-var">tsProcessorId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-47"></span><span>    </span><span id="tsTechId"><span class="annot"><span class="annottext">TSession -&gt; Int64
+</span><a href="Production.Production.html#tsTechId"><span class="hs-identifier hs-var hs-var">tsTechId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-48"></span><span>    </span><span id="tsStartTime"><span class="annot"><span class="annottext">TSession -&gt; Day
+</span><a href="Production.Production.html#tsStartTime"><span class="hs-identifier hs-var hs-var">tsStartTime</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-49"></span><span>    </span><span id="tsEndTime"><span class="annot"><span class="annottext">TSession -&gt; Maybe Day
+</span><a href="Production.Production.html#tsEndTime"><span class="hs-identifier hs-var hs-var">tsEndTime</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-50"></span><span>    </span><span id="tsOutputQtty"><span class="annot"><span class="annottext">TSession -&gt; Double
+</span><a href="Production.Production.html#tsOutputQtty"><span class="hs-identifier hs-var hs-var">tsOutputQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-51"></span><span>    </span><span id="tsFlags"><span class="annot"><span class="annottext">TSession -&gt; Int
+</span><a href="Production.Production.html#tsFlags"><span class="hs-identifier hs-var hs-var">tsFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680275830"><span id="local-6989586621680275842"><span id="local-6989586621680275846"><span class="annot"><span class="annottext">Int -&gt; TSession -&gt; ShowS
+[TSession] -&gt; ShowS
+TSession -&gt; String
+(Int -&gt; TSession -&gt; ShowS)
+-&gt; (TSession -&gt; String) -&gt; ([TSession] -&gt; ShowS) -&gt; Show TSession
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TSession -&gt; ShowS
+showsPrec :: Int -&gt; TSession -&gt; ShowS
+$cshow :: TSession -&gt; String
+show :: TSession -&gt; String
+$cshowList :: [TSession] -&gt; ShowS
+showList :: [TSession] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680275849"><span id="local-6989586621680275860"><span class="annot"><span class="annottext">TSession -&gt; TSession -&gt; Bool
+(TSession -&gt; TSession -&gt; Bool)
+-&gt; (TSession -&gt; TSession -&gt; Bool) -&gt; Eq TSession
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TSession -&gt; TSession -&gt; Bool
+== :: TSession -&gt; TSession -&gt; Bool
+$c/= :: TSession -&gt; TSession -&gt; Bool
+/= :: TSession -&gt; TSession -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680275864"><span id="local-6989586621680275866"><span class="annot"><span class="annottext">(forall x. TSession -&gt; Rep TSession x)
+-&gt; (forall x. Rep TSession x -&gt; TSession) -&gt; Generic TSession
+forall x. Rep TSession x -&gt; TSession
+forall x. TSession -&gt; Rep TSession x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. TSession -&gt; Rep TSession x
+from :: forall x. TSession -&gt; Rep TSession x
+$cto :: forall x. Rep TSession x -&gt; TSession
+to :: forall x. Rep TSession x -&gt; TSession
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680275869"><span id="local-6989586621680275876"><span id="local-6989586621680275879"><span id="local-6989586621680275882"><span id="local-6989586621680275885"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Production.Production.html#TSession"><span class="hs-identifier hs-type">TSession</span></a></span></span></span></span></span></span><span>
+</span><span id="line-56"></span><span>
+</span><span id="line-57"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680276027"><span id="local-6989586621680276034"><span id="local-6989586621680276037"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Production.Production.html#TSession"><span class="hs-identifier hs-type">TSession</span></a></span></span></span></span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-60"></span><span class="hs-comment">-- QUICKCHECK PROPERTIES</span><span>
+</span><span id="line-61"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-62"></span><span>
+</span><span id="line-63"></span><span class="hs-comment">-- prop_materialConsumptionNonNeg :: [(Int64, Double)] -&gt; Property</span><span>
+</span><span id="line-64"></span><span class="hs-comment">-- prop_materialConsumptionNonNeg materials =</span><span>
+</span><span id="line-65"></span><span class="hs-comment">--   let valid = all (&gt;= 0) (map snd materials)</span><span>
+</span><span id="line-66"></span><span class="hs-comment">--    in valid ==&gt; forAll arbitrary $ \tech -&gt; calcMaterialConsumption tech materials &gt;= 0</span><span>
+</span><span id="line-67"></span></pre></body></html>

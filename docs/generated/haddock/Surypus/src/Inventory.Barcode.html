@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Barcode module - Barcode processing</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Inventory.Barcode.html"><span class="hs-identifier">Inventory.Barcode</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="annot"><span class="hs-comment">-- | Barcode structure</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">data</span><span> </span><span id="Barcode"><span class="annot"><a href="Inventory.Barcode.html#Barcode"><span class="hs-identifier hs-var">Barcode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Barcode"><span class="annot"><a href="Inventory.Barcode.html#Barcode"><span class="hs-identifier hs-var">Barcode</span></a></span></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="bcId"><span class="annot"><span class="annottext">Barcode -&gt; Int64
+</span><a href="Inventory.Barcode.html#bcId"><span class="hs-identifier hs-var hs-var">bcId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="bcCode"><span class="annot"><span class="annottext">Barcode -&gt; Text
+</span><a href="Inventory.Barcode.html#bcCode"><span class="hs-identifier hs-var hs-var">bcCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="bcGoodsId"><span class="annot"><span class="annottext">Barcode -&gt; Int64
+</span><a href="Inventory.Barcode.html#bcGoodsId"><span class="hs-identifier hs-var hs-var">bcGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="bcUnitId"><span class="annot"><span class="annottext">Barcode -&gt; Int64
+</span><a href="Inventory.Barcode.html#bcUnitId"><span class="hs-identifier hs-var hs-var">bcUnitId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="bcQty"><span class="annot"><span class="annottext">Barcode -&gt; Double
+</span><a href="Inventory.Barcode.html#bcQty"><span class="hs-identifier hs-var hs-var">bcQty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="bcFlags"><span class="annot"><span class="annottext">Barcode -&gt; Int
+</span><a href="Inventory.Barcode.html#bcFlags"><span class="hs-identifier hs-var hs-var">bcFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680264308"><span id="local-6989586621680264322"><span id="local-6989586621680264326"><span class="annot"><span class="annottext">Int -&gt; Barcode -&gt; ShowS
+[Barcode] -&gt; ShowS
+Barcode -&gt; String
+(Int -&gt; Barcode -&gt; ShowS)
+-&gt; (Barcode -&gt; String) -&gt; ([Barcode] -&gt; ShowS) -&gt; Show Barcode
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Barcode -&gt; ShowS
+showsPrec :: Int -&gt; Barcode -&gt; ShowS
+$cshow :: Barcode -&gt; String
+show :: Barcode -&gt; String
+$cshowList :: [Barcode] -&gt; ShowS
+showList :: [Barcode] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264331"><span id="local-6989586621680264342"><span class="annot"><span class="annottext">Barcode -&gt; Barcode -&gt; Bool
+(Barcode -&gt; Barcode -&gt; Bool)
+-&gt; (Barcode -&gt; Barcode -&gt; Bool) -&gt; Eq Barcode
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Barcode -&gt; Barcode -&gt; Bool
+== :: Barcode -&gt; Barcode -&gt; Bool
+$c/= :: Barcode -&gt; Barcode -&gt; Bool
+/= :: Barcode -&gt; Barcode -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="annot"><span class="hs-comment">-- | Barcode structure definition</span></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">data</span><span> </span><span id="BCodeStruc"><span class="annot"><a href="Inventory.Barcode.html#BCodeStruc"><span class="hs-identifier hs-var">BCodeStruc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BCodeStruc"><span class="annot"><a href="Inventory.Barcode.html#BCodeStruc"><span class="hs-identifier hs-var">BCodeStruc</span></a></span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="bcsId"><span class="annot"><span class="annottext">BCodeStruc -&gt; Int64
+</span><a href="Inventory.Barcode.html#bcsId"><span class="hs-identifier hs-var hs-var">bcsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="bcsName"><span class="annot"><span class="annottext">BCodeStruc -&gt; Text
+</span><a href="Inventory.Barcode.html#bcsName"><span class="hs-identifier hs-var hs-var">bcsName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="bcsFormat"><span class="annot"><span class="annottext">BCodeStruc -&gt; BarcodeFormat
+</span><a href="Inventory.Barcode.html#bcsFormat"><span class="hs-identifier hs-var hs-var">bcsFormat</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Inventory.Barcode.html#BarcodeFormat"><span class="hs-identifier hs-type">BarcodeFormat</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="bcsMask"><span class="annot"><span class="annottext">BCodeStruc -&gt; Text
+</span><a href="Inventory.Barcode.html#bcsMask"><span class="hs-identifier hs-var hs-var">bcsMask</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680264352"><span id="local-6989586621680264360"><span id="local-6989586621680264364"><span class="annot"><span class="annottext">Int -&gt; BCodeStruc -&gt; ShowS
+[BCodeStruc] -&gt; ShowS
+BCodeStruc -&gt; String
+(Int -&gt; BCodeStruc -&gt; ShowS)
+-&gt; (BCodeStruc -&gt; String)
+-&gt; ([BCodeStruc] -&gt; ShowS)
+-&gt; Show BCodeStruc
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BCodeStruc -&gt; ShowS
+showsPrec :: Int -&gt; BCodeStruc -&gt; ShowS
+$cshow :: BCodeStruc -&gt; String
+show :: BCodeStruc -&gt; String
+$cshowList :: [BCodeStruc] -&gt; ShowS
+showList :: [BCodeStruc] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264367"><span id="local-6989586621680264374"><span class="annot"><span class="annottext">BCodeStruc -&gt; BCodeStruc -&gt; Bool
+(BCodeStruc -&gt; BCodeStruc -&gt; Bool)
+-&gt; (BCodeStruc -&gt; BCodeStruc -&gt; Bool) -&gt; Eq BCodeStruc
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BCodeStruc -&gt; BCodeStruc -&gt; Bool
+== :: BCodeStruc -&gt; BCodeStruc -&gt; Bool
+$c/= :: BCodeStruc -&gt; BCodeStruc -&gt; Bool
+/= :: BCodeStruc -&gt; BCodeStruc -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">data</span><span> </span><span id="BarcodeFormat"><span class="annot"><a href="Inventory.Barcode.html#BarcodeFormat"><span class="hs-identifier hs-var">BarcodeFormat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BF_EAN13"><span class="annot"><a href="Inventory.Barcode.html#BF_EAN13"><span class="hs-identifier hs-var">BF_EAN13</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="BF_EAN8"><span class="annot"><a href="Inventory.Barcode.html#BF_EAN8"><span class="hs-identifier hs-var">BF_EAN8</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="BF_UPC"><span class="annot"><a href="Inventory.Barcode.html#BF_UPC"><span class="hs-identifier hs-var">BF_UPC</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="BF_QR"><span class="annot"><a href="Inventory.Barcode.html#BF_QR"><span class="hs-identifier hs-var">BF_QR</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="BF_Code128"><span class="annot"><a href="Inventory.Barcode.html#BF_Code128"><span class="hs-identifier hs-var">BF_Code128</span></a></span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680264383"><span id="local-6989586621680264385"><span id="local-6989586621680264388"><span class="annot"><span class="annottext">Int -&gt; BarcodeFormat -&gt; ShowS
+[BarcodeFormat] -&gt; ShowS
+BarcodeFormat -&gt; String
+(Int -&gt; BarcodeFormat -&gt; ShowS)
+-&gt; (BarcodeFormat -&gt; String)
+-&gt; ([BarcodeFormat] -&gt; ShowS)
+-&gt; Show BarcodeFormat
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BarcodeFormat -&gt; ShowS
+showsPrec :: Int -&gt; BarcodeFormat -&gt; ShowS
+$cshow :: BarcodeFormat -&gt; String
+show :: BarcodeFormat -&gt; String
+$cshowList :: [BarcodeFormat] -&gt; ShowS
+showList :: [BarcodeFormat] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264391"><span id="local-6989586621680264396"><span class="annot"><span class="annottext">BarcodeFormat -&gt; BarcodeFormat -&gt; Bool
+(BarcodeFormat -&gt; BarcodeFormat -&gt; Bool)
+-&gt; (BarcodeFormat -&gt; BarcodeFormat -&gt; Bool) -&gt; Eq BarcodeFormat
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BarcodeFormat -&gt; BarcodeFormat -&gt; Bool
+== :: BarcodeFormat -&gt; BarcodeFormat -&gt; Bool
+$c/= :: BarcodeFormat -&gt; BarcodeFormat -&gt; Bool
+/= :: BarcodeFormat -&gt; BarcodeFormat -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="annot"><span class="hs-comment">-- | Validate barcode checksum (EAN-13) - simplified</span></span><span>
+</span><span id="line-32"></span><span class="annot"><a href="Inventory.Barcode.html#validateEAN13"><span class="hs-identifier hs-type">validateEAN13</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-33"></span><span id="validateEAN13"><span class="annot"><span class="annottext">validateEAN13 :: Text -&gt; Bool
+</span><a href="Inventory.Barcode.html#validateEAN13"><span class="hs-identifier hs-var hs-var">validateEAN13</span></a></span></span><span> </span><span id="local-6989586621680264399"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680264399"><span class="hs-identifier hs-var">ean</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#length"><span class="hs-identifier hs-var">T.length</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680264399"><span class="hs-identifier hs-var">ean</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">13</span></span><span>
+</span><span id="line-34"></span></pre></body></html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Unit module - Measurement units</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Inventory.Unit.html"><span class="hs-identifier">Inventory.Unit</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="annot"><span class="hs-comment">-- | Unit - Measurement unit</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">data</span><span> </span><span id="Unit"><span class="annot"><a href="Inventory.Unit.html#Unit"><span class="hs-identifier hs-var">Unit</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Unit"><span class="annot"><a href="Inventory.Unit.html#Unit"><span class="hs-identifier hs-var">Unit</span></a></span></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="uId"><span class="annot"><span class="annottext">Unit -&gt; Int64
+</span><a href="Inventory.Unit.html#uId"><span class="hs-identifier hs-var hs-var">uId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span id="uCode"><span class="annot"><span class="annottext">Unit -&gt; Text
+</span><a href="Inventory.Unit.html#uCode"><span class="hs-identifier hs-var hs-var">uCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- ISO code (m, kg, pcs)</span><span>
+</span><span id="line-11"></span><span>    </span><span id="uName"><span class="annot"><span class="annottext">Unit -&gt; Text
+</span><a href="Inventory.Unit.html#uName"><span class="hs-identifier hs-var hs-var">uName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="uType"><span class="annot"><span class="annottext">Unit -&gt; UnitType
+</span><a href="Inventory.Unit.html#uType"><span class="hs-identifier hs-var hs-var">uType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Inventory.Unit.html#UnitType"><span class="hs-identifier hs-type">UnitType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="uRatio"><span class="annot"><span class="annottext">Unit -&gt; Double
+</span><a href="Inventory.Unit.html#uRatio"><span class="hs-identifier hs-var hs-var">uRatio</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Ratio to base unit</span><span>
+</span><span id="line-14"></span><span>    </span><span id="uBaseId"><span class="annot"><span class="annottext">Unit -&gt; Maybe Int64
+</span><a href="Inventory.Unit.html#uBaseId"><span class="hs-identifier hs-var hs-var">uBaseId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="uFlags"><span class="annot"><span class="annottext">Unit -&gt; Int
+</span><a href="Inventory.Unit.html#uFlags"><span class="hs-identifier hs-var hs-var">uFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680271020"><span id="local-6989586621680271037"><span id="local-6989586621680271041"><span class="annot"><span class="annottext">Int -&gt; Unit -&gt; ShowS
+[Unit] -&gt; ShowS
+Unit -&gt; String
+(Int -&gt; Unit -&gt; ShowS)
+-&gt; (Unit -&gt; String) -&gt; ([Unit] -&gt; ShowS) -&gt; Show Unit
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Unit -&gt; ShowS
+showsPrec :: Int -&gt; Unit -&gt; ShowS
+$cshow :: Unit -&gt; String
+show :: Unit -&gt; String
+$cshowList :: [Unit] -&gt; ShowS
+showList :: [Unit] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680271046"><span id="local-6989586621680271059"><span class="annot"><span class="annottext">Unit -&gt; Unit -&gt; Bool
+(Unit -&gt; Unit -&gt; Bool) -&gt; (Unit -&gt; Unit -&gt; Bool) -&gt; Eq Unit
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Unit -&gt; Unit -&gt; Bool
+== :: Unit -&gt; Unit -&gt; Bool
+$c/= :: Unit -&gt; Unit -&gt; Bool
+/= :: Unit -&gt; Unit -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">data</span><span> </span><span id="UnitType"><span class="annot"><a href="Inventory.Unit.html#UnitType"><span class="hs-identifier hs-var">UnitType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="UTLength"><span class="annot"><a href="Inventory.Unit.html#UTLength"><span class="hs-identifier hs-var">UTLength</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="UTWeight"><span class="annot"><a href="Inventory.Unit.html#UTWeight"><span class="hs-identifier hs-var">UTWeight</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="UTVolume"><span class="annot"><a href="Inventory.Unit.html#UTVolume"><span class="hs-identifier hs-var">UTVolume</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="UTArea"><span class="annot"><a href="Inventory.Unit.html#UTArea"><span class="hs-identifier hs-var">UTArea</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="UTCount"><span class="annot"><a href="Inventory.Unit.html#UTCount"><span class="hs-identifier hs-var">UTCount</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="UTTime"><span class="annot"><a href="Inventory.Unit.html#UTTime"><span class="hs-identifier hs-var">UTTime</span></a></span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680271070"><span id="local-6989586621680271072"><span id="local-6989586621680271075"><span class="annot"><span class="annottext">Int -&gt; UnitType -&gt; ShowS
+[UnitType] -&gt; ShowS
+UnitType -&gt; String
+(Int -&gt; UnitType -&gt; ShowS)
+-&gt; (UnitType -&gt; String) -&gt; ([UnitType] -&gt; ShowS) -&gt; Show UnitType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; UnitType -&gt; ShowS
+showsPrec :: Int -&gt; UnitType -&gt; ShowS
+$cshow :: UnitType -&gt; String
+show :: UnitType -&gt; String
+$cshowList :: [UnitType] -&gt; ShowS
+showList :: [UnitType] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680271078"><span id="local-6989586621680271083"><span class="annot"><span class="annottext">UnitType -&gt; UnitType -&gt; Bool
+(UnitType -&gt; UnitType -&gt; Bool)
+-&gt; (UnitType -&gt; UnitType -&gt; Bool) -&gt; Eq UnitType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: UnitType -&gt; UnitType -&gt; Bool
+== :: UnitType -&gt; UnitType -&gt; Bool
+$c/= :: UnitType -&gt; UnitType -&gt; Bool
+/= :: UnitType -&gt; UnitType -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="annot"><span class="hs-comment">-- | Currency - Currency</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">data</span><span> </span><span id="Currency"><span class="annot"><a href="Inventory.Unit.html#Currency"><span class="hs-identifier hs-var">Currency</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Currency"><span class="annot"><a href="Inventory.Unit.html#Currency"><span class="hs-identifier hs-var">Currency</span></a></span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="curId"><span class="annot"><span class="annottext">Currency -&gt; Int64
+</span><a href="Inventory.Unit.html#curId"><span class="hs-identifier hs-var hs-var">curId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="curCode"><span class="annot"><span class="annottext">Currency -&gt; Text
+</span><a href="Inventory.Unit.html#curCode"><span class="hs-identifier hs-var hs-var">curCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- ISO 4217 (RUB, USD, EUR)</span><span>
+</span><span id="line-26"></span><span>    </span><span id="curName"><span class="annot"><span class="annottext">Currency -&gt; Text
+</span><a href="Inventory.Unit.html#curName"><span class="hs-identifier hs-var hs-var">curName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="curSymbol"><span class="annot"><span class="annottext">Currency -&gt; Text
+</span><a href="Inventory.Unit.html#curSymbol"><span class="hs-identifier hs-var hs-var">curSymbol</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="curRate"><span class="annot"><span class="annottext">Currency -&gt; Double
+</span><a href="Inventory.Unit.html#curRate"><span class="hs-identifier hs-var hs-var">curRate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Exchange rate to base</span><span>
+</span><span id="line-29"></span><span>    </span><span id="curFlags"><span class="annot"><span class="annottext">Currency -&gt; Int
+</span><a href="Inventory.Unit.html#curFlags"><span class="hs-identifier hs-var hs-var">curFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680271093"><span id="local-6989586621680271102"><span id="local-6989586621680271106"><span class="annot"><span class="annottext">Int -&gt; Currency -&gt; ShowS
+[Currency] -&gt; ShowS
+Currency -&gt; String
+(Int -&gt; Currency -&gt; ShowS)
+-&gt; (Currency -&gt; String) -&gt; ([Currency] -&gt; ShowS) -&gt; Show Currency
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Currency -&gt; ShowS
+showsPrec :: Int -&gt; Currency -&gt; ShowS
+$cshow :: Currency -&gt; String
+show :: Currency -&gt; String
+$cshowList :: [Currency] -&gt; ShowS
+showList :: [Currency] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680271109"><span id="local-6989586621680271117"><span class="annot"><span class="annottext">Currency -&gt; Currency -&gt; Bool
+(Currency -&gt; Currency -&gt; Bool)
+-&gt; (Currency -&gt; Currency -&gt; Bool) -&gt; Eq Currency
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Currency -&gt; Currency -&gt; Bool
+== :: Currency -&gt; Currency -&gt; Bool
+$c/= :: Currency -&gt; Currency -&gt; Bool
+/= :: Currency -&gt; Currency -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-comment">-- | Convert a quantity between two units.</span><span>
+</span><span id="line-34"></span><span class="hs-comment">--</span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- A unit's @uRatio@ is the number of base units contained in one of that unit,</span><span>
+</span><span id="line-36"></span><span class="hs-comment">-- so a derived unit carries its own ratio and points at its base via @uBaseId@,</span><span>
+</span><span id="line-37"></span><span class="hs-comment">-- while a base unit has ratio 1 and no parent.</span><span>
+</span><span id="line-38"></span><span class="hs-comment">--</span><span>
+</span><span id="line-39"></span><span class="hs-comment">--   * the same unit is the identity</span><span>
+</span><span id="line-40"></span><span class="hs-comment">--   * derived -&gt; base multiplies by the derived unit's ratio</span><span>
+</span><span id="line-41"></span><span class="hs-comment">--   * base -&gt; derived divides by the derived unit's ratio</span><span>
+</span><span id="line-42"></span><span class="hs-comment">--   * two derived units sharing a base are converted through that base</span><span>
+</span><span id="line-43"></span><span class="hs-comment">--   * anything else (different types, unknown relation) is 'Nothing'</span><span>
+</span><span id="line-44"></span><span class="annot"><a href="Inventory.Unit.html#convertUnit"><span class="hs-identifier hs-type">convertUnit</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Inventory.Unit.html#Unit"><span class="hs-identifier hs-type">Unit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Inventory.Unit.html#Unit"><span class="hs-identifier hs-type">Unit</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-45"></span><span id="convertUnit"><span class="annot"><span class="annottext">convertUnit :: Double -&gt; Unit -&gt; Unit -&gt; Maybe Double
+</span><a href="Inventory.Unit.html#convertUnit"><span class="hs-identifier hs-var hs-var">convertUnit</span></a></span></span><span> </span><span id="local-6989586621680271121"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680271121"><span class="hs-identifier hs-var">qty</span></a></span></span><span> </span><span id="local-6989586621680271122"><span class="annot"><span class="annottext">Unit
+</span><a href="#local-6989586621680271122"><span class="hs-identifier hs-var">from</span></a></span></span><span> </span><span id="local-6989586621680271123"><span class="annot"><span class="annottext">Unit
+</span><a href="#local-6989586621680271123"><span class="hs-identifier hs-var">to</span></a></span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Unit -&gt; Int64
+</span><a href="Inventory.Unit.html#uId"><span class="hs-identifier hs-var">uId</span></a></span><span> </span><span class="annot"><span class="annottext">Unit
+</span><a href="#local-6989586621680271122"><span class="hs-identifier hs-var">from</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Unit -&gt; Int64
+</span><a href="Inventory.Unit.html#uId"><span class="hs-identifier hs-var">uId</span></a></span><span> </span><span class="annot"><span class="annottext">Unit
+</span><a href="#local-6989586621680271123"><span class="hs-identifier hs-var">to</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Maybe Double
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680271121"><span class="hs-identifier hs-var">qty</span></a></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Unit -&gt; Maybe Int64
+</span><a href="Inventory.Unit.html#uBaseId"><span class="hs-identifier hs-var">uBaseId</span></a></span><span> </span><span class="annot"><span class="annottext">Unit
+</span><a href="#local-6989586621680271122"><span class="hs-identifier hs-var">from</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Int64 -&gt; Maybe Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Maybe Int64
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Unit -&gt; Int64
+</span><a href="Inventory.Unit.html#uId"><span class="hs-identifier hs-var">uId</span></a></span><span> </span><span class="annot"><span class="annottext">Unit
+</span><a href="#local-6989586621680271123"><span class="hs-identifier hs-var">to</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Maybe Double
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680271121"><span class="hs-identifier hs-var">qty</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Unit -&gt; Double
+</span><a href="Inventory.Unit.html#uRatio"><span class="hs-identifier hs-var">uRatio</span></a></span><span> </span><span class="annot"><span class="annottext">Unit
+</span><a href="#local-6989586621680271122"><span class="hs-identifier hs-var">from</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Unit -&gt; Maybe Int64
+</span><a href="Inventory.Unit.html#uBaseId"><span class="hs-identifier hs-var">uBaseId</span></a></span><span> </span><span class="annot"><span class="annottext">Unit
+</span><a href="#local-6989586621680271123"><span class="hs-identifier hs-var">to</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Int64 -&gt; Maybe Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Maybe Int64
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Unit -&gt; Int64
+</span><a href="Inventory.Unit.html#uId"><span class="hs-identifier hs-var">uId</span></a></span><span> </span><span class="annot"><span class="annottext">Unit
+</span><a href="#local-6989586621680271122"><span class="hs-identifier hs-var">from</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Maybe Double
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680271121"><span class="hs-identifier hs-var">qty</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Unit -&gt; Double
+</span><a href="Inventory.Unit.html#uRatio"><span class="hs-identifier hs-var">uRatio</span></a></span><span> </span><span class="annot"><span class="annottext">Unit
+</span><a href="#local-6989586621680271123"><span class="hs-identifier hs-var">to</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621680271126"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680271126"><span class="hs-identifier hs-var">baseFrom</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Unit -&gt; Maybe Int64
+</span><a href="Inventory.Unit.html#uBaseId"><span class="hs-identifier hs-var">uBaseId</span></a></span><span> </span><span class="annot"><span class="annottext">Unit
+</span><a href="#local-6989586621680271122"><span class="hs-identifier hs-var">from</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-50"></span><span>    </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621680271127"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680271127"><span class="hs-identifier hs-var">baseTo</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Unit -&gt; Maybe Int64
+</span><a href="Inventory.Unit.html#uBaseId"><span class="hs-identifier hs-var">uBaseId</span></a></span><span> </span><span class="annot"><span class="annottext">Unit
+</span><a href="#local-6989586621680271123"><span class="hs-identifier hs-var">to</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-51"></span><span>    </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680271126"><span class="hs-identifier hs-var">baseFrom</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680271127"><span class="hs-identifier hs-var">baseTo</span></a></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-52"></span><span>      </span><span class="annot"><span class="annottext">Double -&gt; Maybe Double
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680271121"><span class="hs-identifier hs-var">qty</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Unit -&gt; Double
+</span><a href="Inventory.Unit.html#uRatio"><span class="hs-identifier hs-var">uRatio</span></a></span><span> </span><span class="annot"><span class="annottext">Unit
+</span><a href="#local-6989586621680271122"><span class="hs-identifier hs-var">from</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Unit -&gt; Double
+</span><a href="Inventory.Unit.html#uRatio"><span class="hs-identifier hs-var">uRatio</span></a></span><span> </span><span class="annot"><span class="annottext">Unit
+</span><a href="#local-6989586621680271123"><span class="hs-identifier hs-var">to</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Double
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-54"></span></pre></body></html>

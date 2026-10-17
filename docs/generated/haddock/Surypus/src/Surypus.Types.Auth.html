@@ -1,0 +1,713 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680325901"><span id="local-6989586621680325902"></span></span><span class="hs-pragma">{-# LANGUAGE DeriveAnyClass #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DerivingStrategies #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE DuplicateRecordFields #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html"><span class="hs-identifier">Surypus.Types.Auth</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#LoginRequest"><span class="hs-identifier">LoginRequest</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#LoginResponse"><span class="hs-identifier">LoginResponse</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#RefreshRequest"><span class="hs-identifier">RefreshRequest</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#RefreshResponse"><span class="hs-identifier">RefreshResponse</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#UserInfo"><span class="hs-identifier">UserInfo</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#UserRole"><span class="hs-identifier">UserRole</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#TokenPair"><span class="hs-identifier">TokenPair</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#JwtClaims"><span class="hs-identifier">JwtClaims</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#Permission"><span class="hs-identifier">Permission</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#ResourceAccess"><span class="hs-identifier">ResourceAccess</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">FromJSON</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Options</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">defaultOptions</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">genericParseJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">genericToJSON</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.html"><span class="hs-identifier">Data.Time.Clock</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html"><span class="hs-identifier">Surypus.Types.Common</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier">camelTo2</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-comment">-- &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- AUTHENTICATION TYPES</span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">data</span><span> </span><span id="LoginRequest"><span class="annot"><a href="Surypus.Types.Auth.html#LoginRequest"><span class="hs-identifier hs-var">LoginRequest</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LoginRequest"><span class="annot"><a href="Surypus.Types.Auth.html#LoginRequest"><span class="hs-identifier hs-var">LoginRequest</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="reqUsername"><span class="annot"><span class="annottext">LoginRequest -&gt; Text
+</span><a href="Surypus.Types.Auth.html#reqUsername"><span class="hs-identifier hs-var hs-var">reqUsername</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-33"></span><span>    </span><span id="reqPassword"><span class="annot"><span class="annottext">LoginRequest -&gt; Text
+</span><a href="Surypus.Types.Auth.html#reqPassword"><span class="hs-identifier hs-var hs-var">reqPassword</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680325911"><span id="local-6989586621680325918"><span id="local-6989586621680325922"><span class="annot"><span class="annottext">Int -&gt; LoginRequest -&gt; ShowS
+[LoginRequest] -&gt; ShowS
+LoginRequest -&gt; String
+(Int -&gt; LoginRequest -&gt; ShowS)
+-&gt; (LoginRequest -&gt; String)
+-&gt; ([LoginRequest] -&gt; ShowS)
+-&gt; Show LoginRequest
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LoginRequest -&gt; ShowS
+showsPrec :: Int -&gt; LoginRequest -&gt; ShowS
+$cshow :: LoginRequest -&gt; String
+show :: LoginRequest -&gt; String
+$cshowList :: [LoginRequest] -&gt; ShowS
+showList :: [LoginRequest] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680325927"><span id="local-6989586621680325932"><span class="annot"><span class="annottext">LoginRequest -&gt; LoginRequest -&gt; Bool
+(LoginRequest -&gt; LoginRequest -&gt; Bool)
+-&gt; (LoginRequest -&gt; LoginRequest -&gt; Bool) -&gt; Eq LoginRequest
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LoginRequest -&gt; LoginRequest -&gt; Bool
+== :: LoginRequest -&gt; LoginRequest -&gt; Bool
+$c/= :: LoginRequest -&gt; LoginRequest -&gt; Bool
+/= :: LoginRequest -&gt; LoginRequest -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680325937"><span id="local-6989586621680325939"><span class="annot"><span class="annottext">(forall x. LoginRequest -&gt; Rep LoginRequest x)
+-&gt; (forall x. Rep LoginRequest x -&gt; LoginRequest)
+-&gt; Generic LoginRequest
+forall x. Rep LoginRequest x -&gt; LoginRequest
+forall x. LoginRequest -&gt; Rep LoginRequest x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. LoginRequest -&gt; Rep LoginRequest x
+from :: forall x. LoginRequest -&gt; Rep LoginRequest x
+$cto :: forall x. Rep LoginRequest x -&gt; LoginRequest
+to :: forall x. Rep LoginRequest x -&gt; LoginRequest
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680325946"><span id="local-6989586621680325950"><span id="local-6989586621680325953"><span id="local-6989586621680325956"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#LoginRequest"><span class="hs-identifier hs-type">LoginRequest</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-38"></span><span>  </span><span id="local-6989586621680326055"><span class="annot"><span class="annottext">toJSON :: LoginRequest -&gt; Value
+</span><a href="#local-6989586621680326055"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; LoginRequest -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">genericToJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680326062"><span id="local-6989586621680326066"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#LoginRequest"><span class="hs-identifier hs-type">LoginRequest</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-41"></span><span>  </span><span id="local-6989586621680326135"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser LoginRequest
+</span><a href="#local-6989586621680326135"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser LoginRequest
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><span class="hs-identifier hs-var">genericParseJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">data</span><span> </span><span id="LoginResponse"><span class="annot"><a href="Surypus.Types.Auth.html#LoginResponse"><span class="hs-identifier hs-var">LoginResponse</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LoginResponse"><span class="annot"><a href="Surypus.Types.Auth.html#LoginResponse"><span class="hs-identifier hs-var">LoginResponse</span></a></span></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="respAccessToken"><span class="annot"><span class="annottext">LoginResponse -&gt; Text
+</span><a href="Surypus.Types.Auth.html#respAccessToken"><span class="hs-identifier hs-var hs-var">respAccessToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-45"></span><span>    </span><span id="respRefreshToken"><span class="annot"><span class="annottext">LoginResponse -&gt; Text
+</span><a href="Surypus.Types.Auth.html#respRefreshToken"><span class="hs-identifier hs-var hs-var">respRefreshToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-46"></span><span>    </span><span id="respUserId"><span class="annot"><span class="annottext">LoginResponse -&gt; Int64
+</span><a href="Surypus.Types.Auth.html#respUserId"><span class="hs-identifier hs-var hs-var">respUserId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-47"></span><span>    </span><span id="respUserName"><span class="annot"><span class="annottext">LoginResponse -&gt; Text
+</span><a href="Surypus.Types.Auth.html#respUserName"><span class="hs-identifier hs-var hs-var">respUserName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-48"></span><span>    </span><span id="respRole"><span class="annot"><span class="annottext">LoginResponse -&gt; Text
+</span><a href="Surypus.Types.Auth.html#respRole"><span class="hs-identifier hs-var hs-var">respRole</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-49"></span><span>    </span><span id="respExpiresIn"><span class="annot"><span class="annottext">LoginResponse -&gt; Maybe Int
+</span><a href="Surypus.Types.Auth.html#respExpiresIn"><span class="hs-identifier hs-var hs-var">respExpiresIn</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680326145"><span id="local-6989586621680326157"><span id="local-6989586621680326161"><span class="annot"><span class="annottext">Int -&gt; LoginResponse -&gt; ShowS
+[LoginResponse] -&gt; ShowS
+LoginResponse -&gt; String
+(Int -&gt; LoginResponse -&gt; ShowS)
+-&gt; (LoginResponse -&gt; String)
+-&gt; ([LoginResponse] -&gt; ShowS)
+-&gt; Show LoginResponse
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LoginResponse -&gt; ShowS
+showsPrec :: Int -&gt; LoginResponse -&gt; ShowS
+$cshow :: LoginResponse -&gt; String
+show :: LoginResponse -&gt; String
+$cshowList :: [LoginResponse] -&gt; ShowS
+showList :: [LoginResponse] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680326165"><span id="local-6989586621680326176"><span class="annot"><span class="annottext">LoginResponse -&gt; LoginResponse -&gt; Bool
+(LoginResponse -&gt; LoginResponse -&gt; Bool)
+-&gt; (LoginResponse -&gt; LoginResponse -&gt; Bool) -&gt; Eq LoginResponse
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LoginResponse -&gt; LoginResponse -&gt; Bool
+== :: LoginResponse -&gt; LoginResponse -&gt; Bool
+$c/= :: LoginResponse -&gt; LoginResponse -&gt; Bool
+/= :: LoginResponse -&gt; LoginResponse -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680326181"><span id="local-6989586621680326183"><span class="annot"><span class="annottext">(forall x. LoginResponse -&gt; Rep LoginResponse x)
+-&gt; (forall x. Rep LoginResponse x -&gt; LoginResponse)
+-&gt; Generic LoginResponse
+forall x. Rep LoginResponse x -&gt; LoginResponse
+forall x. LoginResponse -&gt; Rep LoginResponse x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. LoginResponse -&gt; Rep LoginResponse x
+from :: forall x. LoginResponse -&gt; Rep LoginResponse x
+$cto :: forall x. Rep LoginResponse x -&gt; LoginResponse
+to :: forall x. Rep LoginResponse x -&gt; LoginResponse
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680326187"><span id="local-6989586621680326191"><span id="local-6989586621680326194"><span id="local-6989586621680326197"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#LoginResponse"><span class="hs-identifier hs-type">LoginResponse</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-54"></span><span>  </span><span id="local-6989586621680326326"><span class="annot"><span class="annottext">toJSON :: LoginResponse -&gt; Value
+</span><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; LoginResponse -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">genericToJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680326329"><span id="local-6989586621680326333"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#LoginResponse"><span class="hs-identifier hs-type">LoginResponse</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-57"></span><span>  </span><span id="local-6989586621680326423"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser LoginResponse
+</span><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser LoginResponse
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><span class="hs-identifier hs-var">genericParseJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="hs-keyword">data</span><span> </span><span id="RefreshRequest"><span class="annot"><a href="Surypus.Types.Auth.html#RefreshRequest"><span class="hs-identifier hs-var">RefreshRequest</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RefreshRequest"><span class="annot"><a href="Surypus.Types.Auth.html#RefreshRequest"><span class="hs-identifier hs-var">RefreshRequest</span></a></span></span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="refreshToken"><span class="annot"><span class="annottext">RefreshRequest -&gt; Text
+</span><a href="Surypus.Types.Auth.html#refreshToken"><span class="hs-identifier hs-var hs-var">refreshToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680326427"><span id="local-6989586621680326431"><span id="local-6989586621680326435"><span class="annot"><span class="annottext">Int -&gt; RefreshRequest -&gt; ShowS
+[RefreshRequest] -&gt; ShowS
+RefreshRequest -&gt; String
+(Int -&gt; RefreshRequest -&gt; ShowS)
+-&gt; (RefreshRequest -&gt; String)
+-&gt; ([RefreshRequest] -&gt; ShowS)
+-&gt; Show RefreshRequest
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; RefreshRequest -&gt; ShowS
+showsPrec :: Int -&gt; RefreshRequest -&gt; ShowS
+$cshow :: RefreshRequest -&gt; String
+show :: RefreshRequest -&gt; String
+$cshowList :: [RefreshRequest] -&gt; ShowS
+showList :: [RefreshRequest] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680326438"><span id="local-6989586621680326441"><span class="annot"><span class="annottext">RefreshRequest -&gt; RefreshRequest -&gt; Bool
+(RefreshRequest -&gt; RefreshRequest -&gt; Bool)
+-&gt; (RefreshRequest -&gt; RefreshRequest -&gt; Bool) -&gt; Eq RefreshRequest
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: RefreshRequest -&gt; RefreshRequest -&gt; Bool
+== :: RefreshRequest -&gt; RefreshRequest -&gt; Bool
+$c/= :: RefreshRequest -&gt; RefreshRequest -&gt; Bool
+/= :: RefreshRequest -&gt; RefreshRequest -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680326445"><span id="local-6989586621680326447"><span class="annot"><span class="annottext">(forall x. RefreshRequest -&gt; Rep RefreshRequest x)
+-&gt; (forall x. Rep RefreshRequest x -&gt; RefreshRequest)
+-&gt; Generic RefreshRequest
+forall x. Rep RefreshRequest x -&gt; RefreshRequest
+forall x. RefreshRequest -&gt; Rep RefreshRequest x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. RefreshRequest -&gt; Rep RefreshRequest x
+from :: forall x. RefreshRequest -&gt; Rep RefreshRequest x
+$cto :: forall x. Rep RefreshRequest x -&gt; RefreshRequest
+to :: forall x. Rep RefreshRequest x -&gt; RefreshRequest
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">anyclass</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680326450"><span id="local-6989586621680326457"><span id="local-6989586621680326460"><span id="local-6989586621680326463"><span id="local-6989586621680326466"><span class="annot"><span class="annottext">[RefreshRequest] -&gt; Value
+[RefreshRequest] -&gt; Encoding
+RefreshRequest -&gt; Bool
+RefreshRequest -&gt; Value
+RefreshRequest -&gt; Encoding
+(RefreshRequest -&gt; Value)
+-&gt; (RefreshRequest -&gt; Encoding)
+-&gt; ([RefreshRequest] -&gt; Value)
+-&gt; ([RefreshRequest] -&gt; Encoding)
+-&gt; (RefreshRequest -&gt; Bool)
+-&gt; ToJSON RefreshRequest
+forall a.
+(a -&gt; Value)
+-&gt; (a -&gt; Encoding)
+-&gt; ([a] -&gt; Value)
+-&gt; ([a] -&gt; Encoding)
+-&gt; (a -&gt; Bool)
+-&gt; ToJSON a
+$ctoJSON :: RefreshRequest -&gt; Value
+toJSON :: RefreshRequest -&gt; Value
+$ctoEncoding :: RefreshRequest -&gt; Encoding
+toEncoding :: RefreshRequest -&gt; Encoding
+$ctoJSONList :: [RefreshRequest] -&gt; Value
+toJSONList :: [RefreshRequest] -&gt; Value
+$ctoEncodingList :: [RefreshRequest] -&gt; Encoding
+toEncodingList :: [RefreshRequest] -&gt; Encoding
+$comitField :: RefreshRequest -&gt; Bool
+omitField :: RefreshRequest -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680326513"><span id="local-6989586621680326520"><span id="local-6989586621680326523"><span class="annot"><span class="annottext">Maybe RefreshRequest
+Value -&gt; Parser [RefreshRequest]
+Value -&gt; Parser RefreshRequest
+(Value -&gt; Parser RefreshRequest)
+-&gt; (Value -&gt; Parser [RefreshRequest])
+-&gt; Maybe RefreshRequest
+-&gt; FromJSON RefreshRequest
+forall a.
+(Value -&gt; Parser a)
+-&gt; (Value -&gt; Parser [a]) -&gt; Maybe a -&gt; FromJSON a
+$cparseJSON :: Value -&gt; Parser RefreshRequest
+parseJSON :: Value -&gt; Parser RefreshRequest
+$cparseJSONList :: Value -&gt; Parser [RefreshRequest]
+parseJSONList :: Value -&gt; Parser [RefreshRequest]
+$comittedField :: Maybe RefreshRequest
+omittedField :: Maybe RefreshRequest
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">FromJSON</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span class="hs-keyword">data</span><span> </span><span id="RefreshResponse"><span class="annot"><a href="Surypus.Types.Auth.html#RefreshResponse"><span class="hs-identifier hs-var">RefreshResponse</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RefreshResponse"><span class="annot"><a href="Surypus.Types.Auth.html#RefreshResponse"><span class="hs-identifier hs-var">RefreshResponse</span></a></span></span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="newAccessToken"><span class="annot"><span class="annottext">RefreshResponse -&gt; Text
+</span><a href="Surypus.Types.Auth.html#newAccessToken"><span class="hs-identifier hs-var hs-var">newAccessToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-67"></span><span>    </span><span id="newRefreshToken"><span class="annot"><span class="annottext">RefreshResponse -&gt; Text
+</span><a href="Surypus.Types.Auth.html#newRefreshToken"><span class="hs-identifier hs-var hs-var">newRefreshToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-68"></span><span>    </span><span id="newExpiresIn"><span class="annot"><span class="annottext">RefreshResponse -&gt; Maybe Int
+</span><a href="Surypus.Types.Auth.html#newExpiresIn"><span class="hs-identifier hs-var hs-var">newExpiresIn</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680326569"><span id="local-6989586621680326576"><span id="local-6989586621680326580"><span class="annot"><span class="annottext">Int -&gt; RefreshResponse -&gt; ShowS
+[RefreshResponse] -&gt; ShowS
+RefreshResponse -&gt; String
+(Int -&gt; RefreshResponse -&gt; ShowS)
+-&gt; (RefreshResponse -&gt; String)
+-&gt; ([RefreshResponse] -&gt; ShowS)
+-&gt; Show RefreshResponse
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; RefreshResponse -&gt; ShowS
+showsPrec :: Int -&gt; RefreshResponse -&gt; ShowS
+$cshow :: RefreshResponse -&gt; String
+show :: RefreshResponse -&gt; String
+$cshowList :: [RefreshResponse] -&gt; ShowS
+showList :: [RefreshResponse] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680326583"><span id="local-6989586621680326589"><span class="annot"><span class="annottext">RefreshResponse -&gt; RefreshResponse -&gt; Bool
+(RefreshResponse -&gt; RefreshResponse -&gt; Bool)
+-&gt; (RefreshResponse -&gt; RefreshResponse -&gt; Bool)
+-&gt; Eq RefreshResponse
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: RefreshResponse -&gt; RefreshResponse -&gt; Bool
+== :: RefreshResponse -&gt; RefreshResponse -&gt; Bool
+$c/= :: RefreshResponse -&gt; RefreshResponse -&gt; Bool
+/= :: RefreshResponse -&gt; RefreshResponse -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680326593"><span id="local-6989586621680326595"><span class="annot"><span class="annottext">(forall x. RefreshResponse -&gt; Rep RefreshResponse x)
+-&gt; (forall x. Rep RefreshResponse x -&gt; RefreshResponse)
+-&gt; Generic RefreshResponse
+forall x. Rep RefreshResponse x -&gt; RefreshResponse
+forall x. RefreshResponse -&gt; Rep RefreshResponse x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. RefreshResponse -&gt; Rep RefreshResponse x
+from :: forall x. RefreshResponse -&gt; Rep RefreshResponse x
+$cto :: forall x. Rep RefreshResponse x -&gt; RefreshResponse
+to :: forall x. Rep RefreshResponse x -&gt; RefreshResponse
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span>
+</span><span id="line-72"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680326599"><span id="local-6989586621680326603"><span id="local-6989586621680326606"><span id="local-6989586621680326609"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#RefreshResponse"><span class="hs-identifier hs-type">RefreshResponse</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-73"></span><span>  </span><span id="local-6989586621680326689"><span class="annot"><span class="annottext">toJSON :: RefreshResponse -&gt; Value
+</span><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; RefreshResponse -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">genericToJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680326692"><span id="local-6989586621680326696"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#RefreshResponse"><span class="hs-identifier hs-type">RefreshResponse</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-76"></span><span>  </span><span id="local-6989586621680326756"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser RefreshResponse
+</span><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser RefreshResponse
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><span class="hs-identifier hs-var">genericParseJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-77"></span><span>
+</span><span id="line-78"></span><span class="hs-keyword">data</span><span> </span><span id="UserInfo"><span class="annot"><a href="Surypus.Types.Auth.html#UserInfo"><span class="hs-identifier hs-var">UserInfo</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="UserInfo"><span class="annot"><a href="Surypus.Types.Auth.html#UserInfo"><span class="hs-identifier hs-var">UserInfo</span></a></span></span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="userId"><span class="annot"><span class="annottext">UserInfo -&gt; Int64
+</span><a href="Surypus.Types.Auth.html#userId"><span class="hs-identifier hs-var hs-var">userId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-80"></span><span>    </span><span id="userUsername"><span class="annot"><span class="annottext">UserInfo -&gt; Text
+</span><a href="Surypus.Types.Auth.html#userUsername"><span class="hs-identifier hs-var hs-var">userUsername</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-81"></span><span>    </span><span id="userEmail"><span class="annot"><span class="annottext">UserInfo -&gt; Maybe Text
+</span><a href="Surypus.Types.Auth.html#userEmail"><span class="hs-identifier hs-var hs-var">userEmail</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-82"></span><span>    </span><span id="userFullName"><span class="annot"><span class="annottext">UserInfo -&gt; Maybe Text
+</span><a href="Surypus.Types.Auth.html#userFullName"><span class="hs-identifier hs-var hs-var">userFullName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-83"></span><span>    </span><span id="userRoles"><span class="annot"><span class="annottext">UserInfo -&gt; [UserRole]
+</span><a href="Surypus.Types.Auth.html#userRoles"><span class="hs-identifier hs-var hs-var">userRoles</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="Surypus.Types.Auth.html#UserRole"><span class="hs-identifier hs-type">UserRole</span></a></span><span class="hs-special">]</span><span class="hs-special">,</span><span>
+</span><span id="line-84"></span><span>    </span><span id="userPermissions"><span class="annot"><span class="annottext">UserInfo -&gt; [Permission]
+</span><a href="Surypus.Types.Auth.html#userPermissions"><span class="hs-identifier hs-var hs-var">userPermissions</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="Surypus.Types.Auth.html#Permission"><span class="hs-identifier hs-type">Permission</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-86"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680326765"><span id="local-6989586621680326777"><span id="local-6989586621680326781"><span class="annot"><span class="annottext">Int -&gt; UserInfo -&gt; ShowS
+[UserInfo] -&gt; ShowS
+UserInfo -&gt; String
+(Int -&gt; UserInfo -&gt; ShowS)
+-&gt; (UserInfo -&gt; String) -&gt; ([UserInfo] -&gt; ShowS) -&gt; Show UserInfo
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; UserInfo -&gt; ShowS
+showsPrec :: Int -&gt; UserInfo -&gt; ShowS
+$cshow :: UserInfo -&gt; String
+show :: UserInfo -&gt; String
+$cshowList :: [UserInfo] -&gt; ShowS
+showList :: [UserInfo] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680326786"><span id="local-6989586621680326797"><span class="annot"><span class="annottext">UserInfo -&gt; UserInfo -&gt; Bool
+(UserInfo -&gt; UserInfo -&gt; Bool)
+-&gt; (UserInfo -&gt; UserInfo -&gt; Bool) -&gt; Eq UserInfo
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: UserInfo -&gt; UserInfo -&gt; Bool
+== :: UserInfo -&gt; UserInfo -&gt; Bool
+$c/= :: UserInfo -&gt; UserInfo -&gt; Bool
+/= :: UserInfo -&gt; UserInfo -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680326803"><span id="local-6989586621680326805"><span class="annot"><span class="annottext">(forall x. UserInfo -&gt; Rep UserInfo x)
+-&gt; (forall x. Rep UserInfo x -&gt; UserInfo) -&gt; Generic UserInfo
+forall x. Rep UserInfo x -&gt; UserInfo
+forall x. UserInfo -&gt; Rep UserInfo x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. UserInfo -&gt; Rep UserInfo x
+from :: forall x. UserInfo -&gt; Rep UserInfo x
+$cto :: forall x. Rep UserInfo x -&gt; UserInfo
+to :: forall x. Rep UserInfo x -&gt; UserInfo
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680326809"><span id="local-6989586621680326813"><span id="local-6989586621680326816"><span id="local-6989586621680326819"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#UserInfo"><span class="hs-identifier hs-type">UserInfo</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-89"></span><span>  </span><span id="local-6989586621680326953"><span class="annot"><span class="annottext">toJSON :: UserInfo -&gt; Value
+</span><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; UserInfo -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">genericToJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-90"></span><span>
+</span><span id="line-91"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680326956"><span id="local-6989586621680326960"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#UserInfo"><span class="hs-identifier hs-type">UserInfo</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-92"></span><span>  </span><span id="local-6989586621680327053"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser UserInfo
+</span><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser UserInfo
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><span class="hs-identifier hs-var">genericParseJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-93"></span><span>
+</span><span id="line-94"></span><span class="hs-keyword">data</span><span> </span><span id="UserRole"><span class="annot"><a href="Surypus.Types.Auth.html#UserRole"><span class="hs-identifier hs-var">UserRole</span></a></span></span><span>
+</span><span id="line-95"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="RoleAdmin"><span class="annot"><a href="Surypus.Types.Auth.html#RoleAdmin"><span class="hs-identifier hs-var">RoleAdmin</span></a></span></span><span>
+</span><span id="line-96"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="RoleManager"><span class="annot"><a href="Surypus.Types.Auth.html#RoleManager"><span class="hs-identifier hs-var">RoleManager</span></a></span></span><span>
+</span><span id="line-97"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="RoleAccountant"><span class="annot"><a href="Surypus.Types.Auth.html#RoleAccountant"><span class="hs-identifier hs-var">RoleAccountant</span></a></span></span><span>
+</span><span id="line-98"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="RoleSales"><span class="annot"><a href="Surypus.Types.Auth.html#RoleSales"><span class="hs-identifier hs-var">RoleSales</span></a></span></span><span>
+</span><span id="line-99"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="RoleViewer"><span class="annot"><a href="Surypus.Types.Auth.html#RoleViewer"><span class="hs-identifier hs-var">RoleViewer</span></a></span></span><span>
+</span><span id="line-100"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680327060"><span id="local-6989586621680327062"><span id="local-6989586621680327065"><span class="annot"><span class="annottext">Int -&gt; UserRole -&gt; ShowS
+[UserRole] -&gt; ShowS
+UserRole -&gt; String
+(Int -&gt; UserRole -&gt; ShowS)
+-&gt; (UserRole -&gt; String) -&gt; ([UserRole] -&gt; ShowS) -&gt; Show UserRole
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; UserRole -&gt; ShowS
+showsPrec :: Int -&gt; UserRole -&gt; ShowS
+$cshow :: UserRole -&gt; String
+show :: UserRole -&gt; String
+$cshowList :: [UserRole] -&gt; ShowS
+showList :: [UserRole] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680327068"><span id="local-6989586621680327073"><span class="annot"><span class="annottext">UserRole -&gt; UserRole -&gt; Bool
+(UserRole -&gt; UserRole -&gt; Bool)
+-&gt; (UserRole -&gt; UserRole -&gt; Bool) -&gt; Eq UserRole
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: UserRole -&gt; UserRole -&gt; Bool
+== :: UserRole -&gt; UserRole -&gt; Bool
+$c/= :: UserRole -&gt; UserRole -&gt; Bool
+/= :: UserRole -&gt; UserRole -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680327076"><span id="local-6989586621680327078"><span class="annot"><span class="annottext">(forall x. UserRole -&gt; Rep UserRole x)
+-&gt; (forall x. Rep UserRole x -&gt; UserRole) -&gt; Generic UserRole
+forall x. Rep UserRole x -&gt; UserRole
+forall x. UserRole -&gt; Rep UserRole x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. UserRole -&gt; Rep UserRole x
+from :: forall x. UserRole -&gt; Rep UserRole x
+$cto :: forall x. Rep UserRole x -&gt; UserRole
+to :: forall x. Rep UserRole x -&gt; UserRole
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680327081"><span id="local-6989586621680327089"><span id="local-6989586621680327096"><span id="local-6989586621680327104"><span id="local-6989586621680327107"><span id="local-6989586621680327112"><span id="local-6989586621680327118"><span id="local-6989586621680327122"><span class="annot"><span class="annottext">Int -&gt; UserRole
+UserRole -&gt; Int
+UserRole -&gt; [UserRole]
+UserRole -&gt; UserRole
+UserRole -&gt; UserRole -&gt; [UserRole]
+UserRole -&gt; UserRole -&gt; UserRole -&gt; [UserRole]
+(UserRole -&gt; UserRole)
+-&gt; (UserRole -&gt; UserRole)
+-&gt; (Int -&gt; UserRole)
+-&gt; (UserRole -&gt; Int)
+-&gt; (UserRole -&gt; [UserRole])
+-&gt; (UserRole -&gt; UserRole -&gt; [UserRole])
+-&gt; (UserRole -&gt; UserRole -&gt; [UserRole])
+-&gt; (UserRole -&gt; UserRole -&gt; UserRole -&gt; [UserRole])
+-&gt; Enum UserRole
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: UserRole -&gt; UserRole
+succ :: UserRole -&gt; UserRole
+$cpred :: UserRole -&gt; UserRole
+pred :: UserRole -&gt; UserRole
+$ctoEnum :: Int -&gt; UserRole
+toEnum :: Int -&gt; UserRole
+$cfromEnum :: UserRole -&gt; Int
+fromEnum :: UserRole -&gt; Int
+$cenumFrom :: UserRole -&gt; [UserRole]
+enumFrom :: UserRole -&gt; [UserRole]
+$cenumFromThen :: UserRole -&gt; UserRole -&gt; [UserRole]
+enumFromThen :: UserRole -&gt; UserRole -&gt; [UserRole]
+$cenumFromTo :: UserRole -&gt; UserRole -&gt; [UserRole]
+enumFromTo :: UserRole -&gt; UserRole -&gt; [UserRole]
+$cenumFromThenTo :: UserRole -&gt; UserRole -&gt; UserRole -&gt; [UserRole]
+enumFromThenTo :: UserRole -&gt; UserRole -&gt; UserRole -&gt; [UserRole]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680327130"><span id="local-6989586621680327132"><span class="annot"><span class="annottext">UserRole
+UserRole -&gt; UserRole -&gt; Bounded UserRole
+forall a. a -&gt; a -&gt; Bounded a
+$cminBound :: UserRole
+minBound :: UserRole
+$cmaxBound :: UserRole
+maxBound :: UserRole
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Bounded"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-101"></span><span>
+</span><span id="line-102"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680327138"><span id="local-6989586621680327144"><span id="local-6989586621680327147"><span id="local-6989586621680327150"><span id="local-6989586621680327153"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#UserRole"><span class="hs-identifier hs-type">UserRole</span></a></span></span></span></span></span></span><span>
+</span><span id="line-103"></span><span>
+</span><span id="line-104"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680327288"><span id="local-6989586621680327294"><span id="local-6989586621680327297"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#UserRole"><span class="hs-identifier hs-type">UserRole</span></a></span></span></span></span><span>
+</span><span id="line-105"></span><span>
+</span><span id="line-106"></span><span class="hs-keyword">data</span><span> </span><span id="TokenPair"><span class="annot"><a href="Surypus.Types.Auth.html#TokenPair"><span class="hs-identifier hs-var">TokenPair</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TokenPair"><span class="annot"><a href="Surypus.Types.Auth.html#TokenPair"><span class="hs-identifier hs-var">TokenPair</span></a></span></span><span>
+</span><span id="line-107"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tpAccessToken"><span class="annot"><span class="annottext">TokenPair -&gt; Text
+</span><a href="Surypus.Types.Auth.html#tpAccessToken"><span class="hs-identifier hs-var hs-var">tpAccessToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-108"></span><span>    </span><span id="tpRefreshToken"><span class="annot"><span class="annottext">TokenPair -&gt; Text
+</span><a href="Surypus.Types.Auth.html#tpRefreshToken"><span class="hs-identifier hs-var hs-var">tpRefreshToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-109"></span><span>    </span><span id="tpExpiresAt"><span class="annot"><span class="annottext">TokenPair -&gt; UTCTime
+</span><a href="Surypus.Types.Auth.html#tpExpiresAt"><span class="hs-identifier hs-var hs-var">tpExpiresAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span>
+</span><span id="line-110"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-111"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680327409"><span id="local-6989586621680327416"><span id="local-6989586621680327420"><span class="annot"><span class="annottext">Int -&gt; TokenPair -&gt; ShowS
+[TokenPair] -&gt; ShowS
+TokenPair -&gt; String
+(Int -&gt; TokenPair -&gt; ShowS)
+-&gt; (TokenPair -&gt; String)
+-&gt; ([TokenPair] -&gt; ShowS)
+-&gt; Show TokenPair
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TokenPair -&gt; ShowS
+showsPrec :: Int -&gt; TokenPair -&gt; ShowS
+$cshow :: TokenPair -&gt; String
+show :: TokenPair -&gt; String
+$cshowList :: [TokenPair] -&gt; ShowS
+showList :: [TokenPair] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680327423"><span id="local-6989586621680327429"><span class="annot"><span class="annottext">TokenPair -&gt; TokenPair -&gt; Bool
+(TokenPair -&gt; TokenPair -&gt; Bool)
+-&gt; (TokenPair -&gt; TokenPair -&gt; Bool) -&gt; Eq TokenPair
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TokenPair -&gt; TokenPair -&gt; Bool
+== :: TokenPair -&gt; TokenPair -&gt; Bool
+$c/= :: TokenPair -&gt; TokenPair -&gt; Bool
+/= :: TokenPair -&gt; TokenPair -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680327433"><span id="local-6989586621680327435"><span class="annot"><span class="annottext">(forall x. TokenPair -&gt; Rep TokenPair x)
+-&gt; (forall x. Rep TokenPair x -&gt; TokenPair) -&gt; Generic TokenPair
+forall x. Rep TokenPair x -&gt; TokenPair
+forall x. TokenPair -&gt; Rep TokenPair x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. TokenPair -&gt; Rep TokenPair x
+from :: forall x. TokenPair -&gt; Rep TokenPair x
+$cto :: forall x. Rep TokenPair x -&gt; TokenPair
+to :: forall x. Rep TokenPair x -&gt; TokenPair
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-112"></span><span>
+</span><span id="line-113"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680327439"><span id="local-6989586621680327443"><span id="local-6989586621680327446"><span id="local-6989586621680327449"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#TokenPair"><span class="hs-identifier hs-type">TokenPair</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-114"></span><span>  </span><span id="local-6989586621680327529"><span class="annot"><span class="annottext">toJSON :: TokenPair -&gt; Value
+</span><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; TokenPair -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">genericToJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">}</span><span>
+</span><span id="line-115"></span><span>
+</span><span id="line-116"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680327532"><span id="local-6989586621680327536"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#TokenPair"><span class="hs-identifier hs-type">TokenPair</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-117"></span><span>  </span><span id="local-6989586621680327596"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser TokenPair
+</span><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser TokenPair
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><span class="hs-identifier hs-var">genericParseJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">}</span><span>
+</span><span id="line-118"></span><span>
+</span><span id="line-119"></span><span class="hs-keyword">data</span><span> </span><span id="JwtClaims"><span class="annot"><a href="Surypus.Types.Auth.html#JwtClaims"><span class="hs-identifier hs-var">JwtClaims</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="JwtClaims"><span class="annot"><a href="Surypus.Types.Auth.html#JwtClaims"><span class="hs-identifier hs-var">JwtClaims</span></a></span></span><span>
+</span><span id="line-120"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="jwtUserId"><span class="annot"><span class="annottext">JwtClaims -&gt; Int64
+</span><a href="Surypus.Types.Auth.html#jwtUserId"><span class="hs-identifier hs-var hs-var">jwtUserId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-121"></span><span>    </span><span id="jwtUsername"><span class="annot"><span class="annottext">JwtClaims -&gt; Text
+</span><a href="Surypus.Types.Auth.html#jwtUsername"><span class="hs-identifier hs-var hs-var">jwtUsername</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-122"></span><span>    </span><span id="jwtRole"><span class="annot"><span class="annottext">JwtClaims -&gt; Text
+</span><a href="Surypus.Types.Auth.html#jwtRole"><span class="hs-identifier hs-var hs-var">jwtRole</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-123"></span><span>    </span><span id="jwtExp"><span class="annot"><span class="annottext">JwtClaims -&gt; Int64
+</span><a href="Surypus.Types.Auth.html#jwtExp"><span class="hs-identifier hs-var hs-var">jwtExp</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-124"></span><span>    </span><span id="jwtIat"><span class="annot"><span class="annottext">JwtClaims -&gt; Int64
+</span><a href="Surypus.Types.Auth.html#jwtIat"><span class="hs-identifier hs-var hs-var">jwtIat</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-125"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-126"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680327604"><span id="local-6989586621680327612"><span id="local-6989586621680327616"><span class="annot"><span class="annottext">Int -&gt; JwtClaims -&gt; ShowS
+[JwtClaims] -&gt; ShowS
+JwtClaims -&gt; String
+(Int -&gt; JwtClaims -&gt; ShowS)
+-&gt; (JwtClaims -&gt; String)
+-&gt; ([JwtClaims] -&gt; ShowS)
+-&gt; Show JwtClaims
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; JwtClaims -&gt; ShowS
+showsPrec :: Int -&gt; JwtClaims -&gt; ShowS
+$cshow :: JwtClaims -&gt; String
+show :: JwtClaims -&gt; String
+$cshowList :: [JwtClaims] -&gt; ShowS
+showList :: [JwtClaims] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680327619"><span id="local-6989586621680327626"><span class="annot"><span class="annottext">JwtClaims -&gt; JwtClaims -&gt; Bool
+(JwtClaims -&gt; JwtClaims -&gt; Bool)
+-&gt; (JwtClaims -&gt; JwtClaims -&gt; Bool) -&gt; Eq JwtClaims
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: JwtClaims -&gt; JwtClaims -&gt; Bool
+== :: JwtClaims -&gt; JwtClaims -&gt; Bool
+$c/= :: JwtClaims -&gt; JwtClaims -&gt; Bool
+/= :: JwtClaims -&gt; JwtClaims -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680327630"><span id="local-6989586621680327632"><span class="annot"><span class="annottext">(forall x. JwtClaims -&gt; Rep JwtClaims x)
+-&gt; (forall x. Rep JwtClaims x -&gt; JwtClaims) -&gt; Generic JwtClaims
+forall x. Rep JwtClaims x -&gt; JwtClaims
+forall x. JwtClaims -&gt; Rep JwtClaims x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. JwtClaims -&gt; Rep JwtClaims x
+from :: forall x. JwtClaims -&gt; Rep JwtClaims x
+$cto :: forall x. Rep JwtClaims x -&gt; JwtClaims
+to :: forall x. Rep JwtClaims x -&gt; JwtClaims
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-127"></span><span>
+</span><span id="line-128"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680327636"><span id="local-6989586621680327640"><span id="local-6989586621680327643"><span id="local-6989586621680327646"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#JwtClaims"><span class="hs-identifier hs-type">JwtClaims</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-129"></span><span>  </span><span id="local-6989586621680327753"><span class="annot"><span class="annottext">toJSON :: JwtClaims -&gt; Value
+</span><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; JwtClaims -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">genericToJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-130"></span><span>
+</span><span id="line-131"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680327756"><span id="local-6989586621680327760"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#JwtClaims"><span class="hs-identifier hs-type">JwtClaims</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-132"></span><span>  </span><span id="local-6989586621680327837"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser JwtClaims
+</span><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser JwtClaims
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><span class="hs-identifier hs-var">genericParseJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-133"></span><span>
+</span><span id="line-134"></span><span class="hs-keyword">data</span><span> </span><span id="Permission"><span class="annot"><a href="Surypus.Types.Auth.html#Permission"><span class="hs-identifier hs-var">Permission</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Permission"><span class="annot"><a href="Surypus.Types.Auth.html#Permission"><span class="hs-identifier hs-var">Permission</span></a></span></span><span>
+</span><span id="line-135"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="permResource"><span class="annot"><span class="annottext">Permission -&gt; Text
+</span><a href="Surypus.Types.Auth.html#permResource"><span class="hs-identifier hs-var hs-var">permResource</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-136"></span><span>    </span><span id="permAction"><span class="annot"><span class="annottext">Permission -&gt; Text
+</span><a href="Surypus.Types.Auth.html#permAction"><span class="hs-identifier hs-var hs-var">permAction</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-137"></span><span>    </span><span id="permScope"><span class="annot"><span class="annottext">Permission -&gt; Maybe Text
+</span><a href="Surypus.Types.Auth.html#permScope"><span class="hs-identifier hs-var hs-var">permScope</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-138"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-139"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680327843"><span id="local-6989586621680327849"><span id="local-6989586621680327852"><span class="annot"><span class="annottext">Int -&gt; Permission -&gt; ShowS
+[Permission] -&gt; ShowS
+Permission -&gt; String
+(Int -&gt; Permission -&gt; ShowS)
+-&gt; (Permission -&gt; String)
+-&gt; ([Permission] -&gt; ShowS)
+-&gt; Show Permission
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Permission -&gt; ShowS
+showsPrec :: Int -&gt; Permission -&gt; ShowS
+$cshow :: Permission -&gt; String
+show :: Permission -&gt; String
+$cshowList :: [Permission] -&gt; ShowS
+showList :: [Permission] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680327855"><span id="local-6989586621680327860"><span class="annot"><span class="annottext">Permission -&gt; Permission -&gt; Bool
+(Permission -&gt; Permission -&gt; Bool)
+-&gt; (Permission -&gt; Permission -&gt; Bool) -&gt; Eq Permission
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Permission -&gt; Permission -&gt; Bool
+== :: Permission -&gt; Permission -&gt; Bool
+$c/= :: Permission -&gt; Permission -&gt; Bool
+/= :: Permission -&gt; Permission -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680327863"><span id="local-6989586621680327865"><span class="annot"><span class="annottext">(forall x. Permission -&gt; Rep Permission x)
+-&gt; (forall x. Rep Permission x -&gt; Permission) -&gt; Generic Permission
+forall x. Rep Permission x -&gt; Permission
+forall x. Permission -&gt; Rep Permission x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Permission -&gt; Rep Permission x
+from :: forall x. Permission -&gt; Rep Permission x
+$cto :: forall x. Rep Permission x -&gt; Permission
+to :: forall x. Rep Permission x -&gt; Permission
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-140"></span><span>
+</span><span id="line-141"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680327869"><span id="local-6989586621680327872"><span id="local-6989586621680327875"><span id="local-6989586621680327878"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#Permission"><span class="hs-identifier hs-type">Permission</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-142"></span><span>  </span><span id="local-6989586621680327957"><span class="annot"><span class="annottext">toJSON :: Permission -&gt; Value
+</span><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Permission -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">genericToJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-143"></span><span>
+</span><span id="line-144"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680327960"><span id="local-6989586621680327963"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#Permission"><span class="hs-identifier hs-type">Permission</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-145"></span><span>  </span><span id="local-6989586621680328022"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser Permission
+</span><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser Permission
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><span class="hs-identifier hs-var">genericParseJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-146"></span><span>
+</span><span id="line-147"></span><span class="hs-keyword">data</span><span> </span><span id="ResourceAccess"><span class="annot"><a href="Surypus.Types.Auth.html#ResourceAccess"><span class="hs-identifier hs-var">ResourceAccess</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ResourceAccess"><span class="annot"><a href="Surypus.Types.Auth.html#ResourceAccess"><span class="hs-identifier hs-var">ResourceAccess</span></a></span></span><span>
+</span><span id="line-148"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="resResource"><span class="annot"><span class="annottext">ResourceAccess -&gt; Text
+</span><a href="Surypus.Types.Auth.html#resResource"><span class="hs-identifier hs-var hs-var">resResource</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-149"></span><span>    </span><span id="resCanRead"><span class="annot"><span class="annottext">ResourceAccess -&gt; Bool
+</span><a href="Surypus.Types.Auth.html#resCanRead"><span class="hs-identifier hs-var hs-var">resCanRead</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-150"></span><span>    </span><span id="resCanWrite"><span class="annot"><span class="annottext">ResourceAccess -&gt; Bool
+</span><a href="Surypus.Types.Auth.html#resCanWrite"><span class="hs-identifier hs-var hs-var">resCanWrite</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-151"></span><span>    </span><span id="resCanDelete"><span class="annot"><span class="annottext">ResourceAccess -&gt; Bool
+</span><a href="Surypus.Types.Auth.html#resCanDelete"><span class="hs-identifier hs-var hs-var">resCanDelete</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-152"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-153"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680328029"><span id="local-6989586621680328037"><span id="local-6989586621680328041"><span class="annot"><span class="annottext">Int -&gt; ResourceAccess -&gt; ShowS
+[ResourceAccess] -&gt; ShowS
+ResourceAccess -&gt; String
+(Int -&gt; ResourceAccess -&gt; ShowS)
+-&gt; (ResourceAccess -&gt; String)
+-&gt; ([ResourceAccess] -&gt; ShowS)
+-&gt; Show ResourceAccess
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ResourceAccess -&gt; ShowS
+showsPrec :: Int -&gt; ResourceAccess -&gt; ShowS
+$cshow :: ResourceAccess -&gt; String
+show :: ResourceAccess -&gt; String
+$cshowList :: [ResourceAccess] -&gt; ShowS
+showList :: [ResourceAccess] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680328044"><span id="local-6989586621680328051"><span class="annot"><span class="annottext">ResourceAccess -&gt; ResourceAccess -&gt; Bool
+(ResourceAccess -&gt; ResourceAccess -&gt; Bool)
+-&gt; (ResourceAccess -&gt; ResourceAccess -&gt; Bool) -&gt; Eq ResourceAccess
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ResourceAccess -&gt; ResourceAccess -&gt; Bool
+== :: ResourceAccess -&gt; ResourceAccess -&gt; Bool
+$c/= :: ResourceAccess -&gt; ResourceAccess -&gt; Bool
+/= :: ResourceAccess -&gt; ResourceAccess -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680328055"><span id="local-6989586621680328057"><span class="annot"><span class="annottext">(forall x. ResourceAccess -&gt; Rep ResourceAccess x)
+-&gt; (forall x. Rep ResourceAccess x -&gt; ResourceAccess)
+-&gt; Generic ResourceAccess
+forall x. Rep ResourceAccess x -&gt; ResourceAccess
+forall x. ResourceAccess -&gt; Rep ResourceAccess x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. ResourceAccess -&gt; Rep ResourceAccess x
+from :: forall x. ResourceAccess -&gt; Rep ResourceAccess x
+$cto :: forall x. Rep ResourceAccess x -&gt; ResourceAccess
+to :: forall x. Rep ResourceAccess x -&gt; ResourceAccess
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-154"></span><span>
+</span><span id="line-155"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680328061"><span id="local-6989586621680328065"><span id="local-6989586621680328068"><span id="local-6989586621680328071"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#ResourceAccess"><span class="hs-identifier hs-type">ResourceAccess</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-156"></span><span>  </span><span id="local-6989586621680328166"><span class="annot"><span class="annottext">toJSON :: ResourceAccess -&gt; Value
+</span><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; ResourceAccess -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">genericToJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-157"></span><span>
+</span><span id="line-158"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680328169"><span id="local-6989586621680328173"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#ResourceAccess"><span class="hs-identifier hs-type">ResourceAccess</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-159"></span><span>  </span><span id="local-6989586621680328243"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser ResourceAccess
+</span><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser ResourceAccess
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><span class="hs-identifier hs-var">genericParseJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-160"></span></pre></body></html>

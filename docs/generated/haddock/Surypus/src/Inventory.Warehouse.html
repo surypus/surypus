@@ -1,0 +1,526 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680271847"><span id="local-6989586621680271848"></span></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html"><span class="hs-identifier">Inventory.Warehouse</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier">Warehouse</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseType"><span class="hs-identifier">WarehouseType</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#CreateWarehouseRequest"><span class="hs-identifier">CreateWarehouseRequest</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#UpdateWarehouseRequest"><span class="hs-identifier">UpdateWarehouseRequest</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseResult"><span class="hs-identifier">WarehouseResult</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#createWarehouse"><span class="hs-identifier">createWarehouse</span></a></span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#readWarehouse"><span class="hs-identifier">readWarehouse</span></a></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#updateWarehouse"><span class="hs-identifier">updateWarehouse</span></a></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#deleteWarehouse"><span class="hs-identifier">deleteWarehouse</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#listWarehouses"><span class="hs-identifier">listWarehouses</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#findWarehouseByCode"><span class="hs-identifier">findWarehouseByCode</span></a></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#countWarehouses"><span class="hs-identifier">countWarehouses</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">FromJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Maybe.html"><span class="hs-identifier">Data.Maybe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Maybe.html#fromMaybe"><span class="hs-identifier">fromMaybe</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="annot"><span class="hs-comment">-- | Warehouse type (location classification)</span></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">data</span><span> </span><span id="WarehouseType"><span class="annot"><a href="Inventory.Warehouse.html#WarehouseType"><span class="hs-identifier hs-var">WarehouseType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MainWarehouse"><span class="annot"><a href="Inventory.Warehouse.html#MainWarehouse"><span class="hs-identifier hs-var">MainWarehouse</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="BranchWarehouse"><span class="annot"><a href="Inventory.Warehouse.html#BranchWarehouse"><span class="hs-identifier hs-var">BranchWarehouse</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="RetailShop"><span class="annot"><a href="Inventory.Warehouse.html#RetailShop"><span class="hs-identifier hs-var">RetailShop</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="OtherWarehouse"><span class="annot"><a href="Inventory.Warehouse.html#OtherWarehouse"><span class="hs-identifier hs-var">OtherWarehouse</span></a></span></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680271876"><span id="local-6989586621680271878"><span id="local-6989586621680271882"><span class="annot"><span class="annottext">Int -&gt; WarehouseType -&gt; ShowS
+[WarehouseType] -&gt; ShowS
+WarehouseType -&gt; String
+(Int -&gt; WarehouseType -&gt; ShowS)
+-&gt; (WarehouseType -&gt; String)
+-&gt; ([WarehouseType] -&gt; ShowS)
+-&gt; Show WarehouseType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; WarehouseType -&gt; ShowS
+showsPrec :: Int -&gt; WarehouseType -&gt; ShowS
+$cshow :: WarehouseType -&gt; String
+show :: WarehouseType -&gt; String
+$cshowList :: [WarehouseType] -&gt; ShowS
+showList :: [WarehouseType] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680271887"><span id="local-6989586621680271892"><span class="annot"><span class="annottext">WarehouseType -&gt; WarehouseType -&gt; Bool
+(WarehouseType -&gt; WarehouseType -&gt; Bool)
+-&gt; (WarehouseType -&gt; WarehouseType -&gt; Bool) -&gt; Eq WarehouseType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: WarehouseType -&gt; WarehouseType -&gt; Bool
+== :: WarehouseType -&gt; WarehouseType -&gt; Bool
+$c/= :: WarehouseType -&gt; WarehouseType -&gt; Bool
+/= :: WarehouseType -&gt; WarehouseType -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680271897"><span id="local-6989586621680271906"><span id="local-6989586621680271913"><span id="local-6989586621680271927"><span id="local-6989586621680271930"><span id="local-6989586621680271935"><span id="local-6989586621680271941"><span id="local-6989586621680271945"><span class="annot"><span class="annottext">Int -&gt; WarehouseType
+WarehouseType -&gt; Int
+WarehouseType -&gt; [WarehouseType]
+WarehouseType -&gt; WarehouseType
+WarehouseType -&gt; WarehouseType -&gt; [WarehouseType]
+WarehouseType -&gt; WarehouseType -&gt; WarehouseType -&gt; [WarehouseType]
+(WarehouseType -&gt; WarehouseType)
+-&gt; (WarehouseType -&gt; WarehouseType)
+-&gt; (Int -&gt; WarehouseType)
+-&gt; (WarehouseType -&gt; Int)
+-&gt; (WarehouseType -&gt; [WarehouseType])
+-&gt; (WarehouseType -&gt; WarehouseType -&gt; [WarehouseType])
+-&gt; (WarehouseType -&gt; WarehouseType -&gt; [WarehouseType])
+-&gt; (WarehouseType
+    -&gt; WarehouseType -&gt; WarehouseType -&gt; [WarehouseType])
+-&gt; Enum WarehouseType
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: WarehouseType -&gt; WarehouseType
+succ :: WarehouseType -&gt; WarehouseType
+$cpred :: WarehouseType -&gt; WarehouseType
+pred :: WarehouseType -&gt; WarehouseType
+$ctoEnum :: Int -&gt; WarehouseType
+toEnum :: Int -&gt; WarehouseType
+$cfromEnum :: WarehouseType -&gt; Int
+fromEnum :: WarehouseType -&gt; Int
+$cenumFrom :: WarehouseType -&gt; [WarehouseType]
+enumFrom :: WarehouseType -&gt; [WarehouseType]
+$cenumFromThen :: WarehouseType -&gt; WarehouseType -&gt; [WarehouseType]
+enumFromThen :: WarehouseType -&gt; WarehouseType -&gt; [WarehouseType]
+$cenumFromTo :: WarehouseType -&gt; WarehouseType -&gt; [WarehouseType]
+enumFromTo :: WarehouseType -&gt; WarehouseType -&gt; [WarehouseType]
+$cenumFromThenTo :: WarehouseType -&gt; WarehouseType -&gt; WarehouseType -&gt; [WarehouseType]
+enumFromThenTo :: WarehouseType -&gt; WarehouseType -&gt; WarehouseType -&gt; [WarehouseType]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680271953"><span id="local-6989586621680271955"><span class="annot"><span class="annottext">(forall x. WarehouseType -&gt; Rep WarehouseType x)
+-&gt; (forall x. Rep WarehouseType x -&gt; WarehouseType)
+-&gt; Generic WarehouseType
+forall x. Rep WarehouseType x -&gt; WarehouseType
+forall x. WarehouseType -&gt; Rep WarehouseType x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. WarehouseType -&gt; Rep WarehouseType x
+from :: forall x. WarehouseType -&gt; Rep WarehouseType x
+$cto :: forall x. Rep WarehouseType x -&gt; WarehouseType
+to :: forall x. Rep WarehouseType x -&gt; WarehouseType
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680271961"><span id="local-6989586621680271968"><span id="local-6989586621680271971"><span id="local-6989586621680271974"><span id="local-6989586621680271977"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseType"><span class="hs-identifier hs-type">WarehouseType</span></a></span></span></span></span></span></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680272103"><span id="local-6989586621680272110"><span id="local-6989586621680272113"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseType"><span class="hs-identifier hs-type">WarehouseType</span></a></span></span></span></span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="annot"><span class="hs-comment">-- | Warehouse record</span></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">data</span><span> </span><span id="Warehouse"><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-var">Warehouse</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Warehouse"><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-var">Warehouse</span></a></span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="wId"><span class="annot"><span class="annottext">Warehouse -&gt; Int64
+</span><a href="Inventory.Warehouse.html#wId"><span class="hs-identifier hs-var hs-var">wId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="wCode"><span class="annot"><span class="annottext">Warehouse -&gt; Text
+</span><a href="Inventory.Warehouse.html#wCode"><span class="hs-identifier hs-var hs-var">wCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="wName"><span class="annot"><span class="annottext">Warehouse -&gt; Text
+</span><a href="Inventory.Warehouse.html#wName"><span class="hs-identifier hs-var hs-var">wName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="wType"><span class="annot"><span class="annottext">Warehouse -&gt; WarehouseType
+</span><a href="Inventory.Warehouse.html#wType"><span class="hs-identifier hs-var hs-var">wType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseType"><span class="hs-identifier hs-type">WarehouseType</span></a></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="wAddress"><span class="annot"><span class="annottext">Warehouse -&gt; Maybe Text
+</span><a href="Inventory.Warehouse.html#wAddress"><span class="hs-identifier hs-var hs-var">wAddress</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="wCapacity"><span class="annot"><span class="annottext">Warehouse -&gt; Maybe Double
+</span><a href="Inventory.Warehouse.html#wCapacity"><span class="hs-identifier hs-var hs-var">wCapacity</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680272217"><span id="local-6989586621680272230"><span id="local-6989586621680272234"><span class="annot"><span class="annottext">Int -&gt; Warehouse -&gt; ShowS
+[Warehouse] -&gt; ShowS
+Warehouse -&gt; String
+(Int -&gt; Warehouse -&gt; ShowS)
+-&gt; (Warehouse -&gt; String)
+-&gt; ([Warehouse] -&gt; ShowS)
+-&gt; Show Warehouse
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Warehouse -&gt; ShowS
+showsPrec :: Int -&gt; Warehouse -&gt; ShowS
+$cshow :: Warehouse -&gt; String
+show :: Warehouse -&gt; String
+$cshowList :: [Warehouse] -&gt; ShowS
+showList :: [Warehouse] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680272238"><span id="local-6989586621680272248"><span class="annot"><span class="annottext">Warehouse -&gt; Warehouse -&gt; Bool
+(Warehouse -&gt; Warehouse -&gt; Bool)
+-&gt; (Warehouse -&gt; Warehouse -&gt; Bool) -&gt; Eq Warehouse
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Warehouse -&gt; Warehouse -&gt; Bool
+== :: Warehouse -&gt; Warehouse -&gt; Bool
+$c/= :: Warehouse -&gt; Warehouse -&gt; Bool
+/= :: Warehouse -&gt; Warehouse -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680272253"><span id="local-6989586621680272255"><span class="annot"><span class="annottext">(forall x. Warehouse -&gt; Rep Warehouse x)
+-&gt; (forall x. Rep Warehouse x -&gt; Warehouse) -&gt; Generic Warehouse
+forall x. Rep Warehouse x -&gt; Warehouse
+forall x. Warehouse -&gt; Rep Warehouse x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Warehouse -&gt; Rep Warehouse x
+from :: forall x. Warehouse -&gt; Rep Warehouse x
+$cto :: forall x. Rep Warehouse x -&gt; Warehouse
+to :: forall x. Rep Warehouse x -&gt; Warehouse
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680272258"><span id="local-6989586621680272265"><span id="local-6989586621680272268"><span id="local-6989586621680272271"><span id="local-6989586621680272274"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span></span></span></span></span></span><span>
+</span><span id="line-44"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680272430"><span id="local-6989586621680272437"><span id="local-6989586621680272440"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span></span></span></span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="annot"><span class="hs-comment">-- | Create request</span></span><span>
+</span><span id="line-47"></span><span class="hs-keyword">data</span><span> </span><span id="CreateWarehouseRequest"><span class="annot"><a href="Inventory.Warehouse.html#CreateWarehouseRequest"><span class="hs-identifier hs-var">CreateWarehouseRequest</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CreateWarehouseRequest"><span class="annot"><a href="Inventory.Warehouse.html#CreateWarehouseRequest"><span class="hs-identifier hs-var">CreateWarehouseRequest</span></a></span></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="cwrCode"><span class="annot"><span class="annottext">CreateWarehouseRequest -&gt; Text
+</span><a href="Inventory.Warehouse.html#cwrCode"><span class="hs-identifier hs-var hs-var">cwrCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="cwrName"><span class="annot"><span class="annottext">CreateWarehouseRequest -&gt; Text
+</span><a href="Inventory.Warehouse.html#cwrName"><span class="hs-identifier hs-var hs-var">cwrName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="cwrType"><span class="annot"><span class="annottext">CreateWarehouseRequest -&gt; WarehouseType
+</span><a href="Inventory.Warehouse.html#cwrType"><span class="hs-identifier hs-var hs-var">cwrType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseType"><span class="hs-identifier hs-type">WarehouseType</span></a></span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="cwrAddress"><span class="annot"><span class="annottext">CreateWarehouseRequest -&gt; Maybe Text
+</span><a href="Inventory.Warehouse.html#cwrAddress"><span class="hs-identifier hs-var hs-var">cwrAddress</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="cwrCapacity"><span class="annot"><span class="annottext">CreateWarehouseRequest -&gt; Maybe Double
+</span><a href="Inventory.Warehouse.html#cwrCapacity"><span class="hs-identifier hs-var hs-var">cwrCapacity</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680272547"><span id="local-6989586621680272556"><span id="local-6989586621680272560"><span class="annot"><span class="annottext">Int -&gt; CreateWarehouseRequest -&gt; ShowS
+[CreateWarehouseRequest] -&gt; ShowS
+CreateWarehouseRequest -&gt; String
+(Int -&gt; CreateWarehouseRequest -&gt; ShowS)
+-&gt; (CreateWarehouseRequest -&gt; String)
+-&gt; ([CreateWarehouseRequest] -&gt; ShowS)
+-&gt; Show CreateWarehouseRequest
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CreateWarehouseRequest -&gt; ShowS
+showsPrec :: Int -&gt; CreateWarehouseRequest -&gt; ShowS
+$cshow :: CreateWarehouseRequest -&gt; String
+show :: CreateWarehouseRequest -&gt; String
+$cshowList :: [CreateWarehouseRequest] -&gt; ShowS
+showList :: [CreateWarehouseRequest] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680272563"><span id="local-6989586621680272571"><span class="annot"><span class="annottext">CreateWarehouseRequest -&gt; CreateWarehouseRequest -&gt; Bool
+(CreateWarehouseRequest -&gt; CreateWarehouseRequest -&gt; Bool)
+-&gt; (CreateWarehouseRequest -&gt; CreateWarehouseRequest -&gt; Bool)
+-&gt; Eq CreateWarehouseRequest
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CreateWarehouseRequest -&gt; CreateWarehouseRequest -&gt; Bool
+== :: CreateWarehouseRequest -&gt; CreateWarehouseRequest -&gt; Bool
+$c/= :: CreateWarehouseRequest -&gt; CreateWarehouseRequest -&gt; Bool
+/= :: CreateWarehouseRequest -&gt; CreateWarehouseRequest -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680272575"><span id="local-6989586621680272577"><span class="annot"><span class="annottext">(forall x. CreateWarehouseRequest -&gt; Rep CreateWarehouseRequest x)
+-&gt; (forall x.
+    Rep CreateWarehouseRequest x -&gt; CreateWarehouseRequest)
+-&gt; Generic CreateWarehouseRequest
+forall x. Rep CreateWarehouseRequest x -&gt; CreateWarehouseRequest
+forall x. CreateWarehouseRequest -&gt; Rep CreateWarehouseRequest x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. CreateWarehouseRequest -&gt; Rep CreateWarehouseRequest x
+from :: forall x. CreateWarehouseRequest -&gt; Rep CreateWarehouseRequest x
+$cto :: forall x. Rep CreateWarehouseRequest x -&gt; CreateWarehouseRequest
+to :: forall x. Rep CreateWarehouseRequest x -&gt; CreateWarehouseRequest
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680272580"><span id="local-6989586621680272587"><span id="local-6989586621680272590"><span id="local-6989586621680272593"><span id="local-6989586621680272596"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#CreateWarehouseRequest"><span class="hs-identifier hs-type">CreateWarehouseRequest</span></a></span></span></span></span></span></span><span>
+</span><span id="line-56"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680272708"><span id="local-6989586621680272715"><span id="local-6989586621680272718"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#CreateWarehouseRequest"><span class="hs-identifier hs-type">CreateWarehouseRequest</span></a></span></span></span></span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="annot"><span class="hs-comment">-- | Update request</span></span><span>
+</span><span id="line-59"></span><span class="hs-keyword">data</span><span> </span><span id="UpdateWarehouseRequest"><span class="annot"><a href="Inventory.Warehouse.html#UpdateWarehouseRequest"><span class="hs-identifier hs-var">UpdateWarehouseRequest</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="UpdateWarehouseRequest"><span class="annot"><a href="Inventory.Warehouse.html#UpdateWarehouseRequest"><span class="hs-identifier hs-var">UpdateWarehouseRequest</span></a></span></span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="uwrName"><span class="annot"><span class="annottext">UpdateWarehouseRequest -&gt; Maybe Text
+</span><a href="Inventory.Warehouse.html#uwrName"><span class="hs-identifier hs-var hs-var">uwrName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="uwrAddress"><span class="annot"><span class="annottext">UpdateWarehouseRequest -&gt; Maybe Text
+</span><a href="Inventory.Warehouse.html#uwrAddress"><span class="hs-identifier hs-var hs-var">uwrAddress</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="uwrCapacity"><span class="annot"><span class="annottext">UpdateWarehouseRequest -&gt; Maybe Double
+</span><a href="Inventory.Warehouse.html#uwrCapacity"><span class="hs-identifier hs-var hs-var">uwrCapacity</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680272800"><span id="local-6989586621680272808"><span id="local-6989586621680272812"><span class="annot"><span class="annottext">Int -&gt; UpdateWarehouseRequest -&gt; ShowS
+[UpdateWarehouseRequest] -&gt; ShowS
+UpdateWarehouseRequest -&gt; String
+(Int -&gt; UpdateWarehouseRequest -&gt; ShowS)
+-&gt; (UpdateWarehouseRequest -&gt; String)
+-&gt; ([UpdateWarehouseRequest] -&gt; ShowS)
+-&gt; Show UpdateWarehouseRequest
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; UpdateWarehouseRequest -&gt; ShowS
+showsPrec :: Int -&gt; UpdateWarehouseRequest -&gt; ShowS
+$cshow :: UpdateWarehouseRequest -&gt; String
+show :: UpdateWarehouseRequest -&gt; String
+$cshowList :: [UpdateWarehouseRequest] -&gt; ShowS
+showList :: [UpdateWarehouseRequest] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680272815"><span id="local-6989586621680272821"><span class="annot"><span class="annottext">UpdateWarehouseRequest -&gt; UpdateWarehouseRequest -&gt; Bool
+(UpdateWarehouseRequest -&gt; UpdateWarehouseRequest -&gt; Bool)
+-&gt; (UpdateWarehouseRequest -&gt; UpdateWarehouseRequest -&gt; Bool)
+-&gt; Eq UpdateWarehouseRequest
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: UpdateWarehouseRequest -&gt; UpdateWarehouseRequest -&gt; Bool
+== :: UpdateWarehouseRequest -&gt; UpdateWarehouseRequest -&gt; Bool
+$c/= :: UpdateWarehouseRequest -&gt; UpdateWarehouseRequest -&gt; Bool
+/= :: UpdateWarehouseRequest -&gt; UpdateWarehouseRequest -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680272825"><span id="local-6989586621680272827"><span class="annot"><span class="annottext">(forall x. UpdateWarehouseRequest -&gt; Rep UpdateWarehouseRequest x)
+-&gt; (forall x.
+    Rep UpdateWarehouseRequest x -&gt; UpdateWarehouseRequest)
+-&gt; Generic UpdateWarehouseRequest
+forall x. Rep UpdateWarehouseRequest x -&gt; UpdateWarehouseRequest
+forall x. UpdateWarehouseRequest -&gt; Rep UpdateWarehouseRequest x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. UpdateWarehouseRequest -&gt; Rep UpdateWarehouseRequest x
+from :: forall x. UpdateWarehouseRequest -&gt; Rep UpdateWarehouseRequest x
+$cto :: forall x. Rep UpdateWarehouseRequest x -&gt; UpdateWarehouseRequest
+to :: forall x. Rep UpdateWarehouseRequest x -&gt; UpdateWarehouseRequest
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680272830"><span id="local-6989586621680272837"><span id="local-6989586621680272840"><span id="local-6989586621680272843"><span id="local-6989586621680272846"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#UpdateWarehouseRequest"><span class="hs-identifier hs-type">UpdateWarehouseRequest</span></a></span></span></span></span></span></span><span>
+</span><span id="line-66"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680272925"><span id="local-6989586621680272932"><span id="local-6989586621680272935"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#UpdateWarehouseRequest"><span class="hs-identifier hs-type">UpdateWarehouseRequest</span></a></span></span></span></span><span>
+</span><span id="line-67"></span><span>
+</span><span id="line-68"></span><span class="annot"><span class="hs-comment">-- | Result wrapper</span></span><span>
+</span><span id="line-69"></span><span class="hs-keyword">data</span><span> </span><span id="WarehouseResult"><span class="annot"><a href="Inventory.Warehouse.html#WarehouseResult"><span class="hs-identifier hs-var">WarehouseResult</span></a></span></span><span> </span><span id="local-6989586621680271836"><span class="annot"><a href="#local-6989586621680271836"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="WarehouseSuccess"><span class="annot"><a href="Inventory.Warehouse.html#WarehouseSuccess"><span class="hs-identifier hs-var">WarehouseSuccess</span></a></span></span><span> </span><span class="annot"><a href="#local-6989586621680271836"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="WarehouseError"><span class="annot"><a href="Inventory.Warehouse.html#WarehouseError"><span class="hs-identifier hs-var">WarehouseError</span></a></span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680272997"><span id="local-6989586621680273003"><span id="local-6989586621680273007"><span class="annot"><span class="annottext">Int -&gt; WarehouseResult a -&gt; ShowS
+[WarehouseResult a] -&gt; ShowS
+WarehouseResult a -&gt; String
+(Int -&gt; WarehouseResult a -&gt; ShowS)
+-&gt; (WarehouseResult a -&gt; String)
+-&gt; ([WarehouseResult a] -&gt; ShowS)
+-&gt; Show (WarehouseResult a)
+forall a. Show a =&gt; Int -&gt; WarehouseResult a -&gt; ShowS
+forall a. Show a =&gt; [WarehouseResult a] -&gt; ShowS
+forall a. Show a =&gt; WarehouseResult a -&gt; String
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: forall a. Show a =&gt; Int -&gt; WarehouseResult a -&gt; ShowS
+showsPrec :: Int -&gt; WarehouseResult a -&gt; ShowS
+$cshow :: forall a. Show a =&gt; WarehouseResult a -&gt; String
+show :: WarehouseResult a -&gt; String
+$cshowList :: forall a. Show a =&gt; [WarehouseResult a] -&gt; ShowS
+showList :: [WarehouseResult a] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680273011"><span id="local-6989586621680273017"><span class="annot"><span class="annottext">WarehouseResult a -&gt; WarehouseResult a -&gt; Bool
+(WarehouseResult a -&gt; WarehouseResult a -&gt; Bool)
+-&gt; (WarehouseResult a -&gt; WarehouseResult a -&gt; Bool)
+-&gt; Eq (WarehouseResult a)
+forall a. Eq a =&gt; WarehouseResult a -&gt; WarehouseResult a -&gt; Bool
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: forall a. Eq a =&gt; WarehouseResult a -&gt; WarehouseResult a -&gt; Bool
+== :: WarehouseResult a -&gt; WarehouseResult a -&gt; Bool
+$c/= :: forall a. Eq a =&gt; WarehouseResult a -&gt; WarehouseResult a -&gt; Bool
+/= :: WarehouseResult a -&gt; WarehouseResult a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680273021"><span id="local-6989586621680273023"><span class="annot"><span class="annottext">(forall x. WarehouseResult a -&gt; Rep (WarehouseResult a) x)
+-&gt; (forall x. Rep (WarehouseResult a) x -&gt; WarehouseResult a)
+-&gt; Generic (WarehouseResult a)
+forall x. Rep (WarehouseResult a) x -&gt; WarehouseResult a
+forall x. WarehouseResult a -&gt; Rep (WarehouseResult a) x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+forall a x. Rep (WarehouseResult a) x -&gt; WarehouseResult a
+forall a x. WarehouseResult a -&gt; Rep (WarehouseResult a) x
+$cfrom :: forall a x. WarehouseResult a -&gt; Rep (WarehouseResult a) x
+from :: forall x. WarehouseResult a -&gt; Rep (WarehouseResult a) x
+$cto :: forall a x. Rep (WarehouseResult a) x -&gt; WarehouseResult a
+to :: forall x. Rep (WarehouseResult a) x -&gt; WarehouseResult a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span>
+</span><span id="line-72"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680271825"><span id="local-6989586621680273027"><span id="local-6989586621680273034"><span id="local-6989586621680273037"><span id="local-6989586621680273040"><span id="local-6989586621680273043"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="#local-6989586621680271825"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseResult"><span class="hs-identifier hs-type">WarehouseResult</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680271825"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span></span></span></span></span><span>
+</span><span id="line-73"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680271835"><span id="local-6989586621680273106"><span id="local-6989586621680273113"><span id="local-6989586621680273116"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="#local-6989586621680271835"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseResult"><span class="hs-identifier hs-type">WarehouseResult</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680271835"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span></span></span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span class="annot"><span class="hs-comment">-- | Create new warehouse (pure, on list)</span></span><span>
+</span><span id="line-76"></span><span class="annot"><a href="Inventory.Warehouse.html#createWarehouse"><span class="hs-identifier hs-type">createWarehouse</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#CreateWarehouseRequest"><span class="hs-identifier hs-type">CreateWarehouseRequest</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseResult"><span class="hs-identifier hs-type">WarehouseResult</span></a></span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span><span>
+</span><span id="line-77"></span><span id="createWarehouse"><span class="annot"><span class="annottext">createWarehouse :: [Warehouse] -&gt; CreateWarehouseRequest -&gt; WarehouseResult Warehouse
+</span><a href="Inventory.Warehouse.html#createWarehouse"><span class="hs-identifier hs-var hs-var">createWarehouse</span></a></span></span><span> </span><span id="local-6989586621680273166"><span class="annot"><span class="annottext">[Warehouse]
+</span><a href="#local-6989586621680273166"><span class="hs-identifier hs-var">existing</span></a></span></span><span> </span><span id="local-6989586621680273167"><span class="annot"><span class="annottext">CreateWarehouseRequest
+</span><a href="#local-6989586621680273167"><span class="hs-identifier hs-var">req</span></a></span></span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#null"><span class="hs-identifier hs-var">T.null</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CreateWarehouseRequest -&gt; Text
+</span><a href="Inventory.Warehouse.html#cwrCode"><span class="hs-identifier hs-var">cwrCode</span></a></span><span> </span><span class="annot"><span class="annottext">CreateWarehouseRequest
+</span><a href="#local-6989586621680273167"><span class="hs-identifier hs-var">req</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; WarehouseResult Warehouse
+forall a. Text -&gt; WarehouseResult a
+</span><a href="Inventory.Warehouse.html#WarehouseError"><span class="hs-identifier hs-var">WarehouseError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Code required&quot;</span></span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#null"><span class="hs-identifier hs-var">T.null</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">CreateWarehouseRequest -&gt; Text
+</span><a href="Inventory.Warehouse.html#cwrName"><span class="hs-identifier hs-var">cwrName</span></a></span><span> </span><span class="annot"><span class="annottext">CreateWarehouseRequest
+</span><a href="#local-6989586621680273167"><span class="hs-identifier hs-var">req</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; WarehouseResult Warehouse
+forall a. Text -&gt; WarehouseResult a
+</span><a href="Inventory.Warehouse.html#WarehouseError"><span class="hs-identifier hs-var">WarehouseError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Name required&quot;</span></span><span>
+</span><span id="line-80"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">(Warehouse -&gt; Bool) -&gt; [Warehouse] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#any"><span class="hs-identifier hs-var">any</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680273170"><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273170"><span class="hs-identifier hs-var">u</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Warehouse -&gt; Text
+</span><a href="Inventory.Warehouse.html#wCode"><span class="hs-identifier hs-var">wCode</span></a></span><span> </span><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273170"><span class="hs-identifier hs-var">u</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">CreateWarehouseRequest -&gt; Text
+</span><a href="Inventory.Warehouse.html#cwrCode"><span class="hs-identifier hs-var">cwrCode</span></a></span><span> </span><span class="annot"><span class="annottext">CreateWarehouseRequest
+</span><a href="#local-6989586621680273167"><span class="hs-identifier hs-var">req</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Warehouse]
+</span><a href="#local-6989586621680273166"><span class="hs-identifier hs-var">existing</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; WarehouseResult Warehouse
+forall a. Text -&gt; WarehouseResult a
+</span><a href="Inventory.Warehouse.html#WarehouseError"><span class="hs-identifier hs-var">WarehouseError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Duplicate code&quot;</span></span><span>
+</span><span id="line-81"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-82"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680273178"><span class="annot"><span class="annottext">newId :: Int64
+</span><a href="#local-6989586621680273178"><span class="hs-identifier hs-var hs-var">newId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int64] -&gt; Int64
+forall a. Ord a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Ord a) =&gt; t a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#maximum"><span class="hs-identifier hs-var">maximum</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; [Int64] -&gt; [Int64]
+forall a. a -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#%3A"><span class="hs-glyph hs-var">:</span></a></span><span> </span><span class="annot"><span class="annottext">(Warehouse -&gt; Int64) -&gt; [Warehouse] -&gt; [Int64]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#map"><span class="hs-identifier hs-var">map</span></a></span><span> </span><span class="annot"><span class="annottext">Warehouse -&gt; Int64
+</span><a href="Inventory.Warehouse.html#wId"><span class="hs-identifier hs-var">wId</span></a></span><span> </span><span class="annot"><span class="annottext">[Warehouse]
+</span><a href="#local-6989586621680273166"><span class="hs-identifier hs-var">existing</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Int64
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2B"><span class="hs-operator hs-var">+</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">1</span></span><span>
+</span><span id="line-83"></span><span>          </span><span id="local-6989586621680273181"><span class="annot"><span class="annottext">w :: Warehouse
+</span><a href="#local-6989586621680273181"><span class="hs-identifier hs-var hs-var">w</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span><span>
+</span><span id="line-84"></span><span>                </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">wId :: Int64
+</span><a href="Inventory.Warehouse.html#wId"><span class="hs-identifier hs-var">wId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680273178"><span class="hs-identifier hs-var">newId</span></a></span><span>
+</span><span id="line-85"></span><span>                </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">wCode :: Text
+</span><a href="Inventory.Warehouse.html#wCode"><span class="hs-identifier hs-var">wCode</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreateWarehouseRequest -&gt; Text
+</span><a href="Inventory.Warehouse.html#cwrCode"><span class="hs-identifier hs-var">cwrCode</span></a></span><span> </span><span class="annot"><span class="annottext">CreateWarehouseRequest
+</span><a href="#local-6989586621680273167"><span class="hs-identifier hs-var">req</span></a></span><span>
+</span><span id="line-86"></span><span>                </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">wName :: Text
+</span><a href="Inventory.Warehouse.html#wName"><span class="hs-identifier hs-var">wName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreateWarehouseRequest -&gt; Text
+</span><a href="Inventory.Warehouse.html#cwrName"><span class="hs-identifier hs-var">cwrName</span></a></span><span> </span><span class="annot"><span class="annottext">CreateWarehouseRequest
+</span><a href="#local-6989586621680273167"><span class="hs-identifier hs-var">req</span></a></span><span>
+</span><span id="line-87"></span><span>                </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">wType :: WarehouseType
+</span><a href="Inventory.Warehouse.html#wType"><span class="hs-identifier hs-var">wType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreateWarehouseRequest -&gt; WarehouseType
+</span><a href="Inventory.Warehouse.html#cwrType"><span class="hs-identifier hs-var">cwrType</span></a></span><span> </span><span class="annot"><span class="annottext">CreateWarehouseRequest
+</span><a href="#local-6989586621680273167"><span class="hs-identifier hs-var">req</span></a></span><span>
+</span><span id="line-88"></span><span>                </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">wAddress :: Maybe Text
+</span><a href="Inventory.Warehouse.html#wAddress"><span class="hs-identifier hs-var">wAddress</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreateWarehouseRequest -&gt; Maybe Text
+</span><a href="Inventory.Warehouse.html#cwrAddress"><span class="hs-identifier hs-var">cwrAddress</span></a></span><span> </span><span class="annot"><span class="annottext">CreateWarehouseRequest
+</span><a href="#local-6989586621680273167"><span class="hs-identifier hs-var">req</span></a></span><span>
+</span><span id="line-89"></span><span>                </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">wCapacity :: Maybe Double
+</span><a href="Inventory.Warehouse.html#wCapacity"><span class="hs-identifier hs-var">wCapacity</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreateWarehouseRequest -&gt; Maybe Double
+</span><a href="Inventory.Warehouse.html#cwrCapacity"><span class="hs-identifier hs-var">cwrCapacity</span></a></span><span> </span><span class="annot"><span class="annottext">CreateWarehouseRequest
+</span><a href="#local-6989586621680273167"><span class="hs-identifier hs-var">req</span></a></span><span>
+</span><span id="line-90"></span><span>                </span><span class="hs-special">}</span><span>
+</span><span id="line-91"></span><span>      </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Warehouse -&gt; WarehouseResult Warehouse
+forall a. a -&gt; WarehouseResult a
+</span><a href="Inventory.Warehouse.html#WarehouseSuccess"><span class="hs-identifier hs-var">WarehouseSuccess</span></a></span><span> </span><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273181"><span class="hs-identifier hs-var">w</span></a></span><span>
+</span><span id="line-92"></span><span>
+</span><span id="line-93"></span><span class="annot"><span class="hs-comment">-- | Read warehouse by id</span></span><span>
+</span><span id="line-94"></span><span class="annot"><a href="Inventory.Warehouse.html#readWarehouse"><span class="hs-identifier hs-type">readWarehouse</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseResult"><span class="hs-identifier hs-type">WarehouseResult</span></a></span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span><span>
+</span><span id="line-95"></span><span id="readWarehouse"><span class="annot"><span class="annottext">readWarehouse :: [Warehouse] -&gt; Int64 -&gt; WarehouseResult Warehouse
+</span><a href="Inventory.Warehouse.html#readWarehouse"><span class="hs-identifier hs-var hs-var">readWarehouse</span></a></span></span><span> </span><span id="local-6989586621680273182"><span class="annot"><span class="annottext">[Warehouse]
+</span><a href="#local-6989586621680273182"><span class="hs-identifier hs-var">whs</span></a></span></span><span> </span><span id="local-6989586621680273183"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680273183"><span class="hs-identifier hs-var">wid</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">(Warehouse -&gt; Bool) -&gt; [Warehouse] -&gt; [Warehouse]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#filter"><span class="hs-identifier hs-var">filter</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680273184"><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273184"><span class="hs-identifier hs-var">u</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Warehouse -&gt; Int64
+</span><a href="Inventory.Warehouse.html#wId"><span class="hs-identifier hs-var">wId</span></a></span><span> </span><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273184"><span class="hs-identifier hs-var">u</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680273183"><span class="hs-identifier hs-var">wid</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Warehouse]
+</span><a href="#local-6989586621680273182"><span class="hs-identifier hs-var">whs</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-96"></span><span>  </span><span class="hs-special">(</span><span id="local-6989586621680273185"><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273185"><span class="hs-identifier hs-var">u</span></a></span></span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#%3A"><span class="hs-glyph hs-type">:</span></a></span><span class="annot"><span class="annottext">[Warehouse]
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Warehouse -&gt; WarehouseResult Warehouse
+forall a. a -&gt; WarehouseResult a
+</span><a href="Inventory.Warehouse.html#WarehouseSuccess"><span class="hs-identifier hs-var">WarehouseSuccess</span></a></span><span> </span><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273185"><span class="hs-identifier hs-var">u</span></a></span><span>
+</span><span id="line-97"></span><span>  </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text -&gt; WarehouseResult Warehouse
+forall a. Text -&gt; WarehouseResult a
+</span><a href="Inventory.Warehouse.html#WarehouseError"><span class="hs-identifier hs-var">WarehouseError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Not found&quot;</span></span><span>
+</span><span id="line-98"></span><span>
+</span><span id="line-99"></span><span class="annot"><span class="hs-comment">-- | Update warehouse</span></span><span>
+</span><span id="line-100"></span><span class="annot"><a href="Inventory.Warehouse.html#updateWarehouse"><span class="hs-identifier hs-type">updateWarehouse</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#UpdateWarehouseRequest"><span class="hs-identifier hs-type">UpdateWarehouseRequest</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseResult"><span class="hs-identifier hs-type">WarehouseResult</span></a></span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span><span>
+</span><span id="line-101"></span><span id="updateWarehouse"><span class="annot"><span class="annottext">updateWarehouse :: [Warehouse]
+-&gt; Int64 -&gt; UpdateWarehouseRequest -&gt; WarehouseResult Warehouse
+</span><a href="Inventory.Warehouse.html#updateWarehouse"><span class="hs-identifier hs-var hs-var">updateWarehouse</span></a></span></span><span> </span><span id="local-6989586621680273186"><span class="annot"><span class="annottext">[Warehouse]
+</span><a href="#local-6989586621680273186"><span class="hs-identifier hs-var">whs</span></a></span></span><span> </span><span id="local-6989586621680273187"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680273187"><span class="hs-identifier hs-var">wid</span></a></span></span><span> </span><span id="local-6989586621680273188"><span class="annot"><span class="annottext">UpdateWarehouseRequest
+</span><a href="#local-6989586621680273188"><span class="hs-identifier hs-var">req</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">[Warehouse] -&gt; Int64 -&gt; WarehouseResult Warehouse
+</span><a href="Inventory.Warehouse.html#readWarehouse"><span class="hs-identifier hs-var">readWarehouse</span></a></span><span> </span><span class="annot"><span class="annottext">[Warehouse]
+</span><a href="#local-6989586621680273186"><span class="hs-identifier hs-var">whs</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680273187"><span class="hs-identifier hs-var">wid</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-102"></span><span>  </span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseError"><span class="hs-identifier hs-type">WarehouseError</span></a></span><span> </span><span id="local-6989586621680273189"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680273189"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text -&gt; WarehouseResult Warehouse
+forall a. Text -&gt; WarehouseResult a
+</span><a href="Inventory.Warehouse.html#WarehouseError"><span class="hs-identifier hs-var">WarehouseError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680273189"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-103"></span><span>  </span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseSuccess"><span class="hs-identifier hs-type">WarehouseSuccess</span></a></span><span> </span><span id="local-6989586621680273190"><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273190"><span class="hs-identifier hs-var">w</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-104"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680273191"><span class="annot"><span class="annottext">updated :: Warehouse
+</span><a href="#local-6989586621680273191"><span class="hs-identifier hs-var hs-var">updated</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273190"><span class="hs-identifier hs-var">w</span></a></span><span>
+</span><span id="line-105"></span><span>          </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#wName"><span class="hs-identifier hs-var">wName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Maybe.html#fromMaybe"><span class="hs-identifier hs-type">fromMaybe</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Inventory.Warehouse.html#wName"><span class="hs-identifier hs-var">wName</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680273190"><span class="hs-identifier hs-type">w</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Inventory.Warehouse.html#uwrName"><span class="hs-identifier hs-var">uwrName</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680273188"><span class="hs-identifier hs-type">req</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-106"></span><span>          </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#wAddress"><span class="hs-identifier hs-var">wAddress</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#uwrAddress"><span class="hs-identifier hs-var">uwrAddress</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680273188"><span class="hs-identifier hs-type">req</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-107"></span><span>              </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621680273192"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680273192"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe Text
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680273192"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-108"></span><span>              </span><span class="annot"><span class="annottext">Maybe Text
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Warehouse -&gt; Maybe Text
+</span><a href="Inventory.Warehouse.html#wAddress"><span class="hs-identifier hs-var">wAddress</span></a></span><span> </span><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273190"><span class="hs-identifier hs-var">w</span></a></span><span>
+</span><span id="line-109"></span><span>          </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#wCapacity"><span class="hs-identifier hs-var">wCapacity</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#uwrCapacity"><span class="hs-identifier hs-var">uwrCapacity</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680273188"><span class="hs-identifier hs-type">req</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-110"></span><span>              </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621680273193"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680273193"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Maybe Double
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680273193"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-111"></span><span>              </span><span class="annot"><span class="annottext">Maybe Double
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Warehouse -&gt; Maybe Double
+</span><a href="Inventory.Warehouse.html#wCapacity"><span class="hs-identifier hs-var">wCapacity</span></a></span><span> </span><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273190"><span class="hs-identifier hs-var">w</span></a></span><span>
+</span><span id="line-112"></span><span>          </span><span class="hs-special">}</span><span>
+</span><span id="line-113"></span><span>    </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Warehouse -&gt; WarehouseResult Warehouse
+forall a. a -&gt; WarehouseResult a
+</span><a href="Inventory.Warehouse.html#WarehouseSuccess"><span class="hs-identifier hs-var">WarehouseSuccess</span></a></span><span> </span><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273191"><span class="hs-identifier hs-var">updated</span></a></span><span>
+</span><span id="line-114"></span><span>
+</span><span id="line-115"></span><span class="annot"><span class="hs-comment">-- | Delete (soft delete) - here we just mark name with suffix</span></span><span>
+</span><span id="line-116"></span><span class="annot"><a href="Inventory.Warehouse.html#deleteWarehouse"><span class="hs-identifier hs-type">deleteWarehouse</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseResult"><span class="hs-identifier hs-type">WarehouseResult</span></a></span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span><span>
+</span><span id="line-117"></span><span id="deleteWarehouse"><span class="annot"><span class="annottext">deleteWarehouse :: [Warehouse] -&gt; Int64 -&gt; WarehouseResult Warehouse
+</span><a href="Inventory.Warehouse.html#deleteWarehouse"><span class="hs-identifier hs-var hs-var">deleteWarehouse</span></a></span></span><span> </span><span id="local-6989586621680273194"><span class="annot"><span class="annottext">[Warehouse]
+</span><a href="#local-6989586621680273194"><span class="hs-identifier hs-var">whs</span></a></span></span><span> </span><span id="local-6989586621680273195"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680273195"><span class="hs-identifier hs-var">wid</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">[Warehouse] -&gt; Int64 -&gt; WarehouseResult Warehouse
+</span><a href="Inventory.Warehouse.html#readWarehouse"><span class="hs-identifier hs-var">readWarehouse</span></a></span><span> </span><span class="annot"><span class="annottext">[Warehouse]
+</span><a href="#local-6989586621680273194"><span class="hs-identifier hs-var">whs</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680273195"><span class="hs-identifier hs-var">wid</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-118"></span><span>  </span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseError"><span class="hs-identifier hs-type">WarehouseError</span></a></span><span> </span><span id="local-6989586621680273196"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680273196"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text -&gt; WarehouseResult Warehouse
+forall a. Text -&gt; WarehouseResult a
+</span><a href="Inventory.Warehouse.html#WarehouseError"><span class="hs-identifier hs-var">WarehouseError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680273196"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-119"></span><span>  </span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseSuccess"><span class="hs-identifier hs-type">WarehouseSuccess</span></a></span><span> </span><span id="local-6989586621680273197"><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273197"><span class="hs-identifier hs-var">w</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Warehouse -&gt; WarehouseResult Warehouse
+forall a. a -&gt; WarehouseResult a
+</span><a href="Inventory.Warehouse.html#WarehouseSuccess"><span class="hs-identifier hs-var">WarehouseSuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273197"><span class="hs-identifier hs-var">w</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#wName"><span class="hs-identifier hs-var">wName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#append"><span class="hs-identifier hs-type">T.append</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Inventory.Warehouse.html#wName"><span class="hs-identifier hs-var">wName</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680273197"><span class="hs-identifier hs-type">w</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-string">&quot; (archived)&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#wCapacity"><span class="hs-identifier hs-var">wCapacity</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-type">Nothing</span></a></span><span> </span><span class="hs-special">}</span><span class="hs-special">)</span><span>
+</span><span id="line-120"></span><span>
+</span><span id="line-121"></span><span class="annot"><span class="hs-comment">-- | List warehouses</span></span><span>
+</span><span id="line-122"></span><span class="annot"><a href="Inventory.Warehouse.html#listWarehouses"><span class="hs-identifier hs-type">listWarehouses</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#WarehouseResult"><span class="hs-identifier hs-type">WarehouseResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-123"></span><span id="listWarehouses"><span class="annot"><span class="annottext">listWarehouses :: [Warehouse] -&gt; WarehouseResult [Warehouse]
+</span><a href="Inventory.Warehouse.html#listWarehouses"><span class="hs-identifier hs-var hs-var">listWarehouses</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Warehouse] -&gt; WarehouseResult [Warehouse]
+forall a. a -&gt; WarehouseResult a
+</span><a href="Inventory.Warehouse.html#WarehouseSuccess"><span class="hs-identifier hs-var">WarehouseSuccess</span></a></span><span>
+</span><span id="line-124"></span><span>
+</span><span id="line-125"></span><span class="annot"><span class="hs-comment">-- | Find by code</span></span><span>
+</span><span id="line-126"></span><span class="annot"><a href="Inventory.Warehouse.html#findWarehouseByCode"><span class="hs-identifier hs-type">findWarehouseByCode</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span><span>
+</span><span id="line-127"></span><span id="findWarehouseByCode"><span class="annot"><span class="annottext">findWarehouseByCode :: [Warehouse] -&gt; Text -&gt; Maybe Warehouse
+</span><a href="Inventory.Warehouse.html#findWarehouseByCode"><span class="hs-identifier hs-var hs-var">findWarehouseByCode</span></a></span></span><span> </span><span id="local-6989586621680273199"><span class="annot"><span class="annottext">[Warehouse]
+</span><a href="#local-6989586621680273199"><span class="hs-identifier hs-var">whs</span></a></span></span><span> </span><span id="local-6989586621680273200"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680273200"><span class="hs-identifier hs-var">code</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">(Warehouse -&gt; Bool) -&gt; [Warehouse] -&gt; [Warehouse]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#filter"><span class="hs-identifier hs-var">filter</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680273201"><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273201"><span class="hs-identifier hs-var">u</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Warehouse -&gt; Text
+</span><a href="Inventory.Warehouse.html#wCode"><span class="hs-identifier hs-var">wCode</span></a></span><span> </span><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273201"><span class="hs-identifier hs-var">u</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680273200"><span class="hs-identifier hs-var">code</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Warehouse]
+</span><a href="#local-6989586621680273199"><span class="hs-identifier hs-var">whs</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-128"></span><span>  </span><span class="hs-special">(</span><span id="local-6989586621680273202"><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273202"><span class="hs-identifier hs-var">u</span></a></span></span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#%3A"><span class="hs-glyph hs-type">:</span></a></span><span class="annot"><span class="annottext">[Warehouse]
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Warehouse -&gt; Maybe Warehouse
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">Warehouse
+</span><a href="#local-6989586621680273202"><span class="hs-identifier hs-var">u</span></a></span><span>
+</span><span id="line-129"></span><span>  </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe Warehouse
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-130"></span><span>
+</span><span id="line-131"></span><span class="annot"><span class="hs-comment">-- | Count</span></span><span>
+</span><span id="line-132"></span><span class="annot"><a href="Inventory.Warehouse.html#countWarehouses"><span class="hs-identifier hs-type">countWarehouses</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Inventory.Warehouse.html#Warehouse"><span class="hs-identifier hs-type">Warehouse</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-133"></span><span id="countWarehouses"><span class="annot"><span class="annottext">countWarehouses :: [Warehouse] -&gt; Int
+</span><a href="Inventory.Warehouse.html#countWarehouses"><span class="hs-identifier hs-var hs-var">countWarehouses</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Warehouse] -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#length"><span class="hs-identifier hs-var">length</span></a></span><span>
+</span><span id="line-134"></span></pre></body></html>

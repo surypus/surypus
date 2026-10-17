@@ -1,0 +1,781 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE ExistentialQuantification #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE AllowAmbiguousTypes #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="annot"><span class="hs-comment">-- | Integration Adapter Pattern - Typeclass for external system integrations</span></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Integration.Adapter.html"><span class="hs-identifier">Integration.Adapter</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Integration.Adapter.html#IntegrationAdapter"><span class="hs-identifier">IntegrationAdapter</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.Adapter.html#AdapterConfig"><span class="hs-identifier">AdapterConfig</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.Adapter.html#AdapterResult"><span class="hs-identifier">AdapterResult</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.Adapter.html#BankStatementAdapter"><span class="hs-identifier">BankStatementAdapter</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.Adapter.html#MarketplaceAdapter"><span class="hs-identifier">MarketplaceAdapter</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.Adapter.html#PaymentGatewayAdapter"><span class="hs-identifier">PaymentGatewayAdapter</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.Adapter.html#createBankStatementAdapter"><span class="hs-identifier">createBankStatementAdapter</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.Adapter.html#createMarketplaceAdapter"><span class="hs-identifier">createMarketplaceAdapter</span></a></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.Adapter.html#createPaymentGatewayAdapter"><span class="hs-identifier">createPaymentGatewayAdapter</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">FromJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Value</span></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier">UTCTime</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.POSIX.html#getCurrentTime"><span class="hs-identifier">getCurrentTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.ORMPool.html"><span class="hs-identifier">DAL.ORMPool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier">ConnectionPool</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.Types.html"><span class="hs-identifier">DAL.Types</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier">QueryResult</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- ADAPTER CONFIGURATION</span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="annot"><span class="hs-comment">-- | Adapter configuration stored in integration_config table</span></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">data</span><span> </span><span id="AdapterConfig"><span class="annot"><a href="Integration.Adapter.html#AdapterConfig"><span class="hs-identifier hs-var">AdapterConfig</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AdapterConfig"><span class="annot"><a href="Integration.Adapter.html#AdapterConfig"><span class="hs-identifier hs-var">AdapterConfig</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="acTenantId"><span class="annot"><span class="annottext">AdapterConfig -&gt; Text
+</span><a href="Integration.Adapter.html#acTenantId"><span class="hs-identifier hs-var hs-var">acTenantId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="acAdapterType"><span class="annot"><span class="annottext">AdapterConfig -&gt; Text
+</span><a href="Integration.Adapter.html#acAdapterType"><span class="hs-identifier hs-var hs-var">acAdapterType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="acCredentials"><span class="annot"><span class="annottext">AdapterConfig -&gt; Value
+</span><a href="Integration.Adapter.html#acCredentials"><span class="hs-identifier hs-var hs-var">acCredentials</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Value</span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="acEnabled"><span class="annot"><span class="annottext">AdapterConfig -&gt; Bool
+</span><a href="Integration.Adapter.html#acEnabled"><span class="hs-identifier hs-var hs-var">acEnabled</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="acSettings"><span class="annot"><span class="annottext">AdapterConfig -&gt; Value
+</span><a href="Integration.Adapter.html#acSettings"><span class="hs-identifier hs-var hs-var">acSettings</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Value</span></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680259329"><span id="local-6989586621680259341"><span id="local-6989586621680259345"><span class="annot"><span class="annottext">Int -&gt; AdapterConfig -&gt; ShowS
+[AdapterConfig] -&gt; ShowS
+AdapterConfig -&gt; String
+(Int -&gt; AdapterConfig -&gt; ShowS)
+-&gt; (AdapterConfig -&gt; String)
+-&gt; ([AdapterConfig] -&gt; ShowS)
+-&gt; Show AdapterConfig
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AdapterConfig -&gt; ShowS
+showsPrec :: Int -&gt; AdapterConfig -&gt; ShowS
+$cshow :: AdapterConfig -&gt; String
+show :: AdapterConfig -&gt; String
+$cshowList :: [AdapterConfig] -&gt; ShowS
+showList :: [AdapterConfig] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680259350"><span id="local-6989586621680259360"><span class="annot"><span class="annottext">AdapterConfig -&gt; AdapterConfig -&gt; Bool
+(AdapterConfig -&gt; AdapterConfig -&gt; Bool)
+-&gt; (AdapterConfig -&gt; AdapterConfig -&gt; Bool) -&gt; Eq AdapterConfig
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AdapterConfig -&gt; AdapterConfig -&gt; Bool
+== :: AdapterConfig -&gt; AdapterConfig -&gt; Bool
+$c/= :: AdapterConfig -&gt; AdapterConfig -&gt; Bool
+/= :: AdapterConfig -&gt; AdapterConfig -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680259365"><span id="local-6989586621680259367"><span class="annot"><span class="annottext">(forall x. AdapterConfig -&gt; Rep AdapterConfig x)
+-&gt; (forall x. Rep AdapterConfig x -&gt; AdapterConfig)
+-&gt; Generic AdapterConfig
+forall x. Rep AdapterConfig x -&gt; AdapterConfig
+forall x. AdapterConfig -&gt; Rep AdapterConfig x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. AdapterConfig -&gt; Rep AdapterConfig x
+from :: forall x. AdapterConfig -&gt; Rep AdapterConfig x
+$cto :: forall x. Rep AdapterConfig x -&gt; AdapterConfig
+to :: forall x. Rep AdapterConfig x -&gt; AdapterConfig
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680259373"><span id="local-6989586621680259380"><span id="local-6989586621680259383"><span id="local-6989586621680259386"><span id="local-6989586621680259389"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#AdapterConfig"><span class="hs-identifier hs-type">AdapterConfig</span></a></span></span></span></span></span></span><span>
+</span><span id="line-41"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680259537"><span id="local-6989586621680259544"><span id="local-6989586621680259547"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#AdapterConfig"><span class="hs-identifier hs-type">AdapterConfig</span></a></span></span></span></span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-44"></span><span class="hs-comment">-- ADAPTER TYPECLASS</span><span>
+</span><span id="line-45"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span class="annot"><span class="hs-comment">-- | Generic adapter interface for external system integrations</span></span><span>
+</span><span id="line-48"></span><span class="hs-keyword">class</span><span> </span><span id="IntegrationAdapter"><span class="annot"><a href="Integration.Adapter.html#IntegrationAdapter"><span class="hs-identifier hs-var">IntegrationAdapter</span></a></span></span><span> </span><span id="local-6989586621680259292"><span class="annot"><a href="#local-6989586621680259292"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-comment">-- | Establish connection to external system</span><span>
+</span><span id="line-50"></span><span>  </span><span id="connect"><span class="annot"><a href="Integration.Adapter.html#connect"><span class="hs-identifier hs-type">connect</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621680259292"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="annot"><a href="Integration.Adapter.html#Connection"><span class="hs-identifier hs-type">Connection</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>  </span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-comment">-- | Fetch data from external system</span><span>
+</span><span id="line-53"></span><span>  </span><span id="fetch"><span class="annot"><a href="Integration.Adapter.html#fetch"><span class="hs-identifier hs-type">fetch</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.Adapter.html#Connection"><span class="hs-identifier hs-type">Connection</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621680259292"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Integration.Adapter.html#ExternalData"><span class="hs-identifier hs-type">ExternalData</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>  </span><span>
+</span><span id="line-55"></span><span>  </span><span class="hs-comment">-- | Transform external data to domain entities</span><span>
+</span><span id="line-56"></span><span>  </span><span id="transform"><span class="annot"><a href="Integration.Adapter.html#transform"><span class="hs-identifier hs-type">transform</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621680259292"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Integration.Adapter.html#ExternalData"><span class="hs-identifier hs-type">ExternalData</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Integration.Adapter.html#DomainEntity"><span class="hs-identifier hs-type">DomainEntity</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-57"></span><span>  </span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-comment">-- | Persist domain entities to database</span><span>
+</span><span id="line-59"></span><span>  </span><span id="persist"><span class="annot"><a href="Integration.Adapter.html#persist"><span class="hs-identifier hs-type">persist</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Integration.Adapter.html#DomainEntity"><span class="hs-identifier hs-type">DomainEntity</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span>  </span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-comment">-- | Get adapter type identifier</span><span>
+</span><span id="line-62"></span><span>  </span><span id="adapterType"><span class="annot"><a href="Integration.Adapter.html#adapterType"><span class="hs-identifier hs-type">adapterType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621680259292"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-65"></span><span class="hs-comment">-- GENERIC TYPES</span><span>
+</span><span id="line-66"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-67"></span><span>
+</span><span id="line-68"></span><span class="annot"><span class="hs-comment">-- | Connection handle (type-safe wrapper)</span></span><span>
+</span><span id="line-69"></span><span class="hs-keyword">data</span><span> </span><span id="Connection"><span class="annot"><a href="Integration.Adapter.html#Connection"><span class="hs-identifier hs-var">Connection</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Connection"><span class="annot"><a href="Integration.Adapter.html#Connection"><span class="hs-identifier hs-var">Connection</span></a></span></span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="connId"><span class="annot"><span class="annottext">Connection -&gt; Text
+</span><a href="Integration.Adapter.html#connId"><span class="hs-identifier hs-var hs-var">connId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-71"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="connEstablishedAt"><span class="annot"><span class="annottext">Connection -&gt; UTCTime
+</span><a href="Integration.Adapter.html#connEstablishedAt"><span class="hs-identifier hs-var hs-var">connEstablishedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span>
+</span><span id="line-72"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="connAdapterType"><span class="annot"><span class="annottext">Connection -&gt; Text
+</span><a href="Integration.Adapter.html#connAdapterType"><span class="hs-identifier hs-var hs-var">connAdapterType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-73"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680259653"><span id="local-6989586621680259660"><span id="local-6989586621680259664"><span class="annot"><span class="annottext">Int -&gt; Connection -&gt; ShowS
+[Connection] -&gt; ShowS
+Connection -&gt; String
+(Int -&gt; Connection -&gt; ShowS)
+-&gt; (Connection -&gt; String)
+-&gt; ([Connection] -&gt; ShowS)
+-&gt; Show Connection
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Connection -&gt; ShowS
+showsPrec :: Int -&gt; Connection -&gt; ShowS
+$cshow :: Connection -&gt; String
+show :: Connection -&gt; String
+$cshowList :: [Connection] -&gt; ShowS
+showList :: [Connection] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680259667"><span id="local-6989586621680259673"><span class="annot"><span class="annottext">Connection -&gt; Connection -&gt; Bool
+(Connection -&gt; Connection -&gt; Bool)
+-&gt; (Connection -&gt; Connection -&gt; Bool) -&gt; Eq Connection
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Connection -&gt; Connection -&gt; Bool
+== :: Connection -&gt; Connection -&gt; Bool
+$c/= :: Connection -&gt; Connection -&gt; Bool
+/= :: Connection -&gt; Connection -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680259677"><span id="local-6989586621680259679"><span class="annot"><span class="annottext">(forall x. Connection -&gt; Rep Connection x)
+-&gt; (forall x. Rep Connection x -&gt; Connection) -&gt; Generic Connection
+forall x. Rep Connection x -&gt; Connection
+forall x. Connection -&gt; Rep Connection x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Connection -&gt; Rep Connection x
+from :: forall x. Connection -&gt; Rep Connection x
+$cto :: forall x. Rep Connection x -&gt; Connection
+to :: forall x. Rep Connection x -&gt; Connection
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680259682"><span id="local-6989586621680259689"><span id="local-6989586621680259692"><span id="local-6989586621680259695"><span id="local-6989586621680259698"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#Connection"><span class="hs-identifier hs-type">Connection</span></a></span></span></span></span></span></span><span>
+</span><span id="line-76"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680259776"><span id="local-6989586621680259783"><span id="local-6989586621680259786"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#Connection"><span class="hs-identifier hs-type">Connection</span></a></span></span></span></span><span>
+</span><span id="line-77"></span><span>
+</span><span id="line-78"></span><span class="annot"><span class="hs-comment">-- | External data from adapter</span></span><span>
+</span><span id="line-79"></span><span class="hs-keyword">data</span><span> </span><span id="ExternalData"><span class="annot"><a href="Integration.Adapter.html#ExternalData"><span class="hs-identifier hs-var">ExternalData</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ExternalData"><span class="annot"><a href="Integration.Adapter.html#ExternalData"><span class="hs-identifier hs-var">ExternalData</span></a></span></span><span>
+</span><span id="line-80"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="dataId"><span class="annot"><span class="annottext">ExternalData -&gt; Text
+</span><a href="Integration.Adapter.html#dataId"><span class="hs-identifier hs-var hs-var">dataId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-81"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dataType"><span class="annot"><span class="annottext">ExternalData -&gt; Text
+</span><a href="Integration.Adapter.html#dataType"><span class="hs-identifier hs-var hs-var">dataType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-82"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dataContent"><span class="annot"><span class="annottext">ExternalData -&gt; Value
+</span><a href="Integration.Adapter.html#dataContent"><span class="hs-identifier hs-var hs-var">dataContent</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Value</span></span><span>
+</span><span id="line-83"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dataTimestamp"><span class="annot"><span class="annottext">ExternalData -&gt; UTCTime
+</span><a href="Integration.Adapter.html#dataTimestamp"><span class="hs-identifier hs-var hs-var">dataTimestamp</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span>
+</span><span id="line-84"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680259849"><span id="local-6989586621680259856"><span id="local-6989586621680259860"><span class="annot"><span class="annottext">Int -&gt; ExternalData -&gt; ShowS
+[ExternalData] -&gt; ShowS
+ExternalData -&gt; String
+(Int -&gt; ExternalData -&gt; ShowS)
+-&gt; (ExternalData -&gt; String)
+-&gt; ([ExternalData] -&gt; ShowS)
+-&gt; Show ExternalData
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ExternalData -&gt; ShowS
+showsPrec :: Int -&gt; ExternalData -&gt; ShowS
+$cshow :: ExternalData -&gt; String
+show :: ExternalData -&gt; String
+$cshowList :: [ExternalData] -&gt; ShowS
+showList :: [ExternalData] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680259863"><span id="local-6989586621680259869"><span class="annot"><span class="annottext">ExternalData -&gt; ExternalData -&gt; Bool
+(ExternalData -&gt; ExternalData -&gt; Bool)
+-&gt; (ExternalData -&gt; ExternalData -&gt; Bool) -&gt; Eq ExternalData
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ExternalData -&gt; ExternalData -&gt; Bool
+== :: ExternalData -&gt; ExternalData -&gt; Bool
+$c/= :: ExternalData -&gt; ExternalData -&gt; Bool
+/= :: ExternalData -&gt; ExternalData -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680259873"><span id="local-6989586621680259875"><span class="annot"><span class="annottext">(forall x. ExternalData -&gt; Rep ExternalData x)
+-&gt; (forall x. Rep ExternalData x -&gt; ExternalData)
+-&gt; Generic ExternalData
+forall x. Rep ExternalData x -&gt; ExternalData
+forall x. ExternalData -&gt; Rep ExternalData x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. ExternalData -&gt; Rep ExternalData x
+from :: forall x. ExternalData -&gt; Rep ExternalData x
+$cto :: forall x. Rep ExternalData x -&gt; ExternalData
+to :: forall x. Rep ExternalData x -&gt; ExternalData
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-85"></span><span>
+</span><span id="line-86"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680259878"><span id="local-6989586621680259885"><span id="local-6989586621680259888"><span id="local-6989586621680259891"><span id="local-6989586621680259894"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#ExternalData"><span class="hs-identifier hs-type">ExternalData</span></a></span></span></span></span></span></span><span>
+</span><span id="line-87"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680259989"><span id="local-6989586621680259996"><span id="local-6989586621680259999"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#ExternalData"><span class="hs-identifier hs-type">ExternalData</span></a></span></span></span></span><span>
+</span><span id="line-88"></span><span>
+</span><span id="line-89"></span><span class="annot"><span class="hs-comment">-- | Domain entity after transformation</span></span><span>
+</span><span id="line-90"></span><span class="hs-keyword">data</span><span> </span><span id="DomainEntity"><span class="annot"><a href="Integration.Adapter.html#DomainEntity"><span class="hs-identifier hs-var">DomainEntity</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="DomainEntity"><span class="annot"><a href="Integration.Adapter.html#DomainEntity"><span class="hs-identifier hs-var">DomainEntity</span></a></span></span><span>
+</span><span id="line-91"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="deEntityId"><span class="annot"><span class="annottext">DomainEntity -&gt; Text
+</span><a href="Integration.Adapter.html#deEntityId"><span class="hs-identifier hs-var hs-var">deEntityId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-92"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="deEntityType"><span class="annot"><span class="annottext">DomainEntity -&gt; Text
+</span><a href="Integration.Adapter.html#deEntityType"><span class="hs-identifier hs-var hs-var">deEntityType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-93"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="deData"><span class="annot"><span class="annottext">DomainEntity -&gt; Value
+</span><a href="Integration.Adapter.html#deData"><span class="hs-identifier hs-var hs-var">deData</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Value</span></span><span>
+</span><span id="line-94"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680260071"><span id="local-6989586621680260077"><span id="local-6989586621680260081"><span class="annot"><span class="annottext">Int -&gt; DomainEntity -&gt; ShowS
+[DomainEntity] -&gt; ShowS
+DomainEntity -&gt; String
+(Int -&gt; DomainEntity -&gt; ShowS)
+-&gt; (DomainEntity -&gt; String)
+-&gt; ([DomainEntity] -&gt; ShowS)
+-&gt; Show DomainEntity
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DomainEntity -&gt; ShowS
+showsPrec :: Int -&gt; DomainEntity -&gt; ShowS
+$cshow :: DomainEntity -&gt; String
+show :: DomainEntity -&gt; String
+$cshowList :: [DomainEntity] -&gt; ShowS
+showList :: [DomainEntity] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680260084"><span id="local-6989586621680260089"><span class="annot"><span class="annottext">DomainEntity -&gt; DomainEntity -&gt; Bool
+(DomainEntity -&gt; DomainEntity -&gt; Bool)
+-&gt; (DomainEntity -&gt; DomainEntity -&gt; Bool) -&gt; Eq DomainEntity
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: DomainEntity -&gt; DomainEntity -&gt; Bool
+== :: DomainEntity -&gt; DomainEntity -&gt; Bool
+$c/= :: DomainEntity -&gt; DomainEntity -&gt; Bool
+/= :: DomainEntity -&gt; DomainEntity -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680260093"><span id="local-6989586621680260095"><span class="annot"><span class="annottext">(forall x. DomainEntity -&gt; Rep DomainEntity x)
+-&gt; (forall x. Rep DomainEntity x -&gt; DomainEntity)
+-&gt; Generic DomainEntity
+forall x. Rep DomainEntity x -&gt; DomainEntity
+forall x. DomainEntity -&gt; Rep DomainEntity x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. DomainEntity -&gt; Rep DomainEntity x
+from :: forall x. DomainEntity -&gt; Rep DomainEntity x
+$cto :: forall x. Rep DomainEntity x -&gt; DomainEntity
+to :: forall x. Rep DomainEntity x -&gt; DomainEntity
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-95"></span><span>
+</span><span id="line-96"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680260098"><span id="local-6989586621680260105"><span id="local-6989586621680260108"><span id="local-6989586621680260111"><span id="local-6989586621680260114"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#DomainEntity"><span class="hs-identifier hs-type">DomainEntity</span></a></span></span></span></span></span></span><span>
+</span><span id="line-97"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680260191"><span id="local-6989586621680260198"><span id="local-6989586621680260201"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#DomainEntity"><span class="hs-identifier hs-type">DomainEntity</span></a></span></span></span></span><span>
+</span><span id="line-98"></span><span>
+</span><span id="line-99"></span><span class="annot"><span class="hs-comment">-- | Result from adapter operation</span></span><span>
+</span><span id="line-100"></span><span class="hs-keyword">data</span><span> </span><span id="AdapterResult"><span class="annot"><a href="Integration.Adapter.html#AdapterResult"><span class="hs-identifier hs-var">AdapterResult</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AdapterResult"><span class="annot"><a href="Integration.Adapter.html#AdapterResult"><span class="hs-identifier hs-var">AdapterResult</span></a></span></span><span>
+</span><span id="line-101"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="arSuccess"><span class="annot"><span class="annottext">AdapterResult -&gt; Bool
+</span><a href="Integration.Adapter.html#arSuccess"><span class="hs-identifier hs-var hs-var">arSuccess</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-102"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="arMessage"><span class="annot"><span class="annottext">AdapterResult -&gt; Text
+</span><a href="Integration.Adapter.html#arMessage"><span class="hs-identifier hs-var hs-var">arMessage</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-103"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="arProcessedCount"><span class="annot"><span class="annottext">AdapterResult -&gt; Int
+</span><a href="Integration.Adapter.html#arProcessedCount"><span class="hs-identifier hs-var hs-var">arProcessedCount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-104"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="arErrors"><span class="annot"><span class="annottext">AdapterResult -&gt; [Text]
+</span><a href="Integration.Adapter.html#arErrors"><span class="hs-identifier hs-var hs-var">arErrors</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-105"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680260263"><span id="local-6989586621680260272"><span id="local-6989586621680260276"><span class="annot"><span class="annottext">Int -&gt; AdapterResult -&gt; ShowS
+[AdapterResult] -&gt; ShowS
+AdapterResult -&gt; String
+(Int -&gt; AdapterResult -&gt; ShowS)
+-&gt; (AdapterResult -&gt; String)
+-&gt; ([AdapterResult] -&gt; ShowS)
+-&gt; Show AdapterResult
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AdapterResult -&gt; ShowS
+showsPrec :: Int -&gt; AdapterResult -&gt; ShowS
+$cshow :: AdapterResult -&gt; String
+show :: AdapterResult -&gt; String
+$cshowList :: [AdapterResult] -&gt; ShowS
+showList :: [AdapterResult] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680260279"><span id="local-6989586621680260287"><span class="annot"><span class="annottext">AdapterResult -&gt; AdapterResult -&gt; Bool
+(AdapterResult -&gt; AdapterResult -&gt; Bool)
+-&gt; (AdapterResult -&gt; AdapterResult -&gt; Bool) -&gt; Eq AdapterResult
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AdapterResult -&gt; AdapterResult -&gt; Bool
+== :: AdapterResult -&gt; AdapterResult -&gt; Bool
+$c/= :: AdapterResult -&gt; AdapterResult -&gt; Bool
+/= :: AdapterResult -&gt; AdapterResult -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680260291"><span id="local-6989586621680260293"><span class="annot"><span class="annottext">(forall x. AdapterResult -&gt; Rep AdapterResult x)
+-&gt; (forall x. Rep AdapterResult x -&gt; AdapterResult)
+-&gt; Generic AdapterResult
+forall x. Rep AdapterResult x -&gt; AdapterResult
+forall x. AdapterResult -&gt; Rep AdapterResult x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. AdapterResult -&gt; Rep AdapterResult x
+from :: forall x. AdapterResult -&gt; Rep AdapterResult x
+$cto :: forall x. Rep AdapterResult x -&gt; AdapterResult
+to :: forall x. Rep AdapterResult x -&gt; AdapterResult
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-106"></span><span>
+</span><span id="line-107"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680260296"><span id="local-6989586621680260303"><span id="local-6989586621680260306"><span id="local-6989586621680260309"><span id="local-6989586621680260312"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#AdapterResult"><span class="hs-identifier hs-type">AdapterResult</span></a></span></span></span></span></span></span><span>
+</span><span id="line-108"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680260412"><span id="local-6989586621680260419"><span id="local-6989586621680260422"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#AdapterResult"><span class="hs-identifier hs-type">AdapterResult</span></a></span></span></span></span><span>
+</span><span id="line-109"></span><span>
+</span><span id="line-110"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-111"></span><span class="hs-comment">-- BANK STATEMENT ADAPTER</span><span>
+</span><span id="line-112"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-113"></span><span>
+</span><span id="line-114"></span><span class="annot"><span class="hs-comment">-- | Bank statement adapter configuration</span></span><span>
+</span><span id="line-115"></span><span class="hs-keyword">data</span><span> </span><span id="BankStatementAdapter"><span class="annot"><a href="Integration.Adapter.html#BankStatementAdapter"><span class="hs-identifier hs-var">BankStatementAdapter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BankStatementAdapter"><span class="annot"><a href="Integration.Adapter.html#BankStatementAdapter"><span class="hs-identifier hs-var">BankStatementAdapter</span></a></span></span><span>
+</span><span id="line-116"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="bsaConfig"><span class="annot"><span class="annottext">BankStatementAdapter -&gt; AdapterConfig
+</span><a href="Integration.Adapter.html#bsaConfig"><span class="hs-identifier hs-var hs-var">bsaConfig</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.Adapter.html#AdapterConfig"><span class="hs-identifier hs-type">AdapterConfig</span></a></span><span>
+</span><span id="line-117"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="bsaFormat"><span class="annot"><span class="annottext">BankStatementAdapter -&gt; Text
+</span><a href="Integration.Adapter.html#bsaFormat"><span class="hs-identifier hs-var hs-var">bsaFormat</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>  </span><span class="hs-comment">-- &quot;OFX&quot; or &quot;ISO20022&quot;</span><span>
+</span><span id="line-118"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680260496"><span id="local-6989586621680260501"><span id="local-6989586621680260505"><span class="annot"><span class="annottext">Int -&gt; BankStatementAdapter -&gt; ShowS
+[BankStatementAdapter] -&gt; ShowS
+BankStatementAdapter -&gt; String
+(Int -&gt; BankStatementAdapter -&gt; ShowS)
+-&gt; (BankStatementAdapter -&gt; String)
+-&gt; ([BankStatementAdapter] -&gt; ShowS)
+-&gt; Show BankStatementAdapter
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BankStatementAdapter -&gt; ShowS
+showsPrec :: Int -&gt; BankStatementAdapter -&gt; ShowS
+$cshow :: BankStatementAdapter -&gt; String
+show :: BankStatementAdapter -&gt; String
+$cshowList :: [BankStatementAdapter] -&gt; ShowS
+showList :: [BankStatementAdapter] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680260508"><span id="local-6989586621680260512"><span class="annot"><span class="annottext">BankStatementAdapter -&gt; BankStatementAdapter -&gt; Bool
+(BankStatementAdapter -&gt; BankStatementAdapter -&gt; Bool)
+-&gt; (BankStatementAdapter -&gt; BankStatementAdapter -&gt; Bool)
+-&gt; Eq BankStatementAdapter
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BankStatementAdapter -&gt; BankStatementAdapter -&gt; Bool
+== :: BankStatementAdapter -&gt; BankStatementAdapter -&gt; Bool
+$c/= :: BankStatementAdapter -&gt; BankStatementAdapter -&gt; Bool
+/= :: BankStatementAdapter -&gt; BankStatementAdapter -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680260516"><span id="local-6989586621680260518"><span class="annot"><span class="annottext">(forall x. BankStatementAdapter -&gt; Rep BankStatementAdapter x)
+-&gt; (forall x. Rep BankStatementAdapter x -&gt; BankStatementAdapter)
+-&gt; Generic BankStatementAdapter
+forall x. Rep BankStatementAdapter x -&gt; BankStatementAdapter
+forall x. BankStatementAdapter -&gt; Rep BankStatementAdapter x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. BankStatementAdapter -&gt; Rep BankStatementAdapter x
+from :: forall x. BankStatementAdapter -&gt; Rep BankStatementAdapter x
+$cto :: forall x. Rep BankStatementAdapter x -&gt; BankStatementAdapter
+to :: forall x. Rep BankStatementAdapter x -&gt; BankStatementAdapter
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-119"></span><span>
+</span><span id="line-120"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680260521"><span id="local-6989586621680260528"><span id="local-6989586621680260531"><span id="local-6989586621680260534"><span id="local-6989586621680260537"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#BankStatementAdapter"><span class="hs-identifier hs-type">BankStatementAdapter</span></a></span></span></span></span></span></span><span>
+</span><span id="line-121"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680260601"><span id="local-6989586621680260608"><span id="local-6989586621680260611"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#BankStatementAdapter"><span class="hs-identifier hs-type">BankStatementAdapter</span></a></span></span></span></span><span>
+</span><span id="line-122"></span><span>
+</span><span id="line-123"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Integration.Adapter.html#IntegrationAdapter"><span class="hs-identifier hs-type">IntegrationAdapter</span></a></span><span> </span><span class="annot"><a href="Integration.Adapter.html#BankStatementAdapter"><span class="hs-identifier hs-type">BankStatementAdapter</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-124"></span><span>  </span><span id="local-6989586621680260673"><span class="annot"><span class="annottext">connect :: BankStatementAdapter -&gt; IO (Either Text Connection)
+</span><a href="Integration.Adapter.html#connect"><span class="hs-identifier hs-var hs-var hs-var">connect</span></a></span></span><span> </span><span id="local-6989586621680260674"><span class="annot"><span class="annottext">BankStatementAdapter
+</span><a href="#local-6989586621680260674"><span class="hs-identifier hs-var">adapter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-125"></span><span>    </span><span class="hs-comment">-- Bank statement adapters don't require live connections</span><span>
+</span><span id="line-126"></span><span>    </span><span class="hs-comment">-- Connection is virtual for consistency with adapter pattern</span><span>
+</span><span id="line-127"></span><span>    </span><span id="local-6989586621680260675"><span class="annot"><a href="#local-6989586621680260675"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO UTCTime
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.POSIX.html#getCurrentTime"><span class="hs-identifier hs-var">getCurrentTime</span></a></span><span>
+</span><span id="line-128"></span><span>    </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-type">return</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-type">$</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Right"><span class="hs-identifier hs-type">Right</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-type">$</span></a></span><span> </span><span class="annot"><a href="Integration.Adapter.html#Connection"><span class="hs-identifier hs-type">Connection</span></a></span><span>
+</span><span id="line-129"></span><span>      </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Integration.Adapter.html#connId"><span class="hs-identifier hs-var">connId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-string">&quot;virtual-&quot;</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-type">&lt;&gt;</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#pack"><span class="hs-identifier hs-type">T.pack</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#show"><span class="hs-identifier hs-type">show</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Integration.Adapter.html#acTenantId"><span class="hs-identifier hs-var">acTenantId</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Integration.Adapter.html#bsaConfig"><span class="hs-identifier hs-var">bsaConfig</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680260674"><span class="hs-identifier hs-type">adapter</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-130"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.Adapter.html#connEstablishedAt"><span class="hs-identifier hs-var">connEstablishedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621680260675"><span class="hs-identifier hs-type">now</span></a></span><span>
+</span><span id="line-131"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.Adapter.html#connAdapterType"><span class="hs-identifier hs-var">connAdapterType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-string">&quot;BankStatement&quot;</span></span><span>
+</span><span id="line-132"></span><span>      </span><span class="hs-special">}</span><span>
+</span><span id="line-133"></span><span>  </span><span>
+</span><span id="line-134"></span><span>  </span><span id="local-6989586621680260680"><span class="annot"><span class="annottext">fetch :: Connection
+-&gt; BankStatementAdapter -&gt; IO (Either Text [ExternalData])
+</span><a href="Integration.Adapter.html#fetch"><span class="hs-identifier hs-var hs-var hs-var">fetch</span></a></span></span><span> </span><span id="local-6989586621680260681"><span class="annot"><span class="annottext">Connection
+</span><a href="#local-6989586621680260681"><span class="hs-identifier hs-var">_conn</span></a></span></span><span> </span><span id="local-6989586621680260682"><span class="annot"><span class="annottext">BankStatementAdapter
+</span><a href="#local-6989586621680260682"><span class="hs-identifier hs-var">adapter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-135"></span><span>    </span><span class="hs-comment">-- Bank statement data is uploaded via API, not fetched</span><span>
+</span><span id="line-136"></span><span>    </span><span class="hs-comment">-- This is a placeholder for future direct bank API integration</span><span>
+</span><span id="line-137"></span><span>    </span><span class="annot"><span class="annottext">Either Text [ExternalData] -&gt; IO (Either Text [ExternalData])
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(Either Text [ExternalData] -&gt; IO (Either Text [ExternalData]))
+-&gt; Either Text [ExternalData] -&gt; IO (Either Text [ExternalData])
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text [ExternalData]
+forall a b. a -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Left"><span class="hs-identifier hs-var">Left</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Bank statement data must be uploaded via API&quot;</span></span><span>
+</span><span id="line-138"></span><span>  </span><span>
+</span><span id="line-139"></span><span>  </span><span id="local-6989586621680260683"><span class="annot"><span class="annottext">transform :: BankStatementAdapter -&gt; [ExternalData] -&gt; [DomainEntity]
+</span><a href="Integration.Adapter.html#transform"><span class="hs-identifier hs-var hs-var hs-var">transform</span></a></span></span><span> </span><span id="local-6989586621680260684"><span class="annot"><span class="annottext">BankStatementAdapter
+</span><a href="#local-6989586621680260684"><span class="hs-identifier hs-var">adapter</span></a></span></span><span> </span><span id="local-6989586621680260685"><span class="annot"><span class="annottext">[ExternalData]
+</span><a href="#local-6989586621680260685"><span class="hs-identifier hs-var">externalData</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-140"></span><span>    </span><span class="hs-comment">-- Transform external data to domain entities</span><span>
+</span><span id="line-141"></span><span>    </span><span class="annot"><span class="annottext">(ExternalData -&gt; DomainEntity) -&gt; [ExternalData] -&gt; [DomainEntity]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#map"><span class="hs-identifier hs-var">map</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BankStatementAdapter -&gt; ExternalData -&gt; DomainEntity
+</span><a href="Integration.Adapter.html#toDomainEntity"><span class="hs-identifier hs-var">toDomainEntity</span></a></span><span> </span><span class="annot"><span class="annottext">BankStatementAdapter
+</span><a href="#local-6989586621680260684"><span class="hs-identifier hs-var">adapter</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[ExternalData]
+</span><a href="#local-6989586621680260685"><span class="hs-identifier hs-var">externalData</span></a></span><span>
+</span><span id="line-142"></span><span>  </span><span>
+</span><span id="line-143"></span><span>  </span><span id="local-6989586621680260692"><span class="annot"><span class="annottext">persist :: ConnectionPool -&gt; [DomainEntity] -&gt; IO (Either Text ())
+</span><a href="Integration.Adapter.html#persist"><span class="hs-identifier hs-var hs-var hs-var">persist</span></a></span></span><span> </span><span id="local-6989586621680260693"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680260693"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680260694"><span class="annot"><span class="annottext">[DomainEntity]
+</span><a href="#local-6989586621680260694"><span class="hs-identifier hs-var">entities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-144"></span><span>    </span><span class="hs-comment">-- Persist domain entities to database</span><span>
+</span><span id="line-145"></span><span>    </span><span class="annot"><span class="annottext">(DomainEntity -&gt; IO ()) -&gt; [DomainEntity] -&gt; IO ()
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#mapM_"><span class="hs-identifier hs-var">mapM_</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ConnectionPool -&gt; DomainEntity -&gt; IO ()
+</span><a href="Integration.Adapter.html#persistEntity"><span class="hs-identifier hs-var">persistEntity</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680260693"><span class="hs-identifier hs-var">pool</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[DomainEntity]
+</span><a href="#local-6989586621680260694"><span class="hs-identifier hs-var">entities</span></a></span><span>
+</span><span id="line-146"></span><span>    </span><span class="annot"><span class="annottext">Either Text () -&gt; IO (Either Text ())
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(Either Text () -&gt; IO (Either Text ()))
+-&gt; Either Text () -&gt; IO (Either Text ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">() -&gt; Either Text ()
+forall a b. b -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-147"></span><span>  </span><span>
+</span><span id="line-148"></span><span>  </span><span id="local-6989586621680260698"><span class="annot"><span class="annottext">adapterType :: BankStatementAdapter -&gt; Text
+</span><a href="Integration.Adapter.html#adapterType"><span class="hs-identifier hs-var hs-var hs-var">adapterType</span></a></span></span><span> </span><span class="annot"><span class="annottext">BankStatementAdapter
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;BankStatement&quot;</span></span><span>
+</span><span id="line-149"></span><span>
+</span><span id="line-150"></span><span class="annot"><span class="hs-comment">-- | Create bank statement adapter from config</span></span><span>
+</span><span id="line-151"></span><span class="annot"><a href="Integration.Adapter.html#createBankStatementAdapter"><span class="hs-identifier hs-type">createBankStatementAdapter</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.Adapter.html#AdapterConfig"><span class="hs-identifier hs-type">AdapterConfig</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Integration.Adapter.html#BankStatementAdapter"><span class="hs-identifier hs-type">BankStatementAdapter</span></a></span><span>
+</span><span id="line-152"></span><span id="createBankStatementAdapter"><span class="annot"><span class="annottext">createBankStatementAdapter :: AdapterConfig -&gt; Text -&gt; BankStatementAdapter
+</span><a href="Integration.Adapter.html#createBankStatementAdapter"><span class="hs-identifier hs-var hs-var">createBankStatementAdapter</span></a></span></span><span> </span><span id="local-6989586621680260699"><span class="annot"><span class="annottext">AdapterConfig
+</span><a href="#local-6989586621680260699"><span class="hs-identifier hs-var">config</span></a></span></span><span> </span><span id="local-6989586621680260700"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680260700"><span class="hs-identifier hs-var">format</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Integration.Adapter.html#BankStatementAdapter"><span class="hs-identifier hs-type">BankStatementAdapter</span></a></span><span>
+</span><span id="line-153"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">bsaConfig :: AdapterConfig
+</span><a href="Integration.Adapter.html#bsaConfig"><span class="hs-identifier hs-var">bsaConfig</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AdapterConfig
+</span><a href="#local-6989586621680260699"><span class="hs-identifier hs-var">config</span></a></span><span>
+</span><span id="line-154"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">bsaFormat :: Text
+</span><a href="Integration.Adapter.html#bsaFormat"><span class="hs-identifier hs-var">bsaFormat</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680260700"><span class="hs-identifier hs-var">format</span></a></span><span>
+</span><span id="line-155"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-156"></span><span>
+</span><span id="line-157"></span><span class="annot"><span class="hs-comment">-- | Transform external data to domain entity for bank statement</span></span><span>
+</span><span id="line-158"></span><span class="annot"><a href="Integration.Adapter.html#toDomainEntity"><span class="hs-identifier hs-type">toDomainEntity</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.Adapter.html#BankStatementAdapter"><span class="hs-identifier hs-type">BankStatementAdapter</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Integration.Adapter.html#ExternalData"><span class="hs-identifier hs-type">ExternalData</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Integration.Adapter.html#DomainEntity"><span class="hs-identifier hs-type">DomainEntity</span></a></span><span>
+</span><span id="line-159"></span><span id="toDomainEntity"><span class="annot"><span class="annottext">toDomainEntity :: BankStatementAdapter -&gt; ExternalData -&gt; DomainEntity
+</span><a href="Integration.Adapter.html#toDomainEntity"><span class="hs-identifier hs-var hs-var">toDomainEntity</span></a></span></span><span> </span><span id="local-6989586621680260701"><span class="annot"><span class="annottext">BankStatementAdapter
+</span><a href="#local-6989586621680260701"><span class="hs-identifier hs-var">adapter</span></a></span></span><span> </span><span id="local-6989586621680260702"><span class="annot"><span class="annottext">ExternalData
+</span><a href="#local-6989586621680260702"><span class="hs-identifier hs-var">extData</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Integration.Adapter.html#DomainEntity"><span class="hs-identifier hs-type">DomainEntity</span></a></span><span>
+</span><span id="line-160"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">deEntityId :: Text
+</span><a href="Integration.Adapter.html#deEntityId"><span class="hs-identifier hs-var">deEntityId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ExternalData -&gt; Text
+</span><a href="Integration.Adapter.html#dataId"><span class="hs-identifier hs-var">dataId</span></a></span><span> </span><span class="annot"><span class="annottext">ExternalData
+</span><a href="#local-6989586621680260702"><span class="hs-identifier hs-var">extData</span></a></span><span>
+</span><span id="line-161"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">deEntityType :: Text
+</span><a href="Integration.Adapter.html#deEntityType"><span class="hs-identifier hs-var">deEntityType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;BankTransaction&quot;</span></span><span>
+</span><span id="line-162"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">deData :: Value
+</span><a href="Integration.Adapter.html#deData"><span class="hs-identifier hs-var">deData</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ExternalData -&gt; Value
+</span><a href="Integration.Adapter.html#dataContent"><span class="hs-identifier hs-var">dataContent</span></a></span><span> </span><span class="annot"><span class="annottext">ExternalData
+</span><a href="#local-6989586621680260702"><span class="hs-identifier hs-var">extData</span></a></span><span>
+</span><span id="line-163"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-164"></span><span>
+</span><span id="line-165"></span><span class="annot"><span class="hs-comment">-- | Persist domain entity to database</span></span><span>
+</span><span id="line-166"></span><span class="annot"><a href="Integration.Adapter.html#persistEntity"><span class="hs-identifier hs-type">persistEntity</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/persistent-2.18.1.0-c225fe4f653470ee834bcc3ba9ee45fd5dd6554cf7aed1d631db8484f353399e/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Integration.Adapter.html#DomainEntity"><span class="hs-identifier hs-type">DomainEntity</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-167"></span><span id="persistEntity"><span class="annot"><span class="annottext">persistEntity :: ConnectionPool -&gt; DomainEntity -&gt; IO ()
+</span><a href="Integration.Adapter.html#persistEntity"><span class="hs-identifier hs-var hs-var">persistEntity</span></a></span></span><span> </span><span id="local-6989586621680260703"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680260703"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680260704"><span class="annot"><span class="annottext">DomainEntity
+</span><a href="#local-6989586621680260704"><span class="hs-identifier hs-var">entity</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-168"></span><span>  </span><span class="hs-comment">-- Stub implementation - would persist to appropriate table based on entity type</span><span>
+</span><span id="line-169"></span><span>  </span><span class="annot"><span class="annottext">() -&gt; IO ()
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-170"></span><span>
+</span><span id="line-171"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-172"></span><span class="hs-comment">-- MARKETPLACE ADAPTER</span><span>
+</span><span id="line-173"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-174"></span><span>
+</span><span id="line-175"></span><span class="annot"><span class="hs-comment">-- | Marketplace adapter configuration</span></span><span>
+</span><span id="line-176"></span><span class="hs-keyword">data</span><span> </span><span id="MarketplaceAdapter"><span class="annot"><a href="Integration.Adapter.html#MarketplaceAdapter"><span class="hs-identifier hs-var">MarketplaceAdapter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MarketplaceAdapter"><span class="annot"><a href="Integration.Adapter.html#MarketplaceAdapter"><span class="hs-identifier hs-var">MarketplaceAdapter</span></a></span></span><span>
+</span><span id="line-177"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="mpaConfig"><span class="annot"><span class="annottext">MarketplaceAdapter -&gt; AdapterConfig
+</span><a href="Integration.Adapter.html#mpaConfig"><span class="hs-identifier hs-var hs-var">mpaConfig</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.Adapter.html#AdapterConfig"><span class="hs-identifier hs-type">AdapterConfig</span></a></span><span>
+</span><span id="line-178"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="mpaMarketplaceType"><span class="annot"><span class="annottext">MarketplaceAdapter -&gt; Text
+</span><a href="Integration.Adapter.html#mpaMarketplaceType"><span class="hs-identifier hs-var hs-var">mpaMarketplaceType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>  </span><span class="hs-comment">-- &quot;Amazon&quot;, &quot;eBay&quot;, etc.</span><span>
+</span><span id="line-179"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="mpaApiEndpoint"><span class="annot"><span class="annottext">MarketplaceAdapter -&gt; Text
+</span><a href="Integration.Adapter.html#mpaApiEndpoint"><span class="hs-identifier hs-var hs-var">mpaApiEndpoint</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-180"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680260710"><span id="local-6989586621680260716"><span id="local-6989586621680260720"><span class="annot"><span class="annottext">Int -&gt; MarketplaceAdapter -&gt; ShowS
+[MarketplaceAdapter] -&gt; ShowS
+MarketplaceAdapter -&gt; String
+(Int -&gt; MarketplaceAdapter -&gt; ShowS)
+-&gt; (MarketplaceAdapter -&gt; String)
+-&gt; ([MarketplaceAdapter] -&gt; ShowS)
+-&gt; Show MarketplaceAdapter
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; MarketplaceAdapter -&gt; ShowS
+showsPrec :: Int -&gt; MarketplaceAdapter -&gt; ShowS
+$cshow :: MarketplaceAdapter -&gt; String
+show :: MarketplaceAdapter -&gt; String
+$cshowList :: [MarketplaceAdapter] -&gt; ShowS
+showList :: [MarketplaceAdapter] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680260723"><span id="local-6989586621680260728"><span class="annot"><span class="annottext">MarketplaceAdapter -&gt; MarketplaceAdapter -&gt; Bool
+(MarketplaceAdapter -&gt; MarketplaceAdapter -&gt; Bool)
+-&gt; (MarketplaceAdapter -&gt; MarketplaceAdapter -&gt; Bool)
+-&gt; Eq MarketplaceAdapter
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: MarketplaceAdapter -&gt; MarketplaceAdapter -&gt; Bool
+== :: MarketplaceAdapter -&gt; MarketplaceAdapter -&gt; Bool
+$c/= :: MarketplaceAdapter -&gt; MarketplaceAdapter -&gt; Bool
+/= :: MarketplaceAdapter -&gt; MarketplaceAdapter -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680260732"><span id="local-6989586621680260734"><span class="annot"><span class="annottext">(forall x. MarketplaceAdapter -&gt; Rep MarketplaceAdapter x)
+-&gt; (forall x. Rep MarketplaceAdapter x -&gt; MarketplaceAdapter)
+-&gt; Generic MarketplaceAdapter
+forall x. Rep MarketplaceAdapter x -&gt; MarketplaceAdapter
+forall x. MarketplaceAdapter -&gt; Rep MarketplaceAdapter x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. MarketplaceAdapter -&gt; Rep MarketplaceAdapter x
+from :: forall x. MarketplaceAdapter -&gt; Rep MarketplaceAdapter x
+$cto :: forall x. Rep MarketplaceAdapter x -&gt; MarketplaceAdapter
+to :: forall x. Rep MarketplaceAdapter x -&gt; MarketplaceAdapter
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-181"></span><span>
+</span><span id="line-182"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680260737"><span id="local-6989586621680260744"><span id="local-6989586621680260747"><span id="local-6989586621680260750"><span id="local-6989586621680260753"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#MarketplaceAdapter"><span class="hs-identifier hs-type">MarketplaceAdapter</span></a></span></span></span></span></span></span><span>
+</span><span id="line-183"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680260830"><span id="local-6989586621680260837"><span id="local-6989586621680260840"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#MarketplaceAdapter"><span class="hs-identifier hs-type">MarketplaceAdapter</span></a></span></span></span></span><span>
+</span><span id="line-184"></span><span>
+</span><span id="line-185"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Integration.Adapter.html#IntegrationAdapter"><span class="hs-identifier hs-type">IntegrationAdapter</span></a></span><span> </span><span class="annot"><a href="Integration.Adapter.html#MarketplaceAdapter"><span class="hs-identifier hs-type">MarketplaceAdapter</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-186"></span><span>  </span><span id="local-6989586621680260908"><span class="annot"><span class="annottext">connect :: MarketplaceAdapter -&gt; IO (Either Text Connection)
+</span><a href="Integration.Adapter.html#connect"><span class="hs-identifier hs-var hs-var hs-var">connect</span></a></span></span><span> </span><span id="local-6989586621680260909"><span class="annot"><span class="annottext">MarketplaceAdapter
+</span><a href="#local-6989586621680260909"><span class="hs-identifier hs-var">adapter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-187"></span><span>    </span><span class="hs-comment">-- Connect to marketplace API using credentials</span><span>
+</span><span id="line-188"></span><span>    </span><span id="local-6989586621680260910"><span class="annot"><a href="#local-6989586621680260910"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO UTCTime
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.POSIX.html#getCurrentTime"><span class="hs-identifier hs-var">getCurrentTime</span></a></span><span>
+</span><span id="line-189"></span><span>    </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-type">return</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-type">$</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Right"><span class="hs-identifier hs-type">Right</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-type">$</span></a></span><span> </span><span class="annot"><a href="Integration.Adapter.html#Connection"><span class="hs-identifier hs-type">Connection</span></a></span><span>
+</span><span id="line-190"></span><span>      </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Integration.Adapter.html#connId"><span class="hs-identifier hs-var">connId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-string">&quot;marketplace-&quot;</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-type">&lt;&gt;</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#pack"><span class="hs-identifier hs-type">T.pack</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#show"><span class="hs-identifier hs-type">show</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Integration.Adapter.html#acTenantId"><span class="hs-identifier hs-var">acTenantId</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Integration.Adapter.html#mpaConfig"><span class="hs-identifier hs-var">mpaConfig</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680260909"><span class="hs-identifier hs-type">adapter</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-191"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.Adapter.html#connEstablishedAt"><span class="hs-identifier hs-var">connEstablishedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621680260910"><span class="hs-identifier hs-type">now</span></a></span><span>
+</span><span id="line-192"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.Adapter.html#connAdapterType"><span class="hs-identifier hs-var">connAdapterType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-string">&quot;Marketplace&quot;</span></span><span>
+</span><span id="line-193"></span><span>      </span><span class="hs-special">}</span><span>
+</span><span id="line-194"></span><span>  </span><span>
+</span><span id="line-195"></span><span>  </span><span id="local-6989586621680260912"><span class="annot"><span class="annottext">fetch :: Connection -&gt; MarketplaceAdapter -&gt; IO (Either Text [ExternalData])
+</span><a href="Integration.Adapter.html#fetch"><span class="hs-identifier hs-var hs-var hs-var">fetch</span></a></span></span><span> </span><span id="local-6989586621680260913"><span class="annot"><span class="annottext">Connection
+</span><a href="#local-6989586621680260913"><span class="hs-identifier hs-var">conn</span></a></span></span><span> </span><span id="local-6989586621680260914"><span class="annot"><span class="annottext">MarketplaceAdapter
+</span><a href="#local-6989586621680260914"><span class="hs-identifier hs-var">adapter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-196"></span><span>    </span><span class="hs-comment">-- Fetch orders/products from marketplace API</span><span>
+</span><span id="line-197"></span><span>    </span><span class="hs-comment">-- Placeholder for actual API integration</span><span>
+</span><span id="line-198"></span><span>    </span><span class="annot"><span class="annottext">Either Text [ExternalData] -&gt; IO (Either Text [ExternalData])
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(Either Text [ExternalData] -&gt; IO (Either Text [ExternalData]))
+-&gt; Either Text [ExternalData] -&gt; IO (Either Text [ExternalData])
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[ExternalData] -&gt; Either Text [ExternalData]
+forall a b. b -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-199"></span><span>  </span><span>
+</span><span id="line-200"></span><span>  </span><span id="local-6989586621680260915"><span class="annot"><span class="annottext">transform :: MarketplaceAdapter -&gt; [ExternalData] -&gt; [DomainEntity]
+</span><a href="Integration.Adapter.html#transform"><span class="hs-identifier hs-var hs-var hs-var">transform</span></a></span></span><span> </span><span id="local-6989586621680260916"><span class="annot"><span class="annottext">MarketplaceAdapter
+</span><a href="#local-6989586621680260916"><span class="hs-identifier hs-var">adapter</span></a></span></span><span> </span><span id="local-6989586621680260917"><span class="annot"><span class="annottext">[ExternalData]
+</span><a href="#local-6989586621680260917"><span class="hs-identifier hs-var">externalData</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-201"></span><span>    </span><span class="hs-comment">-- Transform marketplace data to domain entities</span><span>
+</span><span id="line-202"></span><span>    </span><span class="annot"><span class="annottext">(ExternalData -&gt; DomainEntity) -&gt; [ExternalData] -&gt; [DomainEntity]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#map"><span class="hs-identifier hs-var">map</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">MarketplaceAdapter -&gt; ExternalData -&gt; DomainEntity
+</span><a href="Integration.Adapter.html#toMarketplaceEntity"><span class="hs-identifier hs-var">toMarketplaceEntity</span></a></span><span> </span><span class="annot"><span class="annottext">MarketplaceAdapter
+</span><a href="#local-6989586621680260916"><span class="hs-identifier hs-var">adapter</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[ExternalData]
+</span><a href="#local-6989586621680260917"><span class="hs-identifier hs-var">externalData</span></a></span><span>
+</span><span id="line-203"></span><span>  </span><span>
+</span><span id="line-204"></span><span>  </span><span id="local-6989586621680260923"><span class="annot"><span class="annottext">persist :: ConnectionPool -&gt; [DomainEntity] -&gt; IO (Either Text ())
+</span><a href="Integration.Adapter.html#persist"><span class="hs-identifier hs-var hs-var hs-var">persist</span></a></span></span><span> </span><span id="local-6989586621680260924"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680260924"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680260925"><span class="annot"><span class="annottext">[DomainEntity]
+</span><a href="#local-6989586621680260925"><span class="hs-identifier hs-var">entities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-205"></span><span>    </span><span class="hs-comment">-- Persist marketplace entities to database</span><span>
+</span><span id="line-206"></span><span>    </span><span class="annot"><span class="annottext">(DomainEntity -&gt; IO ()) -&gt; [DomainEntity] -&gt; IO ()
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#mapM_"><span class="hs-identifier hs-var">mapM_</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ConnectionPool -&gt; DomainEntity -&gt; IO ()
+</span><a href="Integration.Adapter.html#persistEntity"><span class="hs-identifier hs-var">persistEntity</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680260924"><span class="hs-identifier hs-var">pool</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[DomainEntity]
+</span><a href="#local-6989586621680260925"><span class="hs-identifier hs-var">entities</span></a></span><span>
+</span><span id="line-207"></span><span>    </span><span class="annot"><span class="annottext">Either Text () -&gt; IO (Either Text ())
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(Either Text () -&gt; IO (Either Text ()))
+-&gt; Either Text () -&gt; IO (Either Text ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">() -&gt; Either Text ()
+forall a b. b -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-208"></span><span>  </span><span>
+</span><span id="line-209"></span><span>  </span><span id="local-6989586621680260927"><span class="annot"><span class="annottext">adapterType :: MarketplaceAdapter -&gt; Text
+</span><a href="Integration.Adapter.html#adapterType"><span class="hs-identifier hs-var hs-var hs-var">adapterType</span></a></span></span><span> </span><span class="annot"><span class="annottext">MarketplaceAdapter
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Marketplace&quot;</span></span><span>
+</span><span id="line-210"></span><span>
+</span><span id="line-211"></span><span class="annot"><span class="hs-comment">-- | Create marketplace adapter from config</span></span><span>
+</span><span id="line-212"></span><span class="annot"><a href="Integration.Adapter.html#createMarketplaceAdapter"><span class="hs-identifier hs-type">createMarketplaceAdapter</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.Adapter.html#AdapterConfig"><span class="hs-identifier hs-type">AdapterConfig</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Integration.Adapter.html#MarketplaceAdapter"><span class="hs-identifier hs-type">MarketplaceAdapter</span></a></span><span>
+</span><span id="line-213"></span><span id="createMarketplaceAdapter"><span class="annot"><span class="annottext">createMarketplaceAdapter :: AdapterConfig -&gt; Text -&gt; Text -&gt; MarketplaceAdapter
+</span><a href="Integration.Adapter.html#createMarketplaceAdapter"><span class="hs-identifier hs-var hs-var">createMarketplaceAdapter</span></a></span></span><span> </span><span id="local-6989586621680260928"><span class="annot"><span class="annottext">AdapterConfig
+</span><a href="#local-6989586621680260928"><span class="hs-identifier hs-var">config</span></a></span></span><span> </span><span id="local-6989586621680260929"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680260929"><span class="hs-identifier hs-var">marketplaceType</span></a></span></span><span> </span><span id="local-6989586621680260930"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680260930"><span class="hs-identifier hs-var">apiEndpoint</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Integration.Adapter.html#MarketplaceAdapter"><span class="hs-identifier hs-type">MarketplaceAdapter</span></a></span><span>
+</span><span id="line-214"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">mpaConfig :: AdapterConfig
+</span><a href="Integration.Adapter.html#mpaConfig"><span class="hs-identifier hs-var">mpaConfig</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AdapterConfig
+</span><a href="#local-6989586621680260928"><span class="hs-identifier hs-var">config</span></a></span><span>
+</span><span id="line-215"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">mpaMarketplaceType :: Text
+</span><a href="Integration.Adapter.html#mpaMarketplaceType"><span class="hs-identifier hs-var">mpaMarketplaceType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680260929"><span class="hs-identifier hs-var">marketplaceType</span></a></span><span>
+</span><span id="line-216"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">mpaApiEndpoint :: Text
+</span><a href="Integration.Adapter.html#mpaApiEndpoint"><span class="hs-identifier hs-var">mpaApiEndpoint</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680260930"><span class="hs-identifier hs-var">apiEndpoint</span></a></span><span>
+</span><span id="line-217"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-218"></span><span>
+</span><span id="line-219"></span><span class="annot"><span class="hs-comment">-- | Transform marketplace data to domain entity</span></span><span>
+</span><span id="line-220"></span><span class="annot"><a href="Integration.Adapter.html#toMarketplaceEntity"><span class="hs-identifier hs-type">toMarketplaceEntity</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.Adapter.html#MarketplaceAdapter"><span class="hs-identifier hs-type">MarketplaceAdapter</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Integration.Adapter.html#ExternalData"><span class="hs-identifier hs-type">ExternalData</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Integration.Adapter.html#DomainEntity"><span class="hs-identifier hs-type">DomainEntity</span></a></span><span>
+</span><span id="line-221"></span><span id="toMarketplaceEntity"><span class="annot"><span class="annottext">toMarketplaceEntity :: MarketplaceAdapter -&gt; ExternalData -&gt; DomainEntity
+</span><a href="Integration.Adapter.html#toMarketplaceEntity"><span class="hs-identifier hs-var hs-var">toMarketplaceEntity</span></a></span></span><span> </span><span id="local-6989586621680260931"><span class="annot"><span class="annottext">MarketplaceAdapter
+</span><a href="#local-6989586621680260931"><span class="hs-identifier hs-var">adapter</span></a></span></span><span> </span><span id="local-6989586621680260932"><span class="annot"><span class="annottext">ExternalData
+</span><a href="#local-6989586621680260932"><span class="hs-identifier hs-var">extData</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Integration.Adapter.html#DomainEntity"><span class="hs-identifier hs-type">DomainEntity</span></a></span><span>
+</span><span id="line-222"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">deEntityId :: Text
+</span><a href="Integration.Adapter.html#deEntityId"><span class="hs-identifier hs-var">deEntityId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ExternalData -&gt; Text
+</span><a href="Integration.Adapter.html#dataId"><span class="hs-identifier hs-var">dataId</span></a></span><span> </span><span class="annot"><span class="annottext">ExternalData
+</span><a href="#local-6989586621680260932"><span class="hs-identifier hs-var">extData</span></a></span><span>
+</span><span id="line-223"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">deEntityType :: Text
+</span><a href="Integration.Adapter.html#deEntityType"><span class="hs-identifier hs-var">deEntityType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;MarketplaceOrder&quot;</span></span><span>
+</span><span id="line-224"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">deData :: Value
+</span><a href="Integration.Adapter.html#deData"><span class="hs-identifier hs-var">deData</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ExternalData -&gt; Value
+</span><a href="Integration.Adapter.html#dataContent"><span class="hs-identifier hs-var">dataContent</span></a></span><span> </span><span class="annot"><span class="annottext">ExternalData
+</span><a href="#local-6989586621680260932"><span class="hs-identifier hs-var">extData</span></a></span><span>
+</span><span id="line-225"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-226"></span><span>
+</span><span id="line-227"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-228"></span><span class="hs-comment">-- PAYMENT GATEWAY ADAPTER</span><span>
+</span><span id="line-229"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-230"></span><span>
+</span><span id="line-231"></span><span class="annot"><span class="hs-comment">-- | Payment gateway adapter configuration</span></span><span>
+</span><span id="line-232"></span><span class="hs-keyword">data</span><span> </span><span id="PaymentGatewayAdapter"><span class="annot"><a href="Integration.Adapter.html#PaymentGatewayAdapter"><span class="hs-identifier hs-var">PaymentGatewayAdapter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PaymentGatewayAdapter"><span class="annot"><a href="Integration.Adapter.html#PaymentGatewayAdapter"><span class="hs-identifier hs-var">PaymentGatewayAdapter</span></a></span></span><span>
+</span><span id="line-233"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="pgaConfig"><span class="annot"><span class="annottext">PaymentGatewayAdapter -&gt; AdapterConfig
+</span><a href="Integration.Adapter.html#pgaConfig"><span class="hs-identifier hs-var hs-var">pgaConfig</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.Adapter.html#AdapterConfig"><span class="hs-identifier hs-type">AdapterConfig</span></a></span><span>
+</span><span id="line-234"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="pgaGatewayType"><span class="annot"><span class="annottext">PaymentGatewayAdapter -&gt; Text
+</span><a href="Integration.Adapter.html#pgaGatewayType"><span class="hs-identifier hs-var hs-var">pgaGatewayType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>  </span><span class="hs-comment">-- &quot;Stripe&quot;, &quot;PayPal&quot;, etc.</span><span>
+</span><span id="line-235"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="pgaApiEndpoint"><span class="annot"><span class="annottext">PaymentGatewayAdapter -&gt; Text
+</span><a href="Integration.Adapter.html#pgaApiEndpoint"><span class="hs-identifier hs-var hs-var">pgaApiEndpoint</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-236"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680260938"><span id="local-6989586621680260944"><span id="local-6989586621680260948"><span class="annot"><span class="annottext">Int -&gt; PaymentGatewayAdapter -&gt; ShowS
+[PaymentGatewayAdapter] -&gt; ShowS
+PaymentGatewayAdapter -&gt; String
+(Int -&gt; PaymentGatewayAdapter -&gt; ShowS)
+-&gt; (PaymentGatewayAdapter -&gt; String)
+-&gt; ([PaymentGatewayAdapter] -&gt; ShowS)
+-&gt; Show PaymentGatewayAdapter
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PaymentGatewayAdapter -&gt; ShowS
+showsPrec :: Int -&gt; PaymentGatewayAdapter -&gt; ShowS
+$cshow :: PaymentGatewayAdapter -&gt; String
+show :: PaymentGatewayAdapter -&gt; String
+$cshowList :: [PaymentGatewayAdapter] -&gt; ShowS
+showList :: [PaymentGatewayAdapter] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680260951"><span id="local-6989586621680260956"><span class="annot"><span class="annottext">PaymentGatewayAdapter -&gt; PaymentGatewayAdapter -&gt; Bool
+(PaymentGatewayAdapter -&gt; PaymentGatewayAdapter -&gt; Bool)
+-&gt; (PaymentGatewayAdapter -&gt; PaymentGatewayAdapter -&gt; Bool)
+-&gt; Eq PaymentGatewayAdapter
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PaymentGatewayAdapter -&gt; PaymentGatewayAdapter -&gt; Bool
+== :: PaymentGatewayAdapter -&gt; PaymentGatewayAdapter -&gt; Bool
+$c/= :: PaymentGatewayAdapter -&gt; PaymentGatewayAdapter -&gt; Bool
+/= :: PaymentGatewayAdapter -&gt; PaymentGatewayAdapter -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680260960"><span id="local-6989586621680260962"><span class="annot"><span class="annottext">(forall x. PaymentGatewayAdapter -&gt; Rep PaymentGatewayAdapter x)
+-&gt; (forall x. Rep PaymentGatewayAdapter x -&gt; PaymentGatewayAdapter)
+-&gt; Generic PaymentGatewayAdapter
+forall x. Rep PaymentGatewayAdapter x -&gt; PaymentGatewayAdapter
+forall x. PaymentGatewayAdapter -&gt; Rep PaymentGatewayAdapter x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PaymentGatewayAdapter -&gt; Rep PaymentGatewayAdapter x
+from :: forall x. PaymentGatewayAdapter -&gt; Rep PaymentGatewayAdapter x
+$cto :: forall x. Rep PaymentGatewayAdapter x -&gt; PaymentGatewayAdapter
+to :: forall x. Rep PaymentGatewayAdapter x -&gt; PaymentGatewayAdapter
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-237"></span><span>
+</span><span id="line-238"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680260965"><span id="local-6989586621680260972"><span id="local-6989586621680260975"><span id="local-6989586621680260978"><span id="local-6989586621680260981"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#PaymentGatewayAdapter"><span class="hs-identifier hs-type">PaymentGatewayAdapter</span></a></span></span></span></span></span></span><span>
+</span><span id="line-239"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680261058"><span id="local-6989586621680261065"><span id="local-6989586621680261068"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Integration.Adapter.html#PaymentGatewayAdapter"><span class="hs-identifier hs-type">PaymentGatewayAdapter</span></a></span></span></span></span><span>
+</span><span id="line-240"></span><span>
+</span><span id="line-241"></span><span class="hs-keyword">instance</span><span> </span><span class="annot"><a href="Integration.Adapter.html#IntegrationAdapter"><span class="hs-identifier hs-type">IntegrationAdapter</span></a></span><span> </span><span class="annot"><a href="Integration.Adapter.html#PaymentGatewayAdapter"><span class="hs-identifier hs-type">PaymentGatewayAdapter</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-242"></span><span>  </span><span id="local-6989586621680261136"><span class="annot"><span class="annottext">connect :: PaymentGatewayAdapter -&gt; IO (Either Text Connection)
+</span><a href="Integration.Adapter.html#connect"><span class="hs-identifier hs-var hs-var hs-var">connect</span></a></span></span><span> </span><span id="local-6989586621680261137"><span class="annot"><span class="annottext">PaymentGatewayAdapter
+</span><a href="#local-6989586621680261137"><span class="hs-identifier hs-var">adapter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-243"></span><span>    </span><span class="hs-comment">-- Connect to payment gateway API using credentials</span><span>
+</span><span id="line-244"></span><span>    </span><span id="local-6989586621680261138"><span class="annot"><a href="#local-6989586621680261138"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO UTCTime
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.POSIX.html#getCurrentTime"><span class="hs-identifier hs-var">getCurrentTime</span></a></span><span>
+</span><span id="line-245"></span><span>    </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-type">return</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-type">$</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Right"><span class="hs-identifier hs-type">Right</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-type">$</span></a></span><span> </span><span class="annot"><a href="Integration.Adapter.html#Connection"><span class="hs-identifier hs-type">Connection</span></a></span><span>
+</span><span id="line-246"></span><span>      </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Integration.Adapter.html#connId"><span class="hs-identifier hs-var">connId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-string">&quot;payment-&quot;</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%3C%3E"><span class="hs-operator hs-type">&lt;&gt;</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#pack"><span class="hs-identifier hs-type">T.pack</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#show"><span class="hs-identifier hs-type">show</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Integration.Adapter.html#acTenantId"><span class="hs-identifier hs-var">acTenantId</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Integration.Adapter.html#pgaConfig"><span class="hs-identifier hs-var">pgaConfig</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680261137"><span class="hs-identifier hs-type">adapter</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-247"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.Adapter.html#connEstablishedAt"><span class="hs-identifier hs-var">connEstablishedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621680261138"><span class="hs-identifier hs-type">now</span></a></span><span>
+</span><span id="line-248"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Integration.Adapter.html#connAdapterType"><span class="hs-identifier hs-var">connAdapterType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-string">&quot;PaymentGateway&quot;</span></span><span>
+</span><span id="line-249"></span><span>      </span><span class="hs-special">}</span><span>
+</span><span id="line-250"></span><span>  </span><span>
+</span><span id="line-251"></span><span>  </span><span id="local-6989586621680261140"><span class="annot"><span class="annottext">fetch :: Connection
+-&gt; PaymentGatewayAdapter -&gt; IO (Either Text [ExternalData])
+</span><a href="Integration.Adapter.html#fetch"><span class="hs-identifier hs-var hs-var hs-var">fetch</span></a></span></span><span> </span><span id="local-6989586621680261141"><span class="annot"><span class="annottext">Connection
+</span><a href="#local-6989586621680261141"><span class="hs-identifier hs-var">conn</span></a></span></span><span> </span><span id="local-6989586621680261142"><span class="annot"><span class="annottext">PaymentGatewayAdapter
+</span><a href="#local-6989586621680261142"><span class="hs-identifier hs-var">adapter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-252"></span><span>    </span><span class="hs-comment">-- Fetch transactions from payment gateway API</span><span>
+</span><span id="line-253"></span><span>    </span><span class="hs-comment">-- Placeholder for actual API integration</span><span>
+</span><span id="line-254"></span><span>    </span><span class="annot"><span class="annottext">Either Text [ExternalData] -&gt; IO (Either Text [ExternalData])
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(Either Text [ExternalData] -&gt; IO (Either Text [ExternalData]))
+-&gt; Either Text [ExternalData] -&gt; IO (Either Text [ExternalData])
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">[ExternalData] -&gt; Either Text [ExternalData]
+forall a b. b -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-255"></span><span>  </span><span>
+</span><span id="line-256"></span><span>  </span><span id="local-6989586621680261143"><span class="annot"><span class="annottext">transform :: PaymentGatewayAdapter -&gt; [ExternalData] -&gt; [DomainEntity]
+</span><a href="Integration.Adapter.html#transform"><span class="hs-identifier hs-var hs-var hs-var">transform</span></a></span></span><span> </span><span id="local-6989586621680261144"><span class="annot"><span class="annottext">PaymentGatewayAdapter
+</span><a href="#local-6989586621680261144"><span class="hs-identifier hs-var">adapter</span></a></span></span><span> </span><span id="local-6989586621680261145"><span class="annot"><span class="annottext">[ExternalData]
+</span><a href="#local-6989586621680261145"><span class="hs-identifier hs-var">externalData</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-257"></span><span>    </span><span class="hs-comment">-- Transform payment data to domain entities</span><span>
+</span><span id="line-258"></span><span>    </span><span class="annot"><span class="annottext">(ExternalData -&gt; DomainEntity) -&gt; [ExternalData] -&gt; [DomainEntity]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#map"><span class="hs-identifier hs-var">map</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">PaymentGatewayAdapter -&gt; ExternalData -&gt; DomainEntity
+</span><a href="Integration.Adapter.html#toPaymentEntity"><span class="hs-identifier hs-var">toPaymentEntity</span></a></span><span> </span><span class="annot"><span class="annottext">PaymentGatewayAdapter
+</span><a href="#local-6989586621680261144"><span class="hs-identifier hs-var">adapter</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[ExternalData]
+</span><a href="#local-6989586621680261145"><span class="hs-identifier hs-var">externalData</span></a></span><span>
+</span><span id="line-259"></span><span>  </span><span>
+</span><span id="line-260"></span><span>  </span><span id="local-6989586621680261151"><span class="annot"><span class="annottext">persist :: ConnectionPool -&gt; [DomainEntity] -&gt; IO (Either Text ())
+</span><a href="Integration.Adapter.html#persist"><span class="hs-identifier hs-var hs-var hs-var">persist</span></a></span></span><span> </span><span id="local-6989586621680261152"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680261152"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680261153"><span class="annot"><span class="annottext">[DomainEntity]
+</span><a href="#local-6989586621680261153"><span class="hs-identifier hs-var">entities</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-261"></span><span>    </span><span class="hs-comment">-- Persist payment entities to database</span><span>
+</span><span id="line-262"></span><span>    </span><span class="annot"><span class="annottext">(DomainEntity -&gt; IO ()) -&gt; [DomainEntity] -&gt; IO ()
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Foldable.html#mapM_"><span class="hs-identifier hs-var">mapM_</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ConnectionPool -&gt; DomainEntity -&gt; IO ()
+</span><a href="Integration.Adapter.html#persistEntity"><span class="hs-identifier hs-var">persistEntity</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680261152"><span class="hs-identifier hs-var">pool</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[DomainEntity]
+</span><a href="#local-6989586621680261153"><span class="hs-identifier hs-var">entities</span></a></span><span>
+</span><span id="line-263"></span><span>    </span><span class="annot"><span class="annottext">Either Text () -&gt; IO (Either Text ())
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#return"><span class="hs-identifier hs-var">return</span></a></span><span> </span><span class="annot"><span class="annottext">(Either Text () -&gt; IO (Either Text ()))
+-&gt; Either Text () -&gt; IO (Either Text ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">() -&gt; Either Text ()
+forall a b. b -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-264"></span><span>  </span><span>
+</span><span id="line-265"></span><span>  </span><span id="local-6989586621680261155"><span class="annot"><span class="annottext">adapterType :: PaymentGatewayAdapter -&gt; Text
+</span><a href="Integration.Adapter.html#adapterType"><span class="hs-identifier hs-var hs-var hs-var">adapterType</span></a></span></span><span> </span><span class="annot"><span class="annottext">PaymentGatewayAdapter
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;PaymentGateway&quot;</span></span><span>
+</span><span id="line-266"></span><span>
+</span><span id="line-267"></span><span class="annot"><span class="hs-comment">-- | Create payment gateway adapter from config</span></span><span>
+</span><span id="line-268"></span><span class="annot"><a href="Integration.Adapter.html#createPaymentGatewayAdapter"><span class="hs-identifier hs-type">createPaymentGatewayAdapter</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.Adapter.html#AdapterConfig"><span class="hs-identifier hs-type">AdapterConfig</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Integration.Adapter.html#PaymentGatewayAdapter"><span class="hs-identifier hs-type">PaymentGatewayAdapter</span></a></span><span>
+</span><span id="line-269"></span><span id="createPaymentGatewayAdapter"><span class="annot"><span class="annottext">createPaymentGatewayAdapter :: AdapterConfig -&gt; Text -&gt; Text -&gt; PaymentGatewayAdapter
+</span><a href="Integration.Adapter.html#createPaymentGatewayAdapter"><span class="hs-identifier hs-var hs-var">createPaymentGatewayAdapter</span></a></span></span><span> </span><span id="local-6989586621680261156"><span class="annot"><span class="annottext">AdapterConfig
+</span><a href="#local-6989586621680261156"><span class="hs-identifier hs-var">config</span></a></span></span><span> </span><span id="local-6989586621680261157"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680261157"><span class="hs-identifier hs-var">gatewayType</span></a></span></span><span> </span><span id="local-6989586621680261158"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680261158"><span class="hs-identifier hs-var">apiEndpoint</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Integration.Adapter.html#PaymentGatewayAdapter"><span class="hs-identifier hs-type">PaymentGatewayAdapter</span></a></span><span>
+</span><span id="line-270"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">pgaConfig :: AdapterConfig
+</span><a href="Integration.Adapter.html#pgaConfig"><span class="hs-identifier hs-var">pgaConfig</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AdapterConfig
+</span><a href="#local-6989586621680261156"><span class="hs-identifier hs-var">config</span></a></span><span>
+</span><span id="line-271"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">pgaGatewayType :: Text
+</span><a href="Integration.Adapter.html#pgaGatewayType"><span class="hs-identifier hs-var">pgaGatewayType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680261157"><span class="hs-identifier hs-var">gatewayType</span></a></span><span>
+</span><span id="line-272"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">pgaApiEndpoint :: Text
+</span><a href="Integration.Adapter.html#pgaApiEndpoint"><span class="hs-identifier hs-var">pgaApiEndpoint</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680261158"><span class="hs-identifier hs-var">apiEndpoint</span></a></span><span>
+</span><span id="line-273"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-274"></span><span>
+</span><span id="line-275"></span><span class="annot"><span class="hs-comment">-- | Transform payment data to domain entity</span></span><span>
+</span><span id="line-276"></span><span class="annot"><a href="Integration.Adapter.html#toPaymentEntity"><span class="hs-identifier hs-type">toPaymentEntity</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.Adapter.html#PaymentGatewayAdapter"><span class="hs-identifier hs-type">PaymentGatewayAdapter</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Integration.Adapter.html#ExternalData"><span class="hs-identifier hs-type">ExternalData</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Integration.Adapter.html#DomainEntity"><span class="hs-identifier hs-type">DomainEntity</span></a></span><span>
+</span><span id="line-277"></span><span id="toPaymentEntity"><span class="annot"><span class="annottext">toPaymentEntity :: PaymentGatewayAdapter -&gt; ExternalData -&gt; DomainEntity
+</span><a href="Integration.Adapter.html#toPaymentEntity"><span class="hs-identifier hs-var hs-var">toPaymentEntity</span></a></span></span><span> </span><span id="local-6989586621680261159"><span class="annot"><span class="annottext">PaymentGatewayAdapter
+</span><a href="#local-6989586621680261159"><span class="hs-identifier hs-var">adapter</span></a></span></span><span> </span><span id="local-6989586621680261160"><span class="annot"><span class="annottext">ExternalData
+</span><a href="#local-6989586621680261160"><span class="hs-identifier hs-var">extData</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Integration.Adapter.html#DomainEntity"><span class="hs-identifier hs-type">DomainEntity</span></a></span><span>
+</span><span id="line-278"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">deEntityId :: Text
+</span><a href="Integration.Adapter.html#deEntityId"><span class="hs-identifier hs-var">deEntityId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ExternalData -&gt; Text
+</span><a href="Integration.Adapter.html#dataId"><span class="hs-identifier hs-var">dataId</span></a></span><span> </span><span class="annot"><span class="annottext">ExternalData
+</span><a href="#local-6989586621680261160"><span class="hs-identifier hs-var">extData</span></a></span><span>
+</span><span id="line-279"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">deEntityType :: Text
+</span><a href="Integration.Adapter.html#deEntityType"><span class="hs-identifier hs-var">deEntityType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;PaymentTransaction&quot;</span></span><span>
+</span><span id="line-280"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">deData :: Value
+</span><a href="Integration.Adapter.html#deData"><span class="hs-identifier hs-var">deData</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ExternalData -&gt; Value
+</span><a href="Integration.Adapter.html#dataContent"><span class="hs-identifier hs-var">dataContent</span></a></span><span> </span><span class="annot"><span class="annottext">ExternalData
+</span><a href="#local-6989586621680261160"><span class="hs-identifier hs-var">extData</span></a></span><span>
+</span><span id="line-281"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-282"></span></pre></body></html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Commerce.Procurement.Procurement.html"><span class="hs-identifier">Commerce.Procurement.Procurement</span></a></span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseRequest"><span class="hs-identifier">PurchaseRequest</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>    </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseRequestInput"><span class="hs-identifier">PurchaseRequestInput</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseOrder"><span class="hs-identifier">PurchaseOrder</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseOrderInput"><span class="hs-identifier">PurchaseOrderInput</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#MRPlan"><span class="hs-identifier">MRPlan</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#MRPlanInput"><span class="hs-identifier">MRPlanInput</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">FromJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-comment">-- Purchase Request   (..)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="PurchaseRequest"><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseRequest"><span class="hs-identifier hs-var">PurchaseRequest</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PurchaseRequest"><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseRequest"><span class="hs-identifier hs-var">PurchaseRequest</span></a></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="prId"><span class="annot"><span class="annottext">PurchaseRequest -&gt; Int
+</span><a href="Commerce.Procurement.Procurement.html#prId"><span class="hs-identifier hs-var hs-var">prId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span id="prDate"><span class="annot"><span class="annottext">PurchaseRequest -&gt; Day
+</span><a href="Commerce.Procurement.Procurement.html#prDate"><span class="hs-identifier hs-var hs-var">prDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="prStatus"><span class="annot"><span class="annottext">PurchaseRequest -&gt; Text
+</span><a href="Commerce.Procurement.Procurement.html#prStatus"><span class="hs-identifier hs-var hs-var">prStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680200869"><span id="local-6989586621680200879"><span id="local-6989586621680200883"><span class="annot"><span class="annottext">Int -&gt; PurchaseRequest -&gt; ShowS
+[PurchaseRequest] -&gt; ShowS
+PurchaseRequest -&gt; String
+(Int -&gt; PurchaseRequest -&gt; ShowS)
+-&gt; (PurchaseRequest -&gt; String)
+-&gt; ([PurchaseRequest] -&gt; ShowS)
+-&gt; Show PurchaseRequest
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PurchaseRequest -&gt; ShowS
+showsPrec :: Int -&gt; PurchaseRequest -&gt; ShowS
+$cshow :: PurchaseRequest -&gt; String
+show :: PurchaseRequest -&gt; String
+$cshowList :: [PurchaseRequest] -&gt; ShowS
+showList :: [PurchaseRequest] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680200888"><span id="local-6989586621680200896"><span class="annot"><span class="annottext">PurchaseRequest -&gt; PurchaseRequest -&gt; Bool
+(PurchaseRequest -&gt; PurchaseRequest -&gt; Bool)
+-&gt; (PurchaseRequest -&gt; PurchaseRequest -&gt; Bool)
+-&gt; Eq PurchaseRequest
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PurchaseRequest -&gt; PurchaseRequest -&gt; Bool
+== :: PurchaseRequest -&gt; PurchaseRequest -&gt; Bool
+$c/= :: PurchaseRequest -&gt; PurchaseRequest -&gt; Bool
+/= :: PurchaseRequest -&gt; PurchaseRequest -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680200901"><span id="local-6989586621680200903"><span class="annot"><span class="annottext">(forall x. PurchaseRequest -&gt; Rep PurchaseRequest x)
+-&gt; (forall x. Rep PurchaseRequest x -&gt; PurchaseRequest)
+-&gt; Generic PurchaseRequest
+forall x. Rep PurchaseRequest x -&gt; PurchaseRequest
+forall x. PurchaseRequest -&gt; Rep PurchaseRequest x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PurchaseRequest -&gt; Rep PurchaseRequest x
+from :: forall x. PurchaseRequest -&gt; Rep PurchaseRequest x
+$cto :: forall x. Rep PurchaseRequest x -&gt; PurchaseRequest
+to :: forall x. Rep PurchaseRequest x -&gt; PurchaseRequest
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680200909"><span id="local-6989586621680200916"><span id="local-6989586621680200919"><span id="local-6989586621680200922"><span id="local-6989586621680200925"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseRequest"><span class="hs-identifier hs-type">PurchaseRequest</span></a></span></span></span></span></span></span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680201045"><span id="local-6989586621680201052"><span id="local-6989586621680201055"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseRequest"><span class="hs-identifier hs-type">PurchaseRequest</span></a></span></span></span></span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">data</span><span> </span><span id="PurchaseRequestInput"><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseRequestInput"><span class="hs-identifier hs-var">PurchaseRequestInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PurchaseRequestInput"><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseRequestInput"><span class="hs-identifier hs-var">PurchaseRequestInput</span></a></span></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="priDate"><span class="annot"><span class="annottext">PurchaseRequestInput -&gt; Day
+</span><a href="Commerce.Procurement.Procurement.html#priDate"><span class="hs-identifier hs-var hs-var">priDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-31"></span><span>    </span><span id="priStatus"><span class="annot"><span class="annottext">PurchaseRequestInput -&gt; Text
+</span><a href="Commerce.Procurement.Procurement.html#priStatus"><span class="hs-identifier hs-var hs-var">priStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680201137"><span id="local-6989586621680201142"><span id="local-6989586621680201146"><span class="annot"><span class="annottext">Int -&gt; PurchaseRequestInput -&gt; ShowS
+[PurchaseRequestInput] -&gt; ShowS
+PurchaseRequestInput -&gt; String
+(Int -&gt; PurchaseRequestInput -&gt; ShowS)
+-&gt; (PurchaseRequestInput -&gt; String)
+-&gt; ([PurchaseRequestInput] -&gt; ShowS)
+-&gt; Show PurchaseRequestInput
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PurchaseRequestInput -&gt; ShowS
+showsPrec :: Int -&gt; PurchaseRequestInput -&gt; ShowS
+$cshow :: PurchaseRequestInput -&gt; String
+show :: PurchaseRequestInput -&gt; String
+$cshowList :: [PurchaseRequestInput] -&gt; ShowS
+showList :: [PurchaseRequestInput] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680201149"><span id="local-6989586621680201153"><span class="annot"><span class="annottext">PurchaseRequestInput -&gt; PurchaseRequestInput -&gt; Bool
+(PurchaseRequestInput -&gt; PurchaseRequestInput -&gt; Bool)
+-&gt; (PurchaseRequestInput -&gt; PurchaseRequestInput -&gt; Bool)
+-&gt; Eq PurchaseRequestInput
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PurchaseRequestInput -&gt; PurchaseRequestInput -&gt; Bool
+== :: PurchaseRequestInput -&gt; PurchaseRequestInput -&gt; Bool
+$c/= :: PurchaseRequestInput -&gt; PurchaseRequestInput -&gt; Bool
+/= :: PurchaseRequestInput -&gt; PurchaseRequestInput -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680201157"><span id="local-6989586621680201159"><span class="annot"><span class="annottext">(forall x. PurchaseRequestInput -&gt; Rep PurchaseRequestInput x)
+-&gt; (forall x. Rep PurchaseRequestInput x -&gt; PurchaseRequestInput)
+-&gt; Generic PurchaseRequestInput
+forall x. Rep PurchaseRequestInput x -&gt; PurchaseRequestInput
+forall x. PurchaseRequestInput -&gt; Rep PurchaseRequestInput x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PurchaseRequestInput -&gt; Rep PurchaseRequestInput x
+from :: forall x. PurchaseRequestInput -&gt; Rep PurchaseRequestInput x
+$cto :: forall x. Rep PurchaseRequestInput x -&gt; PurchaseRequestInput
+to :: forall x. Rep PurchaseRequestInput x -&gt; PurchaseRequestInput
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680201162"><span id="local-6989586621680201169"><span id="local-6989586621680201172"><span id="local-6989586621680201175"><span id="local-6989586621680201178"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseRequestInput"><span class="hs-identifier hs-type">PurchaseRequestInput</span></a></span></span></span></span></span></span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680201242"><span id="local-6989586621680201249"><span id="local-6989586621680201252"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseRequestInput"><span class="hs-identifier hs-type">PurchaseRequestInput</span></a></span></span></span></span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="hs-comment">-- Purchase Order   (..)</span><span>
+</span><span id="line-40"></span><span class="hs-keyword">data</span><span> </span><span id="PurchaseOrder"><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseOrder"><span class="hs-identifier hs-var">PurchaseOrder</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PurchaseOrder"><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseOrder"><span class="hs-identifier hs-var">PurchaseOrder</span></a></span></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="poId"><span class="annot"><span class="annottext">PurchaseOrder -&gt; Int
+</span><a href="Commerce.Procurement.Procurement.html#poId"><span class="hs-identifier hs-var hs-var">poId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-42"></span><span>    </span><span id="poNumber"><span class="annot"><span class="annottext">PurchaseOrder -&gt; Text
+</span><a href="Commerce.Procurement.Procurement.html#poNumber"><span class="hs-identifier hs-var hs-var">poNumber</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-43"></span><span>    </span><span id="poDate"><span class="annot"><span class="annottext">PurchaseOrder -&gt; Day
+</span><a href="Commerce.Procurement.Procurement.html#poDate"><span class="hs-identifier hs-var hs-var">poDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-44"></span><span>    </span><span id="poStatus"><span class="annot"><span class="annottext">PurchaseOrder -&gt; Text
+</span><a href="Commerce.Procurement.Procurement.html#poStatus"><span class="hs-identifier hs-var hs-var">poStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680201306"><span id="local-6989586621680201313"><span id="local-6989586621680201317"><span class="annot"><span class="annottext">Int -&gt; PurchaseOrder -&gt; ShowS
+[PurchaseOrder] -&gt; ShowS
+PurchaseOrder -&gt; String
+(Int -&gt; PurchaseOrder -&gt; ShowS)
+-&gt; (PurchaseOrder -&gt; String)
+-&gt; ([PurchaseOrder] -&gt; ShowS)
+-&gt; Show PurchaseOrder
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PurchaseOrder -&gt; ShowS
+showsPrec :: Int -&gt; PurchaseOrder -&gt; ShowS
+$cshow :: PurchaseOrder -&gt; String
+show :: PurchaseOrder -&gt; String
+$cshowList :: [PurchaseOrder] -&gt; ShowS
+showList :: [PurchaseOrder] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680201320"><span id="local-6989586621680201326"><span class="annot"><span class="annottext">PurchaseOrder -&gt; PurchaseOrder -&gt; Bool
+(PurchaseOrder -&gt; PurchaseOrder -&gt; Bool)
+-&gt; (PurchaseOrder -&gt; PurchaseOrder -&gt; Bool) -&gt; Eq PurchaseOrder
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PurchaseOrder -&gt; PurchaseOrder -&gt; Bool
+== :: PurchaseOrder -&gt; PurchaseOrder -&gt; Bool
+$c/= :: PurchaseOrder -&gt; PurchaseOrder -&gt; Bool
+/= :: PurchaseOrder -&gt; PurchaseOrder -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680201330"><span id="local-6989586621680201332"><span class="annot"><span class="annottext">(forall x. PurchaseOrder -&gt; Rep PurchaseOrder x)
+-&gt; (forall x. Rep PurchaseOrder x -&gt; PurchaseOrder)
+-&gt; Generic PurchaseOrder
+forall x. Rep PurchaseOrder x -&gt; PurchaseOrder
+forall x. PurchaseOrder -&gt; Rep PurchaseOrder x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PurchaseOrder -&gt; Rep PurchaseOrder x
+from :: forall x. PurchaseOrder -&gt; Rep PurchaseOrder x
+$cto :: forall x. Rep PurchaseOrder x -&gt; PurchaseOrder
+to :: forall x. Rep PurchaseOrder x -&gt; PurchaseOrder
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680201335"><span id="local-6989586621680201342"><span id="local-6989586621680201345"><span id="local-6989586621680201348"><span id="local-6989586621680201351"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseOrder"><span class="hs-identifier hs-type">PurchaseOrder</span></a></span></span></span></span></span></span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680201446"><span id="local-6989586621680201453"><span id="local-6989586621680201456"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseOrder"><span class="hs-identifier hs-type">PurchaseOrder</span></a></span></span></span></span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="hs-keyword">data</span><span> </span><span id="PurchaseOrderInput"><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseOrderInput"><span class="hs-identifier hs-var">PurchaseOrderInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PurchaseOrderInput"><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseOrderInput"><span class="hs-identifier hs-var">PurchaseOrderInput</span></a></span></span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="poiNumber"><span class="annot"><span class="annottext">PurchaseOrderInput -&gt; Text
+</span><a href="Commerce.Procurement.Procurement.html#poiNumber"><span class="hs-identifier hs-var hs-var">poiNumber</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-54"></span><span>    </span><span id="poiDate"><span class="annot"><span class="annottext">PurchaseOrderInput -&gt; Day
+</span><a href="Commerce.Procurement.Procurement.html#poiDate"><span class="hs-identifier hs-var hs-var">poiDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-55"></span><span>    </span><span id="poiSupplierId"><span class="annot"><span class="annottext">PurchaseOrderInput -&gt; Int
+</span><a href="Commerce.Procurement.Procurement.html#poiSupplierId"><span class="hs-identifier hs-var hs-var">poiSupplierId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680201528"><span id="local-6989586621680201534"><span id="local-6989586621680201538"><span class="annot"><span class="annottext">Int -&gt; PurchaseOrderInput -&gt; ShowS
+[PurchaseOrderInput] -&gt; ShowS
+PurchaseOrderInput -&gt; String
+(Int -&gt; PurchaseOrderInput -&gt; ShowS)
+-&gt; (PurchaseOrderInput -&gt; String)
+-&gt; ([PurchaseOrderInput] -&gt; ShowS)
+-&gt; Show PurchaseOrderInput
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PurchaseOrderInput -&gt; ShowS
+showsPrec :: Int -&gt; PurchaseOrderInput -&gt; ShowS
+$cshow :: PurchaseOrderInput -&gt; String
+show :: PurchaseOrderInput -&gt; String
+$cshowList :: [PurchaseOrderInput] -&gt; ShowS
+showList :: [PurchaseOrderInput] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680201541"><span id="local-6989586621680201546"><span class="annot"><span class="annottext">PurchaseOrderInput -&gt; PurchaseOrderInput -&gt; Bool
+(PurchaseOrderInput -&gt; PurchaseOrderInput -&gt; Bool)
+-&gt; (PurchaseOrderInput -&gt; PurchaseOrderInput -&gt; Bool)
+-&gt; Eq PurchaseOrderInput
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PurchaseOrderInput -&gt; PurchaseOrderInput -&gt; Bool
+== :: PurchaseOrderInput -&gt; PurchaseOrderInput -&gt; Bool
+$c/= :: PurchaseOrderInput -&gt; PurchaseOrderInput -&gt; Bool
+/= :: PurchaseOrderInput -&gt; PurchaseOrderInput -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680201550"><span id="local-6989586621680201552"><span class="annot"><span class="annottext">(forall x. PurchaseOrderInput -&gt; Rep PurchaseOrderInput x)
+-&gt; (forall x. Rep PurchaseOrderInput x -&gt; PurchaseOrderInput)
+-&gt; Generic PurchaseOrderInput
+forall x. Rep PurchaseOrderInput x -&gt; PurchaseOrderInput
+forall x. PurchaseOrderInput -&gt; Rep PurchaseOrderInput x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PurchaseOrderInput -&gt; Rep PurchaseOrderInput x
+from :: forall x. PurchaseOrderInput -&gt; Rep PurchaseOrderInput x
+$cto :: forall x. Rep PurchaseOrderInput x -&gt; PurchaseOrderInput
+to :: forall x. Rep PurchaseOrderInput x -&gt; PurchaseOrderInput
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680201555"><span id="local-6989586621680201562"><span id="local-6989586621680201565"><span id="local-6989586621680201568"><span id="local-6989586621680201571"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseOrderInput"><span class="hs-identifier hs-type">PurchaseOrderInput</span></a></span></span></span></span></span></span><span>
+</span><span id="line-60"></span><span>
+</span><span id="line-61"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680201651"><span id="local-6989586621680201658"><span id="local-6989586621680201661"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#PurchaseOrderInput"><span class="hs-identifier hs-type">PurchaseOrderInput</span></a></span></span></span></span><span>
+</span><span id="line-62"></span><span>
+</span><span id="line-63"></span><span class="hs-comment">-- MR Plan (MRP)</span><span>
+</span><span id="line-64"></span><span class="hs-keyword">data</span><span> </span><span id="MRPlan"><span class="annot"><a href="Commerce.Procurement.Procurement.html#MRPlan"><span class="hs-identifier hs-var">MRPlan</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MRPlan"><span class="annot"><a href="Commerce.Procurement.Procurement.html#MRPlan"><span class="hs-identifier hs-var">MRPlan</span></a></span></span><span>
+</span><span id="line-65"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="mpId"><span class="annot"><span class="annottext">MRPlan -&gt; Int
+</span><a href="Commerce.Procurement.Procurement.html#mpId"><span class="hs-identifier hs-var hs-var">mpId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-66"></span><span>    </span><span id="mpPeriodStart"><span class="annot"><span class="annottext">MRPlan -&gt; Day
+</span><a href="Commerce.Procurement.Procurement.html#mpPeriodStart"><span class="hs-identifier hs-var hs-var">mpPeriodStart</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-67"></span><span>    </span><span id="mpPeriodEnd"><span class="annot"><span class="annottext">MRPlan -&gt; Day
+</span><a href="Commerce.Procurement.Procurement.html#mpPeriodEnd"><span class="hs-identifier hs-var hs-var">mpPeriodEnd</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-68"></span><span>    </span><span id="mpStatus"><span class="annot"><span class="annottext">MRPlan -&gt; Text
+</span><a href="Commerce.Procurement.Procurement.html#mpStatus"><span class="hs-identifier hs-var hs-var">mpStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680201724"><span id="local-6989586621680201731"><span id="local-6989586621680201735"><span class="annot"><span class="annottext">Int -&gt; MRPlan -&gt; ShowS
+[MRPlan] -&gt; ShowS
+MRPlan -&gt; String
+(Int -&gt; MRPlan -&gt; ShowS)
+-&gt; (MRPlan -&gt; String) -&gt; ([MRPlan] -&gt; ShowS) -&gt; Show MRPlan
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; MRPlan -&gt; ShowS
+showsPrec :: Int -&gt; MRPlan -&gt; ShowS
+$cshow :: MRPlan -&gt; String
+show :: MRPlan -&gt; String
+$cshowList :: [MRPlan] -&gt; ShowS
+showList :: [MRPlan] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680201738"><span id="local-6989586621680201744"><span class="annot"><span class="annottext">MRPlan -&gt; MRPlan -&gt; Bool
+(MRPlan -&gt; MRPlan -&gt; Bool)
+-&gt; (MRPlan -&gt; MRPlan -&gt; Bool) -&gt; Eq MRPlan
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: MRPlan -&gt; MRPlan -&gt; Bool
+== :: MRPlan -&gt; MRPlan -&gt; Bool
+$c/= :: MRPlan -&gt; MRPlan -&gt; Bool
+/= :: MRPlan -&gt; MRPlan -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680201748"><span id="local-6989586621680201750"><span class="annot"><span class="annottext">(forall x. MRPlan -&gt; Rep MRPlan x)
+-&gt; (forall x. Rep MRPlan x -&gt; MRPlan) -&gt; Generic MRPlan
+forall x. Rep MRPlan x -&gt; MRPlan
+forall x. MRPlan -&gt; Rep MRPlan x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. MRPlan -&gt; Rep MRPlan x
+from :: forall x. MRPlan -&gt; Rep MRPlan x
+$cto :: forall x. Rep MRPlan x -&gt; MRPlan
+to :: forall x. Rep MRPlan x -&gt; MRPlan
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span>
+</span><span id="line-72"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680201753"><span id="local-6989586621680201760"><span id="local-6989586621680201763"><span id="local-6989586621680201766"><span id="local-6989586621680201769"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#MRPlan"><span class="hs-identifier hs-type">MRPlan</span></a></span></span></span></span></span></span><span>
+</span><span id="line-73"></span><span>
+</span><span id="line-74"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680201864"><span id="local-6989586621680201871"><span id="local-6989586621680201874"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#MRPlan"><span class="hs-identifier hs-type">MRPlan</span></a></span></span></span></span><span>
+</span><span id="line-75"></span><span>
+</span><span id="line-76"></span><span class="hs-keyword">data</span><span> </span><span id="MRPlanInput"><span class="annot"><a href="Commerce.Procurement.Procurement.html#MRPlanInput"><span class="hs-identifier hs-var">MRPlanInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MRPlanInput"><span class="annot"><a href="Commerce.Procurement.Procurement.html#MRPlanInput"><span class="hs-identifier hs-var">MRPlanInput</span></a></span></span><span>
+</span><span id="line-77"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="mpiPeriodStart"><span class="annot"><span class="annottext">MRPlanInput -&gt; Day
+</span><a href="Commerce.Procurement.Procurement.html#mpiPeriodStart"><span class="hs-identifier hs-var hs-var">mpiPeriodStart</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-78"></span><span>    </span><span id="mpiPeriodEnd"><span class="annot"><span class="annottext">MRPlanInput -&gt; Day
+</span><a href="Commerce.Procurement.Procurement.html#mpiPeriodEnd"><span class="hs-identifier hs-var hs-var">mpiPeriodEnd</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-79"></span><span>    </span><span id="mpiStatus"><span class="annot"><span class="annottext">MRPlanInput -&gt; Text
+</span><a href="Commerce.Procurement.Procurement.html#mpiStatus"><span class="hs-identifier hs-var hs-var">mpiStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-80"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-81"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680201946"><span id="local-6989586621680201952"><span id="local-6989586621680201956"><span class="annot"><span class="annottext">Int -&gt; MRPlanInput -&gt; ShowS
+[MRPlanInput] -&gt; ShowS
+MRPlanInput -&gt; String
+(Int -&gt; MRPlanInput -&gt; ShowS)
+-&gt; (MRPlanInput -&gt; String)
+-&gt; ([MRPlanInput] -&gt; ShowS)
+-&gt; Show MRPlanInput
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; MRPlanInput -&gt; ShowS
+showsPrec :: Int -&gt; MRPlanInput -&gt; ShowS
+$cshow :: MRPlanInput -&gt; String
+show :: MRPlanInput -&gt; String
+$cshowList :: [MRPlanInput] -&gt; ShowS
+showList :: [MRPlanInput] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680201959"><span id="local-6989586621680201964"><span class="annot"><span class="annottext">MRPlanInput -&gt; MRPlanInput -&gt; Bool
+(MRPlanInput -&gt; MRPlanInput -&gt; Bool)
+-&gt; (MRPlanInput -&gt; MRPlanInput -&gt; Bool) -&gt; Eq MRPlanInput
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: MRPlanInput -&gt; MRPlanInput -&gt; Bool
+== :: MRPlanInput -&gt; MRPlanInput -&gt; Bool
+$c/= :: MRPlanInput -&gt; MRPlanInput -&gt; Bool
+/= :: MRPlanInput -&gt; MRPlanInput -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680201968"><span id="local-6989586621680201970"><span class="annot"><span class="annottext">(forall x. MRPlanInput -&gt; Rep MRPlanInput x)
+-&gt; (forall x. Rep MRPlanInput x -&gt; MRPlanInput)
+-&gt; Generic MRPlanInput
+forall x. Rep MRPlanInput x -&gt; MRPlanInput
+forall x. MRPlanInput -&gt; Rep MRPlanInput x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. MRPlanInput -&gt; Rep MRPlanInput x
+from :: forall x. MRPlanInput -&gt; Rep MRPlanInput x
+$cto :: forall x. Rep MRPlanInput x -&gt; MRPlanInput
+to :: forall x. Rep MRPlanInput x -&gt; MRPlanInput
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-82"></span><span>
+</span><span id="line-83"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680201973"><span id="local-6989586621680201980"><span id="local-6989586621680201983"><span id="local-6989586621680201986"><span id="local-6989586621680201989"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#MRPlanInput"><span class="hs-identifier hs-type">MRPlanInput</span></a></span></span></span></span></span></span><span>
+</span><span id="line-84"></span><span>
+</span><span id="line-85"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680202066"><span id="local-6989586621680202073"><span id="local-6989586621680202076"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Commerce.Procurement.Procurement.html#MRPlanInput"><span class="hs-identifier hs-type">MRPlanInput</span></a></span></span></span></span><span>
+</span><span id="line-86"></span></pre></body></html>

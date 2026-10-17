@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Queue module - Message queues</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Production.Queue.html"><span class="hs-identifier">Production.Queue</span></a></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="annot"><span class="hs-comment">-- | Queue - Message queue</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">data</span><span> </span><span id="Queue"><span class="annot"><a href="Production.Queue.html#Queue"><span class="hs-identifier hs-var">Queue</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Queue"><span class="annot"><a href="Production.Queue.html#Queue"><span class="hs-identifier hs-var">Queue</span></a></span></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="qId"><span class="annot"><span class="annottext">Queue -&gt; Int64
+</span><a href="Production.Queue.html#qId"><span class="hs-identifier hs-var hs-var">qId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="qName"><span class="annot"><span class="annottext">Queue -&gt; Text
+</span><a href="Production.Queue.html#qName"><span class="hs-identifier hs-var hs-var">qName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="qType"><span class="annot"><span class="annottext">Queue -&gt; QueueType
+</span><a href="Production.Queue.html#qType"><span class="hs-identifier hs-var hs-var">qType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.Queue.html#QueueType"><span class="hs-identifier hs-type">QueueType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="qMaxSize"><span class="annot"><span class="annottext">Queue -&gt; Int
+</span><a href="Production.Queue.html#qMaxSize"><span class="hs-identifier hs-var hs-var">qMaxSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="qFlags"><span class="annot"><span class="annottext">Queue -&gt; Int
+</span><a href="Production.Queue.html#qFlags"><span class="hs-identifier hs-var hs-var">qFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680276220"><span id="local-6989586621680276233"><span id="local-6989586621680276237"><span class="annot"><span class="annottext">Int -&gt; Queue -&gt; ShowS
+[Queue] -&gt; ShowS
+Queue -&gt; String
+(Int -&gt; Queue -&gt; ShowS)
+-&gt; (Queue -&gt; String) -&gt; ([Queue] -&gt; ShowS) -&gt; Show Queue
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Queue -&gt; ShowS
+showsPrec :: Int -&gt; Queue -&gt; ShowS
+$cshow :: Queue -&gt; String
+show :: Queue -&gt; String
+$cshowList :: [Queue] -&gt; ShowS
+showList :: [Queue] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680276242"><span id="local-6989586621680276252"><span class="annot"><span class="annottext">Queue -&gt; Queue -&gt; Bool
+(Queue -&gt; Queue -&gt; Bool) -&gt; (Queue -&gt; Queue -&gt; Bool) -&gt; Eq Queue
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Queue -&gt; Queue -&gt; Bool
+== :: Queue -&gt; Queue -&gt; Bool
+$c/= :: Queue -&gt; Queue -&gt; Bool
+/= :: Queue -&gt; Queue -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="QueueType"><span class="annot"><a href="Production.Queue.html#QueueType"><span class="hs-identifier hs-var">QueueType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="QT_FIFO"><span class="annot"><a href="Production.Queue.html#QT_FIFO"><span class="hs-identifier hs-var">QT_FIFO</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="QTPriority"><span class="annot"><a href="Production.Queue.html#QTPriority"><span class="hs-identifier hs-var">QTPriority</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="QTDelay"><span class="annot"><a href="Production.Queue.html#QTDelay"><span class="hs-identifier hs-var">QTDelay</span></a></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680276260"><span id="local-6989586621680276262"><span id="local-6989586621680276265"><span class="annot"><span class="annottext">Int -&gt; QueueType -&gt; ShowS
+[QueueType] -&gt; ShowS
+QueueType -&gt; String
+(Int -&gt; QueueType -&gt; ShowS)
+-&gt; (QueueType -&gt; String)
+-&gt; ([QueueType] -&gt; ShowS)
+-&gt; Show QueueType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; QueueType -&gt; ShowS
+showsPrec :: Int -&gt; QueueType -&gt; ShowS
+$cshow :: QueueType -&gt; String
+show :: QueueType -&gt; String
+$cshowList :: [QueueType] -&gt; ShowS
+showList :: [QueueType] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680276268"><span id="local-6989586621680276273"><span class="annot"><span class="annottext">QueueType -&gt; QueueType -&gt; Bool
+(QueueType -&gt; QueueType -&gt; Bool)
+-&gt; (QueueType -&gt; QueueType -&gt; Bool) -&gt; Eq QueueType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: QueueType -&gt; QueueType -&gt; Bool
+== :: QueueType -&gt; QueueType -&gt; Bool
+$c/= :: QueueType -&gt; QueueType -&gt; Bool
+/= :: QueueType -&gt; QueueType -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="annot"><span class="hs-comment">-- | QueueMessage - Queue message</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">data</span><span> </span><span id="QueueMessage"><span class="annot"><a href="Production.Queue.html#QueueMessage"><span class="hs-identifier hs-var">QueueMessage</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="QueueMessage"><span class="annot"><a href="Production.Queue.html#QueueMessage"><span class="hs-identifier hs-var">QueueMessage</span></a></span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="qmId"><span class="annot"><span class="annottext">QueueMessage -&gt; Int64
+</span><a href="Production.Queue.html#qmId"><span class="hs-identifier hs-var hs-var">qmId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="qmQueueId"><span class="annot"><span class="annottext">QueueMessage -&gt; Int64
+</span><a href="Production.Queue.html#qmQueueId"><span class="hs-identifier hs-var hs-var">qmQueueId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="qmPayload"><span class="annot"><span class="annottext">QueueMessage -&gt; Text
+</span><a href="Production.Queue.html#qmPayload"><span class="hs-identifier hs-var hs-var">qmPayload</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- JSON</span><span>
+</span><span id="line-26"></span><span>    </span><span id="qmPriority"><span class="annot"><span class="annottext">QueueMessage -&gt; Int
+</span><a href="Production.Queue.html#qmPriority"><span class="hs-identifier hs-var hs-var">qmPriority</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="qmStatus"><span class="annot"><span class="annottext">QueueMessage -&gt; MessageStatus
+</span><a href="Production.Queue.html#qmStatus"><span class="hs-identifier hs-var hs-var">qmStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.Queue.html#MessageStatus"><span class="hs-identifier hs-type">MessageStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="qmCreated"><span class="annot"><span class="annottext">QueueMessage -&gt; UTCTime
+</span><a href="Production.Queue.html#qmCreated"><span class="hs-identifier hs-var hs-var">qmCreated</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span id="qmProcessed"><span class="annot"><span class="annottext">QueueMessage -&gt; Maybe UTCTime
+</span><a href="Production.Queue.html#qmProcessed"><span class="hs-identifier hs-var hs-var">qmProcessed</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680276284"><span id="local-6989586621680276297"><span id="local-6989586621680276301"><span class="annot"><span class="annottext">Int -&gt; QueueMessage -&gt; ShowS
+[QueueMessage] -&gt; ShowS
+QueueMessage -&gt; String
+(Int -&gt; QueueMessage -&gt; ShowS)
+-&gt; (QueueMessage -&gt; String)
+-&gt; ([QueueMessage] -&gt; ShowS)
+-&gt; Show QueueMessage
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; QueueMessage -&gt; ShowS
+showsPrec :: Int -&gt; QueueMessage -&gt; ShowS
+$cshow :: QueueMessage -&gt; String
+show :: QueueMessage -&gt; String
+$cshowList :: [QueueMessage] -&gt; ShowS
+showList :: [QueueMessage] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680276304"><span id="local-6989586621680276316"><span class="annot"><span class="annottext">QueueMessage -&gt; QueueMessage -&gt; Bool
+(QueueMessage -&gt; QueueMessage -&gt; Bool)
+-&gt; (QueueMessage -&gt; QueueMessage -&gt; Bool) -&gt; Eq QueueMessage
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: QueueMessage -&gt; QueueMessage -&gt; Bool
+== :: QueueMessage -&gt; QueueMessage -&gt; Bool
+$c/= :: QueueMessage -&gt; QueueMessage -&gt; Bool
+/= :: QueueMessage -&gt; QueueMessage -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">data</span><span> </span><span id="MessageStatus"><span class="annot"><a href="Production.Queue.html#MessageStatus"><span class="hs-identifier hs-var">MessageStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MSPending"><span class="annot"><a href="Production.Queue.html#MSPending"><span class="hs-identifier hs-var">MSPending</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="MSProcessing"><span class="annot"><a href="Production.Queue.html#MSProcessing"><span class="hs-identifier hs-var">MSProcessing</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="MSCompleted"><span class="annot"><a href="Production.Queue.html#MSCompleted"><span class="hs-identifier hs-var">MSCompleted</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="MSFailed"><span class="annot"><a href="Production.Queue.html#MSFailed"><span class="hs-identifier hs-var">MSFailed</span></a></span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680276324"><span id="local-6989586621680276326"><span id="local-6989586621680276329"><span class="annot"><span class="annottext">Int -&gt; MessageStatus -&gt; ShowS
+[MessageStatus] -&gt; ShowS
+MessageStatus -&gt; String
+(Int -&gt; MessageStatus -&gt; ShowS)
+-&gt; (MessageStatus -&gt; String)
+-&gt; ([MessageStatus] -&gt; ShowS)
+-&gt; Show MessageStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; MessageStatus -&gt; ShowS
+showsPrec :: Int -&gt; MessageStatus -&gt; ShowS
+$cshow :: MessageStatus -&gt; String
+show :: MessageStatus -&gt; String
+$cshowList :: [MessageStatus] -&gt; ShowS
+showList :: [MessageStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680276332"><span id="local-6989586621680276336"><span class="annot"><span class="annottext">MessageStatus -&gt; MessageStatus -&gt; Bool
+(MessageStatus -&gt; MessageStatus -&gt; Bool)
+-&gt; (MessageStatus -&gt; MessageStatus -&gt; Bool) -&gt; Eq MessageStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: MessageStatus -&gt; MessageStatus -&gt; Bool
+== :: MessageStatus -&gt; MessageStatus -&gt; Bool
+$c/= :: MessageStatus -&gt; MessageStatus -&gt; Bool
+/= :: MessageStatus -&gt; MessageStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="annot"><span class="hs-comment">-- | Check queue is empty</span></span><span>
+</span><span id="line-37"></span><span class="annot"><a href="Production.Queue.html#isQueueEmpty"><span class="hs-identifier hs-type">isQueueEmpty</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.Queue.html#Queue"><span class="hs-identifier hs-type">Queue</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-38"></span><span id="isQueueEmpty"><span class="annot"><span class="annottext">isQueueEmpty :: Queue -&gt; Bool
+</span><a href="Production.Queue.html#isQueueEmpty"><span class="hs-identifier hs-var hs-var">isQueueEmpty</span></a></span></span><span> </span><span id="local-6989586621680276339"><span class="annot"><span class="annottext">Queue
+</span><a href="#local-6989586621680276339"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Queue -&gt; Int
+</span><a href="Production.Queue.html#qMaxSize"><span class="hs-identifier hs-var">qMaxSize</span></a></span><span> </span><span class="annot"><span class="annottext">Queue
+</span><a href="#local-6989586621680276339"><span class="hs-identifier hs-var">q</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-39"></span></pre></body></html>

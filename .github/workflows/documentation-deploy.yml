@@ -15,7 +15,7 @@ jobs:
   deploy-documentation:
     name: Deploy documentation to GitHub Pages
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     concurrency:
       group: docs-pages
       cancel-in-progress: false
@@ -35,44 +35,59 @@ jobs:
       - name: Install MkDocs
         run: |
           python -m pip install --upgrade pip
-          pip install mkdocs mkdocs-material mkdocs-git-revision-date-localized
+          pip install mkdocs mkdocs-material
+
+      - name: Set up GHC and cabal
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.10.3'
+          cabal-version: '3.12'
+          enable-stack: false
+
+      - name: Restore cabal cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            dist-newstyle
+            ~/.cabal
+          key: ${{ runner.os }}-cabal-${{ hashFiles('Surypus.cabal', 'cabal.project') }}
+          restore-keys: ${{ runner.os }}-cabal-
 
       - name: Install beads
-        if: ${{ !contains(steps.checkout.outputs.submodules, 'beads') }}
         run: |
           curl -fsSL https://raw.githubusercontent.com/gastownhall/beads/main/scripts/install.sh | bash
 
       - name: Generate module inventory
-        run: |
-          python3 tools/documentation/generate-inventory.py
+        run: python3 tools/documentation/generate-inventory.py
 
       - name: Generate module dependency graph
         run: |
           mkdir -p docs/generated/graphs
-          ./tools/documentation/generate-module-graph.sh src docs/generated/graphs/modules.mmd
+          bash tools/documentation/generate-module-graph.sh src docs/generated/graphs/modules.mmd
 
       - name: Generate Haddock documentation
         run: |
+          # Haddock lands under dist-newstyle for a cabal build. Build with
+          # documentation enabled, then copy the HTML tree into the docs.
+          cabal build all --enable-documentation --haddock-hyperlink-source
           mkdir -p docs/generated/haddock
-          stack build --haddock --no-run-tests --haddock-options="--hyperlink-source --quickjump"
-          find .stack-work -type f -name "*.html" -exec cp {} docs/generated/haddock/ \; || true
-          ls docs/generated/haddock/ | head -5
-
-      - name: Generate OpenAI API spec (optional)
-        run: |
-          stack exec surypus -- --generate-openapi > docs/api/openapi.json 2>/dev/null || echo "OpenAPI generation skipped"
-          mkdir -p docs/api
-          ls docs/api/
+          HADDOCK_SRC="$(find dist-newstyle/build -type d -name html -path '*doc/html' | head -1)"
+          if [ -z "$HADDOCK_SRC" ]; then
+            echo "Haddock output not found under dist-newstyle; skipping"
+            exit 0
+          fi
+          cp -r "$HADDOCK_SRC"/. docs/generated/haddock/
+          # Haddock drops a README.md next to index.html, which mkdocs rejects
+          # as a conflict; it is redundant with the generated index page.
+          find docs/generated/haddock -name 'README.md' -delete
+          echo "Haddock pages: $(find docs/generated/haddock -name '*.html' | wc -l)"
 
       - name: Generate task pages from beads
         run: |
           mkdir -p docs/tasks
-          if command -v bd >/dev/null 2>&1; then
-            bd dolt start >/dev/null 2>&1 || true
-            python3 tools/beads-sync-github.py --wiki-dir docs/tasks --require-beads
-          else
-            python3 tools/beads-sync-github.py --wiki-dir docs/tasks
-          fi
+          export PATH="$HOME/.local/bin:$PATH"
+          bd dolt start >/dev/null 2>&1 || true
+          python3 tools/beads-sync-github.py --wiki-dir docs/tasks --require-beads
 
       - name: Build documentation site
         run: |
@@ -80,7 +95,7 @@ jobs:
           du -sh site/
 
       - name: Upload documentation artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: docs-site
           path: site/

@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Log module - System logging</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="System.Log.html"><span class="hs-identifier">System.Log</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="annot"><span class="hs-comment">-- | LogEntry - Log entry</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">data</span><span> </span><span id="LogEntry"><span class="annot"><a href="System.Log.html#LogEntry"><span class="hs-identifier hs-var">LogEntry</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LogEntry"><span class="annot"><a href="System.Log.html#LogEntry"><span class="hs-identifier hs-var">LogEntry</span></a></span></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="leId"><span class="annot"><span class="annottext">LogEntry -&gt; Int64
+</span><a href="System.Log.html#leId"><span class="hs-identifier hs-var hs-var">leId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="leLevel"><span class="annot"><span class="annottext">LogEntry -&gt; LogLevel
+</span><a href="System.Log.html#leLevel"><span class="hs-identifier hs-var hs-var">leLevel</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Log.html#LogLevel"><span class="hs-identifier hs-type">LogLevel</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="leModule"><span class="annot"><span class="annottext">LogEntry -&gt; Text
+</span><a href="System.Log.html#leModule"><span class="hs-identifier hs-var hs-var">leModule</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="leMessage"><span class="annot"><span class="annottext">LogEntry -&gt; Text
+</span><a href="System.Log.html#leMessage"><span class="hs-identifier hs-var hs-var">leMessage</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="leTimestamp"><span class="annot"><span class="annottext">LogEntry -&gt; UTCTime
+</span><a href="System.Log.html#leTimestamp"><span class="hs-identifier hs-var hs-var">leTimestamp</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="leUserId"><span class="annot"><span class="annottext">LogEntry -&gt; Maybe Int64
+</span><a href="System.Log.html#leUserId"><span class="hs-identifier hs-var hs-var">leUserId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680347251"><span id="local-6989586621680347266"><span id="local-6989586621680347270"><span class="annot"><span class="annottext">Int -&gt; LogEntry -&gt; ShowS
+[LogEntry] -&gt; ShowS
+LogEntry -&gt; String
+(Int -&gt; LogEntry -&gt; ShowS)
+-&gt; (LogEntry -&gt; String) -&gt; ([LogEntry] -&gt; ShowS) -&gt; Show LogEntry
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LogEntry -&gt; ShowS
+showsPrec :: Int -&gt; LogEntry -&gt; ShowS
+$cshow :: LogEntry -&gt; String
+show :: LogEntry -&gt; String
+$cshowList :: [LogEntry] -&gt; ShowS
+showList :: [LogEntry] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680347275"><span id="local-6989586621680347288"><span class="annot"><span class="annottext">LogEntry -&gt; LogEntry -&gt; Bool
+(LogEntry -&gt; LogEntry -&gt; Bool)
+-&gt; (LogEntry -&gt; LogEntry -&gt; Bool) -&gt; Eq LogEntry
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LogEntry -&gt; LogEntry -&gt; Bool
+== :: LogEntry -&gt; LogEntry -&gt; Bool
+$c/= :: LogEntry -&gt; LogEntry -&gt; Bool
+/= :: LogEntry -&gt; LogEntry -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">data</span><span> </span><span id="LogLevel"><span class="annot"><a href="System.Log.html#LogLevel"><span class="hs-identifier hs-var">LogLevel</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LLDebug"><span class="annot"><a href="System.Log.html#LLDebug"><span class="hs-identifier hs-var">LLDebug</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="LLInfo"><span class="annot"><a href="System.Log.html#LLInfo"><span class="hs-identifier hs-var">LLInfo</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="LLWarning"><span class="annot"><a href="System.Log.html#LLWarning"><span class="hs-identifier hs-var">LLWarning</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="LLError"><span class="annot"><a href="System.Log.html#LLError"><span class="hs-identifier hs-var">LLError</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="LLCritical"><span class="annot"><a href="System.Log.html#LLCritical"><span class="hs-identifier hs-var">LLCritical</span></a></span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680347298"><span id="local-6989586621680347300"><span id="local-6989586621680347303"><span class="annot"><span class="annottext">Int -&gt; LogLevel -&gt; ShowS
+[LogLevel] -&gt; ShowS
+LogLevel -&gt; String
+(Int -&gt; LogLevel -&gt; ShowS)
+-&gt; (LogLevel -&gt; String) -&gt; ([LogLevel] -&gt; ShowS) -&gt; Show LogLevel
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LogLevel -&gt; ShowS
+showsPrec :: Int -&gt; LogLevel -&gt; ShowS
+$cshow :: LogLevel -&gt; String
+show :: LogLevel -&gt; String
+$cshowList :: [LogLevel] -&gt; ShowS
+showList :: [LogLevel] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680347306"><span id="local-6989586621680347311"><span class="annot"><span class="annottext">LogLevel -&gt; LogLevel -&gt; Bool
+(LogLevel -&gt; LogLevel -&gt; Bool)
+-&gt; (LogLevel -&gt; LogLevel -&gt; Bool) -&gt; Eq LogLevel
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LogLevel -&gt; LogLevel -&gt; Bool
+== :: LogLevel -&gt; LogLevel -&gt; Bool
+$c/= :: LogLevel -&gt; LogLevel -&gt; Bool
+/= :: LogLevel -&gt; LogLevel -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="annot"><span class="hs-comment">-- | LogConfig - Logging configuration</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">data</span><span> </span><span id="LogConfig"><span class="annot"><a href="System.Log.html#LogConfig"><span class="hs-identifier hs-var">LogConfig</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LogConfig"><span class="annot"><a href="System.Log.html#LogConfig"><span class="hs-identifier hs-var">LogConfig</span></a></span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="lcLevel"><span class="annot"><span class="annottext">LogConfig -&gt; LogLevel
+</span><a href="System.Log.html#lcLevel"><span class="hs-identifier hs-var hs-var">lcLevel</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Log.html#LogLevel"><span class="hs-identifier hs-type">LogLevel</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="lcOutput"><span class="annot"><span class="annottext">LogConfig -&gt; LogOutput
+</span><a href="System.Log.html#lcOutput"><span class="hs-identifier hs-var hs-var">lcOutput</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Log.html#LogOutput"><span class="hs-identifier hs-type">LogOutput</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="lcFormat"><span class="annot"><span class="annottext">LogConfig -&gt; Text
+</span><a href="System.Log.html#lcFormat"><span class="hs-identifier hs-var hs-var">lcFormat</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680347318"><span id="local-6989586621680347325"><span id="local-6989586621680347329"><span class="annot"><span class="annottext">Int -&gt; LogConfig -&gt; ShowS
+[LogConfig] -&gt; ShowS
+LogConfig -&gt; String
+(Int -&gt; LogConfig -&gt; ShowS)
+-&gt; (LogConfig -&gt; String)
+-&gt; ([LogConfig] -&gt; ShowS)
+-&gt; Show LogConfig
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LogConfig -&gt; ShowS
+showsPrec :: Int -&gt; LogConfig -&gt; ShowS
+$cshow :: LogConfig -&gt; String
+show :: LogConfig -&gt; String
+$cshowList :: [LogConfig] -&gt; ShowS
+showList :: [LogConfig] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680347332"><span id="local-6989586621680347338"><span class="annot"><span class="annottext">LogConfig -&gt; LogConfig -&gt; Bool
+(LogConfig -&gt; LogConfig -&gt; Bool)
+-&gt; (LogConfig -&gt; LogConfig -&gt; Bool) -&gt; Eq LogConfig
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LogConfig -&gt; LogConfig -&gt; Bool
+== :: LogConfig -&gt; LogConfig -&gt; Bool
+$c/= :: LogConfig -&gt; LogConfig -&gt; Bool
+/= :: LogConfig -&gt; LogConfig -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="LogOutput"><span class="annot"><a href="System.Log.html#LogOutput"><span class="hs-identifier hs-var">LogOutput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LOConsole"><span class="annot"><a href="System.Log.html#LOConsole"><span class="hs-identifier hs-var">LOConsole</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="LOFile"><span class="annot"><a href="System.Log.html#LOFile"><span class="hs-identifier hs-var">LOFile</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="LODatabase"><span class="annot"><a href="System.Log.html#LODatabase"><span class="hs-identifier hs-var">LODatabase</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="LOSyslog"><span class="annot"><a href="System.Log.html#LOSyslog"><span class="hs-identifier hs-var">LOSyslog</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680347346"><span id="local-6989586621680347348"><span id="local-6989586621680347351"><span class="annot"><span class="annottext">Int -&gt; LogOutput -&gt; ShowS
+[LogOutput] -&gt; ShowS
+LogOutput -&gt; String
+(Int -&gt; LogOutput -&gt; ShowS)
+-&gt; (LogOutput -&gt; String)
+-&gt; ([LogOutput] -&gt; ShowS)
+-&gt; Show LogOutput
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LogOutput -&gt; ShowS
+showsPrec :: Int -&gt; LogOutput -&gt; ShowS
+$cshow :: LogOutput -&gt; String
+show :: LogOutput -&gt; String
+$cshowList :: [LogOutput] -&gt; ShowS
+showList :: [LogOutput] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680347354"><span id="local-6989586621680347358"><span class="annot"><span class="annottext">LogOutput -&gt; LogOutput -&gt; Bool
+(LogOutput -&gt; LogOutput -&gt; Bool)
+-&gt; (LogOutput -&gt; LogOutput -&gt; Bool) -&gt; Eq LogOutput
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LogOutput -&gt; LogOutput -&gt; Bool
+== :: LogOutput -&gt; LogOutput -&gt; Bool
+$c/= :: LogOutput -&gt; LogOutput -&gt; Bool
+/= :: LogOutput -&gt; LogOutput -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span></pre></body></html>

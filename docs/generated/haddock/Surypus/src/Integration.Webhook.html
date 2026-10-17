@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Webhook module - Webhooks</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Integration.Webhook.html"><span class="hs-identifier">Integration.Webhook</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="annot"><span class="hs-comment">-- | Webhook - Webhook configuration</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">data</span><span> </span><span id="Webhook"><span class="annot"><a href="Integration.Webhook.html#Webhook"><span class="hs-identifier hs-var">Webhook</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Webhook"><span class="annot"><a href="Integration.Webhook.html#Webhook"><span class="hs-identifier hs-var">Webhook</span></a></span></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="whId"><span class="annot"><span class="annottext">Webhook -&gt; Int64
+</span><a href="Integration.Webhook.html#whId"><span class="hs-identifier hs-var hs-var">whId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span id="whURL"><span class="annot"><span class="annottext">Webhook -&gt; Text
+</span><a href="Integration.Webhook.html#whURL"><span class="hs-identifier hs-var hs-var">whURL</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="whEvent"><span class="annot"><span class="annottext">Webhook -&gt; WebhookEvent
+</span><a href="Integration.Webhook.html#whEvent"><span class="hs-identifier hs-var hs-var">whEvent</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.Webhook.html#WebhookEvent"><span class="hs-identifier hs-type">WebhookEvent</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="whSecret"><span class="annot"><span class="annottext">Webhook -&gt; Text
+</span><a href="Integration.Webhook.html#whSecret"><span class="hs-identifier hs-var hs-var">whSecret</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="whEnabled"><span class="annot"><span class="annottext">Webhook -&gt; Bool
+</span><a href="Integration.Webhook.html#whEnabled"><span class="hs-identifier hs-var hs-var">whEnabled</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680264136"><span id="local-6989586621680264149"><span id="local-6989586621680264153"><span class="annot"><span class="annottext">Int -&gt; Webhook -&gt; ShowS
+[Webhook] -&gt; ShowS
+Webhook -&gt; String
+(Int -&gt; Webhook -&gt; ShowS)
+-&gt; (Webhook -&gt; String) -&gt; ([Webhook] -&gt; ShowS) -&gt; Show Webhook
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Webhook -&gt; ShowS
+showsPrec :: Int -&gt; Webhook -&gt; ShowS
+$cshow :: Webhook -&gt; String
+show :: Webhook -&gt; String
+$cshowList :: [Webhook] -&gt; ShowS
+showList :: [Webhook] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264158"><span id="local-6989586621680264169"><span class="annot"><span class="annottext">Webhook -&gt; Webhook -&gt; Bool
+(Webhook -&gt; Webhook -&gt; Bool)
+-&gt; (Webhook -&gt; Webhook -&gt; Bool) -&gt; Eq Webhook
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Webhook -&gt; Webhook -&gt; Bool
+== :: Webhook -&gt; Webhook -&gt; Bool
+$c/= :: Webhook -&gt; Webhook -&gt; Bool
+/= :: Webhook -&gt; Webhook -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">data</span><span> </span><span id="WebhookEvent"><span class="annot"><a href="Integration.Webhook.html#WebhookEvent"><span class="hs-identifier hs-var">WebhookEvent</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="WEBillCreated"><span class="annot"><a href="Integration.Webhook.html#WEBillCreated"><span class="hs-identifier hs-var">WEBillCreated</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="WEBillUpdated"><span class="annot"><a href="Integration.Webhook.html#WEBillUpdated"><span class="hs-identifier hs-var">WEBillUpdated</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="WEOrderCreated"><span class="annot"><a href="Integration.Webhook.html#WEOrderCreated"><span class="hs-identifier hs-var">WEOrderCreated</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="WEPaymentReceived"><span class="annot"><a href="Integration.Webhook.html#WEPaymentReceived"><span class="hs-identifier hs-var">WEPaymentReceived</span></a></span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680264178"><span id="local-6989586621680264180"><span id="local-6989586621680264183"><span class="annot"><span class="annottext">Int -&gt; WebhookEvent -&gt; ShowS
+[WebhookEvent] -&gt; ShowS
+WebhookEvent -&gt; String
+(Int -&gt; WebhookEvent -&gt; ShowS)
+-&gt; (WebhookEvent -&gt; String)
+-&gt; ([WebhookEvent] -&gt; ShowS)
+-&gt; Show WebhookEvent
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; WebhookEvent -&gt; ShowS
+showsPrec :: Int -&gt; WebhookEvent -&gt; ShowS
+$cshow :: WebhookEvent -&gt; String
+show :: WebhookEvent -&gt; String
+$cshowList :: [WebhookEvent] -&gt; ShowS
+showList :: [WebhookEvent] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264186"><span id="local-6989586621680264191"><span class="annot"><span class="annottext">WebhookEvent -&gt; WebhookEvent -&gt; Bool
+(WebhookEvent -&gt; WebhookEvent -&gt; Bool)
+-&gt; (WebhookEvent -&gt; WebhookEvent -&gt; Bool) -&gt; Eq WebhookEvent
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: WebhookEvent -&gt; WebhookEvent -&gt; Bool
+== :: WebhookEvent -&gt; WebhookEvent -&gt; Bool
+$c/= :: WebhookEvent -&gt; WebhookEvent -&gt; Bool
+/= :: WebhookEvent -&gt; WebhookEvent -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="annot"><span class="hs-comment">-- | WebhookLog - Webhook delivery log</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="WebhookLog"><span class="annot"><a href="Integration.Webhook.html#WebhookLog"><span class="hs-identifier hs-var">WebhookLog</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="WebhookLog"><span class="annot"><a href="Integration.Webhook.html#WebhookLog"><span class="hs-identifier hs-var">WebhookLog</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="wlId"><span class="annot"><span class="annottext">WebhookLog -&gt; Int64
+</span><a href="Integration.Webhook.html#wlId"><span class="hs-identifier hs-var hs-var">wlId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="wlWebhookId"><span class="annot"><span class="annottext">WebhookLog -&gt; Int64
+</span><a href="Integration.Webhook.html#wlWebhookId"><span class="hs-identifier hs-var hs-var">wlWebhookId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="wlPayload"><span class="annot"><span class="annottext">WebhookLog -&gt; Text
+</span><a href="Integration.Webhook.html#wlPayload"><span class="hs-identifier hs-var hs-var">wlPayload</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="wlResponse"><span class="annot"><span class="annottext">WebhookLog -&gt; Maybe Text
+</span><a href="Integration.Webhook.html#wlResponse"><span class="hs-identifier hs-var hs-var">wlResponse</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="wlStatusCode"><span class="annot"><span class="annottext">WebhookLog -&gt; Int
+</span><a href="Integration.Webhook.html#wlStatusCode"><span class="hs-identifier hs-var hs-var">wlStatusCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="wlDeliveredAt"><span class="annot"><span class="annottext">WebhookLog -&gt; Int64
+</span><a href="Integration.Webhook.html#wlDeliveredAt"><span class="hs-identifier hs-var hs-var">wlDeliveredAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680264201"><span id="local-6989586621680264212"><span id="local-6989586621680264216"><span class="annot"><span class="annottext">Int -&gt; WebhookLog -&gt; ShowS
+[WebhookLog] -&gt; ShowS
+WebhookLog -&gt; String
+(Int -&gt; WebhookLog -&gt; ShowS)
+-&gt; (WebhookLog -&gt; String)
+-&gt; ([WebhookLog] -&gt; ShowS)
+-&gt; Show WebhookLog
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; WebhookLog -&gt; ShowS
+showsPrec :: Int -&gt; WebhookLog -&gt; ShowS
+$cshow :: WebhookLog -&gt; String
+show :: WebhookLog -&gt; String
+$cshowList :: [WebhookLog] -&gt; ShowS
+showList :: [WebhookLog] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264219"><span id="local-6989586621680264229"><span class="annot"><span class="annottext">WebhookLog -&gt; WebhookLog -&gt; Bool
+(WebhookLog -&gt; WebhookLog -&gt; Bool)
+-&gt; (WebhookLog -&gt; WebhookLog -&gt; Bool) -&gt; Eq WebhookLog
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: WebhookLog -&gt; WebhookLog -&gt; Bool
+== :: WebhookLog -&gt; WebhookLog -&gt; Bool
+$c/= :: WebhookLog -&gt; WebhookLog -&gt; Bool
+/= :: WebhookLog -&gt; WebhookLog -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span></pre></body></html>

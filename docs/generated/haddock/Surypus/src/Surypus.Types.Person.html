@@ -1,0 +1,301 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DeriveAnyClass #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DerivingStrategies #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE DuplicateRecordFields #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.Types.Person.html"><span class="hs-identifier">Surypus.Types.Person</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Surypus.Types.Person.html#Person"><span class="hs-identifier">Person</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Surypus.Types.Person.html#PersonType"><span class="hs-identifier">PersonType</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Surypus.Types.Person.html#PersonStatus"><span class="hs-identifier">PersonStatus</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Surypus.Types.Person.html#PersonInput"><span class="hs-identifier">PersonInput</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Surypus.Types.Person.html#PersonSummary"><span class="hs-identifier">PersonSummary</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">FromJSON</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Options</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">defaultOptions</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">genericParseJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">genericToJSON</span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.html"><span class="hs-identifier">Data.Time.Clock</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html"><span class="hs-identifier">Surypus.Types.Common</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier">camelTo2</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">data</span><span> </span><span id="Person"><span class="annot"><a href="Surypus.Types.Person.html#Person"><span class="hs-identifier hs-var">Person</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Person"><span class="annot"><a href="Surypus.Types.Person.html#Person"><span class="hs-identifier hs-var">Person</span></a></span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="personId"><span class="annot"><span class="annottext">Person -&gt; Int64
+</span><a href="Surypus.Types.Person.html#personId"><span class="hs-identifier hs-var hs-var">personId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="personName"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="Surypus.Types.Person.html#personName"><span class="hs-identifier hs-var hs-var">personName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="personINN"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="Surypus.Types.Person.html#personINN"><span class="hs-identifier hs-var hs-var">personINN</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="personKPP"><span class="annot"><span class="annottext">Person -&gt; Maybe Text
+</span><a href="Surypus.Types.Person.html#personKPP"><span class="hs-identifier hs-var hs-var">personKPP</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="personType"><span class="annot"><span class="annottext">Person -&gt; PersonType
+</span><a href="Surypus.Types.Person.html#personType"><span class="hs-identifier hs-var hs-var">personType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Surypus.Types.Person.html#PersonType"><span class="hs-identifier hs-type">PersonType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="personStatus"><span class="annot"><span class="annottext">Person -&gt; PersonStatus
+</span><a href="Surypus.Types.Person.html#personStatus"><span class="hs-identifier hs-var hs-var">personStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Surypus.Types.Person.html#PersonStatus"><span class="hs-identifier hs-type">PersonStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span id="personCreatedAt"><span class="annot"><span class="annottext">Person -&gt; UTCTime
+</span><a href="Surypus.Types.Person.html#personCreatedAt"><span class="hs-identifier hs-var hs-var">personCreatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-30"></span><span>    </span><span id="personUpdatedAt"><span class="annot"><span class="annottext">Person -&gt; Maybe UTCTime
+</span><a href="Surypus.Types.Person.html#personUpdatedAt"><span class="hs-identifier hs-var hs-var">personUpdatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680333905"><span id="local-6989586621680333923"><span id="local-6989586621680333927"><span class="annot"><span class="annottext">Int -&gt; Person -&gt; ShowS
+[Person] -&gt; ShowS
+Person -&gt; String
+(Int -&gt; Person -&gt; ShowS)
+-&gt; (Person -&gt; String) -&gt; ([Person] -&gt; ShowS) -&gt; Show Person
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Person -&gt; ShowS
+showsPrec :: Int -&gt; Person -&gt; ShowS
+$cshow :: Person -&gt; String
+show :: Person -&gt; String
+$cshowList :: [Person] -&gt; ShowS
+showList :: [Person] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680333932"><span id="local-6989586621680333948"><span class="annot"><span class="annottext">Person -&gt; Person -&gt; Bool
+(Person -&gt; Person -&gt; Bool)
+-&gt; (Person -&gt; Person -&gt; Bool) -&gt; Eq Person
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Person -&gt; Person -&gt; Bool
+== :: Person -&gt; Person -&gt; Bool
+$c/= :: Person -&gt; Person -&gt; Bool
+/= :: Person -&gt; Person -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680333953"><span id="local-6989586621680333955"><span class="annot"><span class="annottext">(forall x. Person -&gt; Rep Person x)
+-&gt; (forall x. Rep Person x -&gt; Person) -&gt; Generic Person
+forall x. Rep Person x -&gt; Person
+forall x. Person -&gt; Rep Person x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Person -&gt; Rep Person x
+from :: forall x. Person -&gt; Rep Person x
+$cto :: forall x. Rep Person x -&gt; Person
+to :: forall x. Rep Person x -&gt; Person
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680333962"><span id="local-6989586621680333966"><span id="local-6989586621680333969"><span id="local-6989586621680333972"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Person.html#Person"><span class="hs-identifier hs-type">Person</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-35"></span><span>  </span><span id="local-6989586621680334178"><span class="annot"><span class="annottext">toJSON :: Person -&gt; Value
+</span><a href="#local-6989586621680334178"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Person -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">genericToJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">6</span></span><span class="hs-special">}</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680334185"><span id="local-6989586621680334189"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Person.html#Person"><span class="hs-identifier hs-type">Person</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-38"></span><span>  </span><span id="local-6989586621680334321"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser Person
+</span><a href="#local-6989586621680334321"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser Person
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><span class="hs-identifier hs-var">genericParseJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">6</span></span><span class="hs-special">}</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">data</span><span> </span><span id="PersonType"><span class="annot"><a href="Surypus.Types.Person.html#PersonType"><span class="hs-identifier hs-var">PersonType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Customer"><span class="annot"><a href="Surypus.Types.Person.html#Customer"><span class="hs-identifier hs-var">Customer</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Supplier"><span class="annot"><a href="Surypus.Types.Person.html#Supplier"><span class="hs-identifier hs-var">Supplier</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Employee"><span class="annot"><a href="Surypus.Types.Person.html#Employee"><span class="hs-identifier hs-var">Employee</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Partner"><span class="annot"><a href="Surypus.Types.Person.html#Partner"><span class="hs-identifier hs-var">Partner</span></a></span></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680334328"><span id="local-6989586621680334330"><span id="local-6989586621680334333"><span class="annot"><span class="annottext">Int -&gt; PersonType -&gt; ShowS
+[PersonType] -&gt; ShowS
+PersonType -&gt; String
+(Int -&gt; PersonType -&gt; ShowS)
+-&gt; (PersonType -&gt; String)
+-&gt; ([PersonType] -&gt; ShowS)
+-&gt; Show PersonType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PersonType -&gt; ShowS
+showsPrec :: Int -&gt; PersonType -&gt; ShowS
+$cshow :: PersonType -&gt; String
+show :: PersonType -&gt; String
+$cshowList :: [PersonType] -&gt; ShowS
+showList :: [PersonType] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680334336"><span id="local-6989586621680334341"><span class="annot"><span class="annottext">PersonType -&gt; PersonType -&gt; Bool
+(PersonType -&gt; PersonType -&gt; Bool)
+-&gt; (PersonType -&gt; PersonType -&gt; Bool) -&gt; Eq PersonType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PersonType -&gt; PersonType -&gt; Bool
+== :: PersonType -&gt; PersonType -&gt; Bool
+$c/= :: PersonType -&gt; PersonType -&gt; Bool
+/= :: PersonType -&gt; PersonType -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680334344"><span id="local-6989586621680334346"><span class="annot"><span class="annottext">(forall x. PersonType -&gt; Rep PersonType x)
+-&gt; (forall x. Rep PersonType x -&gt; PersonType) -&gt; Generic PersonType
+forall x. Rep PersonType x -&gt; PersonType
+forall x. PersonType -&gt; Rep PersonType x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PersonType -&gt; Rep PersonType x
+from :: forall x. PersonType -&gt; Rep PersonType x
+$cto :: forall x. Rep PersonType x -&gt; PersonType
+to :: forall x. Rep PersonType x -&gt; PersonType
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680334349"><span id="local-6989586621680334355"><span id="local-6989586621680334358"><span id="local-6989586621680334361"><span id="local-6989586621680334364"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Person.html#PersonType"><span class="hs-identifier hs-type">PersonType</span></a></span></span></span></span></span></span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680334476"><span id="local-6989586621680334482"><span id="local-6989586621680334485"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Person.html#PersonType"><span class="hs-identifier hs-type">PersonType</span></a></span></span></span></span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span class="hs-keyword">data</span><span> </span><span id="PersonStatus"><span class="annot"><a href="Surypus.Types.Person.html#PersonStatus"><span class="hs-identifier hs-var">PersonStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PersonActive"><span class="annot"><a href="Surypus.Types.Person.html#PersonActive"><span class="hs-identifier hs-var">PersonActive</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PersonBlocked"><span class="annot"><a href="Surypus.Types.Person.html#PersonBlocked"><span class="hs-identifier hs-var">PersonBlocked</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PersonDeleted"><span class="annot"><a href="Surypus.Types.Person.html#PersonDeleted"><span class="hs-identifier hs-var">PersonDeleted</span></a></span></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680334578"><span id="local-6989586621680334580"><span id="local-6989586621680334583"><span class="annot"><span class="annottext">Int -&gt; PersonStatus -&gt; ShowS
+[PersonStatus] -&gt; ShowS
+PersonStatus -&gt; String
+(Int -&gt; PersonStatus -&gt; ShowS)
+-&gt; (PersonStatus -&gt; String)
+-&gt; ([PersonStatus] -&gt; ShowS)
+-&gt; Show PersonStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PersonStatus -&gt; ShowS
+showsPrec :: Int -&gt; PersonStatus -&gt; ShowS
+$cshow :: PersonStatus -&gt; String
+show :: PersonStatus -&gt; String
+$cshowList :: [PersonStatus] -&gt; ShowS
+showList :: [PersonStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680334586"><span id="local-6989586621680334590"><span class="annot"><span class="annottext">PersonStatus -&gt; PersonStatus -&gt; Bool
+(PersonStatus -&gt; PersonStatus -&gt; Bool)
+-&gt; (PersonStatus -&gt; PersonStatus -&gt; Bool) -&gt; Eq PersonStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PersonStatus -&gt; PersonStatus -&gt; Bool
+== :: PersonStatus -&gt; PersonStatus -&gt; Bool
+$c/= :: PersonStatus -&gt; PersonStatus -&gt; Bool
+/= :: PersonStatus -&gt; PersonStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680334593"><span id="local-6989586621680334595"><span class="annot"><span class="annottext">(forall x. PersonStatus -&gt; Rep PersonStatus x)
+-&gt; (forall x. Rep PersonStatus x -&gt; PersonStatus)
+-&gt; Generic PersonStatus
+forall x. Rep PersonStatus x -&gt; PersonStatus
+forall x. PersonStatus -&gt; Rep PersonStatus x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PersonStatus -&gt; Rep PersonStatus x
+from :: forall x. PersonStatus -&gt; Rep PersonStatus x
+$cto :: forall x. Rep PersonStatus x -&gt; PersonStatus
+to :: forall x. Rep PersonStatus x -&gt; PersonStatus
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680334598"><span id="local-6989586621680334604"><span id="local-6989586621680334607"><span id="local-6989586621680334610"><span id="local-6989586621680334613"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Person.html#PersonStatus"><span class="hs-identifier hs-type">PersonStatus</span></a></span></span></span></span></span></span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680334688"><span id="local-6989586621680334694"><span id="local-6989586621680334697"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Person.html#PersonStatus"><span class="hs-identifier hs-type">PersonStatus</span></a></span></span></span></span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span class="hs-keyword">data</span><span> </span><span id="PersonInput"><span class="annot"><a href="Surypus.Types.Person.html#PersonInput"><span class="hs-identifier hs-var">PersonInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PersonInput"><span class="annot"><a href="Surypus.Types.Person.html#PersonInput"><span class="hs-identifier hs-var">PersonInput</span></a></span></span><span>
+</span><span id="line-55"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="piName"><span class="annot"><span class="annottext">PersonInput -&gt; Text
+</span><a href="Surypus.Types.Person.html#piName"><span class="hs-identifier hs-var hs-var">piName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-56"></span><span>    </span><span id="piINN"><span class="annot"><span class="annottext">PersonInput -&gt; Text
+</span><a href="Surypus.Types.Person.html#piINN"><span class="hs-identifier hs-var hs-var">piINN</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-57"></span><span>    </span><span id="piKPP"><span class="annot"><span class="annottext">PersonInput -&gt; Maybe Text
+</span><a href="Surypus.Types.Person.html#piKPP"><span class="hs-identifier hs-var hs-var">piKPP</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-58"></span><span>    </span><span id="piPersonType"><span class="annot"><span class="annottext">PersonInput -&gt; PersonType
+</span><a href="Surypus.Types.Person.html#piPersonType"><span class="hs-identifier hs-var hs-var">piPersonType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Surypus.Types.Person.html#PersonType"><span class="hs-identifier hs-type">PersonType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-59"></span><span>    </span><span id="piStatus"><span class="annot"><span class="annottext">PersonInput -&gt; PersonStatus
+</span><a href="Surypus.Types.Person.html#piStatus"><span class="hs-identifier hs-var hs-var">piStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Surypus.Types.Person.html#PersonStatus"><span class="hs-identifier hs-type">PersonStatus</span></a></span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680334764"><span id="local-6989586621680334772"><span id="local-6989586621680334776"><span class="annot"><span class="annottext">Int -&gt; PersonInput -&gt; ShowS
+[PersonInput] -&gt; ShowS
+PersonInput -&gt; String
+(Int -&gt; PersonInput -&gt; ShowS)
+-&gt; (PersonInput -&gt; String)
+-&gt; ([PersonInput] -&gt; ShowS)
+-&gt; Show PersonInput
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PersonInput -&gt; ShowS
+showsPrec :: Int -&gt; PersonInput -&gt; ShowS
+$cshow :: PersonInput -&gt; String
+show :: PersonInput -&gt; String
+$cshowList :: [PersonInput] -&gt; ShowS
+showList :: [PersonInput] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680334779"><span id="local-6989586621680334786"><span class="annot"><span class="annottext">PersonInput -&gt; PersonInput -&gt; Bool
+(PersonInput -&gt; PersonInput -&gt; Bool)
+-&gt; (PersonInput -&gt; PersonInput -&gt; Bool) -&gt; Eq PersonInput
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PersonInput -&gt; PersonInput -&gt; Bool
+== :: PersonInput -&gt; PersonInput -&gt; Bool
+$c/= :: PersonInput -&gt; PersonInput -&gt; Bool
+/= :: PersonInput -&gt; PersonInput -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680334790"><span id="local-6989586621680334792"><span class="annot"><span class="annottext">(forall x. PersonInput -&gt; Rep PersonInput x)
+-&gt; (forall x. Rep PersonInput x -&gt; PersonInput)
+-&gt; Generic PersonInput
+forall x. Rep PersonInput x -&gt; PersonInput
+forall x. PersonInput -&gt; Rep PersonInput x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PersonInput -&gt; Rep PersonInput x
+from :: forall x. PersonInput -&gt; Rep PersonInput x
+$cto :: forall x. Rep PersonInput x -&gt; PersonInput
+to :: forall x. Rep PersonInput x -&gt; PersonInput
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span>
+</span><span id="line-63"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680334796"><span id="local-6989586621680334800"><span id="local-6989586621680334803"><span id="local-6989586621680334806"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Person.html#PersonInput"><span class="hs-identifier hs-type">PersonInput</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-64"></span><span>  </span><span id="local-6989586621680334919"><span class="annot"><span class="annottext">toJSON :: PersonInput -&gt; Value
+</span><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; PersonInput -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">genericToJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">}</span><span>
+</span><span id="line-65"></span><span>
+</span><span id="line-66"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680334922"><span id="local-6989586621680334926"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Person.html#PersonInput"><span class="hs-identifier hs-type">PersonInput</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-67"></span><span>  </span><span id="local-6989586621680335005"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser PersonInput
+</span><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser PersonInput
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><span class="hs-identifier hs-var">genericParseJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">}</span><span>
+</span><span id="line-68"></span><span>
+</span><span id="line-69"></span><span class="hs-keyword">data</span><span> </span><span id="PersonSummary"><span class="annot"><a href="Surypus.Types.Person.html#PersonSummary"><span class="hs-identifier hs-var">PersonSummary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PersonSummary"><span class="annot"><a href="Surypus.Types.Person.html#PersonSummary"><span class="hs-identifier hs-var">PersonSummary</span></a></span></span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="psId"><span class="annot"><span class="annottext">PersonSummary -&gt; Int64
+</span><a href="Surypus.Types.Person.html#psId"><span class="hs-identifier hs-var hs-var">psId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-71"></span><span>    </span><span id="psName"><span class="annot"><span class="annottext">PersonSummary -&gt; Text
+</span><a href="Surypus.Types.Person.html#psName"><span class="hs-identifier hs-var hs-var">psName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-72"></span><span>    </span><span id="psType"><span class="annot"><span class="annottext">PersonSummary -&gt; PersonType
+</span><a href="Surypus.Types.Person.html#psType"><span class="hs-identifier hs-var hs-var">psType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Surypus.Types.Person.html#PersonType"><span class="hs-identifier hs-type">PersonType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-73"></span><span>    </span><span id="psStatus"><span class="annot"><span class="annottext">PersonSummary -&gt; PersonStatus
+</span><a href="Surypus.Types.Person.html#psStatus"><span class="hs-identifier hs-var hs-var">psStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Surypus.Types.Person.html#PersonStatus"><span class="hs-identifier hs-type">PersonStatus</span></a></span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680335012"><span id="local-6989586621680335019"><span id="local-6989586621680335023"><span class="annot"><span class="annottext">Int -&gt; PersonSummary -&gt; ShowS
+[PersonSummary] -&gt; ShowS
+PersonSummary -&gt; String
+(Int -&gt; PersonSummary -&gt; ShowS)
+-&gt; (PersonSummary -&gt; String)
+-&gt; ([PersonSummary] -&gt; ShowS)
+-&gt; Show PersonSummary
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PersonSummary -&gt; ShowS
+showsPrec :: Int -&gt; PersonSummary -&gt; ShowS
+$cshow :: PersonSummary -&gt; String
+show :: PersonSummary -&gt; String
+$cshowList :: [PersonSummary] -&gt; ShowS
+showList :: [PersonSummary] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680335026"><span id="local-6989586621680335032"><span class="annot"><span class="annottext">PersonSummary -&gt; PersonSummary -&gt; Bool
+(PersonSummary -&gt; PersonSummary -&gt; Bool)
+-&gt; (PersonSummary -&gt; PersonSummary -&gt; Bool) -&gt; Eq PersonSummary
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PersonSummary -&gt; PersonSummary -&gt; Bool
+== :: PersonSummary -&gt; PersonSummary -&gt; Bool
+$c/= :: PersonSummary -&gt; PersonSummary -&gt; Bool
+/= :: PersonSummary -&gt; PersonSummary -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680335036"><span id="local-6989586621680335038"><span class="annot"><span class="annottext">(forall x. PersonSummary -&gt; Rep PersonSummary x)
+-&gt; (forall x. Rep PersonSummary x -&gt; PersonSummary)
+-&gt; Generic PersonSummary
+forall x. Rep PersonSummary x -&gt; PersonSummary
+forall x. PersonSummary -&gt; Rep PersonSummary x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PersonSummary -&gt; Rep PersonSummary x
+from :: forall x. PersonSummary -&gt; Rep PersonSummary x
+$cto :: forall x. Rep PersonSummary x -&gt; PersonSummary
+to :: forall x. Rep PersonSummary x -&gt; PersonSummary
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span><span>
+</span><span id="line-77"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680335042"><span id="local-6989586621680335046"><span id="local-6989586621680335049"><span id="local-6989586621680335052"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Person.html#PersonSummary"><span class="hs-identifier hs-type">PersonSummary</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-78"></span><span>  </span><span id="local-6989586621680335152"><span class="annot"><span class="annottext">toJSON :: PersonSummary -&gt; Value
+</span><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; PersonSummary -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">genericToJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">}</span><span>
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680335155"><span id="local-6989586621680335159"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Person.html#PersonSummary"><span class="hs-identifier hs-type">PersonSummary</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-81"></span><span>  </span><span id="local-6989586621680335230"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser PersonSummary
+</span><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser PersonSummary
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><span class="hs-identifier hs-var">genericParseJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">}</span><span>
+</span><span id="line-82"></span></pre></body></html>

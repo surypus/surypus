@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Transfer module - Stock transfers (corresponds to TransferTbl in C&lt;&gt;)</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Logistics.Transfer.html"><span class="hs-identifier">Logistics.Transfer</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Logistics.Transfer.html#Transfer"><span class="hs-identifier">Transfer</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-4"></span><span>    </span><span class="annot"><a href="Logistics.Transfer.html#TransferStatus"><span class="hs-identifier">TransferStatus</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>    </span><span class="annot"><a href="Logistics.Transfer.html#TransferFlags"><span class="hs-identifier">TransferFlags</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Logistics.Transfer.html#TransferLine"><span class="hs-identifier">TransferLine</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Logistics.Transfer.html#isTransferComplete"><span class="hs-identifier">isTransferComplete</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Logistics.Transfer.html#isTransferLineComplete"><span class="hs-identifier">isTransferLineComplete</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Logistics.Transfer.html#getRemainingQtty"><span class="hs-identifier">getRemainingQtty</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Logistics.Transfer.html#calcTransferAmount"><span class="hs-identifier">calcTransferAmount</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Logistics.Transfer.html#validateTransferLine"><span class="hs-identifier">validateTransferLine</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-comment">{-@ type NonNeg = {v:Double | v &gt;= 0} @-}</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-21"></span><span class="hs-comment">-- TRANSFER TYPES</span><span>
+</span><span id="line-22"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="annot"><span class="hs-comment">-- | Transfer - Stock transfer between warehouses</span></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">data</span><span> </span><span id="Transfer"><span class="annot"><a href="Logistics.Transfer.html#Transfer"><span class="hs-identifier hs-var">Transfer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Transfer"><span class="annot"><a href="Logistics.Transfer.html#Transfer"><span class="hs-identifier hs-var">Transfer</span></a></span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="trId"><span class="annot"><span class="annottext">Transfer -&gt; Int64
+</span><a href="Logistics.Transfer.html#trId"><span class="hs-identifier hs-var hs-var">trId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="trCode"><span class="annot"><span class="annottext">Transfer -&gt; Text
+</span><a href="Logistics.Transfer.html#trCode"><span class="hs-identifier hs-var hs-var">trCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="trDate"><span class="annot"><span class="annottext">Transfer -&gt; Day
+</span><a href="Logistics.Transfer.html#trDate"><span class="hs-identifier hs-var hs-var">trDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span id="trSourceLocId"><span class="annot"><span class="annottext">Transfer -&gt; Int64
+</span><a href="Logistics.Transfer.html#trSourceLocId"><span class="hs-identifier hs-var hs-var">trSourceLocId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Source location (&#1086;&#1090;&#1082;&#1091;&#1076;&#1072;)</span><span>
+</span><span id="line-30"></span><span>    </span><span id="trDestLocId"><span class="annot"><span class="annottext">Transfer -&gt; Int64
+</span><a href="Logistics.Transfer.html#trDestLocId"><span class="hs-identifier hs-var hs-var">trDestLocId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Destination location (&#1082;&#1091;&#1076;&#1072;)</span><span>
+</span><span id="line-31"></span><span>    </span><span id="trBillId"><span class="annot"><span class="annottext">Transfer -&gt; Int64
+</span><a href="Logistics.Transfer.html#trBillId"><span class="hs-identifier hs-var hs-var">trBillId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Linked bill ID</span><span>
+</span><span id="line-32"></span><span>    </span><span id="trStatus"><span class="annot"><span class="annottext">Transfer -&gt; TransferStatus
+</span><a href="Logistics.Transfer.html#trStatus"><span class="hs-identifier hs-var hs-var">trStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Logistics.Transfer.html#TransferStatus"><span class="hs-identifier hs-type">TransferStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-33"></span><span>    </span><span id="trFlags"><span class="annot"><span class="annottext">Transfer -&gt; Int
+</span><a href="Logistics.Transfer.html#trFlags"><span class="hs-identifier hs-var hs-var">trFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680273559"><span id="local-6989586621680273576"><span id="local-6989586621680273580"><span class="annot"><span class="annottext">Int -&gt; Transfer -&gt; ShowS
+[Transfer] -&gt; ShowS
+Transfer -&gt; String
+(Int -&gt; Transfer -&gt; ShowS)
+-&gt; (Transfer -&gt; String) -&gt; ([Transfer] -&gt; ShowS) -&gt; Show Transfer
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Transfer -&gt; ShowS
+showsPrec :: Int -&gt; Transfer -&gt; ShowS
+$cshow :: Transfer -&gt; String
+show :: Transfer -&gt; String
+$cshowList :: [Transfer] -&gt; ShowS
+showList :: [Transfer] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680273585"><span id="local-6989586621680273599"><span class="annot"><span class="annottext">Transfer -&gt; Transfer -&gt; Bool
+(Transfer -&gt; Transfer -&gt; Bool)
+-&gt; (Transfer -&gt; Transfer -&gt; Bool) -&gt; Eq Transfer
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Transfer -&gt; Transfer -&gt; Bool
+== :: Transfer -&gt; Transfer -&gt; Bool
+$c/= :: Transfer -&gt; Transfer -&gt; Bool
+/= :: Transfer -&gt; Transfer -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="annot"><span class="hs-comment">-- | Transfer status</span></span><span>
+</span><span id="line-38"></span><span class="hs-keyword">data</span><span> </span><span id="TransferStatus"><span class="annot"><a href="Logistics.Transfer.html#TransferStatus"><span class="hs-identifier hs-var">TransferStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TSDraft"><span class="annot"><a href="Logistics.Transfer.html#TSDraft"><span class="hs-identifier hs-var">TSDraft</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="TSSent"><span class="annot"><a href="Logistics.Transfer.html#TSSent"><span class="hs-identifier hs-var">TSSent</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="TSReceived"><span class="annot"><a href="Logistics.Transfer.html#TSReceived"><span class="hs-identifier hs-var">TSReceived</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="TSCancelled"><span class="annot"><a href="Logistics.Transfer.html#TSCancelled"><span class="hs-identifier hs-var">TSCancelled</span></a></span></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680273608"><span id="local-6989586621680273610"><span id="local-6989586621680273613"><span class="annot"><span class="annottext">Int -&gt; TransferStatus -&gt; ShowS
+[TransferStatus] -&gt; ShowS
+TransferStatus -&gt; String
+(Int -&gt; TransferStatus -&gt; ShowS)
+-&gt; (TransferStatus -&gt; String)
+-&gt; ([TransferStatus] -&gt; ShowS)
+-&gt; Show TransferStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TransferStatus -&gt; ShowS
+showsPrec :: Int -&gt; TransferStatus -&gt; ShowS
+$cshow :: TransferStatus -&gt; String
+show :: TransferStatus -&gt; String
+$cshowList :: [TransferStatus] -&gt; ShowS
+showList :: [TransferStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680273616"><span id="local-6989586621680273621"><span class="annot"><span class="annottext">TransferStatus -&gt; TransferStatus -&gt; Bool
+(TransferStatus -&gt; TransferStatus -&gt; Bool)
+-&gt; (TransferStatus -&gt; TransferStatus -&gt; Bool) -&gt; Eq TransferStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TransferStatus -&gt; TransferStatus -&gt; Bool
+== :: TransferStatus -&gt; TransferStatus -&gt; Bool
+$c/= :: TransferStatus -&gt; TransferStatus -&gt; Bool
+/= :: TransferStatus -&gt; TransferStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="annot"><span class="hs-comment">-- | Transfer flags - corresponds to TRANSF_*</span></span><span>
+</span><span id="line-42"></span><span class="hs-keyword">data</span><span> </span><span id="TransferFlags"><span class="annot"><a href="Logistics.Transfer.html#TransferFlags"><span class="hs-identifier hs-var">TransferFlags</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TransferFlags"><span class="annot"><a href="Logistics.Transfer.html#TransferFlags"><span class="hs-identifier hs-var">TransferFlags</span></a></span></span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tfAutoCreated"><span class="annot"><span class="annottext">TransferFlags -&gt; Bool
+</span><a href="Logistics.Transfer.html#tfAutoCreated"><span class="hs-identifier hs-var hs-var">tfAutoCreated</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- TRANSF_AUTOCREATED</span><span>
+</span><span id="line-44"></span><span>    </span><span id="tfAccepted"><span class="annot"><span class="annottext">TransferFlags -&gt; Bool
+</span><a href="Logistics.Transfer.html#tfAccepted"><span class="hs-identifier hs-var hs-var">tfAccepted</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- TRANSF_ACCEPT</span><span>
+</span><span id="line-45"></span><span>    </span><span id="tfInventory"><span class="annot"><span class="annottext">TransferFlags -&gt; Bool
+</span><a href="Logistics.Transfer.html#tfInventory"><span class="hs-identifier hs-var hs-var">tfInventory</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span> </span><span class="hs-comment">-- TRANSF_INVENTORY</span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680273628"><span id="local-6989586621680273635"><span id="local-6989586621680273639"><span class="annot"><span class="annottext">Int -&gt; TransferFlags -&gt; ShowS
+[TransferFlags] -&gt; ShowS
+TransferFlags -&gt; String
+(Int -&gt; TransferFlags -&gt; ShowS)
+-&gt; (TransferFlags -&gt; String)
+-&gt; ([TransferFlags] -&gt; ShowS)
+-&gt; Show TransferFlags
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TransferFlags -&gt; ShowS
+showsPrec :: Int -&gt; TransferFlags -&gt; ShowS
+$cshow :: TransferFlags -&gt; String
+show :: TransferFlags -&gt; String
+$cshowList :: [TransferFlags] -&gt; ShowS
+showList :: [TransferFlags] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680273642"><span id="local-6989586621680273648"><span class="annot"><span class="annottext">TransferFlags -&gt; TransferFlags -&gt; Bool
+(TransferFlags -&gt; TransferFlags -&gt; Bool)
+-&gt; (TransferFlags -&gt; TransferFlags -&gt; Bool) -&gt; Eq TransferFlags
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TransferFlags -&gt; TransferFlags -&gt; Bool
+== :: TransferFlags -&gt; TransferFlags -&gt; Bool
+$c/= :: TransferFlags -&gt; TransferFlags -&gt; Bool
+/= :: TransferFlags -&gt; TransferFlags -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="annot"><span class="hs-comment">-- | Transfer line - corresponds to TransferTbl::Fignt</span></span><span>
+</span><span id="line-50"></span><span class="hs-keyword">data</span><span> </span><span id="TransferLine"><span class="annot"><a href="Logistics.Transfer.html#TransferLine"><span class="hs-identifier hs-var">TransferLine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TransferLine"><span class="annot"><a href="Logistics.Transfer.html#TransferLine"><span class="hs-identifier hs-var">TransferLine</span></a></span></span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tlId"><span class="annot"><span class="annottext">TransferLine -&gt; Int64
+</span><a href="Logistics.Transfer.html#tlId"><span class="hs-identifier hs-var hs-var">tlId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-52"></span><span>    </span><span id="tlTransferId"><span class="annot"><span class="annottext">TransferLine -&gt; Int64
+</span><a href="Logistics.Transfer.html#tlTransferId"><span class="hs-identifier hs-var hs-var">tlTransferId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-53"></span><span>    </span><span id="tlGoodsId"><span class="annot"><span class="annottext">TransferLine -&gt; Int64
+</span><a href="Logistics.Transfer.html#tlGoodsId"><span class="hs-identifier hs-var hs-var">tlGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-54"></span><span>    </span><span id="tlSourceLotId"><span class="annot"><span class="annottext">TransferLine -&gt; Int64
+</span><a href="Logistics.Transfer.html#tlSourceLotId"><span class="hs-identifier hs-var hs-var">tlSourceLotId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Source lot (from which lot)</span><span>
+</span><span id="line-55"></span><span>    </span><span id="tlDestLotId"><span class="annot"><span class="annottext">TransferLine -&gt; Int64
+</span><a href="Logistics.Transfer.html#tlDestLotId"><span class="hs-identifier hs-var hs-var">tlDestLotId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Destination lot (to which lot)</span><span>
+</span><span id="line-56"></span><span>    </span><span id="tlQtty"><span class="annot"><span class="annottext">TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#tlQtty"><span class="hs-identifier hs-var hs-var">tlQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Transfer quantity</span><span>
+</span><span id="line-57"></span><span>    </span><span id="tlSentQtty"><span class="annot"><span class="annottext">TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#tlSentQtty"><span class="hs-identifier hs-var hs-var">tlSentQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Sent quantity</span><span>
+</span><span id="line-58"></span><span>    </span><span id="tlReceivedQtty"><span class="annot"><span class="annottext">TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#tlReceivedQtty"><span class="hs-identifier hs-var hs-var">tlReceivedQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Received quantity</span><span>
+</span><span id="line-59"></span><span>    </span><span id="tlPrice"><span class="annot"><span class="annottext">TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#tlPrice"><span class="hs-identifier hs-var hs-var">tlPrice</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Price</span><span>
+</span><span id="line-60"></span><span>    </span><span id="tlCost"><span class="annot"><span class="annottext">TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#tlCost"><span class="hs-identifier hs-var hs-var">tlCost</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Cost</span><span>
+</span><span id="line-61"></span><span>    </span><span id="tlFlags"><span class="annot"><span class="annottext">TransferLine -&gt; Int
+</span><a href="Logistics.Transfer.html#tlFlags"><span class="hs-identifier hs-var hs-var">tlFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680273664"><span id="local-6989586621680273679"><span id="local-6989586621680273683"><span class="annot"><span class="annottext">Int -&gt; TransferLine -&gt; ShowS
+[TransferLine] -&gt; ShowS
+TransferLine -&gt; String
+(Int -&gt; TransferLine -&gt; ShowS)
+-&gt; (TransferLine -&gt; String)
+-&gt; ([TransferLine] -&gt; ShowS)
+-&gt; Show TransferLine
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TransferLine -&gt; ShowS
+showsPrec :: Int -&gt; TransferLine -&gt; ShowS
+$cshow :: TransferLine -&gt; String
+show :: TransferLine -&gt; String
+$cshowList :: [TransferLine] -&gt; ShowS
+showList :: [TransferLine] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680273686"><span id="local-6989586621680273700"><span class="annot"><span class="annottext">TransferLine -&gt; TransferLine -&gt; Bool
+(TransferLine -&gt; TransferLine -&gt; Bool)
+-&gt; (TransferLine -&gt; TransferLine -&gt; Bool) -&gt; Eq TransferLine
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TransferLine -&gt; TransferLine -&gt; Bool
+== :: TransferLine -&gt; TransferLine -&gt; Bool
+$c/= :: TransferLine -&gt; TransferLine -&gt; Bool
+/= :: TransferLine -&gt; TransferLine -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-66"></span><span class="hs-comment">-- TRANSFER FUNCTIONS</span><span>
+</span><span id="line-67"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-68"></span><span>
+</span><span id="line-69"></span><span class="annot"><span class="hs-comment">-- | Check if transfer is complete (all goods received)</span></span><span>
+</span><span id="line-70"></span><span class="annot"><a href="Logistics.Transfer.html#isTransferComplete"><span class="hs-identifier hs-type">isTransferComplete</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Logistics.Transfer.html#Transfer"><span class="hs-identifier hs-type">Transfer</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-71"></span><span id="isTransferComplete"><span class="annot"><span class="annottext">isTransferComplete :: Transfer -&gt; Bool
+</span><a href="Logistics.Transfer.html#isTransferComplete"><span class="hs-identifier hs-var hs-var">isTransferComplete</span></a></span></span><span> </span><span id="local-6989586621680273703"><span class="annot"><span class="annottext">Transfer
+</span><a href="#local-6989586621680273703"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Transfer -&gt; TransferStatus
+</span><a href="Logistics.Transfer.html#trStatus"><span class="hs-identifier hs-var">trStatus</span></a></span><span> </span><span class="annot"><span class="annottext">Transfer
+</span><a href="#local-6989586621680273703"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">TransferStatus -&gt; TransferStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">TransferStatus
+</span><a href="Logistics.Transfer.html#TSReceived"><span class="hs-identifier hs-var">TSReceived</span></a></span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="annot"><span class="hs-comment">-- | Check if transfer line is fully received</span></span><span>
+</span><span id="line-74"></span><span class="annot"><a href="Logistics.Transfer.html#isTransferLineComplete"><span class="hs-identifier hs-type">isTransferLineComplete</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Logistics.Transfer.html#TransferLine"><span class="hs-identifier hs-type">TransferLine</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-75"></span><span id="isTransferLineComplete"><span class="annot"><span class="annottext">isTransferLineComplete :: TransferLine -&gt; Bool
+</span><a href="Logistics.Transfer.html#isTransferLineComplete"><span class="hs-identifier hs-var hs-var">isTransferLineComplete</span></a></span></span><span> </span><span id="local-6989586621680273704"><span class="annot"><span class="annottext">TransferLine
+</span><a href="#local-6989586621680273704"><span class="hs-identifier hs-var">tl</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#tlReceivedQtty"><span class="hs-identifier hs-var">tlReceivedQtty</span></a></span><span> </span><span class="annot"><span class="annottext">TransferLine
+</span><a href="#local-6989586621680273704"><span class="hs-identifier hs-var">tl</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E%3D"><span class="hs-operator hs-var">&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#tlQtty"><span class="hs-identifier hs-var">tlQtty</span></a></span><span> </span><span class="annot"><span class="annottext">TransferLine
+</span><a href="#local-6989586621680273704"><span class="hs-identifier hs-var">tl</span></a></span><span>
+</span><span id="line-76"></span><span>
+</span><span id="line-77"></span><span class="annot"><span class="hs-comment">-- | Get remaining quantity to receive</span></span><span>
+</span><span id="line-78"></span><span class="annot"><a href="Logistics.Transfer.html#getRemainingQtty"><span class="hs-identifier hs-type">getRemainingQtty</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Logistics.Transfer.html#TransferLine"><span class="hs-identifier hs-type">TransferLine</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-79"></span><span id="getRemainingQtty"><span class="annot"><span class="annottext">getRemainingQtty :: TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#getRemainingQtty"><span class="hs-identifier hs-var hs-var">getRemainingQtty</span></a></span></span><span> </span><span id="local-6989586621680273705"><span class="annot"><span class="annottext">TransferLine
+</span><a href="#local-6989586621680273705"><span class="hs-identifier hs-var">tl</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#max"><span class="hs-identifier hs-var">max</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#tlQtty"><span class="hs-identifier hs-var">tlQtty</span></a></span><span> </span><span class="annot"><span class="annottext">TransferLine
+</span><a href="#local-6989586621680273705"><span class="hs-identifier hs-var">tl</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-var">-</span></a></span><span> </span><span class="annot"><span class="annottext">TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#tlReceivedQtty"><span class="hs-identifier hs-var">tlReceivedQtty</span></a></span><span> </span><span class="annot"><span class="annottext">TransferLine
+</span><a href="#local-6989586621680273705"><span class="hs-identifier hs-var">tl</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-80"></span><span>
+</span><span id="line-81"></span><span class="annot"><span class="hs-comment">-- | Calculate transfer amount</span></span><span>
+</span><span id="line-82"></span><span>
+</span><span id="line-83"></span><span class="hs-comment">{-@ calcTransferAmount :: TransferLine -&gt; NonNeg @-}</span><span>
+</span><span id="line-84"></span><span class="annot"><a href="Logistics.Transfer.html#calcTransferAmount"><span class="hs-identifier hs-type">calcTransferAmount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Logistics.Transfer.html#TransferLine"><span class="hs-identifier hs-type">TransferLine</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-85"></span><span id="calcTransferAmount"><span class="annot"><span class="annottext">calcTransferAmount :: TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#calcTransferAmount"><span class="hs-identifier hs-var hs-var">calcTransferAmount</span></a></span></span><span> </span><span id="local-6989586621680273707"><span class="annot"><span class="annottext">TransferLine
+</span><a href="#local-6989586621680273707"><span class="hs-identifier hs-var">tl</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#tlQtty"><span class="hs-identifier hs-var">tlQtty</span></a></span><span> </span><span class="annot"><span class="annottext">TransferLine
+</span><a href="#local-6989586621680273707"><span class="hs-identifier hs-var">tl</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#tlPrice"><span class="hs-identifier hs-var">tlPrice</span></a></span><span> </span><span class="annot"><span class="annottext">TransferLine
+</span><a href="#local-6989586621680273707"><span class="hs-identifier hs-var">tl</span></a></span><span>
+</span><span id="line-86"></span><span>
+</span><span id="line-87"></span><span class="annot"><span class="hs-comment">-- | Validate transfer line</span></span><span>
+</span><span id="line-88"></span><span class="annot"><a href="Logistics.Transfer.html#validateTransferLine"><span class="hs-identifier hs-type">validateTransferLine</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Logistics.Transfer.html#TransferLine"><span class="hs-identifier hs-type">TransferLine</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-89"></span><span id="validateTransferLine"><span class="annot"><span class="annottext">validateTransferLine :: TransferLine -&gt; Bool
+</span><a href="Logistics.Transfer.html#validateTransferLine"><span class="hs-identifier hs-var hs-var">validateTransferLine</span></a></span></span><span> </span><span id="local-6989586621680273709"><span class="annot"><span class="annottext">TransferLine
+</span><a href="#local-6989586621680273709"><span class="hs-identifier hs-var">tl</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-90"></span><span>  </span><span class="annot"><span class="annottext">TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#tlQtty"><span class="hs-identifier hs-var">tlQtty</span></a></span><span> </span><span class="annot"><span class="annottext">TransferLine
+</span><a href="#local-6989586621680273709"><span class="hs-identifier hs-var">tl</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E%3D"><span class="hs-operator hs-var">&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%26%26"><span class="hs-operator hs-var">&amp;&amp;</span></a></span><span> </span><span class="annot"><span class="annottext">TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#tlSentQtty"><span class="hs-identifier hs-var">tlSentQtty</span></a></span><span> </span><span class="annot"><span class="annottext">TransferLine
+</span><a href="#local-6989586621680273709"><span class="hs-identifier hs-var">tl</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E%3D"><span class="hs-operator hs-var">&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%26%26"><span class="hs-operator hs-var">&amp;&amp;</span></a></span><span> </span><span class="annot"><span class="annottext">TransferLine -&gt; Double
+</span><a href="Logistics.Transfer.html#tlReceivedQtty"><span class="hs-identifier hs-var">tlReceivedQtty</span></a></span><span> </span><span class="annot"><span class="annottext">TransferLine
+</span><a href="#local-6989586621680273709"><span class="hs-identifier hs-var">tl</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E%3D"><span class="hs-operator hs-var">&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-91"></span></pre></body></html>

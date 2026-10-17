@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Science.ML.Features.html"><span class="hs-identifier">Science.ML.Features</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Science.ML.Features.html#FeatureExtractor"><span class="hs-identifier">FeatureExtractor</span></a></span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Science.ML.Features.html#extractFeatures"><span class="hs-identifier">extractFeatures</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Science.ML.Features.html#SalesFeatures"><span class="hs-identifier">SalesFeatures</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="annot"><span class="hs-comment">-- | Feature vector for ML model</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">data</span><span> </span><span id="SalesFeatures"><span class="annot"><a href="Science.ML.Features.html#SalesFeatures"><span class="hs-identifier hs-var">SalesFeatures</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SalesFeatures"><span class="annot"><a href="Science.ML.Features.html#SalesFeatures"><span class="hs-identifier hs-var">SalesFeatures</span></a></span></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="sfItemId"><span class="annot"><span class="annottext">SalesFeatures -&gt; Int
+</span><a href="Science.ML.Features.html#sfItemId"><span class="hs-identifier hs-var hs-var">sfItemId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="sfDate"><span class="annot"><span class="annottext">SalesFeatures -&gt; Day
+</span><a href="Science.ML.Features.html#sfDate"><span class="hs-identifier hs-var hs-var">sfDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="sfQuantity"><span class="annot"><span class="annottext">SalesFeatures -&gt; Double
+</span><a href="Science.ML.Features.html#sfQuantity"><span class="hs-identifier hs-var hs-var">sfQuantity</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="sfPrice"><span class="annot"><span class="annottext">SalesFeatures -&gt; Double
+</span><a href="Science.ML.Features.html#sfPrice"><span class="hs-identifier hs-var hs-var">sfPrice</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="sfDayOfWeek"><span class="annot"><span class="annottext">SalesFeatures -&gt; Int
+</span><a href="Science.ML.Features.html#sfDayOfWeek"><span class="hs-identifier hs-var hs-var">sfDayOfWeek</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="sfDayOfMonth"><span class="annot"><span class="annottext">SalesFeatures -&gt; Int
+</span><a href="Science.ML.Features.html#sfDayOfMonth"><span class="hs-identifier hs-var hs-var">sfDayOfMonth</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="sfIsWeekend"><span class="annot"><span class="annottext">SalesFeatures -&gt; Bool
+</span><a href="Science.ML.Features.html#sfIsWeekend"><span class="hs-identifier hs-var hs-var">sfIsWeekend</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="sfRollingAvg7"><span class="annot"><span class="annottext">SalesFeatures -&gt; Double
+</span><a href="Science.ML.Features.html#sfRollingAvg7"><span class="hs-identifier hs-var hs-var">sfRollingAvg7</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="sfRollingAvg30"><span class="annot"><span class="annottext">SalesFeatures -&gt; Double
+</span><a href="Science.ML.Features.html#sfRollingAvg30"><span class="hs-identifier hs-var hs-var">sfRollingAvg30</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680280369"><span id="local-6989586621680280384"><span class="annot"><span class="annottext">SalesFeatures -&gt; SalesFeatures -&gt; Bool
+(SalesFeatures -&gt; SalesFeatures -&gt; Bool)
+-&gt; (SalesFeatures -&gt; SalesFeatures -&gt; Bool) -&gt; Eq SalesFeatures
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: SalesFeatures -&gt; SalesFeatures -&gt; Bool
+== :: SalesFeatures -&gt; SalesFeatures -&gt; Bool
+$c/= :: SalesFeatures -&gt; SalesFeatures -&gt; Bool
+/= :: SalesFeatures -&gt; SalesFeatures -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680280389"><span id="local-6989586621680280406"><span id="local-6989586621680280410"><span class="annot"><span class="annottext">Int -&gt; SalesFeatures -&gt; ShowS
+[SalesFeatures] -&gt; ShowS
+SalesFeatures -&gt; String
+(Int -&gt; SalesFeatures -&gt; ShowS)
+-&gt; (SalesFeatures -&gt; String)
+-&gt; ([SalesFeatures] -&gt; ShowS)
+-&gt; Show SalesFeatures
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; SalesFeatures -&gt; ShowS
+showsPrec :: Int -&gt; SalesFeatures -&gt; ShowS
+$cshow :: SalesFeatures -&gt; String
+show :: SalesFeatures -&gt; String
+$cshowList :: [SalesFeatures] -&gt; ShowS
+showList :: [SalesFeatures] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="annot"><span class="hs-comment">-- | Type for feature extraction</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">type</span><span> </span><span id="FeatureExtractor"><span class="annot"><a href="Science.ML.Features.html#FeatureExtractor"><span class="hs-identifier hs-var">FeatureExtractor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Science.ML.Features.html#SalesFeatures"><span class="hs-identifier hs-type">SalesFeatures</span></a></span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="annot"><span class="hs-comment">-- | Extract features from historical data</span></span><span>
+</span><span id="line-27"></span><span class="annot"><a href="Science.ML.Features.html#extractFeatures"><span class="hs-identifier hs-type">extractFeatures</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Science.ML.Features.html#FeatureExtractor"><span class="hs-identifier hs-type">FeatureExtractor</span></a></span><span>
+</span><span id="line-28"></span><span id="extractFeatures"><span class="annot"><span class="annottext">extractFeatures :: FeatureExtractor
+</span><a href="Science.ML.Features.html#extractFeatures"><span class="hs-identifier hs-var hs-var">extractFeatures</span></a></span></span><span> </span><span id="local-6989586621680280414"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680280414"><span class="hs-identifier hs-var">itemId</span></a></span></span><span> </span><span id="local-6989586621680280415"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680280415"><span class="hs-identifier hs-var">date</span></a></span></span><span> </span><span id="local-6989586621680280416"><span class="annot"><span class="annottext">[(Day, Double)]
+</span><a href="#local-6989586621680280416"><span class="hs-identifier hs-var">history</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Science.ML.Features.html#SalesFeatures"><span class="hs-identifier hs-type">SalesFeatures</span></a></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">sfItemId :: Int
+</span><a href="Science.ML.Features.html#sfItemId"><span class="hs-identifier hs-var">sfItemId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680280414"><span class="hs-identifier hs-var">itemId</span></a></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">sfDate :: Day
+</span><a href="Science.ML.Features.html#sfDate"><span class="hs-identifier hs-var">sfDate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680280415"><span class="hs-identifier hs-var">date</span></a></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">sfQuantity :: Double
+</span><a href="Science.ML.Features.html#sfQuantity"><span class="hs-identifier hs-var">sfQuantity</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">sfPrice :: Double
+</span><a href="Science.ML.Features.html#sfPrice"><span class="hs-identifier hs-var">sfPrice</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">sfDayOfWeek :: Int
+</span><a href="Science.ML.Features.html#sfDayOfWeek"><span class="hs-identifier hs-var">sfDayOfWeek</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">sfDayOfMonth :: Int
+</span><a href="Science.ML.Features.html#sfDayOfMonth"><span class="hs-identifier hs-var">sfDayOfMonth</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">sfIsWeekend :: Bool
+</span><a href="Science.ML.Features.html#sfIsWeekend"><span class="hs-identifier hs-var">sfIsWeekend</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#False"><span class="hs-identifier hs-var">False</span></a></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">sfRollingAvg7 :: Double
+</span><a href="Science.ML.Features.html#sfRollingAvg7"><span class="hs-identifier hs-var">sfRollingAvg7</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">sfRollingAvg30 :: Double
+</span><a href="Science.ML.Features.html#sfRollingAvg30"><span class="hs-identifier hs-var">sfRollingAvg30</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-special">}</span></pre></body></html>

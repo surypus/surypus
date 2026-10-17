@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Bonus module - Bonus system</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Commerce.Bonus.html"><span class="hs-identifier">Commerce.Bonus</span></a></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="annot"><span class="hs-comment">-- | BonusProgram - Bonus program</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">data</span><span> </span><span id="BonusProgram"><span class="annot"><a href="Commerce.Bonus.html#BonusProgram"><span class="hs-identifier hs-var">BonusProgram</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BonusProgram"><span class="annot"><a href="Commerce.Bonus.html#BonusProgram"><span class="hs-identifier hs-var">BonusProgram</span></a></span></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="bpId"><span class="annot"><span class="annottext">BonusProgram -&gt; Int64
+</span><a href="Commerce.Bonus.html#bpId"><span class="hs-identifier hs-var hs-var">bpId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span id="bpName"><span class="annot"><span class="annottext">BonusProgram -&gt; Text
+</span><a href="Commerce.Bonus.html#bpName"><span class="hs-identifier hs-var hs-var">bpName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="bpAccrualRate"><span class="annot"><span class="annottext">BonusProgram -&gt; Double
+</span><a href="Commerce.Bonus.html#bpAccrualRate"><span class="hs-identifier hs-var hs-var">bpAccrualRate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- % of purchase</span><span>
+</span><span id="line-12"></span><span>    </span><span id="bpBurnRate"><span class="annot"><span class="annottext">BonusProgram -&gt; Double
+</span><a href="Commerce.Bonus.html#bpBurnRate"><span class="hs-identifier hs-var hs-var">bpBurnRate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- points per currency</span><span>
+</span><span id="line-13"></span><span>    </span><span id="bpValidityDays"><span class="annot"><span class="annottext">BonusProgram -&gt; Int
+</span><a href="Commerce.Bonus.html#bpValidityDays"><span class="hs-identifier hs-var hs-var">bpValidityDays</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680197581"><span id="local-6989586621680197594"><span id="local-6989586621680197598"><span class="annot"><span class="annottext">Int -&gt; BonusProgram -&gt; ShowS
+[BonusProgram] -&gt; ShowS
+BonusProgram -&gt; String
+(Int -&gt; BonusProgram -&gt; ShowS)
+-&gt; (BonusProgram -&gt; String)
+-&gt; ([BonusProgram] -&gt; ShowS)
+-&gt; Show BonusProgram
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BonusProgram -&gt; ShowS
+showsPrec :: Int -&gt; BonusProgram -&gt; ShowS
+$cshow :: BonusProgram -&gt; String
+show :: BonusProgram -&gt; String
+$cshowList :: [BonusProgram] -&gt; ShowS
+showList :: [BonusProgram] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680197603"><span id="local-6989586621680197614"><span class="annot"><span class="annottext">BonusProgram -&gt; BonusProgram -&gt; Bool
+(BonusProgram -&gt; BonusProgram -&gt; Bool)
+-&gt; (BonusProgram -&gt; BonusProgram -&gt; Bool) -&gt; Eq BonusProgram
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BonusProgram -&gt; BonusProgram -&gt; Bool
+== :: BonusProgram -&gt; BonusProgram -&gt; Bool
+$c/= :: BonusProgram -&gt; BonusProgram -&gt; Bool
+/= :: BonusProgram -&gt; BonusProgram -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="annot"><span class="hs-comment">-- | BonusAccount - Customer bonus account</span></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="BonusAccount"><span class="annot"><a href="Commerce.Bonus.html#BonusAccount"><span class="hs-identifier hs-var">BonusAccount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BonusAccount"><span class="annot"><a href="Commerce.Bonus.html#BonusAccount"><span class="hs-identifier hs-var">BonusAccount</span></a></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="baId"><span class="annot"><span class="annottext">BonusAccount -&gt; Int64
+</span><a href="Commerce.Bonus.html#baId"><span class="hs-identifier hs-var hs-var">baId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span id="baPersonId"><span class="annot"><span class="annottext">BonusAccount -&gt; Int64
+</span><a href="Commerce.Bonus.html#baPersonId"><span class="hs-identifier hs-var hs-var">baPersonId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="baProgramId"><span class="annot"><span class="annottext">BonusAccount -&gt; Int64
+</span><a href="Commerce.Bonus.html#baProgramId"><span class="hs-identifier hs-var hs-var">baProgramId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="baPoints"><span class="annot"><span class="annottext">BonusAccount -&gt; Double
+</span><a href="Commerce.Bonus.html#baPoints"><span class="hs-identifier hs-var hs-var">baPoints</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="baTotalAccrued"><span class="annot"><span class="annottext">BonusAccount -&gt; Double
+</span><a href="Commerce.Bonus.html#baTotalAccrued"><span class="hs-identifier hs-var hs-var">baTotalAccrued</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="baTotalBurned"><span class="annot"><span class="annottext">BonusAccount -&gt; Double
+</span><a href="Commerce.Bonus.html#baTotalBurned"><span class="hs-identifier hs-var hs-var">baTotalBurned</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680197626"><span id="local-6989586621680197635"><span id="local-6989586621680197639"><span class="annot"><span class="annottext">Int -&gt; BonusAccount -&gt; ShowS
+[BonusAccount] -&gt; ShowS
+BonusAccount -&gt; String
+(Int -&gt; BonusAccount -&gt; ShowS)
+-&gt; (BonusAccount -&gt; String)
+-&gt; ([BonusAccount] -&gt; ShowS)
+-&gt; Show BonusAccount
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BonusAccount -&gt; ShowS
+showsPrec :: Int -&gt; BonusAccount -&gt; ShowS
+$cshow :: BonusAccount -&gt; String
+show :: BonusAccount -&gt; String
+$cshowList :: [BonusAccount] -&gt; ShowS
+showList :: [BonusAccount] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680197642"><span id="local-6989586621680197650"><span class="annot"><span class="annottext">BonusAccount -&gt; BonusAccount -&gt; Bool
+(BonusAccount -&gt; BonusAccount -&gt; Bool)
+-&gt; (BonusAccount -&gt; BonusAccount -&gt; Bool) -&gt; Eq BonusAccount
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BonusAccount -&gt; BonusAccount -&gt; Bool
+== :: BonusAccount -&gt; BonusAccount -&gt; Bool
+$c/= :: BonusAccount -&gt; BonusAccount -&gt; Bool
+/= :: BonusAccount -&gt; BonusAccount -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span></pre></body></html>

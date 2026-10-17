@@ -1,4 +1,4 @@
-#!/everything/bin/bash
+#!/usr/bin/env bash
 # generate-module-graph.sh
 # Generate Mermaid module dependency graph from Surypus src/
 #

@@ -1,0 +1,359 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680240011"><span id="local-6989586621680240012"><span id="local-6989586621680240013"><span id="local-6989586621680240014"></span></span></span></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- | Finance.OpKindEx - Operation kind extensions with type safety</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- Enhanced operation classification with formal verification</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Finance.OpKindEx.html"><span class="hs-identifier">Finance.OpKindEx</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="annot"><span class="hs-comment">-- | Enhanced operation kind with richer semantics</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">data</span><span> </span><span id="OpKindEx"><span class="annot"><a href="Finance.OpKindEx.html#OpKindEx"><span class="hs-identifier hs-var">OpKindEx</span></a></span></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="OKEInvoicePayment"><span class="annot"><a href="Finance.OpKindEx.html#OKEInvoicePayment"><span class="hs-identifier hs-var">OKEInvoicePayment</span></a></span></span><span>    </span><span class="hs-comment">-- &#1054;&#1087;&#1083;&#1072;&#1090;&#1072; &#1089;&#1095;&#1105;&#1090;&#1072; (invoice payment)</span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="OKEPrepayment"><span class="annot"><a href="Finance.OpKindEx.html#OKEPrepayment"><span class="hs-identifier hs-var">OKEPrepayment</span></a></span></span><span>       </span><span class="hs-comment">-- &#1040;&#1074;&#1072;&#1085;&#1089; (prepayment)</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="OKEAdvancePayment"><span class="annot"><a href="Finance.OpKindEx.html#OKEAdvancePayment"><span class="hs-identifier hs-var">OKEAdvancePayment</span></a></span></span><span>   </span><span class="hs-comment">-- &#1040;&#1074;&#1072;&#1085;&#1089;&#1086;&#1074;&#1099;&#1081; &#1087;&#1083;&#1072;&#1090;&#1105;&#1078; (advance payment)</span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="OKEReturn"><span class="annot"><a href="Finance.OpKindEx.html#OKEReturn"><span class="hs-identifier hs-var">OKEReturn</span></a></span></span><span>          </span><span class="hs-comment">-- &#1042;&#1086;&#1079;&#1074;&#1088;&#1072;&#1090; (return)</span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="OKEWriteOff"><span class="annot"><a href="Finance.OpKindEx.html#OKEWriteOff"><span class="hs-identifier hs-var">OKEWriteOff</span></a></span></span><span>        </span><span class="hs-comment">-- &#1057;&#1087;&#1080;&#1089;&#1072;&#1085;&#1080;&#1077; (write-off)</span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="OKETransfer"><span class="annot"><a href="Finance.OpKindEx.html#OKETransfer"><span class="hs-identifier hs-var">OKETransfer</span></a></span></span><span>        </span><span class="hs-comment">-- &#1055;&#1077;&#1088;&#1077;&#1074;&#1086;&#1076; (transfer)</span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="OKECurrencyExchange"><span class="annot"><a href="Finance.OpKindEx.html#OKECurrencyExchange"><span class="hs-identifier hs-var">OKECurrencyExchange</span></a></span></span><span> </span><span class="hs-comment">-- &#1054;&#1073;&#1084;&#1077;&#1085; &#1074;&#1072;&#1083;&#1102;&#1090;&#1099; (currency exchange)</span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="OKECreditNote"><span class="annot"><a href="Finance.OpKindEx.html#OKECreditNote"><span class="hs-identifier hs-var">OKECreditNote</span></a></span></span><span>       </span><span class="hs-comment">-- &#1050;&#1088;&#1077;&#1076;&#1080;&#1090;&#1086;&#1074;&#1072;&#1103; &#1085;&#1086;&#1090;&#1072; (credit note)</span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="OKEDeditNote"><span class="annot"><a href="Finance.OpKindEx.html#OKEDeditNote"><span class="hs-identifier hs-var">OKEDeditNote</span></a></span></span><span>        </span><span class="hs-comment">-- &#1044;&#1077;&#1073;&#1077;&#1090;&#1086;&#1074;&#1072;&#1103; &#1085;&#1086;&#1090;&#1072; (debit note)</span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680240044"><span id="local-6989586621680240046"><span id="local-6989586621680240050"><span class="annot"><span class="annottext">Int -&gt; OpKindEx -&gt; ShowS
+[OpKindEx] -&gt; ShowS
+OpKindEx -&gt; String
+(Int -&gt; OpKindEx -&gt; ShowS)
+-&gt; (OpKindEx -&gt; String) -&gt; ([OpKindEx] -&gt; ShowS) -&gt; Show OpKindEx
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; OpKindEx -&gt; ShowS
+showsPrec :: Int -&gt; OpKindEx -&gt; ShowS
+$cshow :: OpKindEx -&gt; String
+show :: OpKindEx -&gt; String
+$cshowList :: [OpKindEx] -&gt; ShowS
+showList :: [OpKindEx] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680240055"><span id="local-6989586621680240060"><span class="annot"><span class="annottext">OpKindEx -&gt; OpKindEx -&gt; Bool
+(OpKindEx -&gt; OpKindEx -&gt; Bool)
+-&gt; (OpKindEx -&gt; OpKindEx -&gt; Bool) -&gt; Eq OpKindEx
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: OpKindEx -&gt; OpKindEx -&gt; Bool
+== :: OpKindEx -&gt; OpKindEx -&gt; Bool
+$c/= :: OpKindEx -&gt; OpKindEx -&gt; Bool
+/= :: OpKindEx -&gt; OpKindEx -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680240065"><span id="local-6989586621680240074"><span id="local-6989586621680240081"><span id="local-6989586621680240095"><span id="local-6989586621680240098"><span id="local-6989586621680240103"><span id="local-6989586621680240109"><span id="local-6989586621680240113"><span class="annot"><span class="annottext">Int -&gt; OpKindEx
+OpKindEx -&gt; Int
+OpKindEx -&gt; [OpKindEx]
+OpKindEx -&gt; OpKindEx
+OpKindEx -&gt; OpKindEx -&gt; [OpKindEx]
+OpKindEx -&gt; OpKindEx -&gt; OpKindEx -&gt; [OpKindEx]
+(OpKindEx -&gt; OpKindEx)
+-&gt; (OpKindEx -&gt; OpKindEx)
+-&gt; (Int -&gt; OpKindEx)
+-&gt; (OpKindEx -&gt; Int)
+-&gt; (OpKindEx -&gt; [OpKindEx])
+-&gt; (OpKindEx -&gt; OpKindEx -&gt; [OpKindEx])
+-&gt; (OpKindEx -&gt; OpKindEx -&gt; [OpKindEx])
+-&gt; (OpKindEx -&gt; OpKindEx -&gt; OpKindEx -&gt; [OpKindEx])
+-&gt; Enum OpKindEx
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: OpKindEx -&gt; OpKindEx
+succ :: OpKindEx -&gt; OpKindEx
+$cpred :: OpKindEx -&gt; OpKindEx
+pred :: OpKindEx -&gt; OpKindEx
+$ctoEnum :: Int -&gt; OpKindEx
+toEnum :: Int -&gt; OpKindEx
+$cfromEnum :: OpKindEx -&gt; Int
+fromEnum :: OpKindEx -&gt; Int
+$cenumFrom :: OpKindEx -&gt; [OpKindEx]
+enumFrom :: OpKindEx -&gt; [OpKindEx]
+$cenumFromThen :: OpKindEx -&gt; OpKindEx -&gt; [OpKindEx]
+enumFromThen :: OpKindEx -&gt; OpKindEx -&gt; [OpKindEx]
+$cenumFromTo :: OpKindEx -&gt; OpKindEx -&gt; [OpKindEx]
+enumFromTo :: OpKindEx -&gt; OpKindEx -&gt; [OpKindEx]
+$cenumFromThenTo :: OpKindEx -&gt; OpKindEx -&gt; OpKindEx -&gt; [OpKindEx]
+enumFromThenTo :: OpKindEx -&gt; OpKindEx -&gt; OpKindEx -&gt; [OpKindEx]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680240121"><span id="local-6989586621680240123"><span class="annot"><span class="annottext">OpKindEx
+OpKindEx -&gt; OpKindEx -&gt; Bounded OpKindEx
+forall a. a -&gt; a -&gt; Bounded a
+$cminBound :: OpKindEx
+minBound :: OpKindEx
+$cmaxBound :: OpKindEx
+maxBound :: OpKindEx
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Bounded"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680240131"><span id="local-6989586621680240135"><span id="local-6989586621680240139"><span id="local-6989586621680240143"><span id="local-6989586621680240146"><span id="local-6989586621680240149"><span id="local-6989586621680240152"><span class="annot"><span class="annottext">Eq OpKindEx
+Eq OpKindEx =&gt;
+(OpKindEx -&gt; OpKindEx -&gt; Ordering)
+-&gt; (OpKindEx -&gt; OpKindEx -&gt; Bool)
+-&gt; (OpKindEx -&gt; OpKindEx -&gt; Bool)
+-&gt; (OpKindEx -&gt; OpKindEx -&gt; Bool)
+-&gt; (OpKindEx -&gt; OpKindEx -&gt; Bool)
+-&gt; (OpKindEx -&gt; OpKindEx -&gt; OpKindEx)
+-&gt; (OpKindEx -&gt; OpKindEx -&gt; OpKindEx)
+-&gt; Ord OpKindEx
+OpKindEx -&gt; OpKindEx -&gt; Bool
+OpKindEx -&gt; OpKindEx -&gt; Ordering
+OpKindEx -&gt; OpKindEx -&gt; OpKindEx
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: OpKindEx -&gt; OpKindEx -&gt; Ordering
+compare :: OpKindEx -&gt; OpKindEx -&gt; Ordering
+$c&lt; :: OpKindEx -&gt; OpKindEx -&gt; Bool
+&lt; :: OpKindEx -&gt; OpKindEx -&gt; Bool
+$c&lt;= :: OpKindEx -&gt; OpKindEx -&gt; Bool
+&lt;= :: OpKindEx -&gt; OpKindEx -&gt; Bool
+$c&gt; :: OpKindEx -&gt; OpKindEx -&gt; Bool
+&gt; :: OpKindEx -&gt; OpKindEx -&gt; Bool
+$c&gt;= :: OpKindEx -&gt; OpKindEx -&gt; Bool
+&gt;= :: OpKindEx -&gt; OpKindEx -&gt; Bool
+$cmax :: OpKindEx -&gt; OpKindEx -&gt; OpKindEx
+max :: OpKindEx -&gt; OpKindEx -&gt; OpKindEx
+$cmin :: OpKindEx -&gt; OpKindEx -&gt; OpKindEx
+min :: OpKindEx -&gt; OpKindEx -&gt; OpKindEx
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="annot"><span class="hs-comment">-- | Operation kind group for better classification</span></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">data</span><span> </span><span id="OpKindGroup"><span class="annot"><a href="Finance.OpKindEx.html#OpKindGroup"><span class="hs-identifier hs-var">OpKindGroup</span></a></span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="PaymentGroup"><span class="annot"><a href="Finance.OpKindEx.html#PaymentGroup"><span class="hs-identifier hs-var">PaymentGroup</span></a></span></span><span>   </span><span class="hs-comment">-- &#1055;&#1083;&#1072;&#1090;&#1077;&#1078;&#1085;&#1099;&#1077; &#1086;&#1087;&#1077;&#1088;&#1072;&#1094;&#1080;&#1080;</span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="AdjustmentGroup"><span class="annot"><a href="Finance.OpKindEx.html#AdjustmentGroup"><span class="hs-identifier hs-var">AdjustmentGroup</span></a></span></span><span> </span><span class="hs-comment">-- &#1050;&#1086;&#1088;&#1088;&#1077;&#1082;&#1090;&#1080;&#1088;&#1086;&#1074;&#1082;&#1080;</span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="TransferGroup"><span class="annot"><a href="Finance.OpKindEx.html#TransferGroup"><span class="hs-identifier hs-var">TransferGroup</span></a></span></span><span>    </span><span class="hs-comment">-- &#1055;&#1077;&#1088;&#1077;&#1074;&#1086;&#1076;&#1099;</span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="FinancialGroup"><span class="annot"><a href="Finance.OpKindEx.html#FinancialGroup"><span class="hs-identifier hs-var">FinancialGroup</span></a></span></span><span>   </span><span class="hs-comment">-- &#1060;&#1080;&#1085;&#1072;&#1085;&#1089;&#1086;&#1074;&#1099;&#1077; &#1080;&#1085;&#1089;&#1090;&#1088;&#1091;&#1084;&#1077;&#1085;&#1090;&#1099;</span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680240164"><span id="local-6989586621680240166"><span id="local-6989586621680240170"><span class="annot"><span class="annottext">Int -&gt; OpKindGroup -&gt; ShowS
+[OpKindGroup] -&gt; ShowS
+OpKindGroup -&gt; String
+(Int -&gt; OpKindGroup -&gt; ShowS)
+-&gt; (OpKindGroup -&gt; String)
+-&gt; ([OpKindGroup] -&gt; ShowS)
+-&gt; Show OpKindGroup
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; OpKindGroup -&gt; ShowS
+showsPrec :: Int -&gt; OpKindGroup -&gt; ShowS
+$cshow :: OpKindGroup -&gt; String
+show :: OpKindGroup -&gt; String
+$cshowList :: [OpKindGroup] -&gt; ShowS
+showList :: [OpKindGroup] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680240173"><span id="local-6989586621680240177"><span class="annot"><span class="annottext">OpKindGroup -&gt; OpKindGroup -&gt; Bool
+(OpKindGroup -&gt; OpKindGroup -&gt; Bool)
+-&gt; (OpKindGroup -&gt; OpKindGroup -&gt; Bool) -&gt; Eq OpKindGroup
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: OpKindGroup -&gt; OpKindGroup -&gt; Bool
+== :: OpKindGroup -&gt; OpKindGroup -&gt; Bool
+$c/= :: OpKindGroup -&gt; OpKindGroup -&gt; Bool
+/= :: OpKindGroup -&gt; OpKindGroup -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680240180"><span id="local-6989586621680240187"><span id="local-6989586621680240194"><span id="local-6989586621680240205"><span id="local-6989586621680240208"><span id="local-6989586621680240212"><span id="local-6989586621680240218"><span id="local-6989586621680240222"><span class="annot"><span class="annottext">Int -&gt; OpKindGroup
+OpKindGroup -&gt; Int
+OpKindGroup -&gt; [OpKindGroup]
+OpKindGroup -&gt; OpKindGroup
+OpKindGroup -&gt; OpKindGroup -&gt; [OpKindGroup]
+OpKindGroup -&gt; OpKindGroup -&gt; OpKindGroup -&gt; [OpKindGroup]
+(OpKindGroup -&gt; OpKindGroup)
+-&gt; (OpKindGroup -&gt; OpKindGroup)
+-&gt; (Int -&gt; OpKindGroup)
+-&gt; (OpKindGroup -&gt; Int)
+-&gt; (OpKindGroup -&gt; [OpKindGroup])
+-&gt; (OpKindGroup -&gt; OpKindGroup -&gt; [OpKindGroup])
+-&gt; (OpKindGroup -&gt; OpKindGroup -&gt; [OpKindGroup])
+-&gt; (OpKindGroup -&gt; OpKindGroup -&gt; OpKindGroup -&gt; [OpKindGroup])
+-&gt; Enum OpKindGroup
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: OpKindGroup -&gt; OpKindGroup
+succ :: OpKindGroup -&gt; OpKindGroup
+$cpred :: OpKindGroup -&gt; OpKindGroup
+pred :: OpKindGroup -&gt; OpKindGroup
+$ctoEnum :: Int -&gt; OpKindGroup
+toEnum :: Int -&gt; OpKindGroup
+$cfromEnum :: OpKindGroup -&gt; Int
+fromEnum :: OpKindGroup -&gt; Int
+$cenumFrom :: OpKindGroup -&gt; [OpKindGroup]
+enumFrom :: OpKindGroup -&gt; [OpKindGroup]
+$cenumFromThen :: OpKindGroup -&gt; OpKindGroup -&gt; [OpKindGroup]
+enumFromThen :: OpKindGroup -&gt; OpKindGroup -&gt; [OpKindGroup]
+$cenumFromTo :: OpKindGroup -&gt; OpKindGroup -&gt; [OpKindGroup]
+enumFromTo :: OpKindGroup -&gt; OpKindGroup -&gt; [OpKindGroup]
+$cenumFromThenTo :: OpKindGroup -&gt; OpKindGroup -&gt; OpKindGroup -&gt; [OpKindGroup]
+enumFromThenTo :: OpKindGroup -&gt; OpKindGroup -&gt; OpKindGroup -&gt; [OpKindGroup]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680240225"><span id="local-6989586621680240227"><span class="annot"><span class="annottext">OpKindGroup
+OpKindGroup -&gt; OpKindGroup -&gt; Bounded OpKindGroup
+forall a. a -&gt; a -&gt; Bounded a
+$cminBound :: OpKindGroup
+minBound :: OpKindGroup
+$cmaxBound :: OpKindGroup
+maxBound :: OpKindGroup
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Bounded"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680240232"><span id="local-6989586621680240236"><span id="local-6989586621680240240"><span id="local-6989586621680240244"><span id="local-6989586621680240247"><span id="local-6989586621680240250"><span id="local-6989586621680240253"><span class="annot"><span class="annottext">Eq OpKindGroup
+Eq OpKindGroup =&gt;
+(OpKindGroup -&gt; OpKindGroup -&gt; Ordering)
+-&gt; (OpKindGroup -&gt; OpKindGroup -&gt; Bool)
+-&gt; (OpKindGroup -&gt; OpKindGroup -&gt; Bool)
+-&gt; (OpKindGroup -&gt; OpKindGroup -&gt; Bool)
+-&gt; (OpKindGroup -&gt; OpKindGroup -&gt; Bool)
+-&gt; (OpKindGroup -&gt; OpKindGroup -&gt; OpKindGroup)
+-&gt; (OpKindGroup -&gt; OpKindGroup -&gt; OpKindGroup)
+-&gt; Ord OpKindGroup
+OpKindGroup -&gt; OpKindGroup -&gt; Bool
+OpKindGroup -&gt; OpKindGroup -&gt; Ordering
+OpKindGroup -&gt; OpKindGroup -&gt; OpKindGroup
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: OpKindGroup -&gt; OpKindGroup -&gt; Ordering
+compare :: OpKindGroup -&gt; OpKindGroup -&gt; Ordering
+$c&lt; :: OpKindGroup -&gt; OpKindGroup -&gt; Bool
+&lt; :: OpKindGroup -&gt; OpKindGroup -&gt; Bool
+$c&lt;= :: OpKindGroup -&gt; OpKindGroup -&gt; Bool
+&lt;= :: OpKindGroup -&gt; OpKindGroup -&gt; Bool
+$c&gt; :: OpKindGroup -&gt; OpKindGroup -&gt; Bool
+&gt; :: OpKindGroup -&gt; OpKindGroup -&gt; Bool
+$c&gt;= :: OpKindGroup -&gt; OpKindGroup -&gt; Bool
+&gt;= :: OpKindGroup -&gt; OpKindGroup -&gt; Bool
+$cmax :: OpKindGroup -&gt; OpKindGroup -&gt; OpKindGroup
+max :: OpKindGroup -&gt; OpKindGroup -&gt; OpKindGroup
+$cmin :: OpKindGroup -&gt; OpKindGroup -&gt; OpKindGroup
+min :: OpKindGroup -&gt; OpKindGroup -&gt; OpKindGroup
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="annot"><span class="hs-comment">-- | Get group for operation kind</span></span><span>
+</span><span id="line-36"></span><span class="annot"><a href="Finance.OpKindEx.html#opKindGroup"><span class="hs-identifier hs-type">opKindGroup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.OpKindEx.html#OpKindEx"><span class="hs-identifier hs-type">OpKindEx</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.OpKindEx.html#OpKindGroup"><span class="hs-identifier hs-type">OpKindGroup</span></a></span><span>
+</span><span id="line-37"></span><span id="opKindGroup"><span class="annot"><span class="annottext">opKindGroup :: OpKindEx -&gt; OpKindGroup
+</span><a href="Finance.OpKindEx.html#opKindGroup"><span class="hs-identifier hs-var hs-var">opKindGroup</span></a></span></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKEInvoicePayment"><span class="hs-identifier hs-var">OKEInvoicePayment</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#PaymentGroup"><span class="hs-identifier hs-var">PaymentGroup</span></a></span><span>
+</span><span id="line-38"></span><span class="annot"><a href="Finance.OpKindEx.html#opKindGroup"><span class="hs-identifier hs-var">opKindGroup</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKEPrepayment"><span class="hs-identifier hs-var">OKEPrepayment</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#PaymentGroup"><span class="hs-identifier hs-var">PaymentGroup</span></a></span><span>
+</span><span id="line-39"></span><span class="annot"><a href="Finance.OpKindEx.html#opKindGroup"><span class="hs-identifier hs-var">opKindGroup</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKEAdvancePayment"><span class="hs-identifier hs-var">OKEAdvancePayment</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#PaymentGroup"><span class="hs-identifier hs-var">PaymentGroup</span></a></span><span>
+</span><span id="line-40"></span><span class="annot"><a href="Finance.OpKindEx.html#opKindGroup"><span class="hs-identifier hs-var">opKindGroup</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKEReturn"><span class="hs-identifier hs-var">OKEReturn</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#PaymentGroup"><span class="hs-identifier hs-var">PaymentGroup</span></a></span><span>
+</span><span id="line-41"></span><span class="annot"><a href="Finance.OpKindEx.html#opKindGroup"><span class="hs-identifier hs-var">opKindGroup</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKEWriteOff"><span class="hs-identifier hs-var">OKEWriteOff</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#AdjustmentGroup"><span class="hs-identifier hs-var">AdjustmentGroup</span></a></span><span>
+</span><span id="line-42"></span><span class="annot"><a href="Finance.OpKindEx.html#opKindGroup"><span class="hs-identifier hs-var">opKindGroup</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKETransfer"><span class="hs-identifier hs-var">OKETransfer</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#TransferGroup"><span class="hs-identifier hs-var">TransferGroup</span></a></span><span>
+</span><span id="line-43"></span><span class="annot"><a href="Finance.OpKindEx.html#opKindGroup"><span class="hs-identifier hs-var">opKindGroup</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKECurrencyExchange"><span class="hs-identifier hs-var">OKECurrencyExchange</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#TransferGroup"><span class="hs-identifier hs-var">TransferGroup</span></a></span><span>
+</span><span id="line-44"></span><span class="annot"><a href="Finance.OpKindEx.html#opKindGroup"><span class="hs-identifier hs-var">opKindGroup</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKECreditNote"><span class="hs-identifier hs-var">OKECreditNote</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#FinancialGroup"><span class="hs-identifier hs-var">FinancialGroup</span></a></span><span>
+</span><span id="line-45"></span><span class="annot"><a href="Finance.OpKindEx.html#opKindGroup"><span class="hs-identifier hs-var">opKindGroup</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKEDeditNote"><span class="hs-identifier hs-var">OKEDeditNote</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#FinancialGroup"><span class="hs-identifier hs-var">FinancialGroup</span></a></span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span class="annot"><span class="hs-comment">-- | Check if operation involves payment</span></span><span>
+</span><span id="line-48"></span><span class="annot"><a href="Finance.OpKindEx.html#isPaymentOp"><span class="hs-identifier hs-type">isPaymentOp</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.OpKindEx.html#OpKindEx"><span class="hs-identifier hs-type">OpKindEx</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-49"></span><span id="isPaymentOp"><span class="annot"><span class="annottext">isPaymentOp :: OpKindEx -&gt; Bool
+</span><a href="Finance.OpKindEx.html#isPaymentOp"><span class="hs-identifier hs-var hs-var">isPaymentOp</span></a></span></span><span> </span><span id="local-6989586621680240257"><span class="annot"><span class="annottext">OpKindEx
+</span><a href="#local-6989586621680240257"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OpKindEx -&gt; OpKindGroup
+</span><a href="Finance.OpKindEx.html#opKindGroup"><span class="hs-identifier hs-var">opKindGroup</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="#local-6989586621680240257"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindGroup -&gt; OpKindGroup -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#PaymentGroup"><span class="hs-identifier hs-var">PaymentGroup</span></a></span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="annot"><span class="hs-comment">-- | Check if operation is adjustment</span></span><span>
+</span><span id="line-52"></span><span class="annot"><a href="Finance.OpKindEx.html#isAdjustmentOp"><span class="hs-identifier hs-type">isAdjustmentOp</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.OpKindEx.html#OpKindEx"><span class="hs-identifier hs-type">OpKindEx</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-53"></span><span id="isAdjustmentOp"><span class="annot"><span class="annottext">isAdjustmentOp :: OpKindEx -&gt; Bool
+</span><a href="Finance.OpKindEx.html#isAdjustmentOp"><span class="hs-identifier hs-var hs-var">isAdjustmentOp</span></a></span></span><span> </span><span id="local-6989586621680240259"><span class="annot"><span class="annottext">OpKindEx
+</span><a href="#local-6989586621680240259"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OpKindEx -&gt; OpKindGroup
+</span><a href="Finance.OpKindEx.html#opKindGroup"><span class="hs-identifier hs-var">opKindGroup</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="#local-6989586621680240259"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindGroup -&gt; OpKindGroup -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#AdjustmentGroup"><span class="hs-identifier hs-var">AdjustmentGroup</span></a></span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="annot"><span class="hs-comment">-- | Check if operation is transfer</span></span><span>
+</span><span id="line-56"></span><span class="annot"><a href="Finance.OpKindEx.html#isTransferOp"><span class="hs-identifier hs-type">isTransferOp</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.OpKindEx.html#OpKindEx"><span class="hs-identifier hs-type">OpKindEx</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-57"></span><span id="isTransferOp"><span class="annot"><span class="annottext">isTransferOp :: OpKindEx -&gt; Bool
+</span><a href="Finance.OpKindEx.html#isTransferOp"><span class="hs-identifier hs-var hs-var">isTransferOp</span></a></span></span><span> </span><span id="local-6989586621680240261"><span class="annot"><span class="annottext">OpKindEx
+</span><a href="#local-6989586621680240261"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OpKindEx -&gt; OpKindGroup
+</span><a href="Finance.OpKindEx.html#opKindGroup"><span class="hs-identifier hs-var">opKindGroup</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="#local-6989586621680240261"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindGroup -&gt; OpKindGroup -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#TransferGroup"><span class="hs-identifier hs-var">TransferGroup</span></a></span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="annot"><span class="hs-comment">-- | Pretty print operation kind</span></span><span>
+</span><span id="line-60"></span><span class="annot"><a href="Finance.OpKindEx.html#prettyOpKindEx"><span class="hs-identifier hs-type">prettyOpKindEx</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.OpKindEx.html#OpKindEx"><span class="hs-identifier hs-type">OpKindEx</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-61"></span><span id="prettyOpKindEx"><span class="annot"><span class="annottext">prettyOpKindEx :: OpKindEx -&gt; Text
+</span><a href="Finance.OpKindEx.html#prettyOpKindEx"><span class="hs-identifier hs-var hs-var">prettyOpKindEx</span></a></span></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKEInvoicePayment"><span class="hs-identifier hs-var">OKEInvoicePayment</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Invoice Payment&quot;</span></span><span>
+</span><span id="line-62"></span><span class="annot"><a href="Finance.OpKindEx.html#prettyOpKindEx"><span class="hs-identifier hs-var">prettyOpKindEx</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKEPrepayment"><span class="hs-identifier hs-var">OKEPrepayment</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Prepayment&quot;</span></span><span>
+</span><span id="line-63"></span><span class="annot"><a href="Finance.OpKindEx.html#prettyOpKindEx"><span class="hs-identifier hs-var">prettyOpKindEx</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKEAdvancePayment"><span class="hs-identifier hs-var">OKEAdvancePayment</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Advance Payment&quot;</span></span><span>
+</span><span id="line-64"></span><span class="annot"><a href="Finance.OpKindEx.html#prettyOpKindEx"><span class="hs-identifier hs-var">prettyOpKindEx</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKEReturn"><span class="hs-identifier hs-var">OKEReturn</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Return&quot;</span></span><span>
+</span><span id="line-65"></span><span class="annot"><a href="Finance.OpKindEx.html#prettyOpKindEx"><span class="hs-identifier hs-var">prettyOpKindEx</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKEWriteOff"><span class="hs-identifier hs-var">OKEWriteOff</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Write-Off&quot;</span></span><span>
+</span><span id="line-66"></span><span class="annot"><a href="Finance.OpKindEx.html#prettyOpKindEx"><span class="hs-identifier hs-var">prettyOpKindEx</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKETransfer"><span class="hs-identifier hs-var">OKETransfer</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Transfer&quot;</span></span><span>
+</span><span id="line-67"></span><span class="annot"><a href="Finance.OpKindEx.html#prettyOpKindEx"><span class="hs-identifier hs-var">prettyOpKindEx</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKECurrencyExchange"><span class="hs-identifier hs-var">OKECurrencyExchange</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Currency Exchange&quot;</span></span><span>
+</span><span id="line-68"></span><span class="annot"><a href="Finance.OpKindEx.html#prettyOpKindEx"><span class="hs-identifier hs-var">prettyOpKindEx</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKECreditNote"><span class="hs-identifier hs-var">OKECreditNote</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Credit Note&quot;</span></span><span>
+</span><span id="line-69"></span><span class="annot"><a href="Finance.OpKindEx.html#prettyOpKindEx"><span class="hs-identifier hs-var">prettyOpKindEx</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindEx
+</span><a href="Finance.OpKindEx.html#OKEDeditNote"><span class="hs-identifier hs-var">OKEDeditNote</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Debit Note&quot;</span></span><span>
+</span><span id="line-70"></span><span>
+</span><span id="line-71"></span><span class="annot"><span class="hs-comment">-- | Pretty print operation group</span></span><span>
+</span><span id="line-72"></span><span class="annot"><a href="Finance.OpKindEx.html#prettyOpKindGroup"><span class="hs-identifier hs-type">prettyOpKindGroup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.OpKindEx.html#OpKindGroup"><span class="hs-identifier hs-type">OpKindGroup</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-73"></span><span id="prettyOpKindGroup"><span class="annot"><span class="annottext">prettyOpKindGroup :: OpKindGroup -&gt; Text
+</span><a href="Finance.OpKindEx.html#prettyOpKindGroup"><span class="hs-identifier hs-var hs-var">prettyOpKindGroup</span></a></span></span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#PaymentGroup"><span class="hs-identifier hs-var">PaymentGroup</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Payment Operations&quot;</span></span><span>
+</span><span id="line-74"></span><span class="annot"><a href="Finance.OpKindEx.html#prettyOpKindGroup"><span class="hs-identifier hs-var">prettyOpKindGroup</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#AdjustmentGroup"><span class="hs-identifier hs-var">AdjustmentGroup</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Adjustment Operations&quot;</span></span><span>
+</span><span id="line-75"></span><span class="annot"><a href="Finance.OpKindEx.html#prettyOpKindGroup"><span class="hs-identifier hs-var">prettyOpKindGroup</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#TransferGroup"><span class="hs-identifier hs-var">TransferGroup</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Transfer Operations&quot;</span></span><span>
+</span><span id="line-76"></span><span class="annot"><a href="Finance.OpKindEx.html#prettyOpKindGroup"><span class="hs-identifier hs-var">prettyOpKindGroup</span></a></span><span> </span><span class="annot"><span class="annottext">OpKindGroup
+</span><a href="Finance.OpKindEx.html#FinancialGroup"><span class="hs-identifier hs-var">FinancialGroup</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Financial Instruments&quot;</span></span><span>
+</span><span id="line-77"></span></pre></body></html>

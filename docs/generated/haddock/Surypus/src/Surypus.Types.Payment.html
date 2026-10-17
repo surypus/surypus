@@ -1,0 +1,419 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680332061"><span id="local-6989586621680332062"></span></span><span class="hs-pragma">{-# LANGUAGE DeriveAnyClass #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DerivingStrategies #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE DuplicateRecordFields #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.Types.Payment.html"><span class="hs-identifier">Surypus.Types.Payment</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Surypus.Types.Payment.html#Payment"><span class="hs-identifier">Payment</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Surypus.Types.Payment.html#PaymentStatus"><span class="hs-identifier">PaymentStatus</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Surypus.Types.Payment.html#PaymentInput"><span class="hs-identifier">PaymentInput</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Surypus.Types.Payment.html#PaymentMethod"><span class="hs-identifier">PaymentMethod</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Surypus.Types.Payment.html#PaymentConfirmation"><span class="hs-identifier">PaymentConfirmation</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">FromJSON</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Options</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">defaultOptions</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">genericParseJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">genericToJSON</span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.html"><span class="hs-identifier">Data.Time.Clock</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html"><span class="hs-identifier">Surypus.Types.Common</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier">camelTo2</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-comment">-- &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;</span><span>
+</span><span id="line-23"></span><span class="hs-comment">-- PAYMENT TYPES</span><span>
+</span><span id="line-24"></span><span class="hs-comment">-- &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;</span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">data</span><span> </span><span id="Payment"><span class="annot"><a href="Surypus.Types.Payment.html#Payment"><span class="hs-identifier hs-var">Payment</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Payment"><span class="annot"><a href="Surypus.Types.Payment.html#Payment"><span class="hs-identifier hs-var">Payment</span></a></span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="paymentId"><span class="annot"><span class="annottext">Payment -&gt; Int64
+</span><a href="Surypus.Types.Payment.html#paymentId"><span class="hs-identifier hs-var hs-var">paymentId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="paymentBillId"><span class="annot"><span class="annottext">Payment -&gt; Int64
+</span><a href="Surypus.Types.Payment.html#paymentBillId"><span class="hs-identifier hs-var hs-var">paymentBillId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span id="paymentAmount"><span class="annot"><span class="annottext">Payment -&gt; Double
+</span><a href="Surypus.Types.Payment.html#paymentAmount"><span class="hs-identifier hs-var hs-var">paymentAmount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-30"></span><span>    </span><span id="paymentStatus"><span class="annot"><span class="annottext">Payment -&gt; PaymentStatus
+</span><a href="Surypus.Types.Payment.html#paymentStatus"><span class="hs-identifier hs-var hs-var">paymentStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Surypus.Types.Payment.html#PaymentStatus"><span class="hs-identifier hs-type">PaymentStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-31"></span><span>    </span><span id="paymentMethod"><span class="annot"><span class="annottext">Payment -&gt; PaymentMethod
+</span><a href="Surypus.Types.Payment.html#paymentMethod"><span class="hs-identifier hs-var hs-var">paymentMethod</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Surypus.Types.Payment.html#PaymentMethod"><span class="hs-identifier hs-type">PaymentMethod</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-32"></span><span>    </span><span id="paymentCreatedAt"><span class="annot"><span class="annottext">Payment -&gt; UTCTime
+</span><a href="Surypus.Types.Payment.html#paymentCreatedAt"><span class="hs-identifier hs-var hs-var">paymentCreatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-33"></span><span>    </span><span id="paymentConfirmedAt"><span class="annot"><span class="annottext">Payment -&gt; Maybe UTCTime
+</span><a href="Surypus.Types.Payment.html#paymentConfirmedAt"><span class="hs-identifier hs-var hs-var">paymentConfirmedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-34"></span><span>    </span><span id="paymentExternalRef"><span class="annot"><span class="annottext">Payment -&gt; Maybe Text
+</span><a href="Surypus.Types.Payment.html#paymentExternalRef"><span class="hs-identifier hs-var hs-var">paymentExternalRef</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680332077"><span id="local-6989586621680332096"><span id="local-6989586621680332100"><span class="annot"><span class="annottext">Int -&gt; Payment -&gt; ShowS
+[Payment] -&gt; ShowS
+Payment -&gt; String
+(Int -&gt; Payment -&gt; ShowS)
+-&gt; (Payment -&gt; String) -&gt; ([Payment] -&gt; ShowS) -&gt; Show Payment
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Payment -&gt; ShowS
+showsPrec :: Int -&gt; Payment -&gt; ShowS
+$cshow :: Payment -&gt; String
+show :: Payment -&gt; String
+$cshowList :: [Payment] -&gt; ShowS
+showList :: [Payment] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680332106"><span id="local-6989586621680332123"><span class="annot"><span class="annottext">Payment -&gt; Payment -&gt; Bool
+(Payment -&gt; Payment -&gt; Bool)
+-&gt; (Payment -&gt; Payment -&gt; Bool) -&gt; Eq Payment
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Payment -&gt; Payment -&gt; Bool
+== :: Payment -&gt; Payment -&gt; Bool
+$c/= :: Payment -&gt; Payment -&gt; Bool
+/= :: Payment -&gt; Payment -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680332129"><span id="local-6989586621680332131"><span class="annot"><span class="annottext">(forall x. Payment -&gt; Rep Payment x)
+-&gt; (forall x. Rep Payment x -&gt; Payment) -&gt; Generic Payment
+forall x. Rep Payment x -&gt; Payment
+forall x. Payment -&gt; Rep Payment x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Payment -&gt; Rep Payment x
+from :: forall x. Payment -&gt; Rep Payment x
+$cto :: forall x. Rep Payment x -&gt; Payment
+to :: forall x. Rep Payment x -&gt; Payment
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680332138"><span id="local-6989586621680332142"><span id="local-6989586621680332145"><span id="local-6989586621680332148"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Payment.html#Payment"><span class="hs-identifier hs-type">Payment</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-39"></span><span>  </span><span id="local-6989586621680332356"><span class="annot"><span class="annottext">toJSON :: Payment -&gt; Value
+</span><a href="#local-6989586621680332356"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Payment -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">genericToJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">7</span></span><span class="hs-special">}</span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680332363"><span id="local-6989586621680332367"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Payment.html#Payment"><span class="hs-identifier hs-type">Payment</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-42"></span><span>  </span><span id="local-6989586621680332501"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser Payment
+</span><a href="#local-6989586621680332501"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser Payment
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><span class="hs-identifier hs-var">genericParseJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">7</span></span><span class="hs-special">}</span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="hs-keyword">data</span><span> </span><span id="PaymentStatus"><span class="annot"><a href="Surypus.Types.Payment.html#PaymentStatus"><span class="hs-identifier hs-var">PaymentStatus</span></a></span></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="PaymentPending"><span class="annot"><a href="Surypus.Types.Payment.html#PaymentPending"><span class="hs-identifier hs-var">PaymentPending</span></a></span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PaymentConfirmed"><span class="annot"><a href="Surypus.Types.Payment.html#PaymentConfirmed"><span class="hs-identifier hs-var">PaymentConfirmed</span></a></span></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PaymentSettled"><span class="annot"><a href="Surypus.Types.Payment.html#PaymentSettled"><span class="hs-identifier hs-var">PaymentSettled</span></a></span></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PaymentFailed"><span class="annot"><a href="Surypus.Types.Payment.html#PaymentFailed"><span class="hs-identifier hs-var">PaymentFailed</span></a></span></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PaymentRefunded"><span class="annot"><a href="Surypus.Types.Payment.html#PaymentRefunded"><span class="hs-identifier hs-var">PaymentRefunded</span></a></span></span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680332509"><span id="local-6989586621680332511"><span id="local-6989586621680332514"><span class="annot"><span class="annottext">Int -&gt; PaymentStatus -&gt; ShowS
+[PaymentStatus] -&gt; ShowS
+PaymentStatus -&gt; String
+(Int -&gt; PaymentStatus -&gt; ShowS)
+-&gt; (PaymentStatus -&gt; String)
+-&gt; ([PaymentStatus] -&gt; ShowS)
+-&gt; Show PaymentStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PaymentStatus -&gt; ShowS
+showsPrec :: Int -&gt; PaymentStatus -&gt; ShowS
+$cshow :: PaymentStatus -&gt; String
+show :: PaymentStatus -&gt; String
+$cshowList :: [PaymentStatus] -&gt; ShowS
+showList :: [PaymentStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680332517"><span id="local-6989586621680332522"><span class="annot"><span class="annottext">PaymentStatus -&gt; PaymentStatus -&gt; Bool
+(PaymentStatus -&gt; PaymentStatus -&gt; Bool)
+-&gt; (PaymentStatus -&gt; PaymentStatus -&gt; Bool) -&gt; Eq PaymentStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PaymentStatus -&gt; PaymentStatus -&gt; Bool
+== :: PaymentStatus -&gt; PaymentStatus -&gt; Bool
+$c/= :: PaymentStatus -&gt; PaymentStatus -&gt; Bool
+/= :: PaymentStatus -&gt; PaymentStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680332525"><span id="local-6989586621680332527"><span class="annot"><span class="annottext">(forall x. PaymentStatus -&gt; Rep PaymentStatus x)
+-&gt; (forall x. Rep PaymentStatus x -&gt; PaymentStatus)
+-&gt; Generic PaymentStatus
+forall x. Rep PaymentStatus x -&gt; PaymentStatus
+forall x. PaymentStatus -&gt; Rep PaymentStatus x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PaymentStatus -&gt; Rep PaymentStatus x
+from :: forall x. PaymentStatus -&gt; Rep PaymentStatus x
+$cto :: forall x. Rep PaymentStatus x -&gt; PaymentStatus
+to :: forall x. Rep PaymentStatus x -&gt; PaymentStatus
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">anyclass</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680332530"><span id="local-6989586621680332534"><span id="local-6989586621680332539"><span id="local-6989586621680332542"><span id="local-6989586621680332545"><span id="local-6989586621680332548"><span class="annot"><span class="annottext">Addr#
+Addr# -&gt; Int -&gt; PaymentStatus
+Addr# -&gt; PaymentStatus -&gt; Int
+Int -&gt; PaymentStatus
+PaymentStatus -&gt; Int
+PaymentStatus -&gt; [PaymentStatus]
+PaymentStatus -&gt; PaymentStatus
+PaymentStatus -&gt; PaymentStatus -&gt; [PaymentStatus]
+PaymentStatus -&gt; PaymentStatus -&gt; PaymentStatus -&gt; [PaymentStatus]
+(PaymentStatus -&gt; PaymentStatus)
+-&gt; (PaymentStatus -&gt; PaymentStatus)
+-&gt; (Int -&gt; PaymentStatus)
+-&gt; (PaymentStatus -&gt; Int)
+-&gt; (PaymentStatus -&gt; [PaymentStatus])
+-&gt; (PaymentStatus -&gt; PaymentStatus -&gt; [PaymentStatus])
+-&gt; (PaymentStatus -&gt; PaymentStatus -&gt; [PaymentStatus])
+-&gt; (PaymentStatus
+    -&gt; PaymentStatus -&gt; PaymentStatus -&gt; [PaymentStatus])
+-&gt; Enum PaymentStatus
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+forall a. Addr# -&gt; a
+noMethodBindingError :: forall a. Addr# -&gt; a
+$csucc :: PaymentStatus -&gt; PaymentStatus
+succ :: PaymentStatus -&gt; PaymentStatus
+$cpred :: PaymentStatus -&gt; PaymentStatus
+pred :: PaymentStatus -&gt; PaymentStatus
+$ctoEnum :: Int -&gt; PaymentStatus
+$cfromEnum :: PaymentStatus -&gt; Int
+$cenumFrom :: PaymentStatus -&gt; [PaymentStatus]
+enumFrom :: PaymentStatus -&gt; [PaymentStatus]
+$cenumFromThen :: PaymentStatus -&gt; PaymentStatus -&gt; [PaymentStatus]
+enumFromThen :: PaymentStatus -&gt; PaymentStatus -&gt; [PaymentStatus]
+$cenumFromTo :: PaymentStatus -&gt; PaymentStatus -&gt; [PaymentStatus]
+enumFromTo :: PaymentStatus -&gt; PaymentStatus -&gt; [PaymentStatus]
+$cenumFromThenTo :: PaymentStatus -&gt; PaymentStatus -&gt; PaymentStatus -&gt; [PaymentStatus]
+enumFromThenTo :: PaymentStatus -&gt; PaymentStatus -&gt; PaymentStatus -&gt; [PaymentStatus]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Control.Exception.Base.html#noMethodBindingError"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Addr#
+PaymentStatus
+Addr# -&gt; PaymentStatus
+PaymentStatus -&gt; PaymentStatus -&gt; Bounded PaymentStatus
+forall a. a -&gt; a -&gt; Bounded a
+forall a. Addr# -&gt; a
+noMethodBindingError :: forall a. Addr# -&gt; a
+$cminBound :: PaymentStatus
+$cmaxBound :: PaymentStatus
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Control.Exception.Base.html#noMethodBindingError"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var">Bounded</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680332556"><span id="local-6989586621680332562"><span id="local-6989586621680332565"><span id="local-6989586621680332568"><span id="local-6989586621680332571"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Payment.html#PaymentStatus"><span class="hs-identifier hs-type">PaymentStatus</span></a></span></span></span></span></span></span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680332706"><span id="local-6989586621680332712"><span id="local-6989586621680332715"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Payment.html#PaymentStatus"><span class="hs-identifier hs-type">PaymentStatus</span></a></span></span></span></span><span>
+</span><span id="line-56"></span><span>
+</span><span id="line-57"></span><span class="hs-keyword">data</span><span> </span><span id="PaymentMethod"><span class="annot"><a href="Surypus.Types.Payment.html#PaymentMethod"><span class="hs-identifier hs-var">PaymentMethod</span></a></span></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Cash"><span class="annot"><a href="Surypus.Types.Payment.html#Cash"><span class="hs-identifier hs-var">Cash</span></a></span></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Card"><span class="annot"><a href="Surypus.Types.Payment.html#Card"><span class="hs-identifier hs-var">Card</span></a></span></span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="BankTransfer"><span class="annot"><a href="Surypus.Types.Payment.html#BankTransfer"><span class="hs-identifier hs-var">BankTransfer</span></a></span></span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="OnlinePayment"><span class="annot"><a href="Surypus.Types.Payment.html#OnlinePayment"><span class="hs-identifier hs-var">OnlinePayment</span></a></span></span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Cryptocurrency"><span class="annot"><a href="Surypus.Types.Payment.html#Cryptocurrency"><span class="hs-identifier hs-var">Cryptocurrency</span></a></span></span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680332828"><span id="local-6989586621680332830"><span id="local-6989586621680332833"><span class="annot"><span class="annottext">Int -&gt; PaymentMethod -&gt; ShowS
+[PaymentMethod] -&gt; ShowS
+PaymentMethod -&gt; String
+(Int -&gt; PaymentMethod -&gt; ShowS)
+-&gt; (PaymentMethod -&gt; String)
+-&gt; ([PaymentMethod] -&gt; ShowS)
+-&gt; Show PaymentMethod
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PaymentMethod -&gt; ShowS
+showsPrec :: Int -&gt; PaymentMethod -&gt; ShowS
+$cshow :: PaymentMethod -&gt; String
+show :: PaymentMethod -&gt; String
+$cshowList :: [PaymentMethod] -&gt; ShowS
+showList :: [PaymentMethod] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680332836"><span id="local-6989586621680332840"><span class="annot"><span class="annottext">PaymentMethod -&gt; PaymentMethod -&gt; Bool
+(PaymentMethod -&gt; PaymentMethod -&gt; Bool)
+-&gt; (PaymentMethod -&gt; PaymentMethod -&gt; Bool) -&gt; Eq PaymentMethod
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PaymentMethod -&gt; PaymentMethod -&gt; Bool
+== :: PaymentMethod -&gt; PaymentMethod -&gt; Bool
+$c/= :: PaymentMethod -&gt; PaymentMethod -&gt; Bool
+/= :: PaymentMethod -&gt; PaymentMethod -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680332843"><span id="local-6989586621680332845"><span class="annot"><span class="annottext">(forall x. PaymentMethod -&gt; Rep PaymentMethod x)
+-&gt; (forall x. Rep PaymentMethod x -&gt; PaymentMethod)
+-&gt; Generic PaymentMethod
+forall x. Rep PaymentMethod x -&gt; PaymentMethod
+forall x. PaymentMethod -&gt; Rep PaymentMethod x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PaymentMethod -&gt; Rep PaymentMethod x
+from :: forall x. PaymentMethod -&gt; Rep PaymentMethod x
+$cto :: forall x. Rep PaymentMethod x -&gt; PaymentMethod
+to :: forall x. Rep PaymentMethod x -&gt; PaymentMethod
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680332848"><span id="local-6989586621680332857"><span id="local-6989586621680332864"><span id="local-6989586621680332873"><span id="local-6989586621680332876"><span id="local-6989586621680332881"><span id="local-6989586621680332887"><span id="local-6989586621680332891"><span class="annot"><span class="annottext">Int -&gt; PaymentMethod
+PaymentMethod -&gt; Int
+PaymentMethod -&gt; [PaymentMethod]
+PaymentMethod -&gt; PaymentMethod
+PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+PaymentMethod -&gt; PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+(PaymentMethod -&gt; PaymentMethod)
+-&gt; (PaymentMethod -&gt; PaymentMethod)
+-&gt; (Int -&gt; PaymentMethod)
+-&gt; (PaymentMethod -&gt; Int)
+-&gt; (PaymentMethod -&gt; [PaymentMethod])
+-&gt; (PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod])
+-&gt; (PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod])
+-&gt; (PaymentMethod
+    -&gt; PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod])
+-&gt; Enum PaymentMethod
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: PaymentMethod -&gt; PaymentMethod
+succ :: PaymentMethod -&gt; PaymentMethod
+$cpred :: PaymentMethod -&gt; PaymentMethod
+pred :: PaymentMethod -&gt; PaymentMethod
+$ctoEnum :: Int -&gt; PaymentMethod
+toEnum :: Int -&gt; PaymentMethod
+$cfromEnum :: PaymentMethod -&gt; Int
+fromEnum :: PaymentMethod -&gt; Int
+$cenumFrom :: PaymentMethod -&gt; [PaymentMethod]
+enumFrom :: PaymentMethod -&gt; [PaymentMethod]
+$cenumFromThen :: PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+enumFromThen :: PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+$cenumFromTo :: PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+enumFromTo :: PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+$cenumFromThenTo :: PaymentMethod -&gt; PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+enumFromThenTo :: PaymentMethod -&gt; PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680332898"><span id="local-6989586621680332900"><span class="annot"><span class="annottext">PaymentMethod
+PaymentMethod -&gt; PaymentMethod -&gt; Bounded PaymentMethod
+forall a. a -&gt; a -&gt; Bounded a
+$cminBound :: PaymentMethod
+minBound :: PaymentMethod
+$cmaxBound :: PaymentMethod
+maxBound :: PaymentMethod
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Bounded"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680332905"><span id="local-6989586621680332911"><span id="local-6989586621680332914"><span id="local-6989586621680332917"><span id="local-6989586621680332920"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Payment.html#PaymentMethod"><span class="hs-identifier hs-type">PaymentMethod</span></a></span></span></span></span></span></span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680333041"><span id="local-6989586621680333047"><span id="local-6989586621680333050"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Payment.html#PaymentMethod"><span class="hs-identifier hs-type">PaymentMethod</span></a></span></span></span></span><span>
+</span><span id="line-68"></span><span>
+</span><span id="line-69"></span><span class="hs-keyword">data</span><span> </span><span id="PaymentInput"><span class="annot"><a href="Surypus.Types.Payment.html#PaymentInput"><span class="hs-identifier hs-var">PaymentInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PaymentInput"><span class="annot"><a href="Surypus.Types.Payment.html#PaymentInput"><span class="hs-identifier hs-var">PaymentInput</span></a></span></span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="pInputBillId"><span class="annot"><span class="annottext">PaymentInput -&gt; Int64
+</span><a href="Surypus.Types.Payment.html#pInputBillId"><span class="hs-identifier hs-var hs-var">pInputBillId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-71"></span><span>    </span><span id="pInputAmount"><span class="annot"><span class="annottext">PaymentInput -&gt; Double
+</span><a href="Surypus.Types.Payment.html#pInputAmount"><span class="hs-identifier hs-var hs-var">pInputAmount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-72"></span><span>    </span><span id="pInputMethod"><span class="annot"><span class="annottext">PaymentInput -&gt; PaymentMethod
+</span><a href="Surypus.Types.Payment.html#pInputMethod"><span class="hs-identifier hs-var hs-var">pInputMethod</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Surypus.Types.Payment.html#PaymentMethod"><span class="hs-identifier hs-type">PaymentMethod</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-73"></span><span>    </span><span id="pInputExternalRef"><span class="annot"><span class="annottext">PaymentInput -&gt; Maybe Text
+</span><a href="Surypus.Types.Payment.html#pInputExternalRef"><span class="hs-identifier hs-var hs-var">pInputExternalRef</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680333152"><span id="local-6989586621680333160"><span id="local-6989586621680333164"><span class="annot"><span class="annottext">Int -&gt; PaymentInput -&gt; ShowS
+[PaymentInput] -&gt; ShowS
+PaymentInput -&gt; String
+(Int -&gt; PaymentInput -&gt; ShowS)
+-&gt; (PaymentInput -&gt; String)
+-&gt; ([PaymentInput] -&gt; ShowS)
+-&gt; Show PaymentInput
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PaymentInput -&gt; ShowS
+showsPrec :: Int -&gt; PaymentInput -&gt; ShowS
+$cshow :: PaymentInput -&gt; String
+show :: PaymentInput -&gt; String
+$cshowList :: [PaymentInput] -&gt; ShowS
+showList :: [PaymentInput] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680333167"><span id="local-6989586621680333174"><span class="annot"><span class="annottext">PaymentInput -&gt; PaymentInput -&gt; Bool
+(PaymentInput -&gt; PaymentInput -&gt; Bool)
+-&gt; (PaymentInput -&gt; PaymentInput -&gt; Bool) -&gt; Eq PaymentInput
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PaymentInput -&gt; PaymentInput -&gt; Bool
+== :: PaymentInput -&gt; PaymentInput -&gt; Bool
+$c/= :: PaymentInput -&gt; PaymentInput -&gt; Bool
+/= :: PaymentInput -&gt; PaymentInput -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680333178"><span id="local-6989586621680333180"><span class="annot"><span class="annottext">(forall x. PaymentInput -&gt; Rep PaymentInput x)
+-&gt; (forall x. Rep PaymentInput x -&gt; PaymentInput)
+-&gt; Generic PaymentInput
+forall x. Rep PaymentInput x -&gt; PaymentInput
+forall x. PaymentInput -&gt; Rep PaymentInput x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PaymentInput -&gt; Rep PaymentInput x
+from :: forall x. PaymentInput -&gt; Rep PaymentInput x
+$cto :: forall x. Rep PaymentInput x -&gt; PaymentInput
+to :: forall x. Rep PaymentInput x -&gt; PaymentInput
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span><span>
+</span><span id="line-77"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680333184"><span id="local-6989586621680333188"><span id="local-6989586621680333191"><span id="local-6989586621680333194"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Payment.html#PaymentInput"><span class="hs-identifier hs-type">PaymentInput</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-78"></span><span>  </span><span id="local-6989586621680333295"><span class="annot"><span class="annottext">toJSON :: PaymentInput -&gt; Value
+</span><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; PaymentInput -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">genericToJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">6</span></span><span class="hs-special">}</span><span>
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680333298"><span id="local-6989586621680333302"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Payment.html#PaymentInput"><span class="hs-identifier hs-type">PaymentInput</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-81"></span><span>  </span><span id="local-6989586621680333374"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser PaymentInput
+</span><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser PaymentInput
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><span class="hs-identifier hs-var">genericParseJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">6</span></span><span class="hs-special">}</span><span>
+</span><span id="line-82"></span><span>
+</span><span id="line-83"></span><span class="hs-keyword">data</span><span> </span><span id="PaymentConfirmation"><span class="annot"><a href="Surypus.Types.Payment.html#PaymentConfirmation"><span class="hs-identifier hs-var">PaymentConfirmation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PaymentConfirmation"><span class="annot"><a href="Surypus.Types.Payment.html#PaymentConfirmation"><span class="hs-identifier hs-var">PaymentConfirmation</span></a></span></span><span>
+</span><span id="line-84"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="confPaymentId"><span class="annot"><span class="annottext">PaymentConfirmation -&gt; Int64
+</span><a href="Surypus.Types.Payment.html#confPaymentId"><span class="hs-identifier hs-var hs-var">confPaymentId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-85"></span><span>    </span><span id="confAmount"><span class="annot"><span class="annottext">PaymentConfirmation -&gt; Double
+</span><a href="Surypus.Types.Payment.html#confAmount"><span class="hs-identifier hs-var hs-var">confAmount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-86"></span><span>    </span><span id="confTimestamp"><span class="annot"><span class="annottext">PaymentConfirmation -&gt; UTCTime
+</span><a href="Surypus.Types.Payment.html#confTimestamp"><span class="hs-identifier hs-var hs-var">confTimestamp</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-87"></span><span>    </span><span id="confSignature"><span class="annot"><span class="annottext">PaymentConfirmation -&gt; Maybe Text
+</span><a href="Surypus.Types.Payment.html#confSignature"><span class="hs-identifier hs-var hs-var">confSignature</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-88"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-89"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680333381"><span id="local-6989586621680333389"><span id="local-6989586621680333393"><span class="annot"><span class="annottext">Int -&gt; PaymentConfirmation -&gt; ShowS
+[PaymentConfirmation] -&gt; ShowS
+PaymentConfirmation -&gt; String
+(Int -&gt; PaymentConfirmation -&gt; ShowS)
+-&gt; (PaymentConfirmation -&gt; String)
+-&gt; ([PaymentConfirmation] -&gt; ShowS)
+-&gt; Show PaymentConfirmation
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PaymentConfirmation -&gt; ShowS
+showsPrec :: Int -&gt; PaymentConfirmation -&gt; ShowS
+$cshow :: PaymentConfirmation -&gt; String
+show :: PaymentConfirmation -&gt; String
+$cshowList :: [PaymentConfirmation] -&gt; ShowS
+showList :: [PaymentConfirmation] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680333396"><span id="local-6989586621680333403"><span class="annot"><span class="annottext">PaymentConfirmation -&gt; PaymentConfirmation -&gt; Bool
+(PaymentConfirmation -&gt; PaymentConfirmation -&gt; Bool)
+-&gt; (PaymentConfirmation -&gt; PaymentConfirmation -&gt; Bool)
+-&gt; Eq PaymentConfirmation
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PaymentConfirmation -&gt; PaymentConfirmation -&gt; Bool
+== :: PaymentConfirmation -&gt; PaymentConfirmation -&gt; Bool
+$c/= :: PaymentConfirmation -&gt; PaymentConfirmation -&gt; Bool
+/= :: PaymentConfirmation -&gt; PaymentConfirmation -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680333407"><span id="local-6989586621680333409"><span class="annot"><span class="annottext">(forall x. PaymentConfirmation -&gt; Rep PaymentConfirmation x)
+-&gt; (forall x. Rep PaymentConfirmation x -&gt; PaymentConfirmation)
+-&gt; Generic PaymentConfirmation
+forall x. Rep PaymentConfirmation x -&gt; PaymentConfirmation
+forall x. PaymentConfirmation -&gt; Rep PaymentConfirmation x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PaymentConfirmation -&gt; Rep PaymentConfirmation x
+from :: forall x. PaymentConfirmation -&gt; Rep PaymentConfirmation x
+$cto :: forall x. Rep PaymentConfirmation x -&gt; PaymentConfirmation
+to :: forall x. Rep PaymentConfirmation x -&gt; PaymentConfirmation
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-90"></span><span>
+</span><span id="line-91"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680333413"><span id="local-6989586621680333417"><span id="local-6989586621680333420"><span id="local-6989586621680333423"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Payment.html#PaymentConfirmation"><span class="hs-identifier hs-type">PaymentConfirmation</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-92"></span><span>  </span><span id="local-6989586621680333524"><span class="annot"><span class="annottext">toJSON :: PaymentConfirmation -&gt; Value
+</span><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; PaymentConfirmation -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><span class="hs-identifier hs-var">genericToJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-93"></span><span>
+</span><span id="line-94"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680333527"><span id="local-6989586621680333531"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Surypus.Types.Payment.html#PaymentConfirmation"><span class="hs-identifier hs-type">PaymentConfirmation</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-95"></span><span>  </span><span id="local-6989586621680333603"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser PaymentConfirmation
+</span><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser PaymentConfirmation
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><span class="hs-identifier hs-var">genericParseJSON</span></span><span> </span><span class="annot"><span class="annottext">Options
+</span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-type">.</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.List.html#drop"><span class="hs-identifier hs-type">drop</span></a></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-96"></span></pre></body></html>

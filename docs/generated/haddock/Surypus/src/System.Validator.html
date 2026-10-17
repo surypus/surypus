@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Validator module - Data validation</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="System.Validator.html"><span class="hs-identifier">System.Validator</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="annot"><span class="hs-comment">-- | ValidationRule - Validation rule</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">data</span><span> </span><span id="ValidationRule"><span class="annot"><a href="System.Validator.html#ValidationRule"><span class="hs-identifier hs-var">ValidationRule</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ValidationRule"><span class="annot"><a href="System.Validator.html#ValidationRule"><span class="hs-identifier hs-var">ValidationRule</span></a></span></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="vrId"><span class="annot"><span class="annottext">ValidationRule -&gt; Int64
+</span><a href="System.Validator.html#vrId"><span class="hs-identifier hs-var hs-var">vrId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span id="vrObjectType"><span class="annot"><span class="annottext">ValidationRule -&gt; Int64
+</span><a href="System.Validator.html#vrObjectType"><span class="hs-identifier hs-var hs-var">vrObjectType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="vrField"><span class="annot"><span class="annottext">ValidationRule -&gt; Text
+</span><a href="System.Validator.html#vrField"><span class="hs-identifier hs-var hs-var">vrField</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="vrType"><span class="annot"><span class="annottext">ValidationRule -&gt; ValidationType
+</span><a href="System.Validator.html#vrType"><span class="hs-identifier hs-var hs-var">vrType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Validator.html#ValidationType"><span class="hs-identifier hs-type">ValidationType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="vrParams"><span class="annot"><span class="annottext">ValidationRule -&gt; Text
+</span><a href="System.Validator.html#vrParams"><span class="hs-identifier hs-var hs-var">vrParams</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- JSON</span><span>
+</span><span id="line-14"></span><span>    </span><span id="vrMessage"><span class="annot"><span class="annottext">ValidationRule -&gt; Text
+</span><a href="System.Validator.html#vrMessage"><span class="hs-identifier hs-var hs-var">vrMessage</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680350808"><span id="local-6989586621680350821"><span id="local-6989586621680350825"><span class="annot"><span class="annottext">Int -&gt; ValidationRule -&gt; ShowS
+[ValidationRule] -&gt; ShowS
+ValidationRule -&gt; String
+(Int -&gt; ValidationRule -&gt; ShowS)
+-&gt; (ValidationRule -&gt; String)
+-&gt; ([ValidationRule] -&gt; ShowS)
+-&gt; Show ValidationRule
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ValidationRule -&gt; ShowS
+showsPrec :: Int -&gt; ValidationRule -&gt; ShowS
+$cshow :: ValidationRule -&gt; String
+show :: ValidationRule -&gt; String
+$cshowList :: [ValidationRule] -&gt; ShowS
+showList :: [ValidationRule] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680350830"><span id="local-6989586621680350841"><span class="annot"><span class="annottext">ValidationRule -&gt; ValidationRule -&gt; Bool
+(ValidationRule -&gt; ValidationRule -&gt; Bool)
+-&gt; (ValidationRule -&gt; ValidationRule -&gt; Bool) -&gt; Eq ValidationRule
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ValidationRule -&gt; ValidationRule -&gt; Bool
+== :: ValidationRule -&gt; ValidationRule -&gt; Bool
+$c/= :: ValidationRule -&gt; ValidationRule -&gt; Bool
+/= :: ValidationRule -&gt; ValidationRule -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="ValidationType"><span class="annot"><a href="System.Validator.html#ValidationType"><span class="hs-identifier hs-var">ValidationType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="VTRequired"><span class="annot"><a href="System.Validator.html#VTRequired"><span class="hs-identifier hs-var">VTRequired</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="VTMinLength"><span class="annot"><a href="System.Validator.html#VTMinLength"><span class="hs-identifier hs-var">VTMinLength</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="VTMaxLength"><span class="annot"><a href="System.Validator.html#VTMaxLength"><span class="hs-identifier hs-var">VTMaxLength</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="VTPattern"><span class="annot"><a href="System.Validator.html#VTPattern"><span class="hs-identifier hs-var">VTPattern</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="VTRange"><span class="annot"><a href="System.Validator.html#VTRange"><span class="hs-identifier hs-var">VTRange</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="VTCustom"><span class="annot"><a href="System.Validator.html#VTCustom"><span class="hs-identifier hs-var">VTCustom</span></a></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680350852"><span id="local-6989586621680350854"><span id="local-6989586621680350857"><span class="annot"><span class="annottext">Int -&gt; ValidationType -&gt; ShowS
+[ValidationType] -&gt; ShowS
+ValidationType -&gt; String
+(Int -&gt; ValidationType -&gt; ShowS)
+-&gt; (ValidationType -&gt; String)
+-&gt; ([ValidationType] -&gt; ShowS)
+-&gt; Show ValidationType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ValidationType -&gt; ShowS
+showsPrec :: Int -&gt; ValidationType -&gt; ShowS
+$cshow :: ValidationType -&gt; String
+show :: ValidationType -&gt; String
+$cshowList :: [ValidationType] -&gt; ShowS
+showList :: [ValidationType] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680350860"><span id="local-6989586621680350865"><span class="annot"><span class="annottext">ValidationType -&gt; ValidationType -&gt; Bool
+(ValidationType -&gt; ValidationType -&gt; Bool)
+-&gt; (ValidationType -&gt; ValidationType -&gt; Bool) -&gt; Eq ValidationType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ValidationType -&gt; ValidationType -&gt; Bool
+== :: ValidationType -&gt; ValidationType -&gt; Bool
+$c/= :: ValidationType -&gt; ValidationType -&gt; Bool
+/= :: ValidationType -&gt; ValidationType -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="annot"><span class="hs-comment">-- | ValidationResult - Validation result</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">data</span><span> </span><span id="ValidationResult"><span class="annot"><a href="System.Validator.html#ValidationResult"><span class="hs-identifier hs-var">ValidationResult</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ValidationResult"><span class="annot"><a href="System.Validator.html#ValidationResult"><span class="hs-identifier hs-var">ValidationResult</span></a></span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="vrValid"><span class="annot"><span class="annottext">ValidationResult -&gt; Bool
+</span><a href="System.Validator.html#vrValid"><span class="hs-identifier hs-var hs-var">vrValid</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="vrErrors"><span class="annot"><span class="annottext">ValidationResult -&gt; [Text]
+</span><a href="System.Validator.html#vrErrors"><span class="hs-identifier hs-var hs-var">vrErrors</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680350871"><span id="local-6989586621680350879"><span id="local-6989586621680350883"><span class="annot"><span class="annottext">Int -&gt; ValidationResult -&gt; ShowS
+[ValidationResult] -&gt; ShowS
+ValidationResult -&gt; String
+(Int -&gt; ValidationResult -&gt; ShowS)
+-&gt; (ValidationResult -&gt; String)
+-&gt; ([ValidationResult] -&gt; ShowS)
+-&gt; Show ValidationResult
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ValidationResult -&gt; ShowS
+showsPrec :: Int -&gt; ValidationResult -&gt; ShowS
+$cshow :: ValidationResult -&gt; String
+show :: ValidationResult -&gt; String
+$cshowList :: [ValidationResult] -&gt; ShowS
+showList :: [ValidationResult] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680350886"><span id="local-6989586621680350893"><span class="annot"><span class="annottext">ValidationResult -&gt; ValidationResult -&gt; Bool
+(ValidationResult -&gt; ValidationResult -&gt; Bool)
+-&gt; (ValidationResult -&gt; ValidationResult -&gt; Bool)
+-&gt; Eq ValidationResult
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ValidationResult -&gt; ValidationResult -&gt; Bool
+== :: ValidationResult -&gt; ValidationResult -&gt; Bool
+$c/= :: ValidationResult -&gt; ValidationResult -&gt; Bool
+/= :: ValidationResult -&gt; ValidationResult -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span></pre></body></html>

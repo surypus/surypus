@@ -1,0 +1,259 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-- | Payroll calculation &#8212; income tax, social tax, vacation, sick leave, bonuses</span><span>
+</span><span id="line-2"></span><span class="hs-comment">-- Uses Data.Decimal for all monetary amounts (PYR-02)</span><span>
+</span><span id="line-3"></span><span class="hs-comment">{-@ LIQUID &quot;--reflection&quot; @-}</span><span>
+</span><span id="line-4"></span><span class="hs-comment">{-@ LIQUID &quot;--ple&quot; @-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-comment">{-@ type NonNegDec = {v:Decimal | v &gt;= 0} @-}</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Core.Payroll.Calculation.html"><span class="hs-identifier">Core.Payroll.Calculation</span></a></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Core.Payroll.Calculation.html#calcIncomeTax"><span class="hs-identifier">calcIncomeTax</span></a></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Payroll.Calculation.html#calcSocialTax"><span class="hs-identifier">calcSocialTax</span></a></span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Payroll.Calculation.html#calcNetSalaryFromGross"><span class="hs-identifier">calcNetSalaryFromGross</span></a></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Payroll.Calculation.html#calcVacationDays"><span class="hs-identifier">calcVacationDays</span></a></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Payroll.Calculation.html#calcSickLeavePay"><span class="hs-identifier">calcSickLeavePay</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Payroll.Calculation.html#calcYearEndBonus"><span class="hs-identifier">calcYearEndBonus</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Payroll.Calculation.html#calcAdvanceAmount"><span class="hs-identifier">calcAdvanceAmount</span></a></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Payroll.Calculation.html#calcMonthlyAdvance"><span class="hs-identifier">calcMonthlyAdvance</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Payroll.Calculation.html#calcTotalCompensation"><span class="hs-identifier">calcTotalCompensation</span></a></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html"><span class="hs-identifier">Data.Decimal</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier">Decimal</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#diffDays"><span class="hs-identifier">diffDays</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="hs-comment">-- | Calculate progressive income tax (&#1053;&#1044;&#1060;&#1051;)</span><span>
+</span><span id="line-24"></span><span class="hs-comment">-- Brackets: 13% &#8804;500k, 15% &#8804;3.5M, 18% &#8804;5M, 20% &gt;5M</span><span>
+</span><span id="line-25"></span><span class="hs-comment">{-@ calcIncomeTax :: Decimal -&gt; NonNegDec @-}</span><span>
+</span><span id="line-26"></span><span class="annot"><a href="Core.Payroll.Calculation.html#calcIncomeTax"><span class="hs-identifier hs-type">calcIncomeTax</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span>
+</span><span id="line-27"></span><span id="calcIncomeTax"><span class="annot"><span class="annottext">calcIncomeTax :: Decimal -&gt; Decimal
+</span><a href="Core.Payroll.Calculation.html#calcIncomeTax"><span class="hs-identifier hs-var hs-var">calcIncomeTax</span></a></span></span><span> </span><span id="local-6989586621680204248"><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204248"><span class="hs-identifier hs-var">salary</span></a></span></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204248"><span class="hs-identifier hs-var">salary</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204248"><span class="hs-identifier hs-var">salary</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">500000</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204248"><span class="hs-identifier hs-var">salary</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0.13</span></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204248"><span class="hs-identifier hs-var">salary</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">3500000</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">65000</span></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2B"><span class="hs-operator hs-var">+</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204248"><span class="hs-identifier hs-var">salary</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-var">-</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">500000</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0.15</span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204248"><span class="hs-identifier hs-var">salary</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">5000000</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">65000</span></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2B"><span class="hs-operator hs-var">+</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">450000</span></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2B"><span class="hs-operator hs-var">+</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204248"><span class="hs-identifier hs-var">salary</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-var">-</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">3500000</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0.18</span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">65000</span></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2B"><span class="hs-operator hs-var">+</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">450000</span></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2B"><span class="hs-operator hs-var">+</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">270000</span></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2B"><span class="hs-operator hs-var">+</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204248"><span class="hs-identifier hs-var">salary</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-var">-</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">5000000</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0.20</span></span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="hs-comment">-- | Calculate social tax (&#1089;&#1090;&#1088;&#1072;&#1093;&#1086;&#1074;&#1099;&#1077; &#1074;&#1079;&#1085;&#1086;&#1089;&#1099;)</span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- 30% up to cap of 876000, then 0% above cap</span><span>
+</span><span id="line-36"></span><span class="hs-comment">{-@ calcSocialTax :: Decimal -&gt; NonNegDec @-}</span><span>
+</span><span id="line-37"></span><span class="annot"><a href="Core.Payroll.Calculation.html#calcSocialTax"><span class="hs-identifier hs-type">calcSocialTax</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span>
+</span><span id="line-38"></span><span id="calcSocialTax"><span class="annot"><span class="annottext">calcSocialTax :: Decimal -&gt; Decimal
+</span><a href="Core.Payroll.Calculation.html#calcSocialTax"><span class="hs-identifier hs-var hs-var">calcSocialTax</span></a></span></span><span> </span><span id="local-6989586621680204252"><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204252"><span class="hs-identifier hs-var">salary</span></a></span></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204252"><span class="hs-identifier hs-var">salary</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204252"><span class="hs-identifier hs-var">salary</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">876000</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204252"><span class="hs-identifier hs-var">salary</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0.30</span></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">876000</span></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0.30</span></span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><span class="hs-comment">-- | Calculate net salary (gross - income tax - social tax)</span></span><span>
+</span><span id="line-44"></span><span class="hs-comment">{-@ calcNetSalaryFromGross :: gross:Decimal -&gt; {v:NonNegDec | v &lt;= gross} @-}</span><span>
+</span><span id="line-45"></span><span class="annot"><a href="Core.Payroll.Calculation.html#calcNetSalaryFromGross"><span class="hs-identifier hs-type">calcNetSalaryFromGross</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span>
+</span><span id="line-46"></span><span id="calcNetSalaryFromGross"><span class="annot"><span class="annottext">calcNetSalaryFromGross :: Decimal -&gt; Decimal
+</span><a href="Core.Payroll.Calculation.html#calcNetSalaryFromGross"><span class="hs-identifier hs-var hs-var">calcNetSalaryFromGross</span></a></span></span><span> </span><span id="local-6989586621680204253"><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204253"><span class="hs-identifier hs-var">gross</span></a></span></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204253"><span class="hs-identifier hs-var">gross</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204253"><span class="hs-identifier hs-var">gross</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-var">-</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal
+</span><a href="Core.Payroll.Calculation.html#calcIncomeTax"><span class="hs-identifier hs-var">calcIncomeTax</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204253"><span class="hs-identifier hs-var">gross</span></a></span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="annot"><span class="hs-comment">-- | Calculate vacation days between two dates</span></span><span>
+</span><span id="line-51"></span><span class="annot"><a href="Core.Payroll.Calculation.html#calcVacationDays"><span class="hs-identifier hs-type">calcVacationDays</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-52"></span><span id="calcVacationDays"><span class="annot"><span class="annottext">calcVacationDays :: Day -&gt; Day -&gt; Int
+</span><a href="Core.Payroll.Calculation.html#calcVacationDays"><span class="hs-identifier hs-var hs-var">calcVacationDays</span></a></span></span><span> </span><span id="local-6989586621680204254"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680204254"><span class="hs-identifier hs-var">start</span></a></span></span><span> </span><span id="local-6989586621680204255"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680204255"><span class="hs-identifier hs-var">end</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Int
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#fromIntegral"><span class="hs-identifier hs-var">fromIntegral</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Day -&gt; Day -&gt; Integer
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#diffDays"><span class="hs-identifier hs-var">diffDays</span></a></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680204255"><span class="hs-identifier hs-var">end</span></a></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680204254"><span class="hs-identifier hs-var">start</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span class="hs-comment">-- | Calculate sick leave pay</span><span>
+</span><span id="line-55"></span><span class="hs-comment">-- first3Days: if True, employer pays (60% of avg daily * min(3, days))</span><span>
+</span><span id="line-56"></span><span class="hs-comment">-- first3Days: if False, social insurance pays (80% of avg daily * remaining)</span><span>
+</span><span id="line-57"></span><span class="annot"><a href="Core.Payroll.Calculation.html#calcSickLeavePay"><span class="hs-identifier hs-type">calcSickLeavePay</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span>
+</span><span id="line-58"></span><span id="calcSickLeavePay"><span class="annot"><span class="annottext">calcSickLeavePay :: Decimal -&gt; Int -&gt; Bool -&gt; Decimal
+</span><a href="Core.Payroll.Calculation.html#calcSickLeavePay"><span class="hs-identifier hs-var hs-var">calcSickLeavePay</span></a></span></span><span> </span><span id="local-6989586621680204256"><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204256"><span class="hs-identifier hs-var">avgDaily</span></a></span></span><span> </span><span id="local-6989586621680204257"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680204257"><span class="hs-identifier hs-var">totalDays</span></a></span></span><span> </span><span id="local-6989586621680204258"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621680204258"><span class="hs-identifier hs-var">first3Days</span></a></span></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621680204258"><span class="hs-identifier hs-var">first3Days</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204256"><span class="hs-identifier hs-var">avgDaily</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0.60</span></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Decimal
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#fromIntegral"><span class="hs-identifier hs-var">fromIntegral</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#min"><span class="hs-identifier hs-var">min</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">3</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680204257"><span class="hs-identifier hs-var">totalDays</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204256"><span class="hs-identifier hs-var">avgDaily</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0.80</span></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Decimal
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#fromIntegral"><span class="hs-identifier hs-var">fromIntegral</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#max"><span class="hs-identifier hs-var">max</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680204257"><span class="hs-identifier hs-var">totalDays</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-var">-</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">3</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span class="hs-comment">-- | Calculate year-end bonus (prorated by months worked)</span><span>
+</span><span id="line-63"></span><span class="hs-comment">-- Less than 3 months: no bonus</span><span>
+</span><span id="line-64"></span><span class="hs-comment">-- 3+ months: bonus * (months / 12)</span><span>
+</span><span id="line-65"></span><span class="annot"><a href="Core.Payroll.Calculation.html#calcYearEndBonus"><span class="hs-identifier hs-type">calcYearEndBonus</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span>
+</span><span id="line-66"></span><span id="calcYearEndBonus"><span class="annot"><span class="annottext">calcYearEndBonus :: Int -&gt; Decimal -&gt; Decimal
+</span><a href="Core.Payroll.Calculation.html#calcYearEndBonus"><span class="hs-identifier hs-var hs-var">calcYearEndBonus</span></a></span></span><span> </span><span id="local-6989586621680204261"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680204261"><span class="hs-identifier hs-var">monthsWorked</span></a></span></span><span> </span><span id="local-6989586621680204262"><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204262"><span class="hs-identifier hs-var">fullBonus</span></a></span></span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680204261"><span class="hs-identifier hs-var">monthsWorked</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C"><span class="hs-operator hs-var">&lt;</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">3</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204262"><span class="hs-identifier hs-var">fullBonus</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Decimal
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#fromIntegral"><span class="hs-identifier hs-var">fromIntegral</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680204261"><span class="hs-identifier hs-var">monthsWorked</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">12.0</span></span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="annot"><span class="hs-comment">-- | Calculate advance amount (percentage of base salary)</span></span><span>
+</span><span id="line-71"></span><span class="annot"><a href="Core.Payroll.Calculation.html#calcAdvanceAmount"><span class="hs-identifier hs-type">calcAdvanceAmount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span>
+</span><span id="line-72"></span><span id="calcAdvanceAmount"><span class="annot"><span class="annottext">calcAdvanceAmount :: Decimal -&gt; Decimal -&gt; Decimal
+</span><a href="Core.Payroll.Calculation.html#calcAdvanceAmount"><span class="hs-identifier hs-var hs-var">calcAdvanceAmount</span></a></span></span><span> </span><span id="local-6989586621680204265"><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204265"><span class="hs-identifier hs-var">base</span></a></span></span><span> </span><span id="local-6989586621680204266"><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204266"><span class="hs-identifier hs-var">percentage</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204265"><span class="hs-identifier hs-var">base</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204266"><span class="hs-identifier hs-var">percentage</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">100.0</span></span><span>
+</span><span id="line-73"></span><span>
+</span><span id="line-74"></span><span class="annot"><span class="hs-comment">-- | Calculate monthly advance (~40% of base)</span></span><span>
+</span><span id="line-75"></span><span class="annot"><a href="Core.Payroll.Calculation.html#calcMonthlyAdvance"><span class="hs-identifier hs-type">calcMonthlyAdvance</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span>
+</span><span id="line-76"></span><span id="calcMonthlyAdvance"><span class="annot"><span class="annottext">calcMonthlyAdvance :: Decimal -&gt; Decimal
+</span><a href="Core.Payroll.Calculation.html#calcMonthlyAdvance"><span class="hs-identifier hs-var hs-var">calcMonthlyAdvance</span></a></span></span><span> </span><span id="local-6989586621680204267"><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204267"><span class="hs-identifier hs-var">base</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204267"><span class="hs-identifier hs-var">base</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0.40</span></span><span>
+</span><span id="line-77"></span><span>
+</span><span id="line-78"></span><span class="annot"><span class="hs-comment">-- | Calculate total compensation (base + additional payments)</span></span><span>
+</span><span id="line-79"></span><span class="annot"><a href="Core.Payroll.Calculation.html#calcTotalCompensation"><span class="hs-identifier hs-type">calcTotalCompensation</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/dominicusin/.local/state/cabal/store/ghc-9.10.3-inplace/Decimal-0.5.2-a17ca79a8ab1a0af0c18346676d433faa1a4705646f7e99fd092acef182a9029/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span>
+</span><span id="line-80"></span><span id="calcTotalCompensation"><span class="annot"><span class="annottext">calcTotalCompensation :: Decimal -&gt; Decimal -&gt; Decimal
+</span><a href="Core.Payroll.Calculation.html#calcTotalCompensation"><span class="hs-identifier hs-var hs-var">calcTotalCompensation</span></a></span></span><span> </span><span id="local-6989586621680204268"><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204268"><span class="hs-identifier hs-var">base</span></a></span></span><span> </span><span id="local-6989586621680204269"><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204269"><span class="hs-identifier hs-var">additions</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204268"><span class="hs-identifier hs-var">base</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2B"><span class="hs-operator hs-var">+</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680204269"><span class="hs-identifier hs-var">additions</span></a></span><span>
+</span><span id="line-81"></span></pre></body></html>

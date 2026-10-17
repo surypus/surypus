@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | ImportExport module - Data import/export</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Integration.ImportExport.html"><span class="hs-identifier">Integration.ImportExport</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="annot"><span class="hs-comment">-- | ImportTemplate - Import template</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">data</span><span> </span><span id="ImportTemplate"><span class="annot"><a href="Integration.ImportExport.html#ImportTemplate"><span class="hs-identifier hs-var">ImportTemplate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ImportTemplate"><span class="annot"><a href="Integration.ImportExport.html#ImportTemplate"><span class="hs-identifier hs-var">ImportTemplate</span></a></span></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="itId"><span class="annot"><span class="annottext">ImportTemplate -&gt; Int64
+</span><a href="Integration.ImportExport.html#itId"><span class="hs-identifier hs-var hs-var">itId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="itName"><span class="annot"><span class="annottext">ImportTemplate -&gt; Text
+</span><a href="Integration.ImportExport.html#itName"><span class="hs-identifier hs-var hs-var">itName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="itObjectType"><span class="annot"><span class="annottext">ImportTemplate -&gt; Int64
+</span><a href="Integration.ImportExport.html#itObjectType"><span class="hs-identifier hs-var hs-var">itObjectType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="itMapping"><span class="annot"><span class="annottext">ImportTemplate -&gt; Text
+</span><a href="Integration.ImportExport.html#itMapping"><span class="hs-identifier hs-var hs-var">itMapping</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- JSON column mapping</span><span>
+</span><span id="line-14"></span><span>    </span><span id="itFlags"><span class="annot"><span class="annottext">ImportTemplate -&gt; Int
+</span><a href="Integration.ImportExport.html#itFlags"><span class="hs-identifier hs-var hs-var">itFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680263655"><span id="local-6989586621680263667"><span id="local-6989586621680263671"><span class="annot"><span class="annottext">Int -&gt; ImportTemplate -&gt; ShowS
+[ImportTemplate] -&gt; ShowS
+ImportTemplate -&gt; String
+(Int -&gt; ImportTemplate -&gt; ShowS)
+-&gt; (ImportTemplate -&gt; String)
+-&gt; ([ImportTemplate] -&gt; ShowS)
+-&gt; Show ImportTemplate
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ImportTemplate -&gt; ShowS
+showsPrec :: Int -&gt; ImportTemplate -&gt; ShowS
+$cshow :: ImportTemplate -&gt; String
+show :: ImportTemplate -&gt; String
+$cshowList :: [ImportTemplate] -&gt; ShowS
+showList :: [ImportTemplate] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680263676"><span id="local-6989586621680263686"><span class="annot"><span class="annottext">ImportTemplate -&gt; ImportTemplate -&gt; Bool
+(ImportTemplate -&gt; ImportTemplate -&gt; Bool)
+-&gt; (ImportTemplate -&gt; ImportTemplate -&gt; Bool) -&gt; Eq ImportTemplate
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ImportTemplate -&gt; ImportTemplate -&gt; Bool
+== :: ImportTemplate -&gt; ImportTemplate -&gt; Bool
+$c/= :: ImportTemplate -&gt; ImportTemplate -&gt; Bool
+/= :: ImportTemplate -&gt; ImportTemplate -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="annot"><span class="hs-comment">-- | ImportSession - Import session</span></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">data</span><span> </span><span id="ImportSession"><span class="annot"><a href="Integration.ImportExport.html#ImportSession"><span class="hs-identifier hs-var">ImportSession</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ImportSession"><span class="annot"><a href="Integration.ImportExport.html#ImportSession"><span class="hs-identifier hs-var">ImportSession</span></a></span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="isId"><span class="annot"><span class="annottext">ImportSession -&gt; Int64
+</span><a href="Integration.ImportExport.html#isId"><span class="hs-identifier hs-var hs-var">isId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="isTemplateId"><span class="annot"><span class="annottext">ImportSession -&gt; Int64
+</span><a href="Integration.ImportExport.html#isTemplateId"><span class="hs-identifier hs-var hs-var">isTemplateId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="isFileName"><span class="annot"><span class="annottext">ImportSession -&gt; Text
+</span><a href="Integration.ImportExport.html#isFileName"><span class="hs-identifier hs-var hs-var">isFileName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="isDate"><span class="annot"><span class="annottext">ImportSession -&gt; Day
+</span><a href="Integration.ImportExport.html#isDate"><span class="hs-identifier hs-var hs-var">isDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="isStatus"><span class="annot"><span class="annottext">ImportSession -&gt; ImportStatus
+</span><a href="Integration.ImportExport.html#isStatus"><span class="hs-identifier hs-var hs-var">isStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.ImportExport.html#ImportStatus"><span class="hs-identifier hs-type">ImportStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="isTotalRows"><span class="annot"><span class="annottext">ImportSession -&gt; Int
+</span><a href="Integration.ImportExport.html#isTotalRows"><span class="hs-identifier hs-var hs-var">isTotalRows</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="isProcessedRows"><span class="annot"><span class="annottext">ImportSession -&gt; Int
+</span><a href="Integration.ImportExport.html#isProcessedRows"><span class="hs-identifier hs-var hs-var">isProcessedRows</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="isErrorRows"><span class="annot"><span class="annottext">ImportSession -&gt; Int
+</span><a href="Integration.ImportExport.html#isErrorRows"><span class="hs-identifier hs-var hs-var">isErrorRows</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680263700"><span id="local-6989586621680263713"><span id="local-6989586621680263717"><span class="annot"><span class="annottext">Int -&gt; ImportSession -&gt; ShowS
+[ImportSession] -&gt; ShowS
+ImportSession -&gt; String
+(Int -&gt; ImportSession -&gt; ShowS)
+-&gt; (ImportSession -&gt; String)
+-&gt; ([ImportSession] -&gt; ShowS)
+-&gt; Show ImportSession
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ImportSession -&gt; ShowS
+showsPrec :: Int -&gt; ImportSession -&gt; ShowS
+$cshow :: ImportSession -&gt; String
+show :: ImportSession -&gt; String
+$cshowList :: [ImportSession] -&gt; ShowS
+showList :: [ImportSession] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680263720"><span id="local-6989586621680263732"><span class="annot"><span class="annottext">ImportSession -&gt; ImportSession -&gt; Bool
+(ImportSession -&gt; ImportSession -&gt; Bool)
+-&gt; (ImportSession -&gt; ImportSession -&gt; Bool) -&gt; Eq ImportSession
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ImportSession -&gt; ImportSession -&gt; Bool
+== :: ImportSession -&gt; ImportSession -&gt; Bool
+$c/= :: ImportSession -&gt; ImportSession -&gt; Bool
+/= :: ImportSession -&gt; ImportSession -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">data</span><span> </span><span id="ImportStatus"><span class="annot"><a href="Integration.ImportExport.html#ImportStatus"><span class="hs-identifier hs-var">ImportStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ISPending"><span class="annot"><a href="Integration.ImportExport.html#ISPending"><span class="hs-identifier hs-var">ISPending</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ISInProgress"><span class="annot"><a href="Integration.ImportExport.html#ISInProgress"><span class="hs-identifier hs-var">ISInProgress</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ISCompleted"><span class="annot"><a href="Integration.ImportExport.html#ISCompleted"><span class="hs-identifier hs-var">ISCompleted</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ISFailed"><span class="annot"><a href="Integration.ImportExport.html#ISFailed"><span class="hs-identifier hs-var">ISFailed</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680263740"><span id="local-6989586621680263742"><span id="local-6989586621680263745"><span class="annot"><span class="annottext">Int -&gt; ImportStatus -&gt; ShowS
+[ImportStatus] -&gt; ShowS
+ImportStatus -&gt; String
+(Int -&gt; ImportStatus -&gt; ShowS)
+-&gt; (ImportStatus -&gt; String)
+-&gt; ([ImportStatus] -&gt; ShowS)
+-&gt; Show ImportStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ImportStatus -&gt; ShowS
+showsPrec :: Int -&gt; ImportStatus -&gt; ShowS
+$cshow :: ImportStatus -&gt; String
+show :: ImportStatus -&gt; String
+$cshowList :: [ImportStatus] -&gt; ShowS
+showList :: [ImportStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680263748"><span id="local-6989586621680263753"><span class="annot"><span class="annottext">ImportStatus -&gt; ImportStatus -&gt; Bool
+(ImportStatus -&gt; ImportStatus -&gt; Bool)
+-&gt; (ImportStatus -&gt; ImportStatus -&gt; Bool) -&gt; Eq ImportStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ImportStatus -&gt; ImportStatus -&gt; Bool
+== :: ImportStatus -&gt; ImportStatus -&gt; Bool
+$c/= :: ImportStatus -&gt; ImportStatus -&gt; Bool
+/= :: ImportStatus -&gt; ImportStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="annot"><span class="hs-comment">-- | ExportTemplate - Export template</span></span><span>
+</span><span id="line-35"></span><span class="hs-keyword">data</span><span> </span><span id="ExportTemplate"><span class="annot"><a href="Integration.ImportExport.html#ExportTemplate"><span class="hs-identifier hs-var">ExportTemplate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ExportTemplate"><span class="annot"><a href="Integration.ImportExport.html#ExportTemplate"><span class="hs-identifier hs-var">ExportTemplate</span></a></span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="etId"><span class="annot"><span class="annottext">ExportTemplate -&gt; Int64
+</span><a href="Integration.ImportExport.html#etId"><span class="hs-identifier hs-var hs-var">etId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-37"></span><span>    </span><span id="etName"><span class="annot"><span class="annottext">ExportTemplate -&gt; Text
+</span><a href="Integration.ImportExport.html#etName"><span class="hs-identifier hs-var hs-var">etName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-38"></span><span>    </span><span id="etObjectType"><span class="annot"><span class="annottext">ExportTemplate -&gt; Int64
+</span><a href="Integration.ImportExport.html#etObjectType"><span class="hs-identifier hs-var hs-var">etObjectType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-39"></span><span>    </span><span id="etQuery"><span class="annot"><span class="annottext">ExportTemplate -&gt; Text
+</span><a href="Integration.ImportExport.html#etQuery"><span class="hs-identifier hs-var hs-var">etQuery</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-40"></span><span>    </span><span id="etFormat"><span class="annot"><span class="annottext">ExportTemplate -&gt; ExportFormat
+</span><a href="Integration.ImportExport.html#etFormat"><span class="hs-identifier hs-var hs-var">etFormat</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.ImportExport.html#ExportFormat"><span class="hs-identifier hs-type">ExportFormat</span></a></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680263762"><span id="local-6989586621680263771"><span id="local-6989586621680263775"><span class="annot"><span class="annottext">Int -&gt; ExportTemplate -&gt; ShowS
+[ExportTemplate] -&gt; ShowS
+ExportTemplate -&gt; String
+(Int -&gt; ExportTemplate -&gt; ShowS)
+-&gt; (ExportTemplate -&gt; String)
+-&gt; ([ExportTemplate] -&gt; ShowS)
+-&gt; Show ExportTemplate
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ExportTemplate -&gt; ShowS
+showsPrec :: Int -&gt; ExportTemplate -&gt; ShowS
+$cshow :: ExportTemplate -&gt; String
+show :: ExportTemplate -&gt; String
+$cshowList :: [ExportTemplate] -&gt; ShowS
+showList :: [ExportTemplate] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680263778"><span id="local-6989586621680263786"><span class="annot"><span class="annottext">ExportTemplate -&gt; ExportTemplate -&gt; Bool
+(ExportTemplate -&gt; ExportTemplate -&gt; Bool)
+-&gt; (ExportTemplate -&gt; ExportTemplate -&gt; Bool) -&gt; Eq ExportTemplate
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ExportTemplate -&gt; ExportTemplate -&gt; Bool
+== :: ExportTemplate -&gt; ExportTemplate -&gt; Bool
+$c/= :: ExportTemplate -&gt; ExportTemplate -&gt; Bool
+/= :: ExportTemplate -&gt; ExportTemplate -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="hs-keyword">data</span><span> </span><span id="ExportFormat"><span class="annot"><a href="Integration.ImportExport.html#ExportFormat"><span class="hs-identifier hs-var">ExportFormat</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="EFCSV"><span class="annot"><a href="Integration.ImportExport.html#EFCSV"><span class="hs-identifier hs-var">EFCSV</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="EFXLSX"><span class="annot"><a href="Integration.ImportExport.html#EFXLSX"><span class="hs-identifier hs-var">EFXLSX</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="EFXML"><span class="annot"><a href="Integration.ImportExport.html#EFXML"><span class="hs-identifier hs-var">EFXML</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="EFJSON"><span class="annot"><a href="Integration.ImportExport.html#EFJSON"><span class="hs-identifier hs-var">EFJSON</span></a></span></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680263794"><span id="local-6989586621680263796"><span id="local-6989586621680263799"><span class="annot"><span class="annottext">Int -&gt; ExportFormat -&gt; ShowS
+[ExportFormat] -&gt; ShowS
+ExportFormat -&gt; String
+(Int -&gt; ExportFormat -&gt; ShowS)
+-&gt; (ExportFormat -&gt; String)
+-&gt; ([ExportFormat] -&gt; ShowS)
+-&gt; Show ExportFormat
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ExportFormat -&gt; ShowS
+showsPrec :: Int -&gt; ExportFormat -&gt; ShowS
+$cshow :: ExportFormat -&gt; String
+show :: ExportFormat -&gt; String
+$cshowList :: [ExportFormat] -&gt; ShowS
+showList :: [ExportFormat] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680263802"><span id="local-6989586621680263806"><span class="annot"><span class="annottext">ExportFormat -&gt; ExportFormat -&gt; Bool
+(ExportFormat -&gt; ExportFormat -&gt; Bool)
+-&gt; (ExportFormat -&gt; ExportFormat -&gt; Bool) -&gt; Eq ExportFormat
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ExportFormat -&gt; ExportFormat -&gt; Bool
+== :: ExportFormat -&gt; ExportFormat -&gt; Bool
+$c/= :: ExportFormat -&gt; ExportFormat -&gt; Bool
+/= :: ExportFormat -&gt; ExportFormat -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span></pre></body></html>

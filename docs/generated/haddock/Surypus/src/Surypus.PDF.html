@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="annot"><span class="hs-comment">{- | PDF text extraction utilities
+Phase 22-05 of v3.0 roadmap
+-}</span></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.PDF.html"><span class="hs-identifier">Surypus.PDF</span></a></span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Surypus.PDF.html#extractTextFromPDF"><span class="hs-identifier">extractTextFromPDF</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Surypus.PDF.html#PDFParseResult"><span class="hs-identifier">PDFParseResult</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="annot"><span class="hs-comment">-- | Result of PDF text extraction</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">data</span><span> </span><span id="PDFParseResult"><span class="annot"><a href="Surypus.PDF.html#PDFParseResult"><span class="hs-identifier hs-var">PDFParseResult</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PDFParseResult"><span class="annot"><a href="Surypus.PDF.html#PDFParseResult"><span class="hs-identifier hs-var">PDFParseResult</span></a></span></span><span>
+</span><span id="line-16"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="pdfText"><span class="annot"><span class="annottext">PDFParseResult -&gt; Text
+</span><a href="Surypus.PDF.html#pdfText"><span class="hs-identifier hs-var hs-var">pdfText</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-17"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="pdfPageCount"><span class="annot"><span class="annottext">PDFParseResult -&gt; Int
+</span><a href="Surypus.PDF.html#pdfPageCount"><span class="hs-identifier hs-var hs-var">pdfPageCount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-18"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="pdfError"><span class="annot"><span class="annottext">PDFParseResult -&gt; Maybe Text
+</span><a href="Surypus.PDF.html#pdfError"><span class="hs-identifier hs-var hs-var">pdfError</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680318743"><span id="local-6989586621680318753"><span id="local-6989586621680318757"><span class="annot"><span class="annottext">Int -&gt; PDFParseResult -&gt; ShowS
+[PDFParseResult] -&gt; ShowS
+PDFParseResult -&gt; String
+(Int -&gt; PDFParseResult -&gt; ShowS)
+-&gt; (PDFParseResult -&gt; String)
+-&gt; ([PDFParseResult] -&gt; ShowS)
+-&gt; Show PDFParseResult
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PDFParseResult -&gt; ShowS
+showsPrec :: Int -&gt; PDFParseResult -&gt; ShowS
+$cshow :: PDFParseResult -&gt; String
+show :: PDFParseResult -&gt; String
+$cshowList :: [PDFParseResult] -&gt; ShowS
+showList :: [PDFParseResult] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680318762"><span id="local-6989586621680318770"><span class="annot"><span class="annottext">PDFParseResult -&gt; PDFParseResult -&gt; Bool
+(PDFParseResult -&gt; PDFParseResult -&gt; Bool)
+-&gt; (PDFParseResult -&gt; PDFParseResult -&gt; Bool) -&gt; Eq PDFParseResult
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PDFParseResult -&gt; PDFParseResult -&gt; Bool
+== :: PDFParseResult -&gt; PDFParseResult -&gt; Bool
+$c/= :: PDFParseResult -&gt; PDFParseResult -&gt; Bool
+/= :: PDFParseResult -&gt; PDFParseResult -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="annot"><span class="hs-comment">{- | Extract text from PDF content (stub implementation)
+In production, would use an external service or library like pdf2text
+-}</span></span><span>
+</span><span id="line-25"></span><span class="annot"><a href="Surypus.PDF.html#extractTextFromPDF"><span class="hs-identifier hs-type">extractTextFromPDF</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="annot"><a href="Surypus.PDF.html#PDFParseResult"><span class="hs-identifier hs-type">PDFParseResult</span></a></span><span>
+</span><span id="line-26"></span><span id="extractTextFromPDF"><span class="annot"><span class="annottext">extractTextFromPDF :: Text -&gt; IO PDFParseResult
+</span><a href="Surypus.PDF.html#extractTextFromPDF"><span class="hs-identifier hs-var hs-var">extractTextFromPDF</span></a></span></span><span> </span><span id="local-6989586621680318774"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680318774"><span class="hs-identifier hs-var">content</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-comment">-- Stub: return the content as-is (would normally extract text from PDF bytes)</span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680318781"><span class="annot"><span class="annottext">pageCount :: Int
+</span><a href="#local-6989586621680318781"><span class="hs-identifier hs-var hs-var">pageCount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">HasCallStack =&gt; Text -&gt; Text -&gt; Int
+Text -&gt; Text -&gt; Int
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#count"><span class="hs-identifier hs-var">T.count</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;\f&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680318774"><span class="hs-identifier hs-var">content</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2B"><span class="hs-operator hs-var">+</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span> </span><span class="hs-comment">-- Form feed = page separator</span><span>
+</span><span id="line-29"></span><span>    </span><span class="annot"><span class="annottext">PDFParseResult -&gt; IO PDFParseResult
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#pure"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">(PDFParseResult -&gt; IO PDFParseResult)
+-&gt; PDFParseResult -&gt; IO PDFParseResult
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span>
+</span><span id="line-30"></span><span>        </span><span class="annot"><a href="Surypus.PDF.html#PDFParseResult"><span class="hs-identifier hs-type">PDFParseResult</span></a></span><span>
+</span><span id="line-31"></span><span>            </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">pdfText :: Text
+</span><a href="Surypus.PDF.html#pdfText"><span class="hs-identifier hs-var">pdfText</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680318774"><span class="hs-identifier hs-var">content</span></a></span><span>
+</span><span id="line-32"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">pdfPageCount :: Int
+</span><a href="Surypus.PDF.html#pdfPageCount"><span class="hs-identifier hs-var">pdfPageCount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680318781"><span class="hs-identifier hs-var">pageCount</span></a></span><span>
+</span><span id="line-33"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">pdfError :: Maybe Text
+</span><a href="Surypus.PDF.html#pdfError"><span class="hs-identifier hs-var">pdfError</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span>
+</span><span id="line-34"></span><span>            </span><span class="hs-special">}</span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="annot"><span class="hs-comment">-- | Extract text from PDF file path (for file-based processing)</span></span><span>
+</span><span id="line-37"></span><span class="annot"><a href="Surypus.PDF.html#extractTextFromPDFPath"><span class="hs-identifier hs-type">extractTextFromPDFPath</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.IO.html#FilePath"><span class="hs-identifier hs-type">FilePath</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="annot"><a href="Surypus.PDF.html#PDFParseResult"><span class="hs-identifier hs-type">PDFParseResult</span></a></span><span>
+</span><span id="line-38"></span><span id="extractTextFromPDFPath"><span class="annot"><span class="annottext">extractTextFromPDFPath :: String -&gt; IO PDFParseResult
+</span><a href="Surypus.PDF.html#extractTextFromPDFPath"><span class="hs-identifier hs-var hs-var">extractTextFromPDFPath</span></a></span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-comment">-- Stub: would integrate with pdf2text or similar</span><span>
+</span><span id="line-40"></span><span>    </span><span class="annot"><span class="annottext">PDFParseResult -&gt; IO PDFParseResult
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#pure"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">(PDFParseResult -&gt; IO PDFParseResult)
+-&gt; PDFParseResult -&gt; IO PDFParseResult
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span>
+</span><span id="line-41"></span><span>        </span><span class="annot"><a href="Surypus.PDF.html#PDFParseResult"><span class="hs-identifier hs-type">PDFParseResult</span></a></span><span>
+</span><span id="line-42"></span><span>            </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">pdfText :: Text
+</span><a href="Surypus.PDF.html#pdfText"><span class="hs-identifier hs-var">pdfText</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&quot;</span></span><span>
+</span><span id="line-43"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">pdfPageCount :: Int
+</span><a href="Surypus.PDF.html#pdfPageCount"><span class="hs-identifier hs-var">pdfPageCount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-44"></span><span>            </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">pdfError :: Maybe Text
+</span><a href="Surypus.PDF.html#pdfError"><span class="hs-identifier hs-var">pdfError</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe Text
+forall a. a -&gt; Maybe a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-var">Just</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;PDF extraction not yet implemented - use external service&quot;</span></span><span>
+</span><span id="line-45"></span><span>            </span><span class="hs-special">}</span><span>
+</span><span id="line-46"></span></pre></body></html>

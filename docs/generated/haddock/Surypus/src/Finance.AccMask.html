@@ -1,0 +1,329 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680232259"><span id="local-6989586621680232260"></span></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DeriveAnyClass #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE StandaloneDeriving #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- | Finance.AccMask - Enhanced accounting mask with type safety</span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- This module provides type-safe accounting masks for document processing</span><span>
+</span><span id="line-8"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Finance.AccMask.html"><span class="hs-identifier">Finance.AccMask</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">encode</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">FromJSON</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/bytestring-0.12.2.0-inplace/src/Data.ByteString.Lazy.html"><span class="hs-identifier">Data.ByteString.Lazy</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/bytestring-0.12.2.0-inplace/src/Data.ByteString.Lazy.Internal.html#toStrict"><span class="hs-identifier">toStrict</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Encoding.html"><span class="hs-identifier">Data.Text.Encoding</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">TE</span></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Gregorian.html#fromGregorian"><span class="hs-identifier">fromGregorian</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="annot"><span class="hs-comment">-- | Accounting mask status</span></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">data</span><span> </span><span id="AccMaskStatus"><span class="annot"><a href="Finance.AccMask.html#AccMaskStatus"><span class="hs-identifier hs-var">AccMaskStatus</span></a></span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="AMSActive"><span class="annot"><a href="Finance.AccMask.html#AMSActive"><span class="hs-identifier hs-var">AMSActive</span></a></span></span><span>     </span><span class="hs-comment">-- &#1040;&#1082;&#1090;&#1080;&#1074;&#1085;&#1072; (active)</span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="AMSInactive"><span class="annot"><a href="Finance.AccMask.html#AMSInactive"><span class="hs-identifier hs-var">AMSInactive</span></a></span></span><span>   </span><span class="hs-comment">-- &#1053;&#1077;&#1072;&#1082;&#1090;&#1080;&#1074;&#1085;&#1072; (inactive)</span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="AMSExpired"><span class="annot"><a href="Finance.AccMask.html#AMSExpired"><span class="hs-identifier hs-var">AMSExpired</span></a></span></span><span>    </span><span class="hs-comment">-- &#1048;&#1089;&#1090;&#1105;&#1082;&#1083;&#1072; (expired)</span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680232287"><span id="local-6989586621680232289"><span id="local-6989586621680232293"><span class="annot"><span class="annottext">Int -&gt; AccMaskStatus -&gt; ShowS
+[AccMaskStatus] -&gt; ShowS
+AccMaskStatus -&gt; String
+(Int -&gt; AccMaskStatus -&gt; ShowS)
+-&gt; (AccMaskStatus -&gt; String)
+-&gt; ([AccMaskStatus] -&gt; ShowS)
+-&gt; Show AccMaskStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AccMaskStatus -&gt; ShowS
+showsPrec :: Int -&gt; AccMaskStatus -&gt; ShowS
+$cshow :: AccMaskStatus -&gt; String
+show :: AccMaskStatus -&gt; String
+$cshowList :: [AccMaskStatus] -&gt; ShowS
+showList :: [AccMaskStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680232298"><span id="local-6989586621680232303"><span class="annot"><span class="annottext">AccMaskStatus -&gt; AccMaskStatus -&gt; Bool
+(AccMaskStatus -&gt; AccMaskStatus -&gt; Bool)
+-&gt; (AccMaskStatus -&gt; AccMaskStatus -&gt; Bool) -&gt; Eq AccMaskStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AccMaskStatus -&gt; AccMaskStatus -&gt; Bool
+== :: AccMaskStatus -&gt; AccMaskStatus -&gt; Bool
+$c/= :: AccMaskStatus -&gt; AccMaskStatus -&gt; Bool
+/= :: AccMaskStatus -&gt; AccMaskStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680232307"><span id="local-6989586621680232314"><span id="local-6989586621680232321"><span id="local-6989586621680232334"><span id="local-6989586621680232337"><span id="local-6989586621680232342"><span id="local-6989586621680232348"><span id="local-6989586621680232352"><span class="annot"><span class="annottext">Int -&gt; AccMaskStatus
+AccMaskStatus -&gt; Int
+AccMaskStatus -&gt; [AccMaskStatus]
+AccMaskStatus -&gt; AccMaskStatus
+AccMaskStatus -&gt; AccMaskStatus -&gt; [AccMaskStatus]
+AccMaskStatus -&gt; AccMaskStatus -&gt; AccMaskStatus -&gt; [AccMaskStatus]
+(AccMaskStatus -&gt; AccMaskStatus)
+-&gt; (AccMaskStatus -&gt; AccMaskStatus)
+-&gt; (Int -&gt; AccMaskStatus)
+-&gt; (AccMaskStatus -&gt; Int)
+-&gt; (AccMaskStatus -&gt; [AccMaskStatus])
+-&gt; (AccMaskStatus -&gt; AccMaskStatus -&gt; [AccMaskStatus])
+-&gt; (AccMaskStatus -&gt; AccMaskStatus -&gt; [AccMaskStatus])
+-&gt; (AccMaskStatus
+    -&gt; AccMaskStatus -&gt; AccMaskStatus -&gt; [AccMaskStatus])
+-&gt; Enum AccMaskStatus
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: AccMaskStatus -&gt; AccMaskStatus
+succ :: AccMaskStatus -&gt; AccMaskStatus
+$cpred :: AccMaskStatus -&gt; AccMaskStatus
+pred :: AccMaskStatus -&gt; AccMaskStatus
+$ctoEnum :: Int -&gt; AccMaskStatus
+toEnum :: Int -&gt; AccMaskStatus
+$cfromEnum :: AccMaskStatus -&gt; Int
+fromEnum :: AccMaskStatus -&gt; Int
+$cenumFrom :: AccMaskStatus -&gt; [AccMaskStatus]
+enumFrom :: AccMaskStatus -&gt; [AccMaskStatus]
+$cenumFromThen :: AccMaskStatus -&gt; AccMaskStatus -&gt; [AccMaskStatus]
+enumFromThen :: AccMaskStatus -&gt; AccMaskStatus -&gt; [AccMaskStatus]
+$cenumFromTo :: AccMaskStatus -&gt; AccMaskStatus -&gt; [AccMaskStatus]
+enumFromTo :: AccMaskStatus -&gt; AccMaskStatus -&gt; [AccMaskStatus]
+$cenumFromThenTo :: AccMaskStatus -&gt; AccMaskStatus -&gt; AccMaskStatus -&gt; [AccMaskStatus]
+enumFromThenTo :: AccMaskStatus -&gt; AccMaskStatus -&gt; AccMaskStatus -&gt; [AccMaskStatus]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680232360"><span id="local-6989586621680232362"><span class="annot"><span class="annottext">AccMaskStatus
+AccMaskStatus -&gt; AccMaskStatus -&gt; Bounded AccMaskStatus
+forall a. a -&gt; a -&gt; Bounded a
+$cminBound :: AccMaskStatus
+minBound :: AccMaskStatus
+$cmaxBound :: AccMaskStatus
+maxBound :: AccMaskStatus
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Bounded"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680232370"><span id="local-6989586621680232374"><span id="local-6989586621680232378"><span id="local-6989586621680232382"><span id="local-6989586621680232385"><span id="local-6989586621680232388"><span id="local-6989586621680232391"><span class="annot"><span class="annottext">Eq AccMaskStatus
+Eq AccMaskStatus =&gt;
+(AccMaskStatus -&gt; AccMaskStatus -&gt; Ordering)
+-&gt; (AccMaskStatus -&gt; AccMaskStatus -&gt; Bool)
+-&gt; (AccMaskStatus -&gt; AccMaskStatus -&gt; Bool)
+-&gt; (AccMaskStatus -&gt; AccMaskStatus -&gt; Bool)
+-&gt; (AccMaskStatus -&gt; AccMaskStatus -&gt; Bool)
+-&gt; (AccMaskStatus -&gt; AccMaskStatus -&gt; AccMaskStatus)
+-&gt; (AccMaskStatus -&gt; AccMaskStatus -&gt; AccMaskStatus)
+-&gt; Ord AccMaskStatus
+AccMaskStatus -&gt; AccMaskStatus -&gt; Bool
+AccMaskStatus -&gt; AccMaskStatus -&gt; Ordering
+AccMaskStatus -&gt; AccMaskStatus -&gt; AccMaskStatus
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: AccMaskStatus -&gt; AccMaskStatus -&gt; Ordering
+compare :: AccMaskStatus -&gt; AccMaskStatus -&gt; Ordering
+$c&lt; :: AccMaskStatus -&gt; AccMaskStatus -&gt; Bool
+&lt; :: AccMaskStatus -&gt; AccMaskStatus -&gt; Bool
+$c&lt;= :: AccMaskStatus -&gt; AccMaskStatus -&gt; Bool
+&lt;= :: AccMaskStatus -&gt; AccMaskStatus -&gt; Bool
+$c&gt; :: AccMaskStatus -&gt; AccMaskStatus -&gt; Bool
+&gt; :: AccMaskStatus -&gt; AccMaskStatus -&gt; Bool
+$c&gt;= :: AccMaskStatus -&gt; AccMaskStatus -&gt; Bool
+&gt;= :: AccMaskStatus -&gt; AccMaskStatus -&gt; Bool
+$cmax :: AccMaskStatus -&gt; AccMaskStatus -&gt; AccMaskStatus
+max :: AccMaskStatus -&gt; AccMaskStatus -&gt; AccMaskStatus
+$cmin :: AccMaskStatus -&gt; AccMaskStatus -&gt; AccMaskStatus
+min :: AccMaskStatus -&gt; AccMaskStatus -&gt; AccMaskStatus
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Ord"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></a></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680232399"><span id="local-6989586621680232401"><span class="annot"><span class="annottext">(forall x. AccMaskStatus -&gt; Rep AccMaskStatus x)
+-&gt; (forall x. Rep AccMaskStatus x -&gt; AccMaskStatus)
+-&gt; Generic AccMaskStatus
+forall x. Rep AccMaskStatus x -&gt; AccMaskStatus
+forall x. AccMaskStatus -&gt; Rep AccMaskStatus x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. AccMaskStatus -&gt; Rep AccMaskStatus x
+from :: forall x. AccMaskStatus -&gt; Rep AccMaskStatus x
+$cto :: forall x. Rep AccMaskStatus x -&gt; AccMaskStatus
+to :: forall x. Rep AccMaskStatus x -&gt; AccMaskStatus
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="annot"><span class="hs-comment">-- | Enhanced accounting mask with validation</span></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">data</span><span> </span><span id="AccMask"><span class="annot"><a href="Finance.AccMask.html#AccMask"><span class="hs-identifier hs-var">AccMask</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AccMask"><span class="annot"><a href="Finance.AccMask.html#AccMask"><span class="hs-identifier hs-var">AccMask</span></a></span></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="amId"><span class="annot"><span class="annottext">AccMask -&gt; Int64
+</span><a href="Finance.AccMask.html#amId"><span class="hs-identifier hs-var hs-var">amId</span></a></span></span><span>          </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="amMaskCode"><span class="annot"><span class="annottext">AccMask -&gt; Text
+</span><a href="Finance.AccMask.html#amMaskCode"><span class="hs-identifier hs-var hs-var">amMaskCode</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="amStartDate"><span class="annot"><span class="annottext">AccMask -&gt; Day
+</span><a href="Finance.AccMask.html#amStartDate"><span class="hs-identifier hs-var hs-var">amStartDate</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="amEndDate"><span class="annot"><span class="annottext">AccMask -&gt; Maybe Day
+</span><a href="Finance.AccMask.html#amEndDate"><span class="hs-identifier hs-var hs-var">amEndDate</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span>      </span><span class="hs-comment">-- Nothing = open-ended</span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="amDescription"><span class="annot"><span class="annottext">AccMask -&gt; Text
+</span><a href="Finance.AccMask.html#amDescription"><span class="hs-identifier hs-var hs-var">amDescription</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="amStatus"><span class="annot"><span class="annottext">AccMask -&gt; AccMaskStatus
+</span><a href="Finance.AccMask.html#amStatus"><span class="hs-identifier hs-var hs-var">amStatus</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.AccMask.html#AccMaskStatus"><span class="hs-identifier hs-type">AccMaskStatus</span></a></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="amPriority"><span class="annot"><span class="annottext">AccMask -&gt; Int
+</span><a href="Finance.AccMask.html#amPriority"><span class="hs-identifier hs-var hs-var">amPriority</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>            </span><span class="hs-comment">-- Priority order</span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="amIsSystem"><span class="annot"><span class="annottext">AccMask -&gt; Bool
+</span><a href="Finance.AccMask.html#amIsSystem"><span class="hs-identifier hs-var hs-var">amIsSystem</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>           </span><span class="hs-comment">-- System mask (cannot be deleted)</span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680232416"><span id="local-6989586621680232432"><span id="local-6989586621680232436"><span class="annot"><span class="annottext">Int -&gt; AccMask -&gt; ShowS
+[AccMask] -&gt; ShowS
+AccMask -&gt; String
+(Int -&gt; AccMask -&gt; ShowS)
+-&gt; (AccMask -&gt; String) -&gt; ([AccMask] -&gt; ShowS) -&gt; Show AccMask
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AccMask -&gt; ShowS
+showsPrec :: Int -&gt; AccMask -&gt; ShowS
+$cshow :: AccMask -&gt; String
+show :: AccMask -&gt; String
+$cshowList :: [AccMask] -&gt; ShowS
+showList :: [AccMask] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680232439"><span id="local-6989586621680232454"><span class="annot"><span class="annottext">AccMask -&gt; AccMask -&gt; Bool
+(AccMask -&gt; AccMask -&gt; Bool)
+-&gt; (AccMask -&gt; AccMask -&gt; Bool) -&gt; Eq AccMask
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AccMask -&gt; AccMask -&gt; Bool
+== :: AccMask -&gt; AccMask -&gt; Bool
+$c/= :: AccMask -&gt; AccMask -&gt; Bool
+/= :: AccMask -&gt; AccMask -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680232458"><span id="local-6989586621680232460"><span class="annot"><span class="annottext">(forall x. AccMask -&gt; Rep AccMask x)
+-&gt; (forall x. Rep AccMask x -&gt; AccMask) -&gt; Generic AccMask
+forall x. Rep AccMask x -&gt; AccMask
+forall x. AccMask -&gt; Rep AccMask x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. AccMask -&gt; Rep AccMask x
+from :: forall x. AccMask -&gt; Rep AccMask x
+$cto :: forall x. Rep AccMask x -&gt; AccMask
+to :: forall x. Rep AccMask x -&gt; AccMask
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span id="local-6989586621680232463"><span id="local-6989586621680232470"><span id="local-6989586621680232473"><span id="local-6989586621680232476"><span id="local-6989586621680232479"><span class="hs-keyword">deriving</span><span> </span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Finance.AccMask.html#AccMaskStatus"><span class="hs-identifier hs-type">AccMaskStatus</span></a></span></span></span></span></span></span><span>
+</span><span id="line-40"></span><span id="local-6989586621680232582"><span id="local-6989586621680232589"><span id="local-6989586621680232592"><span class="hs-keyword">deriving</span><span> </span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Finance.AccMask.html#AccMaskStatus"><span class="hs-identifier hs-type">AccMaskStatus</span></a></span></span></span></span><span>
+</span><span id="line-41"></span><span id="local-6989586621680232671"><span id="local-6989586621680232677"><span id="local-6989586621680232680"><span id="local-6989586621680232683"><span id="local-6989586621680232686"><span class="hs-keyword">deriving</span><span> </span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="Finance.AccMask.html#AccMask"><span class="hs-identifier hs-type">AccMask</span></a></span></span></span></span></span></span><span>
+</span><span id="line-42"></span><span id="local-6989586621680232877"><span id="local-6989586621680232884"><span id="local-6989586621680232887"><span class="hs-keyword">deriving</span><span> </span><span class="hs-keyword">instance</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="Finance.AccMask.html#AccMask"><span class="hs-identifier hs-type">AccMask</span></a></span></span></span></span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="annot"><span class="hs-comment">-- | Mask code type</span></span><span>
+</span><span id="line-45"></span><span class="hs-keyword">type</span><span> </span><span id="MaskCode"><span class="annot"><a href="Finance.AccMask.html#MaskCode"><span class="hs-identifier hs-var">MaskCode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-46"></span><span class="hs-keyword">type</span><span> </span><span id="AccMaskId"><span class="annot"><a href="Finance.AccMask.html#AccMaskId"><span class="hs-identifier hs-var">AccMaskId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span class="annot"><span class="hs-comment">-- | Create a new accounting mask</span></span><span>
+</span><span id="line-49"></span><span class="annot"><a href="Finance.AccMask.html#createAccMask"><span class="hs-identifier hs-type">createAccMask</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.AccMask.html#AccMaskStatus"><span class="hs-identifier hs-type">AccMaskStatus</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.AccMask.html#AccMask"><span class="hs-identifier hs-type">AccMask</span></a></span><span>
+</span><span id="line-50"></span><span id="createAccMask"><span class="annot"><span class="annottext">createAccMask :: Int64
+-&gt; Text
+-&gt; Day
+-&gt; Maybe Day
+-&gt; Text
+-&gt; AccMaskStatus
+-&gt; Int
+-&gt; Bool
+-&gt; AccMask
+</span><a href="Finance.AccMask.html#createAccMask"><span class="hs-identifier hs-var hs-var">createAccMask</span></a></span></span><span> </span><span id="local-6989586621680233011"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680233011"><span class="hs-identifier hs-var">id</span></a></span></span><span> </span><span id="local-6989586621680233012"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680233012"><span class="hs-identifier hs-var">code</span></a></span></span><span> </span><span id="local-6989586621680233013"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680233013"><span class="hs-identifier hs-var">start</span></a></span></span><span> </span><span id="local-6989586621680233014"><span class="annot"><span class="annottext">Maybe Day
+</span><a href="#local-6989586621680233014"><span class="hs-identifier hs-var">end</span></a></span></span><span> </span><span id="local-6989586621680233015"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680233015"><span class="hs-identifier hs-var">desc</span></a></span></span><span> </span><span id="local-6989586621680233016"><span class="annot"><span class="annottext">AccMaskStatus
+</span><a href="#local-6989586621680233016"><span class="hs-identifier hs-var">status</span></a></span></span><span> </span><span id="local-6989586621680233017"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680233017"><span class="hs-identifier hs-var">priority</span></a></span></span><span> </span><span id="local-6989586621680233018"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621680233018"><span class="hs-identifier hs-var">isSystem</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-51"></span><span>  </span><span class="annot"><span class="annottext">Int64
+-&gt; Text
+-&gt; Day
+-&gt; Maybe Day
+-&gt; Text
+-&gt; AccMaskStatus
+-&gt; Int
+-&gt; Bool
+-&gt; AccMask
+</span><a href="Finance.AccMask.html#AccMask"><span class="hs-identifier hs-var">AccMask</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680233011"><span class="hs-identifier hs-var">id</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680233012"><span class="hs-identifier hs-var">code</span></a></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680233013"><span class="hs-identifier hs-var">start</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Day
+</span><a href="#local-6989586621680233014"><span class="hs-identifier hs-var">end</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680233015"><span class="hs-identifier hs-var">desc</span></a></span><span> </span><span class="annot"><span class="annottext">AccMaskStatus
+</span><a href="#local-6989586621680233016"><span class="hs-identifier hs-var">status</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680233017"><span class="hs-identifier hs-var">priority</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621680233018"><span class="hs-identifier hs-var">isSystem</span></a></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="annot"><span class="hs-comment">-- | Check if mask is active on given date</span></span><span>
+</span><span id="line-54"></span><span class="annot"><a href="Finance.AccMask.html#isMaskActive"><span class="hs-identifier hs-type">isMaskActive</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.AccMask.html#AccMask"><span class="hs-identifier hs-type">AccMask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-55"></span><span id="isMaskActive"><span class="annot"><span class="annottext">isMaskActive :: AccMask -&gt; Day -&gt; Bool
+</span><a href="Finance.AccMask.html#isMaskActive"><span class="hs-identifier hs-var hs-var">isMaskActive</span></a></span></span><span> </span><span id="local-6989586621680233020"><span class="annot"><span class="annottext">AccMask
+</span><a href="#local-6989586621680233020"><span class="hs-identifier hs-var">mask</span></a></span></span><span> </span><span id="local-6989586621680233021"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680233021"><span class="hs-identifier hs-var">date</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccMask -&gt; AccMaskStatus
+</span><a href="Finance.AccMask.html#amStatus"><span class="hs-identifier hs-var">amStatus</span></a></span><span> </span><span class="annot"><span class="annottext">AccMask
+</span><a href="#local-6989586621680233020"><span class="hs-identifier hs-var">mask</span></a></span><span> </span><span class="annot"><span class="annottext">AccMaskStatus -&gt; AccMaskStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">AccMaskStatus
+</span><a href="Finance.AccMask.html#AMSActive"><span class="hs-identifier hs-var">AMSActive</span></a></span><span>
+</span><span id="line-56"></span><span>  </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%26%26"><span class="hs-operator hs-var">&amp;&amp;</span></a></span><span> </span><span class="annot"><span class="annottext">AccMask -&gt; Day
+</span><a href="Finance.AccMask.html#amStartDate"><span class="hs-identifier hs-var">amStartDate</span></a></span><span> </span><span class="annot"><span class="annottext">AccMask
+</span><a href="#local-6989586621680233020"><span class="hs-identifier hs-var">mask</span></a></span><span> </span><span class="annot"><span class="annottext">Day -&gt; Day -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680233021"><span class="hs-identifier hs-var">date</span></a></span><span>
+</span><span id="line-57"></span><span>  </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%26%26"><span class="hs-operator hs-var">&amp;&amp;</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; (Day -&gt; Bool) -&gt; Maybe Day -&gt; Bool
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Maybe.html#maybe"><span class="hs-identifier hs-var">maybe</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#True"><span class="hs-identifier hs-var">True</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Day -&gt; Day -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E%3D"><span class="hs-operator hs-var">&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680233021"><span class="hs-identifier hs-var">date</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccMask -&gt; Maybe Day
+</span><a href="Finance.AccMask.html#amEndDate"><span class="hs-identifier hs-var">amEndDate</span></a></span><span> </span><span class="annot"><span class="annottext">AccMask
+</span><a href="#local-6989586621680233020"><span class="hs-identifier hs-var">mask</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="annot"><span class="hs-comment">-- | Validate mask code format (must be alphanumeric, 1-10 chars)</span></span><span>
+</span><span id="line-60"></span><span class="annot"><a href="Finance.AccMask.html#validateMaskCode"><span class="hs-identifier hs-type">validateMaskCode</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-61"></span><span id="validateMaskCode"><span class="annot"><span class="annottext">validateMaskCode :: Text -&gt; Either Text Text
+</span><a href="Finance.AccMask.html#validateMaskCode"><span class="hs-identifier hs-var hs-var">validateMaskCode</span></a></span></span><span> </span><span id="local-6989586621680233025"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680233025"><span class="hs-identifier hs-var">code</span></a></span></span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#length"><span class="hs-identifier hs-var">T.length</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680233025"><span class="hs-identifier hs-var">code</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%7C%7C"><span class="hs-operator hs-var">||</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#length"><span class="hs-identifier hs-var">T.length</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680233025"><span class="hs-identifier hs-var">code</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E"><span class="hs-operator hs-var">&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">10</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text Text
+forall a b. a -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Left"><span class="hs-identifier hs-var">Left</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Mask code must be 1-10 characters&quot;</span></span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#not"><span class="hs-identifier hs-var">not</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#all"><span class="hs-identifier hs-var">T.all</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680233030"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621680233030"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#any"><span class="hs-identifier hs-var">T.any</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621680233030"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Text
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#pack"><span class="hs-identifier hs-var">T.pack</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789&quot;</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680233025"><span class="hs-identifier hs-var">code</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text Text
+forall a b. a -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Left"><span class="hs-identifier hs-var">Left</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Mask code must be alphanumeric&quot;</span></span><span>
+</span><span id="line-64"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text Text
+forall a b. b -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680233025"><span class="hs-identifier hs-var">code</span></a></span><span>
+</span><span id="line-65"></span><span>
+</span><span id="line-66"></span><span class="hs-comment">-- | Convert mask to JSON.</span><span>
+</span><span id="line-67"></span><span class="hs-comment">-- Was @T.pack (show mask)@ &#8212; Haskell record syntax, not JSON &#8212; so any</span><span>
+</span><span id="line-68"></span><span class="hs-comment">-- consumer parsing the output as JSON got a parse error.</span><span>
+</span><span id="line-69"></span><span class="annot"><a href="Finance.AccMask.html#toJSONMask"><span class="hs-identifier hs-type">toJSONMask</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.AccMask.html#AccMask"><span class="hs-identifier hs-type">AccMask</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-70"></span><span id="toJSONMask"><span class="annot"><span class="annottext">toJSONMask :: AccMask -&gt; Text
+</span><a href="Finance.AccMask.html#toJSONMask"><span class="hs-identifier hs-var hs-var">toJSONMask</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Text
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Encoding.html#decodeUtf8"><span class="hs-identifier hs-var">TE.decodeUtf8</span></a></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; Text) -&gt; (AccMask -&gt; ByteString) -&gt; AccMask -&gt; Text
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">LazyByteString -&gt; ByteString
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/bytestring-0.12.2.0-inplace/src/Data.ByteString.Lazy.Internal.html#toStrict"><span class="hs-identifier hs-var">toStrict</span></a></span><span> </span><span class="annot"><span class="annottext">(LazyByteString -&gt; ByteString)
+-&gt; (AccMask -&gt; LazyByteString) -&gt; AccMask -&gt; ByteString
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#."><span class="hs-operator hs-var">.</span></a></span><span> </span><span class="annot"><span class="annottext">AccMask -&gt; LazyByteString
+forall a. ToJSON a =&gt; a -&gt; LazyByteString
+</span><span class="hs-identifier hs-var">encode</span></span></pre></body></html>

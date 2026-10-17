@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | GiftCard module - Gift cards</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Commerce.GiftCard.html"><span class="hs-identifier">Commerce.GiftCard</span></a></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="annot"><span class="hs-comment">-- | GiftCard - Gift card</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">data</span><span> </span><span id="GiftCard"><span class="annot"><a href="Commerce.GiftCard.html#GiftCard"><span class="hs-identifier hs-var">GiftCard</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="GiftCard"><span class="annot"><a href="Commerce.GiftCard.html#GiftCard"><span class="hs-identifier hs-var">GiftCard</span></a></span></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="gcId"><span class="annot"><span class="annottext">GiftCard -&gt; Int64
+</span><a href="Commerce.GiftCard.html#gcId"><span class="hs-identifier hs-var hs-var">gcId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="gcCode"><span class="annot"><span class="annottext">GiftCard -&gt; Text
+</span><a href="Commerce.GiftCard.html#gcCode"><span class="hs-identifier hs-var hs-var">gcCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="gcInitialValue"><span class="annot"><span class="annottext">GiftCard -&gt; Double
+</span><a href="Commerce.GiftCard.html#gcInitialValue"><span class="hs-identifier hs-var hs-var">gcInitialValue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="gcBalance"><span class="annot"><span class="annottext">GiftCard -&gt; Double
+</span><a href="Commerce.GiftCard.html#gcBalance"><span class="hs-identifier hs-var hs-var">gcBalance</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="gcIssueDate"><span class="annot"><span class="annottext">GiftCard -&gt; Day
+</span><a href="Commerce.GiftCard.html#gcIssueDate"><span class="hs-identifier hs-var hs-var">gcIssueDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="gcExpireDate"><span class="annot"><span class="annottext">GiftCard -&gt; Maybe Day
+</span><a href="Commerce.GiftCard.html#gcExpireDate"><span class="hs-identifier hs-var hs-var">gcExpireDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span id="gcStatus"><span class="annot"><span class="annottext">GiftCard -&gt; GiftCardStatus
+</span><a href="Commerce.GiftCard.html#gcStatus"><span class="hs-identifier hs-var hs-var">gcStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.GiftCard.html#GiftCardStatus"><span class="hs-identifier hs-type">GiftCardStatus</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680198610"><span id="local-6989586621680198627"><span id="local-6989586621680198631"><span class="annot"><span class="annottext">Int -&gt; GiftCard -&gt; ShowS
+[GiftCard] -&gt; ShowS
+GiftCard -&gt; String
+(Int -&gt; GiftCard -&gt; ShowS)
+-&gt; (GiftCard -&gt; String) -&gt; ([GiftCard] -&gt; ShowS) -&gt; Show GiftCard
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; GiftCard -&gt; ShowS
+showsPrec :: Int -&gt; GiftCard -&gt; ShowS
+$cshow :: GiftCard -&gt; String
+show :: GiftCard -&gt; String
+$cshowList :: [GiftCard] -&gt; ShowS
+showList :: [GiftCard] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680198636"><span id="local-6989586621680198650"><span class="annot"><span class="annottext">GiftCard -&gt; GiftCard -&gt; Bool
+(GiftCard -&gt; GiftCard -&gt; Bool)
+-&gt; (GiftCard -&gt; GiftCard -&gt; Bool) -&gt; Eq GiftCard
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: GiftCard -&gt; GiftCard -&gt; Bool
+== :: GiftCard -&gt; GiftCard -&gt; Bool
+$c/= :: GiftCard -&gt; GiftCard -&gt; Bool
+/= :: GiftCard -&gt; GiftCard -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">data</span><span> </span><span id="GiftCardStatus"><span class="annot"><a href="Commerce.GiftCard.html#GiftCardStatus"><span class="hs-identifier hs-var">GiftCardStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="GCSActive"><span class="annot"><a href="Commerce.GiftCard.html#GCSActive"><span class="hs-identifier hs-var">GCSActive</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="GCSUsed"><span class="annot"><a href="Commerce.GiftCard.html#GCSUsed"><span class="hs-identifier hs-var">GCSUsed</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="GCSExpired"><span class="annot"><a href="Commerce.GiftCard.html#GCSExpired"><span class="hs-identifier hs-var">GCSExpired</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="GSCancelled"><span class="annot"><a href="Commerce.GiftCard.html#GSCancelled"><span class="hs-identifier hs-var">GSCancelled</span></a></span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680198659"><span id="local-6989586621680198661"><span id="local-6989586621680198664"><span class="annot"><span class="annottext">Int -&gt; GiftCardStatus -&gt; ShowS
+[GiftCardStatus] -&gt; ShowS
+GiftCardStatus -&gt; String
+(Int -&gt; GiftCardStatus -&gt; ShowS)
+-&gt; (GiftCardStatus -&gt; String)
+-&gt; ([GiftCardStatus] -&gt; ShowS)
+-&gt; Show GiftCardStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; GiftCardStatus -&gt; ShowS
+showsPrec :: Int -&gt; GiftCardStatus -&gt; ShowS
+$cshow :: GiftCardStatus -&gt; String
+show :: GiftCardStatus -&gt; String
+$cshowList :: [GiftCardStatus] -&gt; ShowS
+showList :: [GiftCardStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680198667"><span id="local-6989586621680198672"><span class="annot"><span class="annottext">GiftCardStatus -&gt; GiftCardStatus -&gt; Bool
+(GiftCardStatus -&gt; GiftCardStatus -&gt; Bool)
+-&gt; (GiftCardStatus -&gt; GiftCardStatus -&gt; Bool) -&gt; Eq GiftCardStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: GiftCardStatus -&gt; GiftCardStatus -&gt; Bool
+== :: GiftCardStatus -&gt; GiftCardStatus -&gt; Bool
+$c/= :: GiftCardStatus -&gt; GiftCardStatus -&gt; Bool
+/= :: GiftCardStatus -&gt; GiftCardStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="annot"><span class="hs-comment">-- | GiftCardOperation - Usage history</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">data</span><span> </span><span id="GiftCardOperation"><span class="annot"><a href="Commerce.GiftCard.html#GiftCardOperation"><span class="hs-identifier hs-var">GiftCardOperation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="GiftCardOperation"><span class="annot"><a href="Commerce.GiftCard.html#GiftCardOperation"><span class="hs-identifier hs-var">GiftCardOperation</span></a></span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="gcoId"><span class="annot"><span class="annottext">GiftCardOperation -&gt; Int64
+</span><a href="Commerce.GiftCard.html#gcoId"><span class="hs-identifier hs-var hs-var">gcoId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="gcoCardId"><span class="annot"><span class="annottext">GiftCardOperation -&gt; Int64
+</span><a href="Commerce.GiftCard.html#gcoCardId"><span class="hs-identifier hs-var hs-var">gcoCardId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="gcoType"><span class="annot"><span class="annottext">GiftCardOperation -&gt; GCOpType
+</span><a href="Commerce.GiftCard.html#gcoType"><span class="hs-identifier hs-var hs-var">gcoType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.GiftCard.html#GCOpType"><span class="hs-identifier hs-type">GCOpType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="gcoAmount"><span class="annot"><span class="annottext">GiftCardOperation -&gt; Double
+</span><a href="Commerce.GiftCard.html#gcoAmount"><span class="hs-identifier hs-var hs-var">gcoAmount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span id="gcoDate"><span class="annot"><span class="annottext">GiftCardOperation -&gt; Day
+</span><a href="Commerce.GiftCard.html#gcoDate"><span class="hs-identifier hs-var hs-var">gcoDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-30"></span><span>    </span><span id="gcoOrderId"><span class="annot"><span class="annottext">GiftCardOperation -&gt; Maybe Int64
+</span><a href="Commerce.GiftCard.html#gcoOrderId"><span class="hs-identifier hs-var hs-var">gcoOrderId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680198682"><span id="local-6989586621680198692"><span id="local-6989586621680198696"><span class="annot"><span class="annottext">Int -&gt; GiftCardOperation -&gt; ShowS
+[GiftCardOperation] -&gt; ShowS
+GiftCardOperation -&gt; String
+(Int -&gt; GiftCardOperation -&gt; ShowS)
+-&gt; (GiftCardOperation -&gt; String)
+-&gt; ([GiftCardOperation] -&gt; ShowS)
+-&gt; Show GiftCardOperation
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; GiftCardOperation -&gt; ShowS
+showsPrec :: Int -&gt; GiftCardOperation -&gt; ShowS
+$cshow :: GiftCardOperation -&gt; String
+show :: GiftCardOperation -&gt; String
+$cshowList :: [GiftCardOperation] -&gt; ShowS
+showList :: [GiftCardOperation] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680198699"><span id="local-6989586621680198708"><span class="annot"><span class="annottext">GiftCardOperation -&gt; GiftCardOperation -&gt; Bool
+(GiftCardOperation -&gt; GiftCardOperation -&gt; Bool)
+-&gt; (GiftCardOperation -&gt; GiftCardOperation -&gt; Bool)
+-&gt; Eq GiftCardOperation
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: GiftCardOperation -&gt; GiftCardOperation -&gt; Bool
+== :: GiftCardOperation -&gt; GiftCardOperation -&gt; Bool
+$c/= :: GiftCardOperation -&gt; GiftCardOperation -&gt; Bool
+/= :: GiftCardOperation -&gt; GiftCardOperation -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">data</span><span> </span><span id="GCOpType"><span class="annot"><a href="Commerce.GiftCard.html#GCOpType"><span class="hs-identifier hs-var">GCOpType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="GCTIssue"><span class="annot"><a href="Commerce.GiftCard.html#GCTIssue"><span class="hs-identifier hs-var">GCTIssue</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="GCTLoad"><span class="annot"><a href="Commerce.GiftCard.html#GCTLoad"><span class="hs-identifier hs-var">GCTLoad</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="GCTPayment"><span class="annot"><a href="Commerce.GiftCard.html#GCTPayment"><span class="hs-identifier hs-var">GCTPayment</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="GCTRefund"><span class="annot"><a href="Commerce.GiftCard.html#GCTRefund"><span class="hs-identifier hs-var">GCTRefund</span></a></span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680198716"><span id="local-6989586621680198718"><span id="local-6989586621680198721"><span class="annot"><span class="annottext">Int -&gt; GCOpType -&gt; ShowS
+[GCOpType] -&gt; ShowS
+GCOpType -&gt; String
+(Int -&gt; GCOpType -&gt; ShowS)
+-&gt; (GCOpType -&gt; String) -&gt; ([GCOpType] -&gt; ShowS) -&gt; Show GCOpType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; GCOpType -&gt; ShowS
+showsPrec :: Int -&gt; GCOpType -&gt; ShowS
+$cshow :: GCOpType -&gt; String
+show :: GCOpType -&gt; String
+$cshowList :: [GCOpType] -&gt; ShowS
+showList :: [GCOpType] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680198724"><span id="local-6989586621680198728"><span class="annot"><span class="annottext">GCOpType -&gt; GCOpType -&gt; Bool
+(GCOpType -&gt; GCOpType -&gt; Bool)
+-&gt; (GCOpType -&gt; GCOpType -&gt; Bool) -&gt; Eq GCOpType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: GCOpType -&gt; GCOpType -&gt; Bool
+== :: GCOpType -&gt; GCOpType -&gt; Bool
+$c/= :: GCOpType -&gt; GCOpType -&gt; Bool
+/= :: GCOpType -&gt; GCOpType -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="annot"><span class="hs-comment">-- | Check if card is valid</span></span><span>
+</span><span id="line-38"></span><span class="annot"><a href="Commerce.GiftCard.html#isGiftCardValid"><span class="hs-identifier hs-type">isGiftCardValid</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.GiftCard.html#GiftCard"><span class="hs-identifier hs-type">GiftCard</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-39"></span><span id="isGiftCardValid"><span class="annot"><span class="annottext">isGiftCardValid :: GiftCard -&gt; Day -&gt; Bool
+</span><a href="Commerce.GiftCard.html#isGiftCardValid"><span class="hs-identifier hs-var hs-var">isGiftCardValid</span></a></span></span><span> </span><span id="local-6989586621680198731"><span class="annot"><span class="annottext">GiftCard
+</span><a href="#local-6989586621680198731"><span class="hs-identifier hs-var">gc</span></a></span></span><span> </span><span id="local-6989586621680198732"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680198732"><span class="hs-identifier hs-var">today</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-40"></span><span>  </span><span class="annot"><span class="annottext">GiftCard -&gt; GiftCardStatus
+</span><a href="Commerce.GiftCard.html#gcStatus"><span class="hs-identifier hs-var">gcStatus</span></a></span><span> </span><span class="annot"><span class="annottext">GiftCard
+</span><a href="#local-6989586621680198731"><span class="hs-identifier hs-var">gc</span></a></span><span> </span><span class="annot"><span class="annottext">GiftCardStatus -&gt; GiftCardStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">GiftCardStatus
+</span><a href="Commerce.GiftCard.html#GCSActive"><span class="hs-identifier hs-var">GCSActive</span></a></span><span>
+</span><span id="line-41"></span><span>    </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%26%26"><span class="hs-operator hs-var">&amp;&amp;</span></a></span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">GiftCard -&gt; Maybe Day
+</span><a href="Commerce.GiftCard.html#gcExpireDate"><span class="hs-identifier hs-var">gcExpireDate</span></a></span><span> </span><span class="annot"><span class="annottext">GiftCard
+</span><a href="#local-6989586621680198731"><span class="hs-identifier hs-var">gc</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-42"></span><span>      </span><span class="annot"><span class="annottext">Maybe Day
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Nothing"><span class="hs-identifier hs-var">Nothing</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#True"><span class="hs-identifier hs-var">True</span></a></span><span>
+</span><span id="line-43"></span><span>      </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Just"><span class="hs-identifier hs-type">Just</span></a></span><span> </span><span id="local-6989586621680198734"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680198734"><span class="hs-identifier hs-var">expiryDate</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680198732"><span class="hs-identifier hs-var">today</span></a></span><span> </span><span class="annot"><span class="annottext">Day -&gt; Day -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680198734"><span class="hs-identifier hs-var">expiryDate</span></a></span><span>
+</span><span id="line-44"></span></pre></body></html>

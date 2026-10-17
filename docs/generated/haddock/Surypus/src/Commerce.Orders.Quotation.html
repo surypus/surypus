@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Quotation module - Commercial offers</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Commerce.Orders.Quotation.html"><span class="hs-identifier">Commerce.Orders.Quotation</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Commerce.Orders.Quotation.html#Quotation"><span class="hs-identifier">Quotation</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-4"></span><span>    </span><span class="annot"><a href="Commerce.Orders.Quotation.html#QuotationStatus"><span class="hs-identifier">QuotationStatus</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>    </span><span class="annot"><a href="Commerce.Orders.Quotation.html#QuotationLine"><span class="hs-identifier">QuotationLine</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Commerce.Orders.Quotation.html#calcQuotationTotal"><span class="hs-identifier">calcQuotationTotal</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-comment">{-@ type NonNeg = {v:Double | v &gt;= 0} @-}</span><span>
+</span><span id="line-14"></span><span class="hs-comment">{-@ type Discount = {v:Double | v &gt;= 0 &amp;&amp; v &lt;= 100} @-}</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="annot"><span class="hs-comment">-- | Quotation - Commercial offer</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">data</span><span> </span><span id="Quotation"><span class="annot"><a href="Commerce.Orders.Quotation.html#Quotation"><span class="hs-identifier hs-var">Quotation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Quotation"><span class="annot"><a href="Commerce.Orders.Quotation.html#Quotation"><span class="hs-identifier hs-var">Quotation</span></a></span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="qotId"><span class="annot"><span class="annottext">Quotation -&gt; Int64
+</span><a href="Commerce.Orders.Quotation.html#qotId"><span class="hs-identifier hs-var hs-var">qotId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span id="qotCode"><span class="annot"><span class="annottext">Quotation -&gt; Text
+</span><a href="Commerce.Orders.Quotation.html#qotCode"><span class="hs-identifier hs-var hs-var">qotCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span id="qotClientId"><span class="annot"><span class="annottext">Quotation -&gt; Int64
+</span><a href="Commerce.Orders.Quotation.html#qotClientId"><span class="hs-identifier hs-var hs-var">qotClientId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="qotDate"><span class="annot"><span class="annottext">Quotation -&gt; Day
+</span><a href="Commerce.Orders.Quotation.html#qotDate"><span class="hs-identifier hs-var hs-var">qotDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="qotValidTill"><span class="annot"><span class="annottext">Quotation -&gt; Maybe Day
+</span><a href="Commerce.Orders.Quotation.html#qotValidTill"><span class="hs-identifier hs-var hs-var">qotValidTill</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="qotStatus"><span class="annot"><span class="annottext">Quotation -&gt; QuotationStatus
+</span><a href="Commerce.Orders.Quotation.html#qotStatus"><span class="hs-identifier hs-var hs-var">qotStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Orders.Quotation.html#QuotationStatus"><span class="hs-identifier hs-type">QuotationStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="qotFlags"><span class="annot"><span class="annottext">Quotation -&gt; Int
+</span><a href="Commerce.Orders.Quotation.html#qotFlags"><span class="hs-identifier hs-var hs-var">qotFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680199281"><span id="local-6989586621680199298"><span id="local-6989586621680199302"><span class="annot"><span class="annottext">Int -&gt; Quotation -&gt; ShowS
+[Quotation] -&gt; ShowS
+Quotation -&gt; String
+(Int -&gt; Quotation -&gt; ShowS)
+-&gt; (Quotation -&gt; String)
+-&gt; ([Quotation] -&gt; ShowS)
+-&gt; Show Quotation
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Quotation -&gt; ShowS
+showsPrec :: Int -&gt; Quotation -&gt; ShowS
+$cshow :: Quotation -&gt; String
+show :: Quotation -&gt; String
+$cshowList :: [Quotation] -&gt; ShowS
+showList :: [Quotation] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680199307"><span id="local-6989586621680199322"><span class="annot"><span class="annottext">Quotation -&gt; Quotation -&gt; Bool
+(Quotation -&gt; Quotation -&gt; Bool)
+-&gt; (Quotation -&gt; Quotation -&gt; Bool) -&gt; Eq Quotation
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Quotation -&gt; Quotation -&gt; Bool
+== :: Quotation -&gt; Quotation -&gt; Bool
+$c/= :: Quotation -&gt; Quotation -&gt; Bool
+/= :: Quotation -&gt; Quotation -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">data</span><span> </span><span id="QuotationStatus"><span class="annot"><a href="Commerce.Orders.Quotation.html#QuotationStatus"><span class="hs-identifier hs-var">QuotationStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="QSDraft"><span class="annot"><a href="Commerce.Orders.Quotation.html#QSDraft"><span class="hs-identifier hs-var">QSDraft</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="QSSent"><span class="annot"><a href="Commerce.Orders.Quotation.html#QSSent"><span class="hs-identifier hs-var">QSSent</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="QSAccepted"><span class="annot"><a href="Commerce.Orders.Quotation.html#QSAccepted"><span class="hs-identifier hs-var">QSAccepted</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="QSRejected"><span class="annot"><a href="Commerce.Orders.Quotation.html#QSRejected"><span class="hs-identifier hs-var">QSRejected</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="QSExpired"><span class="annot"><a href="Commerce.Orders.Quotation.html#QSExpired"><span class="hs-identifier hs-var">QSExpired</span></a></span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680199332"><span id="local-6989586621680199334"><span id="local-6989586621680199337"><span class="annot"><span class="annottext">Int -&gt; QuotationStatus -&gt; ShowS
+[QuotationStatus] -&gt; ShowS
+QuotationStatus -&gt; String
+(Int -&gt; QuotationStatus -&gt; ShowS)
+-&gt; (QuotationStatus -&gt; String)
+-&gt; ([QuotationStatus] -&gt; ShowS)
+-&gt; Show QuotationStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; QuotationStatus -&gt; ShowS
+showsPrec :: Int -&gt; QuotationStatus -&gt; ShowS
+$cshow :: QuotationStatus -&gt; String
+show :: QuotationStatus -&gt; String
+$cshowList :: [QuotationStatus] -&gt; ShowS
+showList :: [QuotationStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680199340"><span id="local-6989586621680199345"><span class="annot"><span class="annottext">QuotationStatus -&gt; QuotationStatus -&gt; Bool
+(QuotationStatus -&gt; QuotationStatus -&gt; Bool)
+-&gt; (QuotationStatus -&gt; QuotationStatus -&gt; Bool)
+-&gt; Eq QuotationStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: QuotationStatus -&gt; QuotationStatus -&gt; Bool
+== :: QuotationStatus -&gt; QuotationStatus -&gt; Bool
+$c/= :: QuotationStatus -&gt; QuotationStatus -&gt; Bool
+/= :: QuotationStatus -&gt; QuotationStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="annot"><span class="hs-comment">-- | Quotation line</span></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">data</span><span> </span><span id="QuotationLine"><span class="annot"><a href="Commerce.Orders.Quotation.html#QuotationLine"><span class="hs-identifier hs-var">QuotationLine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="QuotationLine"><span class="annot"><a href="Commerce.Orders.Quotation.html#QuotationLine"><span class="hs-identifier hs-var">QuotationLine</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="qlId"><span class="annot"><span class="annottext">QuotationLine -&gt; Int64
+</span><a href="Commerce.Orders.Quotation.html#qlId"><span class="hs-identifier hs-var hs-var">qlId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-34"></span><span>    </span><span id="qlQuotationId"><span class="annot"><span class="annottext">QuotationLine -&gt; Int64
+</span><a href="Commerce.Orders.Quotation.html#qlQuotationId"><span class="hs-identifier hs-var hs-var">qlQuotationId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>    </span><span id="qlGoodsId"><span class="annot"><span class="annottext">QuotationLine -&gt; Int64
+</span><a href="Commerce.Orders.Quotation.html#qlGoodsId"><span class="hs-identifier hs-var hs-var">qlGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-36"></span><span>    </span><span id="qlQtty"><span class="annot"><span class="annottext">QuotationLine -&gt; Double
+</span><a href="Commerce.Orders.Quotation.html#qlQtty"><span class="hs-identifier hs-var hs-var">qlQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-37"></span><span>    </span><span id="qlPrice"><span class="annot"><span class="annottext">QuotationLine -&gt; Double
+</span><a href="Commerce.Orders.Quotation.html#qlPrice"><span class="hs-identifier hs-var hs-var">qlPrice</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-38"></span><span>    </span><span id="qlDiscount"><span class="annot"><span class="annottext">QuotationLine -&gt; Double
+</span><a href="Commerce.Orders.Quotation.html#qlDiscount"><span class="hs-identifier hs-var hs-var">qlDiscount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680199355"><span id="local-6989586621680199365"><span id="local-6989586621680199369"><span class="annot"><span class="annottext">Int -&gt; QuotationLine -&gt; ShowS
+[QuotationLine] -&gt; ShowS
+QuotationLine -&gt; String
+(Int -&gt; QuotationLine -&gt; ShowS)
+-&gt; (QuotationLine -&gt; String)
+-&gt; ([QuotationLine] -&gt; ShowS)
+-&gt; Show QuotationLine
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; QuotationLine -&gt; ShowS
+showsPrec :: Int -&gt; QuotationLine -&gt; ShowS
+$cshow :: QuotationLine -&gt; String
+show :: QuotationLine -&gt; String
+$cshowList :: [QuotationLine] -&gt; ShowS
+showList :: [QuotationLine] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680199372"><span id="local-6989586621680199381"><span class="annot"><span class="annottext">QuotationLine -&gt; QuotationLine -&gt; Bool
+(QuotationLine -&gt; QuotationLine -&gt; Bool)
+-&gt; (QuotationLine -&gt; QuotationLine -&gt; Bool) -&gt; Eq QuotationLine
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: QuotationLine -&gt; QuotationLine -&gt; Bool
+== :: QuotationLine -&gt; QuotationLine -&gt; Bool
+$c/= :: QuotationLine -&gt; QuotationLine -&gt; Bool
+/= :: QuotationLine -&gt; QuotationLine -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="annot"><span class="hs-comment">-- | Calculate total</span></span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="hs-comment">{-@ calcQuotationTotal :: QuotationLine -&gt; NonNeg @-}</span><span>
+</span><span id="line-45"></span><span class="annot"><a href="Commerce.Orders.Quotation.html#calcQuotationTotal"><span class="hs-identifier hs-type">calcQuotationTotal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Orders.Quotation.html#QuotationLine"><span class="hs-identifier hs-type">QuotationLine</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-46"></span><span id="calcQuotationTotal"><span class="annot"><span class="annottext">calcQuotationTotal :: QuotationLine -&gt; Double
+</span><a href="Commerce.Orders.Quotation.html#calcQuotationTotal"><span class="hs-identifier hs-var hs-var">calcQuotationTotal</span></a></span></span><span> </span><span id="local-6989586621680199384"><span class="annot"><span class="annottext">QuotationLine
+</span><a href="#local-6989586621680199384"><span class="hs-identifier hs-var">ql</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">QuotationLine -&gt; Double
+</span><a href="Commerce.Orders.Quotation.html#qlQtty"><span class="hs-identifier hs-var">qlQtty</span></a></span><span> </span><span class="annot"><span class="annottext">QuotationLine
+</span><a href="#local-6989586621680199384"><span class="hs-identifier hs-var">ql</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">QuotationLine -&gt; Double
+</span><a href="Commerce.Orders.Quotation.html#qlPrice"><span class="hs-identifier hs-var">qlPrice</span></a></span><span> </span><span class="annot"><span class="annottext">QuotationLine
+</span><a href="#local-6989586621680199384"><span class="hs-identifier hs-var">ql</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#-"><span class="hs-glyph hs-var">-</span></a></span><span> </span><span class="annot"><span class="annottext">QuotationLine -&gt; Double
+</span><a href="Commerce.Orders.Quotation.html#qlDiscount"><span class="hs-identifier hs-var">qlDiscount</span></a></span><span> </span><span class="annot"><span class="annottext">QuotationLine
+</span><a href="#local-6989586621680199384"><span class="hs-identifier hs-var">ql</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">100</span></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span></pre></body></html>

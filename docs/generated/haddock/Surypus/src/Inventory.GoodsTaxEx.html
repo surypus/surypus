@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="annot"><span class="hs-comment">-- | GoodsTaxEx module - Extended goods tax</span></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Inventory.GoodsTaxEx.html"><span class="hs-identifier">Inventory.GoodsTaxEx</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Inventory.GoodsTaxEx.html#GoodsTaxEx"><span class="hs-identifier">GoodsTaxEx</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Inventory.GoodsTaxEx.html#calcTaxAmount"><span class="hs-identifier">calcTaxAmount</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-comment">{-@ type NonNeg = {v:Double | v &gt;= 0} @-}</span><span>
+</span><span id="line-13"></span><span class="hs-comment">{-@ type TaxRate = {v:Double | v &gt;= 0 &amp;&amp; v &lt;= 100} @-}</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="annot"><span class="hs-comment">-- | GoodsTaxEx - Extended goods tax</span></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">data</span><span> </span><span id="GoodsTaxEx"><span class="annot"><a href="Inventory.GoodsTaxEx.html#GoodsTaxEx"><span class="hs-identifier hs-var">GoodsTaxEx</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="GoodsTaxEx"><span class="annot"><a href="Inventory.GoodsTaxEx.html#GoodsTaxEx"><span class="hs-identifier hs-var">GoodsTaxEx</span></a></span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="gteId"><span class="annot"><span class="annottext">GoodsTaxEx -&gt; Int64
+</span><a href="Inventory.GoodsTaxEx.html#gteId"><span class="hs-identifier hs-var hs-var">gteId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>    </span><span id="gteCode"><span class="annot"><span class="annottext">GoodsTaxEx -&gt; Text
+</span><a href="Inventory.GoodsTaxEx.html#gteCode"><span class="hs-identifier hs-var hs-var">gteCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span id="gteName"><span class="annot"><span class="annottext">GoodsTaxEx -&gt; Text
+</span><a href="Inventory.GoodsTaxEx.html#gteName"><span class="hs-identifier hs-var hs-var">gteName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span id="gteTaxRate"><span class="annot"><span class="annottext">GoodsTaxEx -&gt; Double
+</span><a href="Inventory.GoodsTaxEx.html#gteTaxRate"><span class="hs-identifier hs-var hs-var">gteTaxRate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="gteFlags"><span class="annot"><span class="annottext">GoodsTaxEx -&gt; Int
+</span><a href="Inventory.GoodsTaxEx.html#gteFlags"><span class="hs-identifier hs-var hs-var">gteFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680264874"><span id="local-6989586621680264887"><span id="local-6989586621680264891"><span class="annot"><span class="annottext">Int -&gt; GoodsTaxEx -&gt; ShowS
+[GoodsTaxEx] -&gt; ShowS
+GoodsTaxEx -&gt; String
+(Int -&gt; GoodsTaxEx -&gt; ShowS)
+-&gt; (GoodsTaxEx -&gt; String)
+-&gt; ([GoodsTaxEx] -&gt; ShowS)
+-&gt; Show GoodsTaxEx
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; GoodsTaxEx -&gt; ShowS
+showsPrec :: Int -&gt; GoodsTaxEx -&gt; ShowS
+$cshow :: GoodsTaxEx -&gt; String
+show :: GoodsTaxEx -&gt; String
+$cshowList :: [GoodsTaxEx] -&gt; ShowS
+showList :: [GoodsTaxEx] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264896"><span id="local-6989586621680264907"><span class="annot"><span class="annottext">GoodsTaxEx -&gt; GoodsTaxEx -&gt; Bool
+(GoodsTaxEx -&gt; GoodsTaxEx -&gt; Bool)
+-&gt; (GoodsTaxEx -&gt; GoodsTaxEx -&gt; Bool) -&gt; Eq GoodsTaxEx
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: GoodsTaxEx -&gt; GoodsTaxEx -&gt; Bool
+== :: GoodsTaxEx -&gt; GoodsTaxEx -&gt; Bool
+$c/= :: GoodsTaxEx -&gt; GoodsTaxEx -&gt; Bool
+/= :: GoodsTaxEx -&gt; GoodsTaxEx -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="annot"><span class="hs-comment">-- | Calculate tax amount</span></span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-comment">{-@ calcTaxAmount :: GoodsTaxEx -&gt; price:NonNeg -&gt; NonNeg @-}</span><span>
+</span><span id="line-28"></span><span class="annot"><a href="Inventory.GoodsTaxEx.html#calcTaxAmount"><span class="hs-identifier hs-type">calcTaxAmount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Inventory.GoodsTaxEx.html#GoodsTaxEx"><span class="hs-identifier hs-type">GoodsTaxEx</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-29"></span><span id="calcTaxAmount"><span class="annot"><span class="annottext">calcTaxAmount :: GoodsTaxEx -&gt; Double -&gt; Double
+</span><a href="Inventory.GoodsTaxEx.html#calcTaxAmount"><span class="hs-identifier hs-var hs-var">calcTaxAmount</span></a></span></span><span> </span><span id="local-6989586621680264911"><span class="annot"><span class="annottext">GoodsTaxEx
+</span><a href="#local-6989586621680264911"><span class="hs-identifier hs-var">gte</span></a></span></span><span> </span><span id="local-6989586621680264912"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680264912"><span class="hs-identifier hs-var">price</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680264912"><span class="hs-identifier hs-var">price</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Num.html#%2A"><span class="hs-operator hs-var">*</span></a></span><span> </span><span class="annot"><span class="annottext">GoodsTaxEx -&gt; Double
+</span><a href="Inventory.GoodsTaxEx.html#gteTaxRate"><span class="hs-identifier hs-var">gteTaxRate</span></a></span><span> </span><span class="annot"><span class="annottext">GoodsTaxEx
+</span><a href="#local-6989586621680264911"><span class="hs-identifier hs-var">gte</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Real.html#%2F"><span class="hs-operator hs-var">/</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">100</span></span><span>
+</span><span id="line-30"></span></pre></body></html>

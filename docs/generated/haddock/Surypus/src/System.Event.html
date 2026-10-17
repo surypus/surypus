@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Event module - Event logging</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="System.Event.html"><span class="hs-identifier">System.Event</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier">UTCTime</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.POSIX.html#getCurrentTime"><span class="hs-identifier">getCurrentTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="annot"><span class="hs-comment">-- | Event - System event</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">data</span><span> </span><span id="Event"><span class="annot"><a href="System.Event.html#Event"><span class="hs-identifier hs-var">Event</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Event"><span class="annot"><a href="System.Event.html#Event"><span class="hs-identifier hs-var">Event</span></a></span></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="evId"><span class="annot"><span class="annottext">Event -&gt; Int64
+</span><a href="System.Event.html#evId"><span class="hs-identifier hs-var hs-var">evId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="evType"><span class="annot"><span class="annottext">Event -&gt; EventType
+</span><a href="System.Event.html#evType"><span class="hs-identifier hs-var hs-var">evType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Event.html#EventType"><span class="hs-identifier hs-type">EventType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="evObjType"><span class="annot"><span class="annottext">Event -&gt; Int64
+</span><a href="System.Event.html#evObjType"><span class="hs-identifier hs-var hs-var">evObjType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="evObjId"><span class="annot"><span class="annottext">Event -&gt; Int64
+</span><a href="System.Event.html#evObjId"><span class="hs-identifier hs-var hs-var">evObjId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="evUserId"><span class="annot"><span class="annottext">Event -&gt; Int64
+</span><a href="System.Event.html#evUserId"><span class="hs-identifier hs-var hs-var">evUserId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="evTime"><span class="annot"><span class="annottext">Event -&gt; UTCTime
+</span><a href="System.Event.html#evTime"><span class="hs-identifier hs-var hs-var">evTime</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span id="evMessage"><span class="annot"><span class="annottext">Event -&gt; Text
+</span><a href="System.Event.html#evMessage"><span class="hs-identifier hs-var hs-var">evMessage</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>    </span><span id="evFlags"><span class="annot"><span class="annottext">Event -&gt; Int
+</span><a href="System.Event.html#evFlags"><span class="hs-identifier hs-var hs-var">evFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680345105"><span id="local-6989586621680345122"><span id="local-6989586621680345126"><span class="annot"><span class="annottext">Int -&gt; Event -&gt; ShowS
+[Event] -&gt; ShowS
+Event -&gt; String
+(Int -&gt; Event -&gt; ShowS)
+-&gt; (Event -&gt; String) -&gt; ([Event] -&gt; ShowS) -&gt; Show Event
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Event -&gt; ShowS
+showsPrec :: Int -&gt; Event -&gt; ShowS
+$cshow :: Event -&gt; String
+show :: Event -&gt; String
+$cshowList :: [Event] -&gt; ShowS
+showList :: [Event] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680345131"><span id="local-6989586621680345146"><span class="annot"><span class="annottext">Event -&gt; Event -&gt; Bool
+(Event -&gt; Event -&gt; Bool) -&gt; (Event -&gt; Event -&gt; Bool) -&gt; Eq Event
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Event -&gt; Event -&gt; Bool
+== :: Event -&gt; Event -&gt; Bool
+$c/= :: Event -&gt; Event -&gt; Bool
+/= :: Event -&gt; Event -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="EventType"><span class="annot"><a href="System.Event.html#EventType"><span class="hs-identifier hs-var">EventType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ETInfo"><span class="annot"><a href="System.Event.html#ETInfo"><span class="hs-identifier hs-var">ETInfo</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ETWarning"><span class="annot"><a href="System.Event.html#ETWarning"><span class="hs-identifier hs-var">ETWarning</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ETError"><span class="annot"><a href="System.Event.html#ETError"><span class="hs-identifier hs-var">ETError</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ETAudit"><span class="annot"><a href="System.Event.html#ETAudit"><span class="hs-identifier hs-var">ETAudit</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680345155"><span id="local-6989586621680345157"><span id="local-6989586621680345160"><span class="annot"><span class="annottext">Int -&gt; EventType -&gt; ShowS
+[EventType] -&gt; ShowS
+EventType -&gt; String
+(Int -&gt; EventType -&gt; ShowS)
+-&gt; (EventType -&gt; String)
+-&gt; ([EventType] -&gt; ShowS)
+-&gt; Show EventType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; EventType -&gt; ShowS
+showsPrec :: Int -&gt; EventType -&gt; ShowS
+$cshow :: EventType -&gt; String
+show :: EventType -&gt; String
+$cshowList :: [EventType] -&gt; ShowS
+showList :: [EventType] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680345163"><span id="local-6989586621680345168"><span class="annot"><span class="annottext">EventType -&gt; EventType -&gt; Bool
+(EventType -&gt; EventType -&gt; Bool)
+-&gt; (EventType -&gt; EventType -&gt; Bool) -&gt; Eq EventType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: EventType -&gt; EventType -&gt; Bool
+== :: EventType -&gt; EventType -&gt; Bool
+$c/= :: EventType -&gt; EventType -&gt; Bool
+/= :: EventType -&gt; EventType -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="annot"><span class="hs-comment">-- | EventSubscription - Event subscription</span></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">data</span><span> </span><span id="EventSubscription"><span class="annot"><a href="System.Event.html#EventSubscription"><span class="hs-identifier hs-var">EventSubscription</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="EventSubscription"><span class="annot"><a href="System.Event.html#EventSubscription"><span class="hs-identifier hs-var">EventSubscription</span></a></span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="esId"><span class="annot"><span class="annottext">EventSubscription -&gt; Int64
+</span><a href="System.Event.html#esId"><span class="hs-identifier hs-var hs-var">esId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="esUserId"><span class="annot"><span class="annottext">EventSubscription -&gt; Int64
+</span><a href="System.Event.html#esUserId"><span class="hs-identifier hs-var hs-var">esUserId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="esEventType"><span class="annot"><span class="annottext">EventSubscription -&gt; EventType
+</span><a href="System.Event.html#esEventType"><span class="hs-identifier hs-var hs-var">esEventType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Event.html#EventType"><span class="hs-identifier hs-type">EventType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span id="esWebhookId"><span class="annot"><span class="annottext">EventSubscription -&gt; Maybe Int64
+</span><a href="System.Event.html#esWebhookId"><span class="hs-identifier hs-var hs-var">esWebhookId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-30"></span><span>    </span><span id="esFlags"><span class="annot"><span class="annottext">EventSubscription -&gt; Int
+</span><a href="System.Event.html#esFlags"><span class="hs-identifier hs-var hs-var">esFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680345177"><span id="local-6989586621680345186"><span id="local-6989586621680345190"><span class="annot"><span class="annottext">Int -&gt; EventSubscription -&gt; ShowS
+[EventSubscription] -&gt; ShowS
+EventSubscription -&gt; String
+(Int -&gt; EventSubscription -&gt; ShowS)
+-&gt; (EventSubscription -&gt; String)
+-&gt; ([EventSubscription] -&gt; ShowS)
+-&gt; Show EventSubscription
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; EventSubscription -&gt; ShowS
+showsPrec :: Int -&gt; EventSubscription -&gt; ShowS
+$cshow :: EventSubscription -&gt; String
+show :: EventSubscription -&gt; String
+$cshowList :: [EventSubscription] -&gt; ShowS
+showList :: [EventSubscription] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680345193"><span id="local-6989586621680345201"><span class="annot"><span class="annottext">EventSubscription -&gt; EventSubscription -&gt; Bool
+(EventSubscription -&gt; EventSubscription -&gt; Bool)
+-&gt; (EventSubscription -&gt; EventSubscription -&gt; Bool)
+-&gt; Eq EventSubscription
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: EventSubscription -&gt; EventSubscription -&gt; Bool
+== :: EventSubscription -&gt; EventSubscription -&gt; Bool
+$c/= :: EventSubscription -&gt; EventSubscription -&gt; Bool
+/= :: EventSubscription -&gt; EventSubscription -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="annot"><span class="hs-comment">-- | Log event - creates a new event with current timestamp</span></span><span>
+</span><span id="line-35"></span><span class="annot"><a href="System.Event.html#logEvent"><span class="hs-identifier hs-type">logEvent</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Event.html#EventType"><span class="hs-identifier hs-type">EventType</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="annot"><a href="System.Event.html#Event"><span class="hs-identifier hs-type">Event</span></a></span><span>
+</span><span id="line-36"></span><span id="logEvent"><span class="annot"><span class="annottext">logEvent :: EventType -&gt; Int64 -&gt; Int64 -&gt; Int64 -&gt; Text -&gt; IO Event
+</span><a href="System.Event.html#logEvent"><span class="hs-identifier hs-var hs-var">logEvent</span></a></span></span><span> </span><span id="local-6989586621680345205"><span class="annot"><span class="annottext">EventType
+</span><a href="#local-6989586621680345205"><span class="hs-identifier hs-var">et</span></a></span></span><span> </span><span id="local-6989586621680345206"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680345206"><span class="hs-identifier hs-var">ot</span></a></span></span><span> </span><span id="local-6989586621680345207"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680345207"><span class="hs-identifier hs-var">oid</span></a></span></span><span> </span><span id="local-6989586621680345208"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680345208"><span class="hs-identifier hs-var">uid</span></a></span></span><span> </span><span id="local-6989586621680345209"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680345209"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-37"></span><span>  </span><span id="local-6989586621680345210"><span class="annot"><a href="#local-6989586621680345210"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO UTCTime
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.POSIX.html#getCurrentTime"><span class="hs-identifier hs-var">getCurrentTime</span></a></span><span>
+</span><span id="line-38"></span><span>  </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#pure"><span class="hs-identifier hs-type">pure</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-type">$</span></a></span><span> </span><span class="annot"><a href="System.Event.html#Event"><span class="hs-identifier hs-type">Event</span></a></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span> </span><span class="annot"><a href="#local-6989586621680345205"><span class="hs-identifier hs-type">et</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680345206"><span class="hs-identifier hs-type">ot</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680345207"><span class="hs-identifier hs-type">oid</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680345208"><span class="hs-identifier hs-type">uid</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680345210"><span class="hs-identifier hs-type">now</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680345209"><span class="hs-identifier hs-type">msg</span></a></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
+</span><span id="line-39"></span></pre></body></html>

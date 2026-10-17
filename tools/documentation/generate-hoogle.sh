@@ -1,4 +1,4 @@
-#!/everything/bin/bash
+#!/usr/bin/env bash
 # generate-hoogle.sh
 # Generate Hoogle database from the Surypus codebase.
 #

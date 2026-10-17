@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="annot"><span class="hs-comment">-- | MRP - Material Requirements Planning (Phase 1: stub)</span></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Production.MRP.html"><span class="hs-identifier">Production.MRP</span></a></span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Production.MRP.html#BOMLine"><span class="hs-identifier">BOMLine</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Production.MRP.html#MRPDemand"><span class="hs-identifier">MRPDemand</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Production.MRP.html#calculateMRP"><span class="hs-identifier">calculateMRP</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Production.MRP.html#calculateMRPWithInventory"><span class="hs-identifier">calculateMRPWithInventory</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Production.MRP.html#explodeBOM"><span class="hs-identifier">explodeBOM</span></a></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="annot"><span class="hs-comment">-- | BOM line</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">data</span><span> </span><span id="BOMLine"><span class="annot"><a href="Production.MRP.html#BOMLine"><span class="hs-identifier hs-var">BOMLine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BOMLine"><span class="annot"><a href="Production.MRP.html#BOMLine"><span class="hs-identifier hs-var">BOMLine</span></a></span></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="bomLineItemId"><span class="annot"><span class="annottext">BOMLine -&gt; Int64
+</span><a href="Production.MRP.html#bomLineItemId"><span class="hs-identifier hs-var hs-var">bomLineItemId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="bomLineQty"><span class="annot"><span class="annottext">BOMLine -&gt; Double
+</span><a href="Production.MRP.html#bomLineQty"><span class="hs-identifier hs-var hs-var">bomLineQty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680275012"><span id="local-6989586621680275020"><span id="local-6989586621680275024"><span class="annot"><span class="annottext">Int -&gt; BOMLine -&gt; ShowS
+[BOMLine] -&gt; ShowS
+BOMLine -&gt; String
+(Int -&gt; BOMLine -&gt; ShowS)
+-&gt; (BOMLine -&gt; String) -&gt; ([BOMLine] -&gt; ShowS) -&gt; Show BOMLine
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BOMLine -&gt; ShowS
+showsPrec :: Int -&gt; BOMLine -&gt; ShowS
+$cshow :: BOMLine -&gt; String
+show :: BOMLine -&gt; String
+$cshowList :: [BOMLine] -&gt; ShowS
+showList :: [BOMLine] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680275029"><span id="local-6989586621680275035"><span class="annot"><span class="annottext">BOMLine -&gt; BOMLine -&gt; Bool
+(BOMLine -&gt; BOMLine -&gt; Bool)
+-&gt; (BOMLine -&gt; BOMLine -&gt; Bool) -&gt; Eq BOMLine
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BOMLine -&gt; BOMLine -&gt; Bool
+== :: BOMLine -&gt; BOMLine -&gt; Bool
+$c/= :: BOMLine -&gt; BOMLine -&gt; Bool
+/= :: BOMLine -&gt; BOMLine -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="annot"><span class="hs-comment">-- | MRP demand</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="MRPDemand"><span class="annot"><a href="Production.MRP.html#MRPDemand"><span class="hs-identifier hs-var">MRPDemand</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MRPDemand"><span class="annot"><a href="Production.MRP.html#MRPDemand"><span class="hs-identifier hs-var">MRPDemand</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="mrpDemandItemId"><span class="annot"><span class="annottext">MRPDemand -&gt; Int64
+</span><a href="Production.MRP.html#mrpDemandItemId"><span class="hs-identifier hs-var hs-var">mrpDemandItemId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="mrpDemandQty"><span class="annot"><span class="annottext">MRPDemand -&gt; Double
+</span><a href="Production.MRP.html#mrpDemandQty"><span class="hs-identifier hs-var hs-var">mrpDemandQty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680275043"><span id="local-6989586621680275048"><span id="local-6989586621680275052"><span class="annot"><span class="annottext">Int -&gt; MRPDemand -&gt; ShowS
+[MRPDemand] -&gt; ShowS
+MRPDemand -&gt; String
+(Int -&gt; MRPDemand -&gt; ShowS)
+-&gt; (MRPDemand -&gt; String)
+-&gt; ([MRPDemand] -&gt; ShowS)
+-&gt; Show MRPDemand
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; MRPDemand -&gt; ShowS
+showsPrec :: Int -&gt; MRPDemand -&gt; ShowS
+$cshow :: MRPDemand -&gt; String
+show :: MRPDemand -&gt; String
+$cshowList :: [MRPDemand] -&gt; ShowS
+showList :: [MRPDemand] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680275055"><span id="local-6989586621680275059"><span class="annot"><span class="annottext">MRPDemand -&gt; MRPDemand -&gt; Bool
+(MRPDemand -&gt; MRPDemand -&gt; Bool)
+-&gt; (MRPDemand -&gt; MRPDemand -&gt; Bool) -&gt; Eq MRPDemand
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: MRPDemand -&gt; MRPDemand -&gt; Bool
+== :: MRPDemand -&gt; MRPDemand -&gt; Bool
+$c/= :: MRPDemand -&gt; MRPDemand -&gt; Bool
+/= :: MRPDemand -&gt; MRPDemand -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="annot"><span class="hs-comment">-- | Calculate MRP (stub)</span></span><span>
+</span><span id="line-27"></span><span class="annot"><a href="Production.MRP.html#calculateMRP"><span class="hs-identifier hs-type">calculateMRP</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Production.MRP.html#BOMLine"><span class="hs-identifier hs-type">BOMLine</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Production.MRP.html#MRPDemand"><span class="hs-identifier hs-type">MRPDemand</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Production.MRP.html#MRPDemand"><span class="hs-identifier hs-type">MRPDemand</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-28"></span><span id="calculateMRP"><span class="annot"><span class="annottext">calculateMRP :: [BOMLine] -&gt; [MRPDemand] -&gt; [MRPDemand]
+</span><a href="Production.MRP.html#calculateMRP"><span class="hs-identifier hs-var hs-var">calculateMRP</span></a></span></span><span> </span><span class="annot"><span class="annottext">[BOMLine]
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621680275062"><span class="annot"><span class="annottext">[MRPDemand]
+</span><a href="#local-6989586621680275062"><span class="hs-identifier hs-var">demands</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[MRPDemand]
+</span><a href="#local-6989586621680275062"><span class="hs-identifier hs-var">demands</span></a></span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="annot"><span class="hs-comment">-- | Calculate MRP with inventory (stub)</span></span><span>
+</span><span id="line-31"></span><span class="annot"><a href="Production.MRP.html#calculateMRPWithInventory"><span class="hs-identifier hs-type">calculateMRPWithInventory</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Production.MRP.html#BOMLine"><span class="hs-identifier hs-type">BOMLine</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Production.MRP.html#MRPDemand"><span class="hs-identifier hs-type">MRPDemand</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Production.MRP.html#MRPDemand"><span class="hs-identifier hs-type">MRPDemand</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Production.MRP.html#MRPDemand"><span class="hs-identifier hs-type">MRPDemand</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-32"></span><span id="calculateMRPWithInventory"><span class="annot"><span class="annottext">calculateMRPWithInventory :: [BOMLine] -&gt; [MRPDemand] -&gt; [MRPDemand] -&gt; [MRPDemand]
+</span><a href="Production.MRP.html#calculateMRPWithInventory"><span class="hs-identifier hs-var hs-var">calculateMRPWithInventory</span></a></span></span><span> </span><span class="annot"><span class="annottext">[BOMLine]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">[MRPDemand]
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621680275063"><span class="annot"><span class="annottext">[MRPDemand]
+</span><a href="#local-6989586621680275063"><span class="hs-identifier hs-var">demands</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[MRPDemand]
+</span><a href="#local-6989586621680275063"><span class="hs-identifier hs-var">demands</span></a></span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="annot"><span class="hs-comment">-- | Explode BOM (stub)</span></span><span>
+</span><span id="line-35"></span><span class="annot"><a href="Production.MRP.html#explodeBOM"><span class="hs-identifier hs-type">explodeBOM</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Production.MRP.html#BOMLine"><span class="hs-identifier hs-type">BOMLine</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Production.MRP.html#BOMLine"><span class="hs-identifier hs-type">BOMLine</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-36"></span><span id="explodeBOM"><span class="annot"><span class="annottext">explodeBOM :: [BOMLine] -&gt; Int64 -&gt; [BOMLine]
+</span><a href="Production.MRP.html#explodeBOM"><span class="hs-identifier hs-var hs-var">explodeBOM</span></a></span></span><span> </span><span id="local-6989586621680275064"><span class="annot"><span class="annottext">[BOMLine]
+</span><a href="#local-6989586621680275064"><span class="hs-identifier hs-var">lines</span></a></span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[BOMLine]
+</span><a href="#local-6989586621680275064"><span class="hs-identifier hs-var">lines</span></a></span><span>
+</span><span id="line-37"></span></pre></body></html>

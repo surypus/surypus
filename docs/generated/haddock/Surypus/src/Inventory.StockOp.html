@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | StockOp module - Stock operations</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Inventory.StockOp.html"><span class="hs-identifier">Inventory.StockOp</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="annot"><span class="hs-comment">-- | StockOp - Stock operation</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">data</span><span> </span><span id="StockOp"><span class="annot"><a href="Inventory.StockOp.html#StockOp"><span class="hs-identifier hs-var">StockOp</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="StockOp"><span class="annot"><a href="Inventory.StockOp.html#StockOp"><span class="hs-identifier hs-var">StockOp</span></a></span></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="soId"><span class="annot"><span class="annottext">StockOp -&gt; Int64
+</span><a href="Inventory.StockOp.html#soId"><span class="hs-identifier hs-var hs-var">soId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span id="soType"><span class="annot"><span class="annottext">StockOp -&gt; StockOpType
+</span><a href="Inventory.StockOp.html#soType"><span class="hs-identifier hs-var hs-var">soType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Inventory.StockOp.html#StockOpType"><span class="hs-identifier hs-type">StockOpType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="soGoodsId"><span class="annot"><span class="annottext">StockOp -&gt; Int64
+</span><a href="Inventory.StockOp.html#soGoodsId"><span class="hs-identifier hs-var hs-var">soGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="soLocationId"><span class="annot"><span class="annottext">StockOp -&gt; Int64
+</span><a href="Inventory.StockOp.html#soLocationId"><span class="hs-identifier hs-var hs-var">soLocationId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="soQtty"><span class="annot"><span class="annottext">StockOp -&gt; Double
+</span><a href="Inventory.StockOp.html#soQtty"><span class="hs-identifier hs-var hs-var">soQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="soDate"><span class="annot"><span class="annottext">StockOp -&gt; Day
+</span><a href="Inventory.StockOp.html#soDate"><span class="hs-identifier hs-var hs-var">soDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="soBillId"><span class="annot"><span class="annottext">StockOp -&gt; Maybe Int64
+</span><a href="Inventory.StockOp.html#soBillId"><span class="hs-identifier hs-var hs-var">soBillId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680269373"><span id="local-6989586621680269389"><span id="local-6989586621680269393"><span class="annot"><span class="annottext">Int -&gt; StockOp -&gt; ShowS
+[StockOp] -&gt; ShowS
+StockOp -&gt; String
+(Int -&gt; StockOp -&gt; ShowS)
+-&gt; (StockOp -&gt; String) -&gt; ([StockOp] -&gt; ShowS) -&gt; Show StockOp
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; StockOp -&gt; ShowS
+showsPrec :: Int -&gt; StockOp -&gt; ShowS
+$cshow :: StockOp -&gt; String
+show :: StockOp -&gt; String
+$cshowList :: [StockOp] -&gt; ShowS
+showList :: [StockOp] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680269398"><span id="local-6989586621680269412"><span class="annot"><span class="annottext">StockOp -&gt; StockOp -&gt; Bool
+(StockOp -&gt; StockOp -&gt; Bool)
+-&gt; (StockOp -&gt; StockOp -&gt; Bool) -&gt; Eq StockOp
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: StockOp -&gt; StockOp -&gt; Bool
+== :: StockOp -&gt; StockOp -&gt; Bool
+$c/= :: StockOp -&gt; StockOp -&gt; Bool
+/= :: StockOp -&gt; StockOp -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">data</span><span> </span><span id="StockOpType"><span class="annot"><a href="Inventory.StockOp.html#StockOpType"><span class="hs-identifier hs-var">StockOpType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SOReceipt"><span class="annot"><a href="Inventory.StockOp.html#SOReceipt"><span class="hs-identifier hs-var">SOReceipt</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SOIssue"><span class="annot"><a href="Inventory.StockOp.html#SOIssue"><span class="hs-identifier hs-var">SOIssue</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SOTransfer"><span class="annot"><a href="Inventory.StockOp.html#SOTransfer"><span class="hs-identifier hs-var">SOTransfer</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SOAdjustment"><span class="annot"><a href="Inventory.StockOp.html#SOAdjustment"><span class="hs-identifier hs-var">SOAdjustment</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SOInventory"><span class="annot"><a href="Inventory.StockOp.html#SOInventory"><span class="hs-identifier hs-var">SOInventory</span></a></span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680269422"><span id="local-6989586621680269424"><span id="local-6989586621680269427"><span class="annot"><span class="annottext">Int -&gt; StockOpType -&gt; ShowS
+[StockOpType] -&gt; ShowS
+StockOpType -&gt; String
+(Int -&gt; StockOpType -&gt; ShowS)
+-&gt; (StockOpType -&gt; String)
+-&gt; ([StockOpType] -&gt; ShowS)
+-&gt; Show StockOpType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; StockOpType -&gt; ShowS
+showsPrec :: Int -&gt; StockOpType -&gt; ShowS
+$cshow :: StockOpType -&gt; String
+show :: StockOpType -&gt; String
+$cshowList :: [StockOpType] -&gt; ShowS
+showList :: [StockOpType] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680269430"><span id="local-6989586621680269435"><span class="annot"><span class="annottext">StockOpType -&gt; StockOpType -&gt; Bool
+(StockOpType -&gt; StockOpType -&gt; Bool)
+-&gt; (StockOpType -&gt; StockOpType -&gt; Bool) -&gt; Eq StockOpType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: StockOpType -&gt; StockOpType -&gt; Bool
+== :: StockOpType -&gt; StockOpType -&gt; Bool
+$c/= :: StockOpType -&gt; StockOpType -&gt; Bool
+/= :: StockOpType -&gt; StockOpType -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="annot"><span class="hs-comment">-- | StockOpHistory - Stock operation history</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">data</span><span> </span><span id="StockOpHistory"><span class="annot"><a href="Inventory.StockOp.html#StockOpHistory"><span class="hs-identifier hs-var">StockOpHistory</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="StockOpHistory"><span class="annot"><a href="Inventory.StockOp.html#StockOpHistory"><span class="hs-identifier hs-var">StockOpHistory</span></a></span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="sohId"><span class="annot"><span class="annottext">StockOpHistory -&gt; Int64
+</span><a href="Inventory.StockOp.html#sohId"><span class="hs-identifier hs-var hs-var">sohId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="sohGoodsId"><span class="annot"><span class="annottext">StockOpHistory -&gt; Int64
+</span><a href="Inventory.StockOp.html#sohGoodsId"><span class="hs-identifier hs-var hs-var">sohGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="sohLocationId"><span class="annot"><span class="annottext">StockOpHistory -&gt; Int64
+</span><a href="Inventory.StockOp.html#sohLocationId"><span class="hs-identifier hs-var hs-var">sohLocationId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="sohQtty"><span class="annot"><span class="annottext">StockOpHistory -&gt; Double
+</span><a href="Inventory.StockOp.html#sohQtty"><span class="hs-identifier hs-var hs-var">sohQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="sohBalance"><span class="annot"><span class="annottext">StockOpHistory -&gt; Double
+</span><a href="Inventory.StockOp.html#sohBalance"><span class="hs-identifier hs-var hs-var">sohBalance</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span id="sohDate"><span class="annot"><span class="annottext">StockOpHistory -&gt; Day
+</span><a href="Inventory.StockOp.html#sohDate"><span class="hs-identifier hs-var hs-var">sohDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680269445"><span id="local-6989586621680269454"><span id="local-6989586621680269458"><span class="annot"><span class="annottext">Int -&gt; StockOpHistory -&gt; ShowS
+[StockOpHistory] -&gt; ShowS
+StockOpHistory -&gt; String
+(Int -&gt; StockOpHistory -&gt; ShowS)
+-&gt; (StockOpHistory -&gt; String)
+-&gt; ([StockOpHistory] -&gt; ShowS)
+-&gt; Show StockOpHistory
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; StockOpHistory -&gt; ShowS
+showsPrec :: Int -&gt; StockOpHistory -&gt; ShowS
+$cshow :: StockOpHistory -&gt; String
+show :: StockOpHistory -&gt; String
+$cshowList :: [StockOpHistory] -&gt; ShowS
+showList :: [StockOpHistory] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680269461"><span id="local-6989586621680269469"><span class="annot"><span class="annottext">StockOpHistory -&gt; StockOpHistory -&gt; Bool
+(StockOpHistory -&gt; StockOpHistory -&gt; Bool)
+-&gt; (StockOpHistory -&gt; StockOpHistory -&gt; Bool) -&gt; Eq StockOpHistory
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: StockOpHistory -&gt; StockOpHistory -&gt; Bool
+== :: StockOpHistory -&gt; StockOpHistory -&gt; Bool
+$c/= :: StockOpHistory -&gt; StockOpHistory -&gt; Bool
+/= :: StockOpHistory -&gt; StockOpHistory -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span></pre></body></html>

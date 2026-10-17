@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="annot"><span class="hs-comment">-- | Project module - Project management (Phase 1: stub)</span></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Production.Project.html"><span class="hs-identifier">Production.Project</span></a></span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Production.Project.html#Project"><span class="hs-identifier">Project</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Production.Project.html#createProject"><span class="hs-identifier">createProject</span></a></span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Production.Project.html#getProjectStatus"><span class="hs-identifier">getProjectStatus</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Production.Project.html#updateProjectStatus"><span class="hs-identifier">updateProjectStatus</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="annot"><span class="hs-comment">-- | Project</span></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">data</span><span> </span><span id="Project"><span class="annot"><a href="Production.Project.html#Project"><span class="hs-identifier hs-var">Project</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Project"><span class="annot"><a href="Production.Project.html#Project"><span class="hs-identifier hs-var">Project</span></a></span></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="prjId"><span class="annot"><span class="annottext">Project -&gt; Int64
+</span><a href="Production.Project.html#prjId"><span class="hs-identifier hs-var hs-var">prjId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="prjName"><span class="annot"><span class="annottext">Project -&gt; Text
+</span><a href="Production.Project.html#prjName"><span class="hs-identifier hs-var hs-var">prjName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="prjStatus"><span class="annot"><span class="annottext">Project -&gt; Text
+</span><a href="Production.Project.html#prjStatus"><span class="hs-identifier hs-var hs-var">prjStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="prjCreatedAt"><span class="annot"><span class="annottext">Project -&gt; Int64
+</span><a href="Production.Project.html#prjCreatedAt"><span class="hs-identifier hs-var hs-var">prjCreatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680276161"><span id="local-6989586621680276171"><span id="local-6989586621680276175"><span class="annot"><span class="annottext">Int -&gt; Project -&gt; ShowS
+[Project] -&gt; ShowS
+Project -&gt; String
+(Int -&gt; Project -&gt; ShowS)
+-&gt; (Project -&gt; String) -&gt; ([Project] -&gt; ShowS) -&gt; Show Project
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Project -&gt; ShowS
+showsPrec :: Int -&gt; Project -&gt; ShowS
+$cshow :: Project -&gt; String
+show :: Project -&gt; String
+$cshowList :: [Project] -&gt; ShowS
+showList :: [Project] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680276180"><span id="local-6989586621680276188"><span class="annot"><span class="annottext">Project -&gt; Project -&gt; Bool
+(Project -&gt; Project -&gt; Bool)
+-&gt; (Project -&gt; Project -&gt; Bool) -&gt; Eq Project
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Project -&gt; Project -&gt; Bool
+== :: Project -&gt; Project -&gt; Bool
+$c/= :: Project -&gt; Project -&gt; Bool
+/= :: Project -&gt; Project -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="annot"><span class="hs-comment">-- | Create a new project (stub)</span></span><span>
+</span><span id="line-22"></span><span class="annot"><a href="Production.Project.html#createProject"><span class="hs-identifier hs-type">createProject</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#IO"><span class="hs-identifier hs-type">IO</span></a></span><span> </span><span class="annot"><a href="Production.Project.html#Project"><span class="hs-identifier hs-type">Project</span></a></span><span>
+</span><span id="line-23"></span><span id="createProject"><span class="annot"><span class="annottext">createProject :: Text -&gt; IO Project
+</span><a href="Production.Project.html#createProject"><span class="hs-identifier hs-var hs-var">createProject</span></a></span></span><span> </span><span id="local-6989586621680276192"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680276192"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Project -&gt; IO Project
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#pure"><span class="hs-identifier hs-var">pure</span></a></span><span> </span><span class="annot"><span class="annottext">(Project -&gt; IO Project) -&gt; Project -&gt; IO Project
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#%24"><span class="hs-operator hs-var">$</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Text -&gt; Text -&gt; Int64 -&gt; Project
+</span><a href="Production.Project.html#Project"><span class="hs-identifier hs-var">Project</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680276192"><span class="hs-identifier hs-var">name</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;draft&quot;</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="annot"><span class="hs-comment">-- | Get project status (stub)</span></span><span>
+</span><span id="line-26"></span><span class="annot"><a href="Production.Project.html#getProjectStatus"><span class="hs-identifier hs-type">getProjectStatus</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.Project.html#Project"><span class="hs-identifier hs-type">Project</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span>
+</span><span id="line-27"></span><span id="getProjectStatus"><span class="annot"><span class="annottext">getProjectStatus :: Project -&gt; Text
+</span><a href="Production.Project.html#getProjectStatus"><span class="hs-identifier hs-var hs-var">getProjectStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Project -&gt; Text
+</span><a href="Production.Project.html#prjStatus"><span class="hs-identifier hs-var">prjStatus</span></a></span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="annot"><span class="hs-comment">-- | Update project status (stub)</span></span><span>
+</span><span id="line-30"></span><span class="annot"><a href="Production.Project.html#updateProjectStatus"><span class="hs-identifier hs-type">updateProjectStatus</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.Project.html#Project"><span class="hs-identifier hs-type">Project</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Production.Project.html#Project"><span class="hs-identifier hs-type">Project</span></a></span><span>
+</span><span id="line-31"></span><span id="updateProjectStatus"><span class="annot"><span class="annottext">updateProjectStatus :: Project -&gt; Text -&gt; Project
+</span><a href="Production.Project.html#updateProjectStatus"><span class="hs-identifier hs-var hs-var">updateProjectStatus</span></a></span></span><span> </span><span id="local-6989586621680276193"><span class="annot"><span class="annottext">Project
+</span><a href="#local-6989586621680276193"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span id="local-6989586621680276194"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680276194"><span class="hs-identifier hs-var">status</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Project
+</span><a href="#local-6989586621680276193"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Production.Project.html#prjStatus"><span class="hs-identifier hs-var">prjStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621680276194"><span class="hs-identifier hs-type">status</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-32"></span></pre></body></html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680345499"><span id="local-6989586621680345500"></span></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-comment">{-@ LIQUID &quot;--reflection&quot; @-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="System.Hardware.html"><span class="hs-identifier">System.Hardware</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Aeson</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">FromJSON</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">ToJSON</span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/GHC.Generics.html"><span class="hs-identifier">GHC.Generics</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier">Generic</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="hs-comment">{-@ type PosInt = {v:Int | v &gt; 0} @-}</span><span>
+</span><span id="line-15"></span><span class="hs-comment">{-@ type NonNeg = {v:Double | v &gt;= 0} @-}</span><span>
+</span><span id="line-16"></span><span class="hs-comment">{-@ type TimeOrder a = {v:a | v &gt;= v} @-}</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="HardwareStatus"><span class="annot"><a href="System.Hardware.html#HardwareStatus"><span class="hs-identifier hs-var">HardwareStatus</span></a></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="HSPlanned"><span class="annot"><a href="System.Hardware.html#HSPlanned"><span class="hs-identifier hs-var">HSPlanned</span></a></span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="HSInProgress"><span class="annot"><a href="System.Hardware.html#HSInProgress"><span class="hs-identifier hs-var">HSInProgress</span></a></span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="HSCompleted"><span class="annot"><a href="System.Hardware.html#HSCompleted"><span class="hs-identifier hs-var">HSCompleted</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="HSCancelled"><span class="annot"><a href="System.Hardware.html#HSCancelled"><span class="hs-identifier hs-var">HSCancelled</span></a></span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680345523"><span id="local-6989586621680345525"><span id="local-6989586621680345529"><span class="annot"><span class="annottext">Int -&gt; HardwareStatus -&gt; ShowS
+[HardwareStatus] -&gt; ShowS
+HardwareStatus -&gt; String
+(Int -&gt; HardwareStatus -&gt; ShowS)
+-&gt; (HardwareStatus -&gt; String)
+-&gt; ([HardwareStatus] -&gt; ShowS)
+-&gt; Show HardwareStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; HardwareStatus -&gt; ShowS
+showsPrec :: Int -&gt; HardwareStatus -&gt; ShowS
+$cshow :: HardwareStatus -&gt; String
+show :: HardwareStatus -&gt; String
+$cshowList :: [HardwareStatus] -&gt; ShowS
+showList :: [HardwareStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680345534"><span id="local-6989586621680345539"><span class="annot"><span class="annottext">HardwareStatus -&gt; HardwareStatus -&gt; Bool
+(HardwareStatus -&gt; HardwareStatus -&gt; Bool)
+-&gt; (HardwareStatus -&gt; HardwareStatus -&gt; Bool) -&gt; Eq HardwareStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: HardwareStatus -&gt; HardwareStatus -&gt; Bool
+== :: HardwareStatus -&gt; HardwareStatus -&gt; Bool
+$c/= :: HardwareStatus -&gt; HardwareStatus -&gt; Bool
+/= :: HardwareStatus -&gt; HardwareStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680345544"><span id="local-6989586621680345553"><span id="local-6989586621680345560"><span id="local-6989586621680345574"><span id="local-6989586621680345577"><span id="local-6989586621680345582"><span id="local-6989586621680345588"><span id="local-6989586621680345592"><span class="annot"><span class="annottext">Int -&gt; HardwareStatus
+HardwareStatus -&gt; Int
+HardwareStatus -&gt; [HardwareStatus]
+HardwareStatus -&gt; HardwareStatus
+HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+HardwareStatus
+-&gt; HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+(HardwareStatus -&gt; HardwareStatus)
+-&gt; (HardwareStatus -&gt; HardwareStatus)
+-&gt; (Int -&gt; HardwareStatus)
+-&gt; (HardwareStatus -&gt; Int)
+-&gt; (HardwareStatus -&gt; [HardwareStatus])
+-&gt; (HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus])
+-&gt; (HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus])
+-&gt; (HardwareStatus
+    -&gt; HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus])
+-&gt; Enum HardwareStatus
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: HardwareStatus -&gt; HardwareStatus
+succ :: HardwareStatus -&gt; HardwareStatus
+$cpred :: HardwareStatus -&gt; HardwareStatus
+pred :: HardwareStatus -&gt; HardwareStatus
+$ctoEnum :: Int -&gt; HardwareStatus
+toEnum :: Int -&gt; HardwareStatus
+$cfromEnum :: HardwareStatus -&gt; Int
+fromEnum :: HardwareStatus -&gt; Int
+$cenumFrom :: HardwareStatus -&gt; [HardwareStatus]
+enumFrom :: HardwareStatus -&gt; [HardwareStatus]
+$cenumFromThen :: HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+enumFromThen :: HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+$cenumFromTo :: HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+enumFromTo :: HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+$cenumFromThenTo :: HardwareStatus
+-&gt; HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+enumFromThenTo :: HardwareStatus
+-&gt; HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Enum.html#Enum"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680345600"><span id="local-6989586621680345604"><span id="local-6989586621680345607"><span id="local-6989586621680345614"><span class="annot"><span class="annottext">ReadPrec [HardwareStatus]
+ReadPrec HardwareStatus
+Int -&gt; ReadS HardwareStatus
+ReadS [HardwareStatus]
+(Int -&gt; ReadS HardwareStatus)
+-&gt; ReadS [HardwareStatus]
+-&gt; ReadPrec HardwareStatus
+-&gt; ReadPrec [HardwareStatus]
+-&gt; Read HardwareStatus
+forall a.
+(Int -&gt; ReadS a)
+-&gt; ReadS [a] -&gt; ReadPrec a -&gt; ReadPrec [a] -&gt; Read a
+$creadsPrec :: Int -&gt; ReadS HardwareStatus
+readsPrec :: Int -&gt; ReadS HardwareStatus
+$creadList :: ReadS [HardwareStatus]
+readList :: ReadS [HardwareStatus]
+$creadPrec :: ReadPrec HardwareStatus
+readPrec :: ReadPrec HardwareStatus
+$creadListPrec :: ReadPrec [HardwareStatus]
+readListPrec :: ReadPrec [HardwareStatus]
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Read.html#Read"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Read</span></a></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680345621"><span id="local-6989586621680345623"><span class="annot"><span class="annottext">(forall x. HardwareStatus -&gt; Rep HardwareStatus x)
+-&gt; (forall x. Rep HardwareStatus x -&gt; HardwareStatus)
+-&gt; Generic HardwareStatus
+forall x. Rep HardwareStatus x -&gt; HardwareStatus
+forall x. HardwareStatus -&gt; Rep HardwareStatus x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. HardwareStatus -&gt; Rep HardwareStatus x
+from :: forall x. HardwareStatus -&gt; Rep HardwareStatus x
+$cto :: forall x. Rep HardwareStatus x -&gt; HardwareStatus
+to :: forall x. Rep HardwareStatus x -&gt; HardwareStatus
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680345629"><span id="local-6989586621680345636"><span id="local-6989586621680345639"><span id="local-6989586621680345642"><span id="local-6989586621680345645"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="System.Hardware.html#HardwareStatus"><span class="hs-identifier hs-type">HardwareStatus</span></a></span></span></span></span></span></span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680345771"><span id="local-6989586621680345778"><span id="local-6989586621680345781"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="System.Hardware.html#HardwareStatus"><span class="hs-identifier hs-type">HardwareStatus</span></a></span></span></span></span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="hs-comment">{-@ data HardwareLoad = HardwareLoad
+  { hlId         :: Maybe Int64
+  , hlResourceId :: PosInt
+  , hlStartTime  :: UTCTime
+  , hlEndTime    :: UTCTime
+  , hlTechId     :: PosInt
+  , hlQuantity   :: NonNeg
+  , hlStatus     :: HardwareStatus
+  } @-}</span><span>
+</span><span id="line-38"></span><span class="hs-keyword">data</span><span> </span><span id="HardwareLoad"><span class="annot"><a href="System.Hardware.html#HardwareLoad"><span class="hs-identifier hs-var">HardwareLoad</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="HardwareLoad"><span class="annot"><a href="System.Hardware.html#HardwareLoad"><span class="hs-identifier hs-var">HardwareLoad</span></a></span></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="hlId"><span class="annot"><span class="annottext">HardwareLoad -&gt; Maybe Int64
+</span><a href="System.Hardware.html#hlId"><span class="hs-identifier hs-var hs-var">hlId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Maybe.html#Maybe"><span class="hs-identifier hs-type">Maybe</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-40"></span><span>    </span><span id="hlResourceId"><span class="annot"><span class="annottext">HardwareLoad -&gt; Int64
+</span><a href="System.Hardware.html#hlResourceId"><span class="hs-identifier hs-var hs-var">hlResourceId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-41"></span><span>    </span><span id="hlStartTime"><span class="annot"><span class="annottext">HardwareLoad -&gt; UTCTime
+</span><a href="System.Hardware.html#hlStartTime"><span class="hs-identifier hs-var hs-var">hlStartTime</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-42"></span><span>    </span><span id="hlEndTime"><span class="annot"><span class="annottext">HardwareLoad -&gt; UTCTime
+</span><a href="System.Hardware.html#hlEndTime"><span class="hs-identifier hs-var hs-var">hlEndTime</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-43"></span><span>    </span><span id="hlTechId"><span class="annot"><span class="annottext">HardwareLoad -&gt; Int64
+</span><a href="System.Hardware.html#hlTechId"><span class="hs-identifier hs-var hs-var">hlTechId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-44"></span><span>    </span><span id="hlQuantity"><span class="annot"><span class="annottext">HardwareLoad -&gt; Double
+</span><a href="System.Hardware.html#hlQuantity"><span class="hs-identifier hs-var hs-var">hlQuantity</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Double"><span class="hs-identifier hs-type">Double</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-45"></span><span>    </span><span id="hlStatus"><span class="annot"><span class="annottext">HardwareLoad -&gt; HardwareStatus
+</span><a href="System.Hardware.html#hlStatus"><span class="hs-identifier hs-var hs-var">hlStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Hardware.html#HardwareStatus"><span class="hs-identifier hs-type">HardwareStatus</span></a></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680345886"><span id="local-6989586621680345900"><span id="local-6989586621680345904"><span class="annot"><span class="annottext">Int -&gt; HardwareLoad -&gt; ShowS
+[HardwareLoad] -&gt; ShowS
+HardwareLoad -&gt; String
+(Int -&gt; HardwareLoad -&gt; ShowS)
+-&gt; (HardwareLoad -&gt; String)
+-&gt; ([HardwareLoad] -&gt; ShowS)
+-&gt; Show HardwareLoad
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; HardwareLoad -&gt; ShowS
+showsPrec :: Int -&gt; HardwareLoad -&gt; ShowS
+$cshow :: HardwareLoad -&gt; String
+show :: HardwareLoad -&gt; String
+$cshowList :: [HardwareLoad] -&gt; ShowS
+showList :: [HardwareLoad] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680345908"><span id="local-6989586621680345921"><span class="annot"><span class="annottext">HardwareLoad -&gt; HardwareLoad -&gt; Bool
+(HardwareLoad -&gt; HardwareLoad -&gt; Bool)
+-&gt; (HardwareLoad -&gt; HardwareLoad -&gt; Bool) -&gt; Eq HardwareLoad
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: HardwareLoad -&gt; HardwareLoad -&gt; Bool
+== :: HardwareLoad -&gt; HardwareLoad -&gt; Bool
+$c/= :: HardwareLoad -&gt; HardwareLoad -&gt; Bool
+/= :: HardwareLoad -&gt; HardwareLoad -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680345926"><span id="local-6989586621680345928"><span class="annot"><span class="annottext">(forall x. HardwareLoad -&gt; Rep HardwareLoad x)
+-&gt; (forall x. Rep HardwareLoad x -&gt; HardwareLoad)
+-&gt; Generic HardwareLoad
+forall x. Rep HardwareLoad x -&gt; HardwareLoad
+forall x. HardwareLoad -&gt; Rep HardwareLoad x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. HardwareLoad -&gt; Rep HardwareLoad x
+from :: forall x. HardwareLoad -&gt; Rep HardwareLoad x
+$cto :: forall x. Rep HardwareLoad x -&gt; HardwareLoad
+to :: forall x. Rep HardwareLoad x -&gt; HardwareLoad
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Generics.html#Generic"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680345931"><span id="local-6989586621680345938"><span id="local-6989586621680345941"><span id="local-6989586621680345944"><span id="local-6989586621680345947"><span class="annot"><span class="hs-identifier hs-type">ToJSON</span></span><span> </span><span class="annot"><a href="System.Hardware.html#HardwareLoad"><span class="hs-identifier hs-type">HardwareLoad</span></a></span></span></span></span></span></span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680346114"><span id="local-6989586621680346121"><span id="local-6989586621680346124"><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="System.Hardware.html#HardwareLoad"><span class="hs-identifier hs-type">HardwareLoad</span></a></span></span></span></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="annot"><a href="System.Hardware.html#validateHardwareLoad"><span class="hs-identifier hs-type">validateHardwareLoad</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Hardware.html#HardwareLoad"><span class="hs-identifier hs-type">HardwareLoad</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Either"><span class="hs-identifier hs-type">Either</span></a></span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="annot"><a href="System.Hardware.html#HardwareLoad"><span class="hs-identifier hs-type">HardwareLoad</span></a></span><span>
+</span><span id="line-54"></span><span id="validateHardwareLoad"><span class="annot"><span class="annottext">validateHardwareLoad :: HardwareLoad -&gt; Either Text HardwareLoad
+</span><a href="System.Hardware.html#validateHardwareLoad"><span class="hs-identifier hs-var hs-var">validateHardwareLoad</span></a></span></span><span> </span><span id="local-6989586621680346232"><span class="annot"><span class="annottext">HardwareLoad
+</span><a href="#local-6989586621680346232"><span class="hs-identifier hs-var">h</span></a></span></span><span>
+</span><span id="line-55"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">HardwareLoad -&gt; Double
+</span><a href="System.Hardware.html#hlQuantity"><span class="hs-identifier hs-var">hlQuantity</span></a></span><span> </span><span class="annot"><span class="annottext">HardwareLoad
+</span><a href="#local-6989586621680346232"><span class="hs-identifier hs-var">h</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text HardwareLoad
+forall a b. a -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Left"><span class="hs-identifier hs-var">Left</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;quantity must be positive&quot;</span></span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">HardwareLoad -&gt; UTCTime
+</span><a href="System.Hardware.html#hlEndTime"><span class="hs-identifier hs-var">hlEndTime</span></a></span><span> </span><span class="annot"><span class="annottext">HardwareLoad
+</span><a href="#local-6989586621680346232"><span class="hs-identifier hs-var">h</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime -&gt; UTCTime -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">HardwareLoad -&gt; UTCTime
+</span><a href="System.Hardware.html#hlStartTime"><span class="hs-identifier hs-var">hlStartTime</span></a></span><span> </span><span class="annot"><span class="annottext">HardwareLoad
+</span><a href="#local-6989586621680346232"><span class="hs-identifier hs-var">h</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text HardwareLoad
+forall a b. a -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Left"><span class="hs-identifier hs-var">Left</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;end time must be after start&quot;</span></span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">HardwareLoad -&gt; Int64
+</span><a href="System.Hardware.html#hlResourceId"><span class="hs-identifier hs-var">hlResourceId</span></a></span><span> </span><span class="annot"><span class="annottext">HardwareLoad
+</span><a href="#local-6989586621680346232"><span class="hs-identifier hs-var">h</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text HardwareLoad
+forall a b. a -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Left"><span class="hs-identifier hs-var">Left</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;resource id must be positive&quot;</span></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">HardwareLoad -&gt; Int64
+</span><a href="System.Hardware.html#hlTechId"><span class="hs-identifier hs-var">hlTechId</span></a></span><span> </span><span class="annot"><span class="annottext">HardwareLoad
+</span><a href="#local-6989586621680346232"><span class="hs-identifier hs-var">h</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3C%3D"><span class="hs-operator hs-var">&lt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text HardwareLoad
+forall a b. a -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Left"><span class="hs-identifier hs-var">Left</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;tech id must be positive&quot;</span></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Base.html#otherwise"><span class="hs-identifier hs-var">otherwise</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">HardwareLoad -&gt; Either Text HardwareLoad
+forall a b. b -&gt; Either a b
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Data.Either.html#Right"><span class="hs-identifier hs-var">Right</span></a></span><span> </span><span class="annot"><span class="annottext">HardwareLoad
+</span><a href="#local-6989586621680346232"><span class="hs-identifier hs-var">h</span></a></span><span>
+</span><span id="line-60"></span></pre></body></html>

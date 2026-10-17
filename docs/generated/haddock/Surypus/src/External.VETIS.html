@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | VETIS module - Russian veterinary tracking system</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="External.VETIS.html"><span class="hs-identifier">External.VETIS</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier">Day</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="annot"><span class="hs-comment">-- | VETIS entity</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">data</span><span> </span><span id="VetisEntity"><span class="annot"><a href="External.VETIS.html#VetisEntity"><span class="hs-identifier hs-var">VetisEntity</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="VetisEntity"><span class="annot"><a href="External.VETIS.html#VetisEntity"><span class="hs-identifier hs-var">VetisEntity</span></a></span></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="veId"><span class="annot"><span class="annottext">VetisEntity -&gt; Int64
+</span><a href="External.VETIS.html#veId"><span class="hs-identifier hs-var hs-var">veId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="veGuid"><span class="annot"><span class="annottext">VetisEntity -&gt; Text
+</span><a href="External.VETIS.html#veGuid"><span class="hs-identifier hs-var hs-var">veGuid</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- UUID</span><span>
+</span><span id="line-12"></span><span>    </span><span id="veType"><span class="annot"><span class="annottext">VetisEntity -&gt; VetisType
+</span><a href="External.VETIS.html#veType"><span class="hs-identifier hs-var hs-var">veType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="External.VETIS.html#VetisType"><span class="hs-identifier hs-type">VetisType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="veName"><span class="annot"><span class="annottext">VetisEntity -&gt; Text
+</span><a href="External.VETIS.html#veName"><span class="hs-identifier hs-var hs-var">veName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="veStatus"><span class="annot"><span class="annottext">VetisEntity -&gt; VetisStatus
+</span><a href="External.VETIS.html#veStatus"><span class="hs-identifier hs-var hs-var">veStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="External.VETIS.html#VetisStatus"><span class="hs-identifier hs-type">VetisStatus</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680231853"><span id="local-6989586621680231866"><span id="local-6989586621680231870"><span class="annot"><span class="annottext">Int -&gt; VetisEntity -&gt; ShowS
+[VetisEntity] -&gt; ShowS
+VetisEntity -&gt; String
+(Int -&gt; VetisEntity -&gt; ShowS)
+-&gt; (VetisEntity -&gt; String)
+-&gt; ([VetisEntity] -&gt; ShowS)
+-&gt; Show VetisEntity
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; VetisEntity -&gt; ShowS
+showsPrec :: Int -&gt; VetisEntity -&gt; ShowS
+$cshow :: VetisEntity -&gt; String
+show :: VetisEntity -&gt; String
+$cshowList :: [VetisEntity] -&gt; ShowS
+showList :: [VetisEntity] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680231875"><span id="local-6989586621680231885"><span class="annot"><span class="annottext">VetisEntity -&gt; VetisEntity -&gt; Bool
+(VetisEntity -&gt; VetisEntity -&gt; Bool)
+-&gt; (VetisEntity -&gt; VetisEntity -&gt; Bool) -&gt; Eq VetisEntity
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: VetisEntity -&gt; VetisEntity -&gt; Bool
+== :: VetisEntity -&gt; VetisEntity -&gt; Bool
+$c/= :: VetisEntity -&gt; VetisEntity -&gt; Bool
+/= :: VetisEntity -&gt; VetisEntity -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="VetisType"><span class="annot"><a href="External.VETIS.html#VetisType"><span class="hs-identifier hs-var">VetisType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="VTProducer"><span class="annot"><a href="External.VETIS.html#VTProducer"><span class="hs-identifier hs-var">VTProducer</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="VTStorage"><span class="annot"><a href="External.VETIS.html#VTStorage"><span class="hs-identifier hs-var">VTStorage</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="VTTransport"><span class="annot"><a href="External.VETIS.html#VTTransport"><span class="hs-identifier hs-var">VTTransport</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="VTRecipient"><span class="annot"><a href="External.VETIS.html#VTRecipient"><span class="hs-identifier hs-var">VTRecipient</span></a></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680231894"><span id="local-6989586621680231896"><span id="local-6989586621680231899"><span class="annot"><span class="annottext">Int -&gt; VetisType -&gt; ShowS
+[VetisType] -&gt; ShowS
+VetisType -&gt; String
+(Int -&gt; VetisType -&gt; ShowS)
+-&gt; (VetisType -&gt; String)
+-&gt; ([VetisType] -&gt; ShowS)
+-&gt; Show VetisType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; VetisType -&gt; ShowS
+showsPrec :: Int -&gt; VetisType -&gt; ShowS
+$cshow :: VetisType -&gt; String
+show :: VetisType -&gt; String
+$cshowList :: [VetisType] -&gt; ShowS
+showList :: [VetisType] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680231902"><span id="local-6989586621680231907"><span class="annot"><span class="annottext">VetisType -&gt; VetisType -&gt; Bool
+(VetisType -&gt; VetisType -&gt; Bool)
+-&gt; (VetisType -&gt; VetisType -&gt; Bool) -&gt; Eq VetisType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: VetisType -&gt; VetisType -&gt; Bool
+== :: VetisType -&gt; VetisType -&gt; Bool
+$c/= :: VetisType -&gt; VetisType -&gt; Bool
+/= :: VetisType -&gt; VetisType -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="VetisStatus"><span class="annot"><a href="External.VETIS.html#VetisStatus"><span class="hs-identifier hs-var">VetisStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="VSActive"><span class="annot"><a href="External.VETIS.html#VSActive"><span class="hs-identifier hs-var">VSActive</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="VSArchived"><span class="annot"><a href="External.VETIS.html#VSArchived"><span class="hs-identifier hs-var">VSArchived</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680231912"><span id="local-6989586621680231914"><span id="local-6989586621680231917"><span class="annot"><span class="annottext">Int -&gt; VetisStatus -&gt; ShowS
+[VetisStatus] -&gt; ShowS
+VetisStatus -&gt; String
+(Int -&gt; VetisStatus -&gt; ShowS)
+-&gt; (VetisStatus -&gt; String)
+-&gt; ([VetisStatus] -&gt; ShowS)
+-&gt; Show VetisStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; VetisStatus -&gt; ShowS
+showsPrec :: Int -&gt; VetisStatus -&gt; ShowS
+$cshow :: VetisStatus -&gt; String
+show :: VetisStatus -&gt; String
+$cshowList :: [VetisStatus] -&gt; ShowS
+showList :: [VetisStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680231920"><span id="local-6989586621680231924"><span class="annot"><span class="annottext">VetisStatus -&gt; VetisStatus -&gt; Bool
+(VetisStatus -&gt; VetisStatus -&gt; Bool)
+-&gt; (VetisStatus -&gt; VetisStatus -&gt; Bool) -&gt; Eq VetisStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: VetisStatus -&gt; VetisStatus -&gt; Bool
+== :: VetisStatus -&gt; VetisStatus -&gt; Bool
+$c/= :: VetisStatus -&gt; VetisStatus -&gt; Bool
+/= :: VetisStatus -&gt; VetisStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="annot"><span class="hs-comment">-- | VETIS movement</span></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">data</span><span> </span><span id="VetisMovement"><span class="annot"><a href="External.VETIS.html#VetisMovement"><span class="hs-identifier hs-var">VetisMovement</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="VetisMovement"><span class="annot"><a href="External.VETIS.html#VetisMovement"><span class="hs-identifier hs-var">VetisMovement</span></a></span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="vmId"><span class="annot"><span class="annottext">VetisMovement -&gt; Int64
+</span><a href="External.VETIS.html#vmId"><span class="hs-identifier hs-var hs-var">vmId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="vmFromGuid"><span class="annot"><span class="annottext">VetisMovement -&gt; Text
+</span><a href="External.VETIS.html#vmFromGuid"><span class="hs-identifier hs-var hs-var">vmFromGuid</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="vmToGuid"><span class="annot"><span class="annottext">VetisMovement -&gt; Text
+</span><a href="External.VETIS.html#vmToGuid"><span class="hs-identifier hs-var hs-var">vmToGuid</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span id="vmDate"><span class="annot"><span class="annottext">VetisMovement -&gt; Day
+</span><a href="External.VETIS.html#vmDate"><span class="hs-identifier hs-var hs-var">vmDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Calendar.Days.html#Day"><span class="hs-identifier hs-type">Day</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-30"></span><span>    </span><span id="vmDocId"><span class="annot"><span class="annottext">VetisMovement -&gt; Int64
+</span><a href="External.VETIS.html#vmDocId"><span class="hs-identifier hs-var hs-var">vmDocId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-31"></span><span>    </span><span id="vmStatus"><span class="annot"><span class="annottext">VetisMovement -&gt; VetisStatus
+</span><a href="External.VETIS.html#vmStatus"><span class="hs-identifier hs-var hs-var">vmStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="External.VETIS.html#VetisStatus"><span class="hs-identifier hs-type">VetisStatus</span></a></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680231934"><span id="local-6989586621680231944"><span id="local-6989586621680231948"><span class="annot"><span class="annottext">Int -&gt; VetisMovement -&gt; ShowS
+[VetisMovement] -&gt; ShowS
+VetisMovement -&gt; String
+(Int -&gt; VetisMovement -&gt; ShowS)
+-&gt; (VetisMovement -&gt; String)
+-&gt; ([VetisMovement] -&gt; ShowS)
+-&gt; Show VetisMovement
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; VetisMovement -&gt; ShowS
+showsPrec :: Int -&gt; VetisMovement -&gt; ShowS
+$cshow :: VetisMovement -&gt; String
+show :: VetisMovement -&gt; String
+$cshowList :: [VetisMovement] -&gt; ShowS
+showList :: [VetisMovement] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680231951"><span id="local-6989586621680231960"><span class="annot"><span class="annottext">VetisMovement -&gt; VetisMovement -&gt; Bool
+(VetisMovement -&gt; VetisMovement -&gt; Bool)
+-&gt; (VetisMovement -&gt; VetisMovement -&gt; Bool) -&gt; Eq VetisMovement
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: VetisMovement -&gt; VetisMovement -&gt; Bool
+== :: VetisMovement -&gt; VetisMovement -&gt; Bool
+$c/= :: VetisMovement -&gt; VetisMovement -&gt; Bool
+/= :: VetisMovement -&gt; VetisMovement -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="annot"><span class="hs-comment">-- | Check if VETIS entity is active</span></span><span>
+</span><span id="line-36"></span><span class="annot"><a href="External.VETIS.html#isVetisActive"><span class="hs-identifier hs-type">isVetisActive</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="External.VETIS.html#VetisEntity"><span class="hs-identifier hs-type">VetisEntity</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-37"></span><span id="isVetisActive"><span class="annot"><span class="annottext">isVetisActive :: VetisEntity -&gt; Bool
+</span><a href="External.VETIS.html#isVetisActive"><span class="hs-identifier hs-var hs-var">isVetisActive</span></a></span></span><span> </span><span id="local-6989586621680231964"><span class="annot"><span class="annottext">VetisEntity
+</span><a href="#local-6989586621680231964"><span class="hs-identifier hs-var">ve</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">VetisEntity -&gt; VetisStatus
+</span><a href="External.VETIS.html#veStatus"><span class="hs-identifier hs-var">veStatus</span></a></span><span> </span><span class="annot"><span class="annottext">VetisEntity
+</span><a href="#local-6989586621680231964"><span class="hs-identifier hs-var">ve</span></a></span><span> </span><span class="annot"><span class="annottext">VetisStatus -&gt; VetisStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3D%3D"><span class="hs-operator hs-var">==</span></a></span><span> </span><span class="annot"><span class="annottext">VetisStatus
+</span><a href="External.VETIS.html#VSActive"><span class="hs-identifier hs-var">VSActive</span></a></span><span>
+</span><span id="line-38"></span></pre></body></html>

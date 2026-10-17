@@ -57,6 +57,9 @@ jobs:
           python3 -c "import json; d=json.load(open('docs/generated/inventory/modules.json')); undoc=[m['module'] for m in d['modules'] if m['haddock_comments']==0]; print(f'Undocumented modules: {len(undoc)}')"
           python3 -c "import json; d=json.load(open('docs/generated/inventory/modules.json')); print(f'Total modules: {d[\"total_modules\"]}'); print(f'Coverage: {d[\"modules\"][\"coverage\"][\"percentage\"] if \"coverage\" in d.get(\"modules\",{}) else json.load(open(\"docs/generated/inventory/coverage.json\"))[\"coverage\"][\"percentage\"]}%')"
 
+      - name: Check documentation pipeline
+        run: bash tools/documentation/check-docs.sh
+
       - name: Upload generated documentation artifact
         uses: actions/upload-artifact@v7
         with:

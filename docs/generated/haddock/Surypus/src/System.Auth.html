@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Auth module - Authentication and users</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="System.Auth.html"><span class="hs-identifier">System.Auth</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.html"><span class="hs-identifier">Data.Time</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier">UTCTime</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="annot"><span class="hs-comment">-- | User - System user</span></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">data</span><span> </span><span id="User"><span class="annot"><a href="System.Auth.html#User"><span class="hs-identifier hs-var">User</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="User"><span class="annot"><a href="System.Auth.html#User"><span class="hs-identifier hs-var">User</span></a></span></span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="uId"><span class="annot"><span class="annottext">User -&gt; Int64
+</span><a href="System.Auth.html#uId"><span class="hs-identifier hs-var hs-var">uId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="uLogin"><span class="annot"><span class="annottext">User -&gt; Text
+</span><a href="System.Auth.html#uLogin"><span class="hs-identifier hs-var hs-var">uLogin</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="uName"><span class="annot"><span class="annottext">User -&gt; Text
+</span><a href="System.Auth.html#uName"><span class="hs-identifier hs-var hs-var">uName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="uGroupId"><span class="annot"><span class="annottext">User -&gt; Int64
+</span><a href="System.Auth.html#uGroupId"><span class="hs-identifier hs-var hs-var">uGroupId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="uFlags"><span class="annot"><span class="annottext">User -&gt; Int
+</span><a href="System.Auth.html#uFlags"><span class="hs-identifier hs-var hs-var">uFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680343665"><span id="local-6989586621680343676"><span id="local-6989586621680343680"><span class="annot"><span class="annottext">Int -&gt; User -&gt; ShowS
+[User] -&gt; ShowS
+User -&gt; String
+(Int -&gt; User -&gt; ShowS)
+-&gt; (User -&gt; String) -&gt; ([User] -&gt; ShowS) -&gt; Show User
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; User -&gt; ShowS
+showsPrec :: Int -&gt; User -&gt; ShowS
+$cshow :: User -&gt; String
+show :: User -&gt; String
+$cshowList :: [User] -&gt; ShowS
+showList :: [User] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680343685"><span id="local-6989586621680343695"><span class="annot"><span class="annottext">User -&gt; User -&gt; Bool
+(User -&gt; User -&gt; Bool) -&gt; (User -&gt; User -&gt; Bool) -&gt; Eq User
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: User -&gt; User -&gt; Bool
+== :: User -&gt; User -&gt; Bool
+$c/= :: User -&gt; User -&gt; Bool
+/= :: User -&gt; User -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="annot"><span class="hs-comment">-- | UserGroup - User group</span></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">data</span><span> </span><span id="UserGroup"><span class="annot"><a href="System.Auth.html#UserGroup"><span class="hs-identifier hs-var">UserGroup</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="UserGroup"><span class="annot"><a href="System.Auth.html#UserGroup"><span class="hs-identifier hs-var">UserGroup</span></a></span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="ugId"><span class="annot"><span class="annottext">UserGroup -&gt; Int64
+</span><a href="System.Auth.html#ugId"><span class="hs-identifier hs-var hs-var">ugId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="ugName"><span class="annot"><span class="annottext">UserGroup -&gt; Text
+</span><a href="System.Auth.html#ugName"><span class="hs-identifier hs-var hs-var">ugName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="ugRights"><span class="annot"><span class="annottext">UserGroup -&gt; Int
+</span><a href="System.Auth.html#ugRights"><span class="hs-identifier hs-var hs-var">ugRights</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Int"><span class="hs-identifier hs-type">Int</span></a></span><span> </span><span class="hs-comment">-- Bitmask</span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680343704"><span id="local-6989586621680343710"><span id="local-6989586621680343714"><span class="annot"><span class="annottext">Int -&gt; UserGroup -&gt; ShowS
+[UserGroup] -&gt; ShowS
+UserGroup -&gt; String
+(Int -&gt; UserGroup -&gt; ShowS)
+-&gt; (UserGroup -&gt; String)
+-&gt; ([UserGroup] -&gt; ShowS)
+-&gt; Show UserGroup
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; UserGroup -&gt; ShowS
+showsPrec :: Int -&gt; UserGroup -&gt; ShowS
+$cshow :: UserGroup -&gt; String
+show :: UserGroup -&gt; String
+$cshowList :: [UserGroup] -&gt; ShowS
+showList :: [UserGroup] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680343717"><span id="local-6989586621680343722"><span class="annot"><span class="annottext">UserGroup -&gt; UserGroup -&gt; Bool
+(UserGroup -&gt; UserGroup -&gt; Bool)
+-&gt; (UserGroup -&gt; UserGroup -&gt; Bool) -&gt; Eq UserGroup
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: UserGroup -&gt; UserGroup -&gt; Bool
+== :: UserGroup -&gt; UserGroup -&gt; Bool
+$c/= :: UserGroup -&gt; UserGroup -&gt; Bool
+/= :: UserGroup -&gt; UserGroup -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="annot"><span class="hs-comment">-- | Session - User session</span></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">data</span><span> </span><span id="Session"><span class="annot"><a href="System.Auth.html#Session"><span class="hs-identifier hs-var">Session</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Session"><span class="annot"><a href="System.Auth.html#Session"><span class="hs-identifier hs-var">Session</span></a></span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="sId"><span class="annot"><span class="annottext">Session -&gt; Int64
+</span><a href="System.Auth.html#sId"><span class="hs-identifier hs-var hs-var">sId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-30"></span><span>    </span><span id="sUserId"><span class="annot"><span class="annottext">Session -&gt; Int64
+</span><a href="System.Auth.html#sUserId"><span class="hs-identifier hs-var hs-var">sUserId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-31"></span><span>    </span><span id="sToken"><span class="annot"><span class="annottext">Session -&gt; Text
+</span><a href="System.Auth.html#sToken"><span class="hs-identifier hs-var hs-var">sToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-32"></span><span>    </span><span id="sStartTime"><span class="annot"><span class="annottext">Session -&gt; UTCTime
+</span><a href="System.Auth.html#sStartTime"><span class="hs-identifier hs-var hs-var">sStartTime</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-33"></span><span>    </span><span id="sExpireTime"><span class="annot"><span class="annottext">Session -&gt; UTCTime
+</span><a href="System.Auth.html#sExpireTime"><span class="hs-identifier hs-var hs-var">sExpireTime</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680343732"><span id="local-6989586621680343741"><span id="local-6989586621680343745"><span class="annot"><span class="annottext">Int -&gt; Session -&gt; ShowS
+[Session] -&gt; ShowS
+Session -&gt; String
+(Int -&gt; Session -&gt; ShowS)
+-&gt; (Session -&gt; String) -&gt; ([Session] -&gt; ShowS) -&gt; Show Session
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Session -&gt; ShowS
+showsPrec :: Int -&gt; Session -&gt; ShowS
+$cshow :: Session -&gt; String
+show :: Session -&gt; String
+$cshowList :: [Session] -&gt; ShowS
+showList :: [Session] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680343748"><span id="local-6989586621680343756"><span class="annot"><span class="annottext">Session -&gt; Session -&gt; Bool
+(Session -&gt; Session -&gt; Bool)
+-&gt; (Session -&gt; Session -&gt; Bool) -&gt; Eq Session
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Session -&gt; Session -&gt; Bool
+== :: Session -&gt; Session -&gt; Bool
+$c/= :: Session -&gt; Session -&gt; Bool
+/= :: Session -&gt; Session -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="annot"><span class="hs-comment">-- | Validate password strength (simple)</span></span><span>
+</span><span id="line-38"></span><span class="annot"><a href="System.Auth.html#validatePassword"><span class="hs-identifier hs-type">validatePassword</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-39"></span><span id="validatePassword"><span class="annot"><span class="annottext">validatePassword :: Text -&gt; Bool
+</span><a href="System.Auth.html#validatePassword"><span class="hs-identifier hs-var hs-var">validatePassword</span></a></span></span><span> </span><span id="local-6989586621680343760"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680343760"><span class="hs-identifier hs-var">pwd</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html#length"><span class="hs-identifier hs-var">T.length</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680343760"><span class="hs-identifier hs-var">pwd</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E%3D"><span class="hs-operator hs-var">&gt;=</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">6</span></span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="annot"><span class="hs-comment">-- | Check session expired</span></span><span>
+</span><span id="line-42"></span><span class="annot"><a href="System.Auth.html#isSessionExpired"><span class="hs-identifier hs-type">isSessionExpired</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Auth.html#Session"><span class="hs-identifier hs-type">Session</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/time-1.12.2-inplace/src/Data.Time.Clock.Internal.UTCTime.html#UTCTime"><span class="hs-identifier hs-type">UTCTime</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Types.html#Bool"><span class="hs-identifier hs-type">Bool</span></a></span><span>
+</span><span id="line-43"></span><span id="isSessionExpired"><span class="annot"><span class="annottext">isSessionExpired :: Session -&gt; UTCTime -&gt; Bool
+</span><a href="System.Auth.html#isSessionExpired"><span class="hs-identifier hs-var hs-var">isSessionExpired</span></a></span></span><span> </span><span id="local-6989586621680343763"><span class="annot"><span class="annottext">Session
+</span><a href="#local-6989586621680343763"><span class="hs-identifier hs-var">s</span></a></span></span><span> </span><span id="local-6989586621680343764"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680343764"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680343764"><span class="hs-identifier hs-var">now</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime -&gt; UTCTime -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#%3E"><span class="hs-operator hs-var">&gt;</span></a></span><span> </span><span class="annot"><span class="annottext">Session -&gt; UTCTime
+</span><a href="System.Auth.html#sExpireTime"><span class="hs-identifier hs-var">sExpireTime</span></a></span><span> </span><span class="annot"><span class="annottext">Session
+</span><a href="#local-6989586621680343763"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><span id="line-44"></span></pre></body></html>

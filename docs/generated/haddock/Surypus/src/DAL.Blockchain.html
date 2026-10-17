@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Blockchain module - Blockchain integration</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="DAL.Blockchain.html"><span class="hs-identifier">DAL.Blockchain</span></a></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/base-4.20.2.0-inplace/src/Data.Int.html"><span class="hs-identifier">Data.Int</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier">Int64</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.html"><span class="hs-identifier">Data.Text</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier">Text</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="annot"><span class="hs-comment">-- | SmartContract - Smart contract</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">data</span><span> </span><span id="SmartContract"><span class="annot"><a href="DAL.Blockchain.html#SmartContract"><span class="hs-identifier hs-var">SmartContract</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SmartContract"><span class="annot"><a href="DAL.Blockchain.html#SmartContract"><span class="hs-identifier hs-var">SmartContract</span></a></span></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="scId"><span class="annot"><span class="annottext">SmartContract -&gt; Int64
+</span><a href="DAL.Blockchain.html#scId"><span class="hs-identifier hs-var hs-var">scId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span id="scAddress"><span class="annot"><span class="annottext">SmartContract -&gt; Text
+</span><a href="DAL.Blockchain.html#scAddress"><span class="hs-identifier hs-var hs-var">scAddress</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Contract address</span><span>
+</span><span id="line-11"></span><span>    </span><span id="scABI"><span class="annot"><span class="annottext">SmartContract -&gt; Text
+</span><a href="DAL.Blockchain.html#scABI"><span class="hs-identifier hs-var hs-var">scABI</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- JSON ABI</span><span>
+</span><span id="line-12"></span><span>    </span><span id="scSource"><span class="annot"><span class="annottext">SmartContract -&gt; Text
+</span><a href="DAL.Blockchain.html#scSource"><span class="hs-identifier hs-var hs-var">scSource</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Solidity source</span><span>
+</span><span id="line-13"></span><span>    </span><span id="scCompiledAt"><span class="annot"><span class="annottext">SmartContract -&gt; Int64
+</span><a href="DAL.Blockchain.html#scCompiledAt"><span class="hs-identifier hs-var hs-var">scCompiledAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680204559"><span id="local-6989586621680204570"><span id="local-6989586621680204574"><span class="annot"><span class="annottext">Int -&gt; SmartContract -&gt; ShowS
+[SmartContract] -&gt; ShowS
+SmartContract -&gt; String
+(Int -&gt; SmartContract -&gt; ShowS)
+-&gt; (SmartContract -&gt; String)
+-&gt; ([SmartContract] -&gt; ShowS)
+-&gt; Show SmartContract
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; SmartContract -&gt; ShowS
+showsPrec :: Int -&gt; SmartContract -&gt; ShowS
+$cshow :: SmartContract -&gt; String
+show :: SmartContract -&gt; String
+$cshowList :: [SmartContract] -&gt; ShowS
+showList :: [SmartContract] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680204579"><span id="local-6989586621680204588"><span class="annot"><span class="annottext">SmartContract -&gt; SmartContract -&gt; Bool
+(SmartContract -&gt; SmartContract -&gt; Bool)
+-&gt; (SmartContract -&gt; SmartContract -&gt; Bool) -&gt; Eq SmartContract
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: SmartContract -&gt; SmartContract -&gt; Bool
+== :: SmartContract -&gt; SmartContract -&gt; Bool
+$c/= :: SmartContract -&gt; SmartContract -&gt; Bool
+/= :: SmartContract -&gt; SmartContract -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="annot"><span class="hs-comment">-- | BlockchainTransaction - Transaction record</span></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="BlockchainTransaction"><span class="annot"><a href="DAL.Blockchain.html#BlockchainTransaction"><span class="hs-identifier hs-var">BlockchainTransaction</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BlockchainTransaction"><span class="annot"><a href="DAL.Blockchain.html#BlockchainTransaction"><span class="hs-identifier hs-var">BlockchainTransaction</span></a></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="btId"><span class="annot"><span class="annottext">BlockchainTransaction -&gt; Int64
+</span><a href="DAL.Blockchain.html#btId"><span class="hs-identifier hs-var hs-var">btId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span id="btHash"><span class="annot"><span class="annottext">BlockchainTransaction -&gt; Text
+</span><a href="DAL.Blockchain.html#btHash"><span class="hs-identifier hs-var hs-var">btHash</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- TX hash</span><span>
+</span><span id="line-21"></span><span>    </span><span id="btContractId"><span class="annot"><span class="annottext">BlockchainTransaction -&gt; Int64
+</span><a href="DAL.Blockchain.html#btContractId"><span class="hs-identifier hs-var hs-var">btContractId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="btFrom"><span class="annot"><span class="annottext">BlockchainTransaction -&gt; Text
+</span><a href="DAL.Blockchain.html#btFrom"><span class="hs-identifier hs-var hs-var">btFrom</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="btTo"><span class="annot"><span class="annottext">BlockchainTransaction -&gt; Text
+</span><a href="DAL.Blockchain.html#btTo"><span class="hs-identifier hs-var hs-var">btTo</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="btValue"><span class="annot"><span class="annottext">BlockchainTransaction -&gt; Text
+</span><a href="DAL.Blockchain.html#btValue"><span class="hs-identifier hs-var hs-var">btValue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/text-2.1.3-inplace/src/Data.Text.Internal.html#Text"><span class="hs-identifier hs-type">Text</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Wei</span><span>
+</span><span id="line-25"></span><span>    </span><span id="btBlockNumber"><span class="annot"><span class="annottext">BlockchainTransaction -&gt; Int64
+</span><a href="DAL.Blockchain.html#btBlockNumber"><span class="hs-identifier hs-var hs-var">btBlockNumber</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Int.html#Int64"><span class="hs-identifier hs-type">Int64</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="btStatus"><span class="annot"><span class="annottext">BlockchainTransaction -&gt; BlockchainStatus
+</span><a href="DAL.Blockchain.html#btStatus"><span class="hs-identifier hs-var hs-var">btStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="DAL.Blockchain.html#BlockchainStatus"><span class="hs-identifier hs-type">BlockchainStatus</span></a></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680204602"><span id="local-6989586621680204614"><span id="local-6989586621680204618"><span class="annot"><span class="annottext">Int -&gt; BlockchainTransaction -&gt; ShowS
+[BlockchainTransaction] -&gt; ShowS
+BlockchainTransaction -&gt; String
+(Int -&gt; BlockchainTransaction -&gt; ShowS)
+-&gt; (BlockchainTransaction -&gt; String)
+-&gt; ([BlockchainTransaction] -&gt; ShowS)
+-&gt; Show BlockchainTransaction
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BlockchainTransaction -&gt; ShowS
+showsPrec :: Int -&gt; BlockchainTransaction -&gt; ShowS
+$cshow :: BlockchainTransaction -&gt; String
+show :: BlockchainTransaction -&gt; String
+$cshowList :: [BlockchainTransaction] -&gt; ShowS
+showList :: [BlockchainTransaction] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680204621"><span id="local-6989586621680204632"><span class="annot"><span class="annottext">BlockchainTransaction -&gt; BlockchainTransaction -&gt; Bool
+(BlockchainTransaction -&gt; BlockchainTransaction -&gt; Bool)
+-&gt; (BlockchainTransaction -&gt; BlockchainTransaction -&gt; Bool)
+-&gt; Eq BlockchainTransaction
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BlockchainTransaction -&gt; BlockchainTransaction -&gt; Bool
+== :: BlockchainTransaction -&gt; BlockchainTransaction -&gt; Bool
+$c/= :: BlockchainTransaction -&gt; BlockchainTransaction -&gt; Bool
+/= :: BlockchainTransaction -&gt; BlockchainTransaction -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="BlockchainStatus"><span class="annot"><a href="DAL.Blockchain.html#BlockchainStatus"><span class="hs-identifier hs-var">BlockchainStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BSPending"><span class="annot"><a href="DAL.Blockchain.html#BSPending"><span class="hs-identifier hs-var">BSPending</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="BSConfirmed"><span class="annot"><a href="DAL.Blockchain.html#BSConfirmed"><span class="hs-identifier hs-var">BSConfirmed</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="BSFailed"><span class="annot"><a href="DAL.Blockchain.html#BSFailed"><span class="hs-identifier hs-var">BSFailed</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680204639"><span id="local-6989586621680204641"><span id="local-6989586621680204644"><span class="annot"><span class="annottext">Int -&gt; BlockchainStatus -&gt; ShowS
+[BlockchainStatus] -&gt; ShowS
+BlockchainStatus -&gt; String
+(Int -&gt; BlockchainStatus -&gt; ShowS)
+-&gt; (BlockchainStatus -&gt; String)
+-&gt; ([BlockchainStatus] -&gt; ShowS)
+-&gt; Show BlockchainStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BlockchainStatus -&gt; ShowS
+showsPrec :: Int -&gt; BlockchainStatus -&gt; ShowS
+$cshow :: BlockchainStatus -&gt; String
+show :: BlockchainStatus -&gt; String
+$cshowList :: [BlockchainStatus] -&gt; ShowS
+showList :: [BlockchainStatus] -&gt; ShowS
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-internal-9.1003.0-inplace/src/GHC.Internal.Show.html#Show"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680204647"><span id="local-6989586621680204652"><span class="annot"><span class="annottext">BlockchainStatus -&gt; BlockchainStatus -&gt; Bool
+(BlockchainStatus -&gt; BlockchainStatus -&gt; Bool)
+-&gt; (BlockchainStatus -&gt; BlockchainStatus -&gt; Bool)
+-&gt; Eq BlockchainStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BlockchainStatus -&gt; BlockchainStatus -&gt; Bool
+== :: BlockchainStatus -&gt; BlockchainStatus -&gt; Bool
+$c/= :: BlockchainStatus -&gt; BlockchainStatus -&gt; Bool
+/= :: BlockchainStatus -&gt; BlockchainStatus -&gt; Bool
+</span><a href="file:///usr/lib/ghc/lib/../../../share/doc/ghc-doc/html/libraries/ghc-prim-0.12.0-inplace/src/GHC.Classes.html#Eq"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></a></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span></pre></body></html>
