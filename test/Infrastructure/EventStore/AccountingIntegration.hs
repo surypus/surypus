@@ -23,9 +23,6 @@ import Test.Hspec
 epoch :: UTCTime
 epoch = read "1970-01-01 00:00:00 UTC"
 
-streamName :: Text
-streamName = "surypus:test:accounting"
-
 spec :: Spec
 spec = do
   mDb <- runIO (lookupEnv "SURYPUS_TEST_DATABASE_URL")
@@ -33,8 +30,8 @@ spec = do
   case (mDb, mRedis) of
     (Just dbUrl, Just redisUrl) ->
       beforeAll (open dbUrl redisUrl) $ afterAll closeAll $ do
-        it "publishes an appended accounting event to the stream" $ \(pool, stream) -> do
-          store <- mkAccountingEventStore pool streamName
+        it "publishes an appended accounting event to the stream" $ \(pool, stream, name) -> do
+          store <- mkAccountingEventStore pool name
           aggId <- freshAggId
           appendAccountingEvent
             store
@@ -44,8 +41,8 @@ spec = do
           entries <- either (fail . T.unpack) pure =<< readEvents stream 10
           map fst entries `shouldBe` ["AccountCreated"]
 
-        it "survives a Redis outage without failing the write" $ \(pool, _) -> do
-          store <- mkAccountingEventStore pool streamName
+        it "survives a Redis outage without failing the write" $ \(pool, _, name) -> do
+          store <- mkAccountingEventStore pool name
           aggId <- freshAggId
           -- The store degrades to "no stream" when Redis is unreachable; the
           -- PostgreSQL append still succeeds.
@@ -59,13 +56,16 @@ spec = do
         pendingWith "set both to run the accounting event store integration tests"
 
   where
+    -- | A per-run stream name so repeated runs do not read each other's entries.
     open dbUrl redisUrl = do
       pool <- runNoLoggingT (createPostgresqlPool (BC.pack dbUrl) 2)
       ci <- either (ioError . userError) pure (R.parseConnectInfo redisUrl)
-      stream <- mkEventStream <$> R.connect ci <*> pure streamName
-      pure (pool, stream)
+      now <- getCurrentTime
+      let name = "surypus:test:accounting:" <> T.pack (show now)
+      stream <- mkEventStream <$> R.connect ci <*> pure name
+      pure (pool, stream, name)
 
-    closeAll (pool, stream) = do
+    closeAll (pool, stream, _) = do
       closePool pool
       R.disconnect (esConn stream)
 
