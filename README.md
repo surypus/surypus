@@ -60,6 +60,26 @@ docs/    MkDocs documentation sources
 dsl/     schema.yaml — source of the generated DAL.Types entity types
 ```
 
+## Task tracking
+
+The task list lives in [beads](https://github.com/steveyegge/beads), stored in a
+Dolt database at `.beads/` and synced to
+[DoltHub](https://www.dolthub.com/repositories/dominicusin/Surypus-bd). It is
+mirrored into GitHub so the same list is visible as Issues, on the
+[project board](https://github.com/orgs/surypus/projects/2) and in the
+[wiki](https://github.com/surypus/surypus/wiki).
+
+```bash
+bd list                       # show the task list
+bd show Surypus-sca           # one issue
+python3 tools/beads-sync-github.py --push   # mirror to GitHub
+```
+
+The mirror is idempotent: it creates only what is missing, so it is safe to
+re-run. A workflow runs it every six hours and whenever `.beads/` changes. That
+workflow needs a `GH_TOKEN` repository secret — the default `GITHUB_TOKEN`
+cannot write to a project.
+
 ## Documentation
 
 - [CONTRIBUTING.md](CONTRIBUTING.md)
