@@ -17,15 +17,38 @@ ERRORS=0
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$REPO_ROOT"
 
-# mkdocs is usually on PATH (pip install --user or a venv); fall back to the
-# common user-local location rather than a hardcoded machine path.
-MKDOCS="$(command -v mkdocs || true)"
-if [ -z "$MKDOCS" ] && [ -x "$HOME/.local/bin/mkdocs" ]; then
-    MKDOCS="$HOME/.local/bin/mkdocs"
-fi
+# Prefer a user-local or venv mkdocs that carries the pymdownx extensions;
+# the distro package often lacks them. Fall back to whatever is on PATH.
+MKDOCS=""
+for candidate in "$HOME/.local/bin/mkdocs" "$(command -v mkdocs || true)"; do
+    [ -n "$candidate" ] && [ -x "$candidate" ] || continue
+    if "$candidate" --version >/dev/null 2>&1; then
+        MKDOCS="$candidate"
+        break
+    fi
+done
 if [ -z "$MKDOCS" ]; then
-    echo "mkdocs not found; install it with: pip install mkdocs mkdocs-material"
+    echo "mkdocs not found; install it with: pip install mkdocs mkdocs-material pymdown-extensions"
     exit 1
+fi
+# The distro mkdocs frequently lacks the pymdownx extensions this config uses.
+# If none of the candidates can import them, build a throwaway venv from the
+# pinned docs requirements so the check is reproducible anywhere.
+MKDOCS_PY="$(head -1 "$MKDOCS" 2>/dev/null | sed -e 's|^#![[:space:]]*||' -e 's|[[:space:]]*$||')"
+if ! { [ -n "$MKDOCS_PY" ] && [ -x "$MKDOCS_PY" ] && "$MKDOCS_PY" -c "import pymdownx, markdown" >/dev/null 2>&1; }; then
+    echo "no mkdocs with pymdownx found; building one from docs/requirements.txt"
+    VENV_DIR="${DOCS_VENV:-$REPO_ROOT/.venv-docs}"
+    if [ ! -x "$VENV_DIR/bin/mkdocs" ]; then
+        python3 -m venv "$VENV_DIR"
+        "$VENV_DIR/bin/pip" install --quiet --upgrade pip
+        "$VENV_DIR/bin/pip" install --quiet -r docs/requirements.txt
+    fi
+    if "$VENV_DIR/bin/python" -c "import pymdownx" >/dev/null 2>&1; then
+        MKDOCS="$VENV_DIR/bin/mkdocs"
+    else
+        echo "failed to provision a mkdocs with the required extensions"
+        exit 1
+    fi
 fi
 
 echo "=== Surypus Documentation Validation ==="
