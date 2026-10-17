@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://surypus.github.io/surypus/engineering/job-server-etl/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>job-server-etl.md - Surypus ERP</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "job-server-etl.md";
+        var mkdocs_page_input_path = "engineering/job-server-etl.md";
+        var mkdocs_page_url = "/surypus/engineering/job-server-etl/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Surypus ERP
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Главная</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../ARCHITECTURE/">Архитектура</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../TYPES/">Система типов</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../API/">API</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DATABASE/">Хранилище данных</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DEPLOYMENT/">Развёртывание</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../GUIDE/">Руководство</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Руководства</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/accounting/">Как работает бухгалтерия</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/inventory/">Как работает инвентарь</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/rbac/">Как работает RBAC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/jwt/">Как работает JWT-аутентификация</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/persistence/">Как работает персистентность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/event-store/">Как работает Event Store</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">ADR</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0001-haskell-primary-language/">ADR-001: Haskell как основной язык</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0002-mkdocs-site/">ADR-002: MkDocs для сайта документации</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../architecture/EVENT_SOURCING/">Архитектура событий</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Инженерные модули</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../api-conventions/">api-conventions.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../bill-module/">bill-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../document-module/">document-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../hr-payroll-module/">hr-payroll-module.md</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">job-server-etl.md</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#snapshot-job-worker">Snapshot job и фоновый worker</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#etl">Дальнейшие домены и ETL</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../person-module/">person-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../production-module/">production-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reports-portal/">reports-portal.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../schema-uniqueness/">schema-uniqueness.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../testing-guide/">testing-guide.md</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/EXAMPLES/">Примеры</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../REFINEMENT/">Рефиниции</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../SUMMARY/">Сводка</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Задачи</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Home/">Обзор</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Plans/">Планы</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Backlog/">Бэклог</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Surypus ERP</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Инженерные модули</li>
+      <li class="breadcrumb-item active">job-server-etl.md</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/surypus/surypus/edit/master/docs/engineering/job-server-etl.md">Edit on surypus/surypus</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="job-server-etl">Job Server / ETL</h1>
+<p>Surypus реализует надёжную очередь задач (JobServer), которая позволяет запускать ETL-работы, импорт/экспорт данных, генерацию отчётов и синхронизацию внешних систем (Меркурий, Честный Знак, WMS). Мы численно перенесли основные элементы:</p>
+<ol>
+<li><strong>SQL-ядро</strong>: <code>config/schema_job_server.sql</code> описывает таблицы <code>job</code>, <code>job_dependency</code>, <code>job_result</code> и просмотры очереди. Дополнительно, <code>DB.Connection.initSchema</code> создаёт упрощённую версию <code>job</code> с кодом (<code>code</code>), приоритетом, JSON-данными (<code>job_data</code>) и временными метками (<code>scheduled_at</code>, <code>started_at</code>, <code>completed_at</code>). Индексы по <code>status</code>/<code>priority</code> обеспечивают быстрый выбор.</li>
+<li><strong>Hasql &amp; домен</strong>: <code>Domain.Job</code> описывает типы <code>JobRequest</code>, <code>JobRecord</code>, <code>JobFilter</code>, <code>JobStatus</code> и формальные инварианты (например, <code>priority ∈ [1,10]</code>, код/название/тип не пусты). <code>DB.JobQueue</code> связывает Hasql с таблицей, реализуя <code>enqueueJob</code>, <code>fetchPendingJob</code>, <code>listJobs</code>, <code>getJob</code>, <code>setJobStatus</code> и логирование (<code>service_events</code>). Также агрегируются зависимости из <code>job_dependency</code>, которые отражаются в <code>JobRecord.jobDependencies</code>, и добавлена функция <code>addJobDependency</code>.</li>
+<li><strong>API</strong>: <code>APIServer.jobRoutes</code> предоставляет REST:
+   - <code>POST /api/v1/jobs</code> — создать задачу (валидируется <code>validateJobRequest</code>)
+   - <code>GET /api/v1/jobs</code> — лента задач с фильтрацией по статусу и типу
+   - <code>GET /api/v1/jobs/:id</code> — детализированная запись
+   - <code>PATCH /api/v1/jobs/:id/status</code> — меняет статусы (<code>pending</code>, <code>running</code>, <code>completed</code>, <code>failed</code>, <code>cancelled</code>)</li>
+<li><strong>QML UI</strong>: <code>Surypus/qml/Main.qml</code> содержит новый раздел «Jobs», который отображает очередь задач, их статусы и ошибки, а также позволяет вручную обновлять список.</li>
+<li><strong>ETL-подсистема</strong>: JobServer регулярно запускает SQL-скрипты (<code>sql/procedures.sql</code>), выполняет Jasper/Pentaho/Helical отчёты и синхронизацию с PostgreSQL через триггеры (<code>schema_job_server.sql</code>). Интеграция с <code>core</code>-модулями делится через <code>job_data</code> и JSON-параметры, а <code>DB.JobQueue</code> позволяет продвинутому ETL-сценарию обрабатывать зависимости (<code>job_dependency</code>) и ошибки (через <code>error_message</code>).</li>
+<li><strong>REST и UI</strong>: появился endpoint <code>/api/v1/jobs/:id/dependencies</code>, а QML-приложение теперь умеет показывать зависимости и создавать их вручную, что упрощает планирование ETL-графов и отчётов (Jasper/Pentaho/Helical).</li>
+<li><strong>Тесты и CI</strong>: <code>test/Domain/JobSpec.hs</code> проверяет <code>validateJobRequest</code> и <code>jobStatusFromText</code>. GitHub Actions запускает <code>stack test</code>, обеспечивая контроль логики очереди.</li>
+</ol>
+<p>В следующих итерациях планируется расширить JobServer:</p>
+<ul>
+<li>ETL-графы (наследование от <code>job_dependency</code>, расчёт <code>wait_time</code>)</li>
+<li>Интеграция с Jasper/Pentaho через REST-генераторы (<code>reports/</code>)</li>
+<li>Webhook и WebSocket нотификации о смене статуса задач</li>
+<li>Сервис-перехватчики для автоматического запуска <code>DB.JobQueue.fetchPendingJob</code> из внешних наблюдателей.</li>
+</ul>
+<h3 id="snapshot-job-worker">Snapshot job и фоновый worker</h3>
+<p>Новый тип задачи <code>person_summary_snapshot</code> агрегирует данные из таблицы <code>person</code> (через <code>get_person_summary()</code>) и сохраняет их в <code>person_summary_snapshot</code>. Это позволяет Jasper/Pentaho/Helical строить исторические отчёты по контрагентам. Чтобы процесс регулярно выполнялся, добавлен standalone worker:</p>
+<ul>
+<li><code>Surypus.JobRunner.processPendingJobs</code> вызывает <code>DB.JobQueue.fetchPendingJob</code>, помечает задачу <code>JobRunning</code>, запускает <code>run_person_summary_snapshot</code> и фиксирует статус (<code>completed</code>/<code>failed</code>). Логи попадают в <code>service_events</code>, чтобы мониторить ETL/репорты.</li>
+<li><code>app/JobWorker.hs</code> и новый executable <code>surypus-job-worker</code> стартуют worker с интервалом <code>SURYPUS_JOB_INTERVAL</code> (по умолчанию 30 секунд). Скрипт <code>scripts/run_job_worker.sh</code> упрощает развёртывание в systemd/container.  </li>
+<li>API <code>POST /api/v1/persons/summary/snapshots</code> триггерит snapshot on-demand, а <code>GET /api/v1/persons/summary/snapshots</code> возвращает последние 20 срезов (<code>person_summary_snapshot</code>), что пригодно для QML/отчётов и Jasper/Pentaho/Helical.  </li>
+</ul>
+<h3 id="etl">Дальнейшие домены и ETL</h3>
+<p>Пока JobServer покрывает базовую обработку документов, следующая волна портирования должна:</p>
+<ol>
+<li><strong>HR &amp; Payroll</strong> — перенести <code>salary</code>/<code>payroll</code> документы через <code>core/api</code> → <code>Hasql</code> → <code>postgreSQL</code> (первичный план в <code>docs/engineering/hr-payroll-module.md</code>), написать ETL-джобы для начислений (в Jasper/Pentaho/Helical) и добавить property-based tests на расчёт НДФЛ/ФОТ.</li>
+<li><strong>Production &amp; Hardware</strong> — добавить <code>tech</code>/<code>work-order</code> потоки в <code>job_dependency</code>, обеспечить <code>ETL job</code> для MRP (с использованием <code>get_mrp_requirements()</code> в PostgreSQL) и перенести отчёты о производстве (<code>production_work_order</code>, <code>tech_story</code>).</li>
+<li><strong>Reports &amp; ETL pipeline</strong> — каждая задача <code>report_render</code> должна фиксировать <code>report_template</code>, <code>filters</code>, <code>generated_at</code> и результат (PDF/JRXML/CSV); JobServer должен запускать <code>jasperreports</code>, <code>pentaho-kettle</code> и <code>helical</code> CLI через <code>job_payload["report_engine"]</code>.</li>
+<li><strong>Job-side invariants</strong> — расширить <code>Domain.Job</code> с LiquidHaskell-инвариантами: <code>jrPriority ∈ [1,10]</code>, <code>jrCode</code>/<code>jrName</code>/<code>jrType</code> не пусты, <code>jrPayload</code> валидный JSON. Эти инварианты затем проверяются до вставки <code>job</code> в очередь, включая <code>job_dependency</code>.</li>
+</ol>
+<p>Следующие публикации будут включать:
+* план перевода Crystal Reports → Jasper/Pentaho/Helical;
+* документацию по <code>ETL job</code> dependencies и <code>DB.JobQueue</code> API;
+* отчёт о тестах (unit, property-based, API, CI).</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../hr-payroll-module/" class="btn btn-neutral float-left" title="hr-payroll-module.md"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../person-module/" class="btn btn-neutral float-right" title="person-module.md">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/surypus/surypus" class="fa fa-code-fork" style="color: #fcfcfc"> surypus/surypus</a>
+        </span>
+    
+    
+      <span><a href="../hr-payroll-module/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../person-module/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

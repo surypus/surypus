@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://surypus.github.io/surypus/DEPLOYMENT/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Развёртывание - Surypus ERP</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "\u0420\u0430\u0437\u0432\u0451\u0440\u0442\u044b\u0432\u0430\u043d\u0438\u0435";
+        var mkdocs_page_input_path = "DEPLOYMENT.md";
+        var mkdocs_page_url = "/surypus/DEPLOYMENT/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Surypus ERP
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Главная</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../ARCHITECTURE/">Архитектура</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../TYPES/">Система типов</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../API/">API</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../DATABASE/">Хранилище данных</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Развёртывание</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#1">1. Сборка проекта</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#stack">Локальная сборка (Stack)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cabal">Cabal</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#makefile">Makefile</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_1">Быстрая проверка</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-docker">2. Docker</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#dockerfile">Мультистейджинг билд (Dockerfile)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#docker-compose">Docker Compose</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_2">Запуск</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_3">Переменные окружения</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-cicd">3. CI/CD</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#github-actions-planned">GitHub Actions (planned)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ci-makefile">Локальный CI (через Makefile)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#quality-gates">Quality Gates</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4">4. Мониторинг</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#ekg">EKG (метрики приложения)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#health-checks">Health Checks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#prometheus-grafana">Prometheus + Grafana</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_4">Логирование</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_5">Алерты</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5-production-">5. Production-рекомендации</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#postgresql">PostgreSQL</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#haskell-runtime">Haskell Runtime</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#security">Security</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#6">6. Резервное копирование</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#7">7. Связанные документы</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../GUIDE/">Руководство</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Руководства</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/accounting/">Как работает бухгалтерия</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/inventory/">Как работает инвентарь</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/rbac/">Как работает RBAC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/jwt/">Как работает JWT-аутентификация</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/persistence/">Как работает персистентность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/event-store/">Как работает Event Store</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">ADR</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../adr/0001-haskell-primary-language/">ADR-001: Haskell как основной язык</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../adr/0002-mkdocs-site/">ADR-002: MkDocs для сайта документации</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../architecture/EVENT_SOURCING/">Архитектура событий</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Инженерные модули</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/api-conventions/">api-conventions.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/bill-module/">bill-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/document-module/">document-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/hr-payroll-module/">hr-payroll-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/job-server-etl/">job-server-etl.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/person-module/">person-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/production-module/">production-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/reports-portal/">reports-portal.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/schema-uniqueness/">schema-uniqueness.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/testing-guide/">testing-guide.md</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/EXAMPLES/">Примеры</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../REFINEMENT/">Рефиниции</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../SUMMARY/">Сводка</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Задачи</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tasks/Home/">Обзор</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tasks/Plans/">Планы</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tasks/Backlog/">Бэклог</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Surypus ERP</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Развёртывание</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/surypus/surypus/edit/master/docs/DEPLOYMENT.md">Edit on surypus/surypus</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="cicd">Развёртывание и CI/CD</h1>
+<blockquote>
+<p>Раздел описывает сборку проекта, Docker-инфраструктуру, CI/CD-пайплайн и мониторинг.</p>
+</blockquote>
+<hr />
+<h2 id="1">1. Сборка проекта</h2>
+<h3 id="stack">Локальная сборка (Stack)</h3>
+<div class="highlight"><pre><span></span><code>──<span class="w"> </span>Сборка
+stack<span class="w"> </span>build
+
+──<span class="w"> </span>Сборка<span class="w"> </span>с<span class="w"> </span>форсированной<span class="w"> </span>пересборкой
+stack<span class="w"> </span>build<span class="w"> </span>--force-dirty
+
+──<span class="w"> </span>Сборка<span class="w"> </span>в<span class="w"> </span>production<span class="w"> </span><span class="o">(</span>оптимизировано<span class="o">)</span>
+stack<span class="w"> </span>build<span class="w"> </span>--copy-bins
+</code></pre></div>
+<p><strong>prod-опции (stack.yaml):</strong></p>
+<div class="highlight"><pre><span></span><code><span class="nt">ghc-options</span><span class="p">:</span>
+<span class="w">  </span><span class="s">&quot;$locals&quot;</span><span class="p p-Indicator">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-O2 -funbox-strict-fields -fworker-wrapper</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-fexpose-all-unfoldings -fspecialise-aggressively</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-flate-specialise -fmax-simplifier-iterations=20</span>
+</code></pre></div>
+<h3 id="cabal">Cabal</h3>
+<div class="highlight"><pre><span></span><code>──<span class="w"> </span>Альтернативная<span class="w"> </span>сборка<span class="w"> </span>через<span class="w"> </span>cabal
+cabal<span class="w"> </span>build
+cabal<span class="w"> </span><span class="nb">test</span>
+cabal<span class="w"> </span>run<span class="w"> </span>surypus-server
+</code></pre></div>
+<h3 id="makefile">Makefile</h3>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>build<span class="w">      </span>──<span class="w"> </span>stack<span class="w"> </span>build
+make<span class="w"> </span><span class="nb">test</span><span class="w">       </span>──<span class="w"> </span>stack<span class="w"> </span><span class="nb">test</span>
+make<span class="w"> </span>run<span class="w">        </span>──<span class="w"> </span>stack<span class="w"> </span>run
+make<span class="w"> </span>clean<span class="w">      </span>──<span class="w"> </span>stack<span class="w"> </span>clean
+make<span class="w"> </span>migrate<span class="w">    </span>──<span class="w"> </span>apply<span class="w"> </span>DB<span class="w"> </span>migrations
+make<span class="w"> </span>docker<span class="w">     </span>──<span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>build
+</code></pre></div>
+<h3 id="_1">Быстрая проверка</h3>
+<div class="highlight"><pre><span></span><code>stack<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>stack<span class="w"> </span><span class="nb">test</span>
+──<span class="w"> </span>Ожидается:<span class="w"> </span><span class="m">76</span>+<span class="w"> </span>тестов,<span class="w"> </span>все<span class="w"> </span>green
+</code></pre></div>
+<hr />
+<h2 id="2-docker">2. Docker</h2>
+<h3 id="dockerfile">Мультистейджинг билд (Dockerfile)</h3>
+<div class="highlight"><pre><span></span><code>──<span class="w"> </span>Stage<span class="w"> </span><span class="m">1</span>:<span class="w"> </span>Builder<span class="w"> </span><span class="o">(</span>haskell:9.6<span class="o">)</span>
+──<span class="w">   </span>-<span class="w"> </span>Устанавливает<span class="w"> </span>libpq-dev,<span class="w"> </span>libssl-dev,<span class="w"> </span>libpcre2-dev
+──<span class="w">   </span>-<span class="w"> </span>stack<span class="w"> </span>build<span class="w"> </span>--copy-bins
+──
+──<span class="w"> </span>Stage<span class="w"> </span><span class="m">2</span>:<span class="w"> </span>Production<span class="w"> </span><span class="o">(</span>debian:bookworm-slim<span class="o">)</span>
+──<span class="w">   </span>-<span class="w"> </span>Копирует<span class="w"> </span>бинарник<span class="w"> </span>surypus-server
+──<span class="w">   </span>-<span class="w"> </span>Устанавливает<span class="w"> </span>libpq5,<span class="w"> </span>ca-certificates,<span class="w"> </span>dumb-init
+──<span class="w">   </span>-<span class="w"> </span>EXPOSE<span class="w"> </span><span class="m">443</span>
+──<span class="w">   </span>-<span class="w"> </span>HEALTHCHECK<span class="w"> </span>/api/v1/health
+──<span class="w">   </span>-<span class="w"> </span>ENTRYPOINT:<span class="w"> </span>dumb-init<span class="w"> </span>--<span class="w"> </span>surypus-server
+</code></pre></div>
+<h3 id="docker-compose">Docker Compose</h3>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">db</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres:16-alpine</span>
+<span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">pgdata</span><span class="p p-Indicator">:</span><span class="nv">/var/lib/postgresql/data</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">pg_isready -U surypus</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">redis</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis:7-alpine</span>
+<span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">redis-cli ping</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">api</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;8080:443&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">db</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">redis</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">DATABASE_URL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres://surypus:password@db:5432/surypus</span>
+<span class="w">      </span><span class="nt">REDIS_URL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis://redis:6379</span>
+<span class="w">      </span><span class="nt">JWT_SECRET</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;${JWT_SECRET}&quot;</span>
+<span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">curl -f http</span><span class="p p-Indicator">:</span><span class="nv">//localhost</span><span class="p p-Indicator">:</span><span class="nv">443/api/v1/health</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="nt">worker</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">surypus-worker</span>
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">db</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">redis</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
+</code></pre></div>
+<h3 id="_2">Запуск</h3>
+<div class="highlight"><pre><span></span><code>──<span class="w"> </span>Полный<span class="w"> </span>стек
+docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d
+
+──<span class="w"> </span>Только<span class="w"> </span>база
+docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>db
+
+──<span class="w"> </span>Пересборка<span class="w"> </span>API
+docker<span class="w"> </span>compose<span class="w"> </span>build<span class="w"> </span>api<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>api
+
+──<span class="w"> </span>Логи
+docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>api
+</code></pre></div>
+<h3 id="_3">Переменные окружения</h3>
+<table>
+<thead>
+<tr>
+<th>Переменная</th>
+<th>Описание</th>
+<th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DATABASE_URL</code></td>
+<td>PostgreSQL connection string</td>
+<td><code>postgres://user:pass@host:5432/surypus</code></td>
+</tr>
+<tr>
+<td><code>REDIS_URL</code></td>
+<td>Redis connection string</td>
+<td><code>redis://host:6379</code></td>
+</tr>
+<tr>
+<td><code>JWT_SECRET</code></td>
+<td>Secret key для JWT</td>
+<td><code>(openssl rand -hex 32)</code></td>
+</tr>
+<tr>
+<td><code>PORT</code></td>
+<td>Порт сервера</td>
+<td><code>443</code></td>
+</tr>
+<tr>
+<td><code>LOG_LEVEL</code></td>
+<td>Уровень логирования</td>
+<td><code>INFO</code></td>
+</tr>
+<tr>
+<td><code>CORS_ORIGIN</code></td>
+<td>Разрешённый CORS origin</td>
+<td><code>*</code></td>
+</tr>
+</tbody>
+</table>
+<p>Полный список: <code>ENV_VARS.md</code> (корень проекта).</p>
+<hr />
+<h2 id="3-cicd">3. CI/CD</h2>
+<h3 id="github-actions-planned">GitHub Actions (planned)</h3>
+<div class="highlight"><pre><span></span><code><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CI</span>
+
+<span class="nt">on</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">push</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">pull_request</span><span class="p p-Indicator">]</span>
+
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">build</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v4</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">haskell-actions/setup@v2</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">ghc-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;9.6.5&#39;</span>
+<span class="w">          </span><span class="nt">stack-version</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;latest&#39;</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">stack build --no-terminal</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Test</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">stack test --no-terminal</span>
+
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HLint</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hlint src/</span>
+
+<span class="w">  </span><span class="nt">docker</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">build</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v4</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Build Docker image</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker build -t surypus:latest .</span>
+</code></pre></div>
+<h3 id="ci-makefile">Локальный CI (через Makefile)</h3>
+<div class="highlight"><pre><span></span><code>──<span class="w"> </span>Полная<span class="w"> </span>проверка<span class="w"> </span>перед<span class="w"> </span>коммитом
+make<span class="w"> </span>ci:
+<span class="w">  </span>stack<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>stack<span class="w"> </span><span class="nb">test</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>hlint<span class="w"> </span>src/<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;✓ CI passed&quot;</span>
+</code></pre></div>
+<h3 id="quality-gates">Quality Gates</h3>
+<ol>
+<li><strong>Build</strong>: <code>stack build</code> — без ошибок, без warnings</li>
+<li><strong>Tests</strong>: <code>stack test</code> — 76+ тестов проходят</li>
+<li><strong>Lint</strong>: <code>hlint src/</code> — без ошибок</li>
+<li><strong>Type check</strong>: GHC —Wall — без предупреждений</li>
+<li><strong>Docker</strong>: <code>docker compose build</code> — успешная сборка</li>
+</ol>
+<hr />
+<h2 id="4">4. Мониторинг</h2>
+<h3 id="ekg">EKG (метрики приложения)</h3>
+<p>Эндпоинт: <code>GET /api/v1/metrics</code></p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;requests_total&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12345</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;requests_active&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;response_time_avg_ms&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">45</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;db_pool_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;db_connections_active&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;http_200&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12000</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;http_401&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;http_500&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>Категории метрик:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Метрика</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>requests_total</code></td>
+<td>Всего запросов</td>
+</tr>
+<tr>
+<td><code>requests_active</code></td>
+<td>Текущие активные запросы</td>
+</tr>
+<tr>
+<td><code>response_time</code></td>
+<td>Время ответа (avg/p50/p95/p99)</td>
+</tr>
+<tr>
+<td><code>db_pool_*</code></td>
+<td>Состояние пула соединений</td>
+</tr>
+<tr>
+<td><code>http_*</code></td>
+<td>Коды ответов</td>
+</tr>
+<tr>
+<td><code>memory_*</code></td>
+<td>Потребление памяти</td>
+</tr>
+<tr>
+<td><code>gc_*</code></td>
+<td>Сборка мусора GHC</td>
+</tr>
+</tbody>
+</table>
+<h3 id="health-checks">Health Checks</h3>
+<div class="highlight"><pre><span></span><code>──<span class="w"> </span>Базовая<span class="w"> </span>проверка
+curl<span class="w"> </span>https://host:443/api/v1/health
+<span class="o">{</span><span class="s2">&quot;status&quot;</span>:<span class="s2">&quot;ok&quot;</span>,<span class="s2">&quot;timestamp&quot;</span>:<span class="s2">&quot;2024-03-15T10:00:00Z&quot;</span><span class="o">}</span>
+
+──<span class="w"> </span>Проверка<span class="w"> </span>БД
+curl<span class="w"> </span>https://host:443/api/v1/health/db
+<span class="o">{</span><span class="s2">&quot;status&quot;</span>:<span class="s2">&quot;ok&quot;</span>,<span class="s2">&quot;db&quot;</span>:<span class="s2">&quot;connected&quot;</span>,<span class="s2">&quot;poolSize&quot;</span>:5,<span class="s2">&quot;active&quot;</span>:2<span class="o">}</span>
+</code></pre></div>
+<h3 id="prometheus-grafana">Prometheus + Grafana</h3>
+<div class="highlight"><pre><span></span><code><span class="l l-Scalar l-Scalar-Plain">── docker-compose.yml (prometheus)</span>
+<span class="l l-Scalar l-Scalar-Plain">scrape_configs</span><span class="p p-Indicator">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">job_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;surypus&#39;</span>
+<span class="w">    </span><span class="nt">static_configs</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">targets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&#39;api:443&#39;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">metrics_path</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;/api/v1/metrics&#39;</span>
+</code></pre></div>
+<p>Дашборды Grafana: <code>config/*.json</code></p>
+<h3 id="_4">Логирование</h3>
+<div class="highlight"><pre><span></span><code>──<span class="w"> </span>Формат<span class="w"> </span>логов
+<span class="o">[</span><span class="m">2024</span>-03-15<span class="w"> </span><span class="m">10</span>:00:00<span class="o">]</span><span class="w"> </span>INFO<span class="w">  </span><span class="o">[</span>correlation-id:<span class="w"> </span>abc-123<span class="o">]</span><span class="w"> </span>POST<span class="w"> </span>/api/v1/bills<span class="w"> </span><span class="m">201</span><span class="w"> </span>45ms
+<span class="o">[</span><span class="m">2024</span>-03-15<span class="w"> </span><span class="m">10</span>:00:01<span class="o">]</span><span class="w"> </span>ERROR<span class="w"> </span><span class="o">[</span>correlation-id:<span class="w"> </span>abc-124<span class="o">]</span><span class="w"> </span>GET<span class="w"> </span>/api/v1/goods<span class="w"> </span><span class="m">500</span><span class="w"> </span><span class="s2">&quot;DB connection failed&quot;</span>
+
+──<span class="w"> </span>Уровни:<span class="w"> </span>DEBUG,<span class="w"> </span>INFO,<span class="w"> </span>WARN,<span class="w"> </span>ERROR
+──<span class="w"> </span><span class="nv">LOG_LEVEL</span><span class="o">=</span>INFO<span class="w"> </span>по<span class="w"> </span>умолчанию
+</code></pre></div>
+<h3 id="_5">Алерты</h3>
+<table>
+<thead>
+<tr>
+<th>Условие</th>
+<th>Действие</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTP 5xx &gt; 1% за 5 мин</td>
+<td>Уведомление в Slack</td>
+</tr>
+<tr>
+<td>DB connection pool exhausted</td>
+<td>Автоскейлинг / алерт</td>
+</tr>
+<tr>
+<td>Health check failed 3x подряд</td>
+<td>Рестарт контейнера</td>
+</tr>
+<tr>
+<td>Время ответа &gt; 1s p95</td>
+<td>Оптимизация запроса</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-production-">5. Production-рекомендации</h2>
+<h3 id="postgresql">PostgreSQL</h3>
+<div class="highlight"><pre><span></span><code><span class="na">── postgresql.conf (рекомендации)</span>
+<span class="na">max_connections</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span>
+<span class="na">shared_buffers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2GB</span>
+<span class="na">work_mem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">64MB</span>
+<span class="na">effective_cache_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6GB</span>
+<span class="na">maintenance_work_mem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">512MB</span>
+<span class="na">random_page_cost</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.1</span>
+<span class="na">effective_io_concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">200</span>
+<span class="na">wal_level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">replica</span>
+<span class="na">max_wal_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">4GB</span>
+<span class="na">min_wal_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1GB</span>
+</code></pre></div>
+<h3 id="haskell-runtime">Haskell Runtime</h3>
+<div class="highlight"><pre><span></span><code>── GHC RTS опции
++RTS -N4 -A64M -H1G -M4G -RTS
+  -N4        : использовать 4 ядра
+  -A64M      : размер шага аллокатора
+  -H1G       : начальный размер хипа
+  -M4G       : максимум памяти
+</code></pre></div>
+<h3 id="security">Security</h3>
+<ul>
+<li>JWT secret: <code>openssl rand -hex 32</code></li>
+<li>HTTPS через reverse proxy (nginx/Caddy)</li>
+<li>DB password: минимум 32 символа</li>
+<li>Регулярные backup-ы БД</li>
+<li>Rate limiting: 100 req/s на IP</li>
+</ul>
+<hr />
+<h2 id="6">6. Резервное копирование</h2>
+<div class="highlight"><pre><span></span><code>──<span class="w"> </span>Полный<span class="w"> </span>бекап<span class="w"> </span>БД
+pg_dump<span class="w"> </span>-h<span class="w"> </span>localhost<span class="w"> </span>-U<span class="w"> </span>surypus<span class="w"> </span>--format<span class="o">=</span>custom<span class="w"> </span>-f<span class="w"> </span>backup.dump<span class="w"> </span>surypus
+
+──<span class="w"> </span>Восстановление
+pg_restore<span class="w"> </span>-h<span class="w"> </span>localhost<span class="w"> </span>-U<span class="w"> </span>surypus<span class="w"> </span>--dbname<span class="o">=</span>surypus<span class="w"> </span>backup.dump
+
+──<span class="w"> </span>Автоматизация<span class="w"> </span><span class="o">(</span>cron<span class="o">)</span>
+<span class="m">0</span><span class="w"> </span><span class="m">2</span><span class="w"> </span>*<span class="w"> </span>*<span class="w"> </span>*<span class="w"> </span>pg_dump<span class="w"> </span>-h<span class="w"> </span>localhost<span class="w"> </span>-U<span class="w"> </span>surypus<span class="w"> </span>--format<span class="o">=</span>custom<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-f<span class="w"> </span>/backups/surypus_<span class="k">$(</span>date<span class="w"> </span>+<span class="se">\%</span>Y<span class="se">\%</span>m<span class="se">\%</span>d<span class="k">)</span>.dump<span class="w"> </span>surypus
+</code></pre></div>
+<hr />
+<h2 id="7">7. Связанные документы</h2>
+<ul>
+<li><code>OPERATIONS.md</code> (корень) — Эксплуатация (базовая)</li>
+<li><code>DEVELOPMENT.md</code> (корень) — Настройка окружения разработчика</li>
+<li><code>ENV_VARS.md</code> (корень) — Все переменные окружения</li>
+<li><code>CONTRIBUTING.md</code> (корень) — Как контрибьютить</li>
+<li><code>Dockerfile</code> (корень) — Docker-сборка</li>
+<li><code>docker-compose.yml</code> (корень) — Локальный запуск</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../DATABASE/" class="btn btn-neutral float-left" title="Хранилище данных"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../GUIDE/" class="btn btn-neutral float-right" title="Руководство">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/surypus/surypus" class="fa fa-code-fork" style="color: #fcfcfc"> surypus/surypus</a>
+        </span>
+    
+    
+      <span><a href="../DATABASE/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../GUIDE/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

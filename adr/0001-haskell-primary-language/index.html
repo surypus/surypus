@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://surypus.github.io/surypus/adr/0001-haskell-primary-language/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>ADR-001: Haskell как основной язык - Surypus ERP</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "ADR-001: Haskell \u043a\u0430\u043a \u043e\u0441\u043d\u043e\u0432\u043d\u043e\u0439 \u044f\u0437\u044b\u043a";
+        var mkdocs_page_input_path = "adr/0001-haskell-primary-language.md";
+        var mkdocs_page_url = "/surypus/adr/0001-haskell-primary-language/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Surypus ERP
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Главная</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../ARCHITECTURE/">Архитектура</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../TYPES/">Система типов</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../API/">API</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DATABASE/">Хранилище данных</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DEPLOYMENT/">Развёртывание</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../GUIDE/">Руководство</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Руководства</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/accounting/">Как работает бухгалтерия</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/inventory/">Как работает инвентарь</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/rbac/">Как работает RBAC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/jwt/">Как работает JWT-аутентификация</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/persistence/">Как работает персистентность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/event-store/">Как работает Event Store</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">ADR</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">ADR-001: Haskell как основной язык</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#decision">Decision</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#rationale">Rationale</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#consequences">Consequences</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-002-postgresql-for-persistence">ADR-002: PostgreSQL for Persistence</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#decision_1">Decision</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#rationale_1">Rationale</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#consequences_1">Consequences</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-003-event-sourcing-for-audit">ADR-003: Event Sourcing for Audit</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#decision_2">Decision</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#rationale_2">Rationale</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#consequences_2">Consequences</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-004-documentation-factory-pipeline">ADR-004: Documentation Factory Pipeline</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#decision_3">Decision</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#rationale_3">Rationale</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#consequences_3">Consequences</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#principles">Principles</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../0002-mkdocs-site/">ADR-002: MkDocs для сайта документации</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../architecture/EVENT_SOURCING/">Архитектура событий</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Инженерные модули</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/api-conventions/">api-conventions.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/bill-module/">bill-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/document-module/">document-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/hr-payroll-module/">hr-payroll-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/job-server-etl/">job-server-etl.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/person-module/">person-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/production-module/">production-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/reports-portal/">reports-portal.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/schema-uniqueness/">schema-uniqueness.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/testing-guide/">testing-guide.md</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/EXAMPLES/">Примеры</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../REFINEMENT/">Рефиниции</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../SUMMARY/">Сводка</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Задачи</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Home/">Обзор</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Plans/">Планы</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Backlog/">Бэклог</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Surypus ERP</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">ADR</li>
+      <li class="breadcrumb-item active">ADR-001: Haskell как основной язык</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/surypus/surypus/edit/master/docs/adr/0001-haskell-primary-language.md">Edit on surypus/surypus</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="adr-001-haskell-as-the-primary-language">ADR-001: Haskell as the Primary Language</h1>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 2025-01-15</p>
+<h2 id="decision">Decision</h2>
+<p>We chose Haskell 2010 with GHC 9.6.5 as the primary implementation language.</p>
+<h2 id="rationale">Rationale</h2>
+<ul>
+<li>Strong static type system prevents entire classes of bugs (null pointer, type confusion)</li>
+<li>Effect system (IO, STM, ReaderT) makes side effects explicit</li>
+<li>LiquidHaskell enables formal verification of critical invariants</li>
+<li>Garbage collection simplifies concurrent programming</li>
+<li>Static binary compilation simplifies deployment</li>
+</ul>
+<h2 id="consequences">Consequences</h2>
+<ul>
+<li>All new development is in Haskell</li>
+<li>Existing C++ code is being ported incrementally</li>
+<li>Team must have Haskell proficiency (Agda, Coq, Idris also allowed)</li>
+<li>Build system uses Stack with resolver lts-22.21</li>
+</ul>
+<hr />
+<h2 id="adr-002-postgresql-for-persistence">ADR-002: PostgreSQL for Persistence</h2>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 2025-02-01</p>
+<h2 id="decision_1">Decision</h2>
+<p>Use PostgreSQL as the primary database with stored procedures for heavy computations.</p>
+<h2 id="rationale_1">Rationale</h2>
+<ul>
+<li>ACID compliance for financial data</li>
+<li>Stored procedures for tax and accounting computations</li>
+<li>Mature Haskell ecosystem (persistent, esqueleto, postgresql-simple)</li>
+<li>JSONB support for flexible document storage</li>
+</ul>
+<h2 id="consequences_1">Consequences</h2>
+<ul>
+<li>Heavy computations live in PostgreSQL (calc_vat, calc_bill_totals)</li>
+<li>Haskell validates input, SQL computes results</li>
+<li>Migrations use versioned SQL files (V000–V1005)</li>
+<li>367 migration files in the current chain</li>
+</ul>
+<hr />
+<h2 id="adr-003-event-sourcing-for-audit">ADR-003: Event Sourcing for Audit</h2>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 2025-03-01</p>
+<h2 id="decision_2">Decision</h2>
+<p>Adopt Event Store pattern for auditability and event-driven architecture.</p>
+<h2 id="rationale_2">Rationale</h2>
+<ul>
+<li>Immutable audit trail of all business events</li>
+<li>Enables CQRS for read/write separation</li>
+<li>Supports event-driven notifications</li>
+<li>Snapshots prevent full stream replay</li>
+</ul>
+<h2 id="consequences_2">Consequences</h2>
+<ul>
+<li>Events are immutable and append-only</li>
+<li>Event bus publishes to subscribers</li>
+<li>Snapshots taken after N events</li>
+<li>Event store is the source of truth for business state changes</li>
+</ul>
+<hr />
+<h2 id="adr-004-documentation-factory-pipeline">ADR-004: Documentation Factory Pipeline</h2>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 2026-08-31</p>
+<h2 id="decision_3">Decision</h2>
+<p>Build an automated documentation pipeline: Cabal + Haddock + doctest + Hoogle + Mermaid + GitHub Actions + AI-agent.</p>
+<h2 id="rationale_3">Rationale</h2>
+<ul>
+<li>Surypus has hundreds of exposed-modules requiring automated API documentation</li>
+<li>Haddock generates API reference from annotated Haskell code</li>
+<li>doctest makes documentation examples executable</li>
+<li>Hoogle provides type-level search</li>
+<li>Mermaid generates architecture and module dependency diagrams</li>
+<li>AI assists documentation generation but is never the source of truth</li>
+</ul>
+<h2 id="consequences_3">Consequences</h2>
+<ul>
+<li><code>docs/generated/</code> is auto-generated only</li>
+<li><code>docs/architecture/</code>, <code>docs/guides/</code>, <code>docs/adr/</code> are human/AI-maintained</li>
+<li>CI validates documentation on every PR</li>
+<li>GitHub Pages publishes the documentation site</li>
+<li>ReadTheDocs provides the canonical documentation experience</li>
+</ul>
+<h2 id="principles">Principles</h2>
+<blockquote>
+<p><strong>AI не является источником истины.</strong>
+Источником истины являются GHC, Cabal, Haddock, исходный код и исполняемые тесты.</p>
+</blockquote>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../guides/event-store/" class="btn btn-neutral float-left" title="Как работает Event Store"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../0002-mkdocs-site/" class="btn btn-neutral float-right" title="ADR-002: MkDocs для сайта документации">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/surypus/surypus" class="fa fa-code-fork" style="color: #fcfcfc"> surypus/surypus</a>
+        </span>
+    
+    
+      <span><a href="../../guides/event-store/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../0002-mkdocs-site/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://surypus.github.io/surypus/engineering/bill-module/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>bill-module.md - Surypus ERP</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "bill-module.md";
+        var mkdocs_page_input_path = "engineering/bill-module.md";
+        var mkdocs_page_url = "/surypus/engineering/bill-module/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Surypus ERP
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Главная</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../ARCHITECTURE/">Архитектура</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../TYPES/">Система типов</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../API/">API</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DATABASE/">Хранилище данных</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DEPLOYMENT/">Развёртывание</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../GUIDE/">Руководство</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Руководства</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/accounting/">Как работает бухгалтерия</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/inventory/">Как работает инвентарь</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/rbac/">Как работает RBAC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/jwt/">Как работает JWT-аутентификация</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/persistence/">Как работает персистентность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/event-store/">Как работает Event Store</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">ADR</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0001-haskell-primary-language/">ADR-001: Haskell как основной язык</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0002-mkdocs-site/">ADR-002: MkDocs для сайта документации</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../architecture/EVENT_SOURCING/">Архитектура событий</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Инженерные модули</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../api-conventions/">api-conventions.md</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">bill-module.md</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#1">1. Анализ исходной реализации</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#11">1.1 Потоки данных и управления</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#12">1.2 Ключевые инварианты (формальные предпосылки)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#13-surypus">1.3 Как использовать в Surypus</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-surypus-current-state">2. Surypus current state</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-unique-schemamodule-plan">3. Unique schema/module plan</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4-data-flows-to-encode">4. Data flows to encode</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5-liquidhaskell-invariants-to-add">5. Liquidhaskell invariants to add</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#6-stored-procedures-hasql-plan">6. Stored procedures &amp; Hasql plan</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#7-api-jwt-middleware">7. API + JWT + middleware</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#8-frontendreportscitests">8. Frontend/Reports/CI/tests</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#9-next-immediate-steps">9. Next immediate steps</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../document-module/">document-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../hr-payroll-module/">hr-payroll-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../job-server-etl/">job-server-etl.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../person-module/">person-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../production-module/">production-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reports-portal/">reports-portal.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../schema-uniqueness/">schema-uniqueness.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../testing-guide/">testing-guide.md</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/EXAMPLES/">Примеры</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../REFINEMENT/">Рефиниции</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../SUMMARY/">Сводка</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Задачи</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Home/">Обзор</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Plans/">Планы</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Backlog/">Бэклог</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Surypus ERP</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Инженерные модули</li>
+      <li class="breadcrumb-item active">bill-module.md</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/surypus/surypus/edit/master/docs/engineering/bill-module.md">Edit on surypus/surypus</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="module-01-document-bill-core">Module 01 — Document / Bill Core</h1>
+<p><em>Chosen as the first real porting target because <code>Src/PPLib/BILL.CPP</code> is the central actor in document management, and Surypus already has a partial Bill/Invoice domain (API, DTOs, schema, invariants) that can be formalized and extended.</em></p>
+<h2 id="1">1. Анализ исходной реализации</h2>
+<ul>
+<li><code>BillCore</code> encapsulates searches (<code>SearchByID</code>), memo storage (<code>PutItemMemo</code>/<code>GetItemMemo</code>), amount tables (<code>BillAmountTbl</code>) and EDI flags (<code>BillTbl::Rec</code>).</li>
+<li>Documents coordinate: EDI/Flags → amount lookups → posting/stock movements → status updates (posted, archived, canceled).</li>
+<li>File references such as <code>CheckAmtTypeRef</code>, <code>GetAmountList</code>, <code>CalcBillLineAmount</code> define invariants that Surypus must encode with LiquidHaskell.</li>
+<li>Документ <code>bill.cpp</code> также содержит методы <code>BillCore::GetAmount</code>, <code>GetAmountList</code>, <code>GetQttyEpsilon</code>, <code>SetRecadvStatus</code>/<code>SetRecadvConfStatus</code> — эти методы задают инварианты остатков, документов и статусов, которые нужно отразить в LiquidHaskell.</li>
+<li>При публикации документа <code>BillCore::Post</code> (далее в файле) вызывает <code>CalcBillLineAmount</code>, <code>GetAmountList</code>, <code>CheckAmtTypeRef</code>, <code>GetQttyEpsilon</code> и затем направляет накопленные суммы в <code>AccTurn</code>/<code>Stock</code> — Surypus должен сохранить эту последовательность через Hasql + SQL-процедуры.</li>
+</ul>
+<h2 id="11">1.1 Потоки данных и управления</h2>
+<ol>
+<li>Пользователь создаёт или обновляет <code>BillTbl::Rec</code>, заполняя <code>Flags2</code> (EDI, статус) и строки (<code>BillLineTbl</code>). <code>BillCore::BillCore</code>/<code>BillCore::UpdateStatus</code> проверяют и модифицируют флаги перед сохранением.</li>
+<li><code>BillCore::GetAmountList</code> и <code>AmtEntry</code> строят список сумм по типам (<code>AmtTypeID</code>), который затем используется <code>BillCore::CheckAmtTypeRef</code>/<code>BillCore::SelectAmountType</code> при постинге: суммы должны совпадать с сформированными проводками.</li>
+<li>При постинге <code>BillCore::Post</code>:
+   - вычисляет <code>lineAmount</code> через <code>CalcBillLineAmount</code> (чистая логика: qty*price – discount + tax),
+   - вызывает <code>MakeOrder</code>, <code>AccTurn</code>, <code>Stock</code>/<code>Lot</code> для отражения движения товаров и бухгалтерии,
+   - обновляет <code>BillTbl::Flags2</code> (статусы: <code>BILLF2_POSTED</code>, <code>BILLF2_EDI_*</code>).</li>
+<li><code>BillCore::SetRecadvStatus</code>, <code>SetRecadvConfStatus</code> устанавливают флаги EDI-статусов (принят/отклонён/промежуточный). Surypus должен иметь типы <code>BillEdiStatus</code>/<code>BillEdiConfStatus</code> с теми же значениями и функции, поддерживающие <code>Flags2</code> в <code>BillLine</code>.</li>
+<li><code>BillCore::GetQttyEpsilon</code> возвращает значение точности для проверок остатков; Surypus должен хранить это значение в конфиге и использовать в LiquidHaskell-выражениях (например, <code>qtty_eps</code> при сопоставлении остатков лотов).</li>
+</ol>
+<h2 id="12">1.2 Ключевые инварианты (формальные предпосылки)</h2>
+<ul>
+<li>Вся сумма строк должна равняться счету: <code>Σ calcBillLineAmount line == billAmount</code>, <code>Σ calcLineTaxExpected line == billVat</code>, <code>billAmount ≥ 0</code>, <code>billVat ≥ 0</code>, <code>billDiscount ≥ 0</code>.</li>
+<li><code>BillLine</code>: <code>quantity ≥ 0</code>, <code>price ≥ 0</code>, <code>discount ≥ 0</code>, <code>tax ≥ 0</code>, <code>amount == clampNonNeg (quantity×price - discount + tax)</code>. Эта логика повторяется в <code>CalcBillLineAmount</code> и <code>BillLineTbl</code>.</li>
+<li>Для постинга: <code>Σ debit = Σ credit</code>, <code>Σ lot.qty</code> неотрицательны, <code>lot.qty_out</code> ≤ <code>lot.qty</code>, <code>lot.posted</code> устанавливается только после <code>Accounting</code>/<code>Stock</code>.</li>
+<li>EDI-флаги <code>Flags2</code> изменяются только через <code>SetRecadvStatus/SetRecadvConfStatus</code> с фиксированными масками <code>BILLF2_EDI_*</code>; в Surypus нужно отражать эти флаги в типе <code>BillEdiFlags</code> и через функции, подобные <code>documentRegisterTypeHasFlag</code>.</li>
+<li><code>GetAmountList</code> и <code>AmtType</code> гарантируют, что каждая сумма привязана к <code>curID</code> и <code>amtTypeID</code>. Схема <code>bill_amount</code> должна иметь уникальный <code>(bill_id, amt_type_id, cur_id)</code> и Linked <code>core.amount_type</code> — стоит ввести это в SQL и втерминальном Hasql-модуле.</li>
+<li>Вставка строки/постинг должна быть атомарной: Surypus должен использовать транзакции Hasql и хранить контрольные суммы (например, хеш <code>sum(amount)</code>), чтобы LiquidHaskell можно было проверить свойства перед коммитом.</li>
+</ul>
+<h2 id="13-surypus">1.3 Как использовать в Surypus</h2>
+<ul>
+<li><code>Core.Document.Types</code> уже определяет <code>DocumentRegister</code>, <code>DocumentOpCounter</code> и функции проверок; нужно создать <code>Core.Bill.Flags</code>, <code>Core.Bill.Edi</code> с LiquidHaskell-предикатами <code>isBillPosted</code>, <code>billVatValid</code>.</li>
+<li><code>DB.Bill</code> должен содержать Hasql-запросы, повторяющие логику <code>BillCore</code> (insert/update/status change) и использовать новые схемы <code>bill_amount</code>, <code>bill_line</code>, <code>bill_flags</code> с проверками уникальности (ссылки на <code>schema_Core_Document_*</code>).</li>
+<li>Расширить <code>Domain.Bill</code> на <code>BillEdiStatus</code>, <code>BillPostStatus</code>, <code>BillLineStatus</code> и <code>BillFlags</code> с проверками, основанными на <code>BillCore</code>.</li>
+<li>Написать property-based тесты (QuickCheck) на <code>calcBillTotal</code> и <code>calcLineTaxExpected</code>, рассматривая <code>GetQttyEpsilon</code>, <code>Clamp</code> — сопоставить с SQL-агрегациями (<code>calc_bill_totals</code> в <code>procedures.sql</code>).</li>
+</ul>
+<h2 id="2-surypus-current-state">2. Surypus current state</h2>
+<ul>
+<li>Existing REST API covers <code>/api/v1/bills</code> with CRUD, but posting is a stub and JWT/authn is only placeholder.</li>
+<li><code>Domain.Bill</code> already declares refinement types (<code>NonNegDouble</code>) and <code>calcBillTotal</code>, yet the invariants from BillCore (EDI flag consistency, every amount record, balanced debit/credit) are not enforced end-to-end.</li>
+<li>PostgreSQL schema has <code>bill</code>, <code>bill_line</code>, <code>stock</code>, and procedures in <code>sql/procedures.sql</code>, but they need to mirror BillCore flows (amount tables, statuses, stock ALE). <code>schema_bill.sql</code> exists, but there is no dedicated schema per <code>Core.Document</code> vs <code>Core.Accounting</code> causing name collisions (e.g., <code>acc_sheet</code>).</li>
+</ul>
+<h2 id="3-unique-schemamodule-plan">3. Unique schema/module plan</h2>
+<ul>
+<li><strong>Schema isolation.</strong> Each object (AccSheet, Register, OpCounter, RegisterType, etc.) now has a dedicated SQL schema file and table (<code>document_register</code>, <code>document_register_type</code>, <code>ppobj_register</code>, <code>document_op_counter</code>, <code>common_op_counter</code>, <code>acc_sheet_accounting</code>, <code>acc_sheet_finance</code>, etc.), ensuring the Finance/Accounting kernels cannot collide with the Document/Legal registries. Initialization scripts were re-ordered so that type tables are created before they are referenced by dependent views/triggers.</li>
+<li><strong>LiquidHaskell foundation.</strong> <code>Core.Document.Types</code> declares <code>DocumentRegister</code>, <code>DocumentRegisterType</code>, <code>DocumentOpCounter</code> with refinements (non-empty numbers, bounded flags, prefix length constraints) and helper validators (<code>validateDocumentRegister</code>, <code>validateDocumentOpCounter</code>) that the Domain layer can reuse when ingesting API payloads.</li>
+<li><strong>Repository boundaries.</strong> Unique Hasql modules will eventually wrap the new tables (e.g., <code>DB.Document.Register</code>, <code>DB.Document.Counter</code>) so that the document-side logic is isolated from the shared <code>bill</code>, <code>stock</code>, and <code>accounting</code> infrastructure.</li>
+</ul>
+<h2 id="4-data-flows-to-encode">4. Data flows to encode</h2>
+<ol>
+<li>API request → Domain <code>Bill</code> → <code>calcBillLineAmount</code> / <code>validateBill</code> (LiquidHaskell invariants: amounts ≥ 0, totals match, statuses valid).\</li>
+<li>Domain → Hasql <code>DB.Bill</code> (insert/update) → stored procedures <code>calc_bill_totals</code>, <code>post_bill</code>, <code>apply_bill_movements</code>.\</li>
+<li>On bill posting: enforce <code>Σ debit = Σ credit</code>, update <code>stock</code>/<code>lot</code> (refer to <code>BillCore::GetAmountList</code>, <code>BillCore::CheckAmtTypeRef</code>).\</li>
+<li>Mirror EDI states via <code>Flags2</code> in SQL (fields <code>edi_status</code>, <code>edi_conf_status</code>), with helpers to set status using pure functions that match BillCore flags.</li>
+</ol>
+<h2 id="5-liquidhaskell-invariants-to-add">5. Liquidhaskell invariants to add</h2>
+<ul>
+<li><code>BillLine</code> type refinements should include <code>taxRate</code> boundaries, <code>qtty &gt;= 0</code>, <code>price &gt;= 0</code>, <code>amount == clampNonNeg qtty*price - discount + tax</code>, and <code>billStatus</code> must be within known operation kinds.</li>
+<li><code>Bill</code> body invariants: <code>billAmount &gt;= 0</code>, <code>billVat &gt;= 0</code>, <code>billDiscount &gt;= 0</code>, <code>billLines</code> non-empty for posted documents, <code>billLines</code> total equals <code>billAmount</code>, <code>Σ lines tax = billVat</code>, <code>flags</code> correspond to statuses (e.g., posted/canceled). LiquidHaskell predicates should reference new <code>Core.Document.Types</code> for statuses.</li>
+<li>Define <code>{-@ type PositiveAmt = {v:Double | v &gt;= 0 &amp;&amp; v &lt;= 1e12} @-}</code> for amounts stored in DB to control numeric ranges.</li>
+</ul>
+<h2 id="6-stored-procedures-hasql-plan">6. Stored procedures &amp; Hasql plan</h2>
+<ul>
+<li>Extend <code>sql/procedures.sql</code> with: <code>create_bill_line</code>, <code>apply_bill_posting</code> (debits/credits), <code>set_bill_edi_status</code>, <code>calc_bill_totals</code>, <code>update_bill_status</code>. Keep each procedure idempotent and express invariants via assertions.</li>
+<li>Add Hasql statements to <code>DB.Bill</code> for: <code>insertBillLine</code>, <code>postBill</code>, <code>setEdiStatus</code>, <code>fetchBillTotals</code>, <code>syncStock</code>. Ensure statements refer to schema names defined above to avoid collisions.</li>
+</ul>
+<h2 id="7-api-jwt-middleware">7. API + JWT + middleware</h2>
+<ul>
+<li>Replace stub <code>/auth/login</code> token with real JWT signing using <code>jose</code>/<code>jwt</code> (secret stored in env). Return roles/policy.\</li>
+<li>Introduce middleware for logging, panic handling and authorization check (e.g., <code>requireRole</code>).\</li>
+<li>Expand <code>/api/v1/bills</code> routes with <code>POST /post</code> (idempotent), <code>PATCH /edi-status</code>, <code>PUT /lines</code>, verifying invariants before database.\</li>
+<li>Connect Document API to new <code>Core.Document</code> modules: use typed statuses and <code>OperationKind</code> type families for parametric operations.</li>
+</ul>
+<h2 id="8-frontendreportscitests">8. Frontend/Reports/CI/tests</h2>
+<ul>
+<li>QML frontend: new section for Documents, binding to <code>/api/v1/bills</code>. Provide forms for posting and EDI statuses with <code>BillLine</code> tables.\</li>
+<li>Reports: port Crystal/sales report to Jasper template <code>reports/bills_general.jrxml</code> and call via <code>Reports.generate</code>.\</li>
+<li>CI: add GitHub Actions to <code>Surypus/.github/workflows</code> (build/test/lint). Unit tests for <code>Domain.Bill</code> and integration tests hitting <code>/api/v1/bills</code>.\</li>
+<li>Add property-based QuickCheck verifying <code>calcBillTotal</code> equals DB aggregation when lines inserted.</li>
+</ul>
+<h2 id="9-next-immediate-steps">9. Next immediate steps</h2>
+<ol>
+<li>Formalize <code>Core.Document.Types</code>/<code>Core.Document.Register</code> to reflect C++ invariants, create LiquidHaskell refinements. </li>
+<li>Expand <code>DB.Bill</code> with new statements, ensuring unique schema file for each register. </li>
+<li>Implement real JWT auth + middleware and extend API routes for posting/EDI handling. </li>
+<li>Keep iterating on schema/per procedure to encode the original logic (HR/Payroll, Production, Hardware will follow after Document core is stable).</li>
+</ol>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../api-conventions/" class="btn btn-neutral float-left" title="api-conventions.md"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../document-module/" class="btn btn-neutral float-right" title="document-module.md">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/surypus/surypus" class="fa fa-code-fork" style="color: #fcfcfc"> surypus/surypus</a>
+        </span>
+    
+    
+      <span><a href="../api-conventions/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../document-module/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

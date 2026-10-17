@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://surypus.github.io/surypus/adr/0002-mkdocs-site/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>ADR-002: MkDocs для сайта документации - Surypus ERP</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "ADR-002: MkDocs \u0434\u043b\u044f \u0441\u0430\u0439\u0442\u0430 \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0430\u0446\u0438\u0438";
+        var mkdocs_page_input_path = "adr/0002-mkdocs-site.md";
+        var mkdocs_page_url = "/surypus/adr/0002-mkdocs-site/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Surypus ERP
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Главная</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../ARCHITECTURE/">Архитектура</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../TYPES/">Система типов</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../API/">API</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DATABASE/">Хранилище данных</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DEPLOYMENT/">Развёртывание</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../GUIDE/">Руководство</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Руководства</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/accounting/">Как работает бухгалтерия</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/inventory/">Как работает инвентарь</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/rbac/">Как работает RBAC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/jwt/">Как работает JWT-аутентификация</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/persistence/">Как работает персистентность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/event-store/">Как работает Event Store</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">ADR</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../0001-haskell-primary-language/">ADR-001: Haskell как основной язык</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">ADR-002: MkDocs для сайта документации</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#decision">Decision</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#rationale">Rationale</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#consequences">Consequences</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-006-documentation-ai-agent-contract">ADR-006: Documentation AI-agent Contract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#decision_1">Decision</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#rationale_1">Rationale</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#consequences_1">Consequences</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#principles">Principles</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../architecture/EVENT_SOURCING/">Архитектура событий</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Инженерные модули</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/api-conventions/">api-conventions.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/bill-module/">bill-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/document-module/">document-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/hr-payroll-module/">hr-payroll-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/job-server-etl/">job-server-etl.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/person-module/">person-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/production-module/">production-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/reports-portal/">reports-portal.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/schema-uniqueness/">schema-uniqueness.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/testing-guide/">testing-guide.md</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/EXAMPLES/">Примеры</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../REFINEMENT/">Рефиниции</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../SUMMARY/">Сводка</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Задачи</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Home/">Обзор</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Plans/">Планы</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Backlog/">Бэклог</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Surypus ERP</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">ADR</li>
+      <li class="breadcrumb-item active">ADR-002: MkDocs для сайта документации</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/surypus/surypus/edit/master/docs/adr/0002-mkdocs-site.md">Edit on surypus/surypus</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="adr-005-mkdocs-for-documentation-site">ADR-005: MkDocs for Documentation Site</h1>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 2026-08-31</p>
+<h2 id="decision">Decision</h2>
+<p>Use MkDocs with Material theme for the documentation website.</p>
+<h2 id="rationale">Rationale</h2>
+<ul>
+<li>Markdown-based documentation (consistent with project style)</li>
+<li>Material for MkDocs provides excellent theme and search</li>
+<li>ReadTheDocs native support for MkDocs</li>
+<li>Easy to extend with plugins (mkdocstrings, pymdown-extensions)</li>
+</ul>
+<h2 id="consequences">Consequences</h2>
+<ul>
+<li><code>mkdocs.yml</code> at repository root</li>
+<li><code>docs/mkdocs.yml</code> for ReadTheDocs</li>
+<li>Site built with <code>mkdocs build --strict</code></li>
+<li>Published to GitHub Pages and ReadTheDocs</li>
+<li>Formats: HTML, PDF, EPUB, HTMLZip</li>
+</ul>
+<hr />
+<h2 id="adr-006-documentation-ai-agent-contract">ADR-006: Documentation AI-agent Contract</h2>
+<p><strong>Status:</strong> Accepted
+<strong>Date:</strong> 2026-08-31</p>
+<h2 id="decision_1">Decision</h2>
+<p>Define a strict contract for AI documentation agents in <code>docs/ai/DOCUMENTATION_RULES.md</code>.</p>
+<h2 id="rationale_1">Rationale</h2>
+<ul>
+<li>AI must not be the source of truth for API semantics</li>
+<li>AI-generated prose must be verified against Haddock and doctest</li>
+<li>Every public API change requires documentation review</li>
+</ul>
+<h2 id="consequences_1">Consequences</h2>
+<ul>
+<li><code>docs/ai/DOCUMENTATION_RULES.md</code> defines source of truth, never/always rules, documentation levels L0-L5, PR rules</li>
+<li><code>AGENTS.md</code> includes Documentation Protocol section</li>
+<li><code>docs/ai/COVERAGE.md</code> tracks documentation coverage metrics</li>
+<li><code>docs/ai/CHANGELOG.md</code> tracks documentation infrastructure changes</li>
+</ul>
+<h2 id="principles">Principles</h2>
+<blockquote>
+<p><strong>AI не является источником истины.</strong>
+AI interprets facts from GHC/Cabal/Haddock/tests; AI is NOT the source of truth.</p>
+</blockquote>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../0001-haskell-primary-language/" class="btn btn-neutral float-left" title="ADR-001: Haskell как основной язык"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../architecture/EVENT_SOURCING/" class="btn btn-neutral float-right" title="Архитектура событий">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/surypus/surypus" class="fa fa-code-fork" style="color: #fcfcfc"> surypus/surypus</a>
+        </span>
+    
+    
+      <span><a href="../0001-haskell-primary-language/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../../architecture/EVENT_SOURCING/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

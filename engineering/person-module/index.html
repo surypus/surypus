@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://surypus.github.io/surypus/engineering/person-module/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>person-module.md - Surypus ERP</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "person-module.md";
+        var mkdocs_page_input_path = "engineering/person-module.md";
+        var mkdocs_page_url = "/surypus/engineering/person-module/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Surypus ERP
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Главная</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../ARCHITECTURE/">Архитектура</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../TYPES/">Система типов</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../API/">API</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DATABASE/">Хранилище данных</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DEPLOYMENT/">Развёртывание</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../GUIDE/">Руководство</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Руководства</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/accounting/">Как работает бухгалтерия</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/inventory/">Как работает инвентарь</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/rbac/">Как работает RBAC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/jwt/">Как работает JWT-аутентификация</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/persistence/">Как работает персистентность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/event-store/">Как работает Event Store</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">ADR</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0001-haskell-primary-language/">ADR-001: Haskell как основной язык</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0002-mkdocs-site/">ADR-002: MkDocs для сайта документации</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../architecture/EVENT_SOURCING/">Архитектура событий</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Инженерные модули</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../api-conventions/">api-conventions.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../bill-module/">bill-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../document-module/">document-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../hr-payroll-module/">hr-payroll-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../job-server-etl/">job-server-etl.md</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">person-module.md</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#1">1. Цель и мотивация</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-surypus">2. Стек Surypus и текущие артефакты</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3">3. Необходимые инварианты и проверки</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4">4. План реализации</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5">5. Текущие действия</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#6">6. Источники</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../production-module/">production-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reports-portal/">reports-portal.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../schema-uniqueness/">schema-uniqueness.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../testing-guide/">testing-guide.md</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/EXAMPLES/">Примеры</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../REFINEMENT/">Рефиниции</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../SUMMARY/">Сводка</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Задачи</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Home/">Обзор</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Plans/">Планы</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Backlog/">Бэклог</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Surypus ERP</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Инженерные модули</li>
+      <li class="breadcrumb-item active">person-module.md</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/surypus/surypus/edit/master/docs/engineering/person-module.md">Edit on surypus/surypus</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="person">Модуль «Персоны» (Person)</h1>
+<h2 id="1">1. Цель и мотивация</h2>
+<p>Модуль Surypus.Person должен эмулировать и расширять функциональность <code>PPObjPerson</code> из (файлы <code>Src/PPLib/person.cpp</code>, <code>Src/PPLib/v_person.cpp</code>, <code>Src/PPLib/objreg.cpp</code>). <code>PPObjPerson</code> ведёт учёт контрагентов, привязаны к регистрам (ИНН/КПП/ОГРН), банковским реквизитам, контактам и разделам CRM/HR. Он заботится о:</p>
+<ul>
+<li>целостности ИНН и КПП;</li>
+<li>синонимичности записей с записями из разных объектов (<code>PPObjPersonRelType</code>, <code>JobQueue</code>, <code>PPObjRegister</code>);</li>
+<li>строгом учёте связей, адресов, контактов;</li>
+<li>начислении скидок и кредитных лимитов (используются в <code>PPObjBill::SearchCustomer</code>, <code>PPObjPerson::GetClientActivityStatistics</code>).</li>
+</ul>
+<h2 id="2-surypus">2. Стек Surypus и текущие артефакты</h2>
+<ul>
+<li><strong>LiquidHaskell</strong>: <code>Domain.Person</code> уже несёт инварианты <code>personCredit &gt;= 0</code> и <code>0 &lt;= personDiscount &lt;= 100</code>. Это ядро можно расширить, добавив <code>validateINN</code>/<code>validateKPP</code> с доказательствами.</li>
+<li><strong>PostgreSQL</strong>: <code>config/database_schema.sql</code> создаёт <code>persons.person</code> и наследуемые таблицы <code>employee/manager</code>. Дополнительные скрипты (<code>config/schema_person.sql</code>, <code>config/schema_person_kind.sql</code> и др.) расширяют адреса, контакты.</li>
+<li><strong>Hasql</strong>: <code>DB.Person</code> и <code>Domain.Person</code> служат API-слоем, но пока обрывываются между схемой и API (например, в схеме <code>person</code> нет колонок <code>address</code>, <code>credit_limit</code>, <code>discount</code>, которые используются в запросах).</li>
+<li><strong>REST</strong>: <code>APIServer.personsRoutes</code> уже реализует CRUD и фильтры по <code>name/inn/kind/status</code>.</li>
+<li><strong>QML/Reports/Job</strong>: пока нет экранов/отчётов, но мы планируем QML-модуль «Контрагенты», ETL-инструменты и регулярные подкачки (<code>JobQueue</code>) для синхронизации с CRM-сервисами.</li>
+</ul>
+<h2 id="3">3. Необходимые инварианты и проверки</h2>
+<ol>
+<li><code>INN</code> и <code>KPP</code> — только цифры, длина 10 или 12 (см. <code>PPObjPerson::CheckINN()</code>, <code>PPObjPerson::CheckKPP()</code> в <code>person.cpp</code>).</li>
+<li>Кредитный лимит и скидка — неотрицательные (<code>PPObjPerson::SetCreditLimit</code>), скидка не может превышать 100%.</li>
+<li>Каждая персона должна иметь хотя бы трёхзначный код/символьный идентификатор в <code>person.code</code>.</li>
+<li>Связи <code>PersonRel</code> не должны создавать циклов (аналог <code>PPObjPersonRelType::CheckCycle</code>).</li>
+<li>Локализация адресов должна совпадать с репозиториями <code>PersonLocation</code> и <code>PersonContact</code>.</li>
+</ol>
+<p>Инварианты накладываются в LiquidHaskell на <code>Person</code> (<code>Domain.Person</code>) и <code>PersonRel</code> друг с другом. Пространство типов должно отражать эти ограничения и фиксировать их на этапе компиляции.</p>
+<h2 id="4">4. План реализации</h2>
+<ol>
+<li><strong>Схема PostgreSQL</strong>: удостовериться, что <code>persons.person</code> имеет столбцы <code>code</code>, <code>address</code>, <code>phone</code>, <code>email</code>, <code>credit_limit</code>, <code>discount</code>. Добавить <code>ALTER TABLE</code> в <code>config/schema_person.sql</code> или <code>config/database_schema.sql</code>, чтобы гарантировать их наличие независимо от порядка исполнения.</li>
+<li><strong>Hasql/DB</strong>: согласовать декодеры с точным списком полей; добавить <code>INSERT</code>/<code>UPDATE</code> с контролем <code>code</code> и <code>search_path</code>.</li>
+<li><strong>Core/Domain</strong>: расширить LiquidHaskell-инварианты (<code>validateINN</code>, <code>validateKPP</code>), описать <code>PersonRel</code> и <code>PersonLocation</code> как типы с доказательствами (например, <code>PersonLocation</code> не может быть одновременно <code>isPrimary</code> и <code>isDefault</code> для двух записей).</li>
+<li><strong>API</strong>: усилить middleware с JWT/логгированием и расширить CRUD на <code>PersonContact</code>, <code>PersonBankAccount</code>, <code>PersonLocation</code>.</li>
+<li><strong>UI/Reports/Jobs</strong>: представить <code>qml/persons/</code> с формами, отчёты <code>Jasper</code>/<code>Pentaho</code> и расширенный <code>JobQueue</code> для синхронизации контрагентов.</li>
+<li><strong>Тесты</strong>: свойство <code>prop_person_credit_nonneg</code>, таблицы с <code>QuickCheck</code> <code>PersonRel</code> (без циклов), интеграционный тест <code>APIServer.personsRoutes</code>.</li>
+</ol>
+<h2 id="5">5. Текущие действия</h2>
+<ol>
+<li>Выделить модуль Person как первый в контуре реинжиниринга;</li>
+<li>Привести наименования schema (уникальные <code>schema_Core_Document_Register</code>, <code>schema_PPObjRegister_Register</code>) и задокументировать их;</li>
+<li>Проверить alignment схемы <code>persons.person</code> с <code>DB.Person</code>, включая <code>code</code>/<code>credit_limit</code>.</li>
+<li>Создать агрегированные отчёты/хранимые процедуры (например, <code>get_person_summary()</code>), чтобы job-сервер мог эвакуировать KPI по контрагентам и передавать их в Jasper/Pentaho/Helical.</li>
+<li>Сделать snapshot job (<code>run_person_summary_snapshot</code>), который периодически срабатывает в job-очереди и переносит KPI в <code>person_summary_snapshot</code>, позволяя QML/UI строить графики трендов и наполнять отчёты Jasper/Pentaho/Helical.</li>
+</ol>
+<h2 id="6">6. Источники</h2>
+<ul>
+<li><code>Src/PPLib/person.cpp</code>, <code>Src/PPLib/v_person.cpp</code>, <code>Src/PPLib/objreg.cpp</code>.</li>
+<li>Surypus: <code>Domain.Person</code>, <code>DB.Person</code>, <code>APIServer.personsRoutes</code>, config-схемы.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../job-server-etl/" class="btn btn-neutral float-left" title="job-server-etl.md"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../production-module/" class="btn btn-neutral float-right" title="production-module.md">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/surypus/surypus" class="fa fa-code-fork" style="color: #fcfcfc"> surypus/surypus</a>
+        </span>
+    
+    
+      <span><a href="../job-server-etl/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../production-module/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

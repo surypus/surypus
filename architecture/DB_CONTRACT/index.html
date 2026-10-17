@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://surypus.github.io/surypus/architecture/DB_CONTRACT/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Database Contract - Surypus ERP</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Database Contract";
+        var mkdocs_page_input_path = "architecture/DB_CONTRACT.md";
+        var mkdocs_page_url = "/surypus/architecture/DB_CONTRACT/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Surypus ERP
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Главная</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../ARCHITECTURE/">Архитектура</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../TYPES/">Система типов</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../API/">API</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DATABASE/">Хранилище данных</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DEPLOYMENT/">Развёртывание</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../GUIDE/">Руководство</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Руководства</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/accounting/">Как работает бухгалтерия</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/inventory/">Как работает инвентарь</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/rbac/">Как работает RBAC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/jwt/">Как работает JWT-аутентификация</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/persistence/">Как работает персистентность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/event-store/">Как работает Event Store</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">ADR</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0001-haskell-primary-language/">ADR-001: Haskell как основной язык</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0002-mkdocs-site/">ADR-002: MkDocs для сайта документации</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../EVENT_SOURCING/">Архитектура событий</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Инженерные модули</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/api-conventions/">api-conventions.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/bill-module/">bill-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/document-module/">document-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/hr-payroll-module/">hr-payroll-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/job-server-etl/">job-server-etl.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/person-module/">person-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/production-module/">production-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/reports-portal/">reports-portal.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/schema-uniqueness/">schema-uniqueness.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/testing-guide/">testing-guide.md</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/EXAMPLES/">Примеры</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../REFINEMENT/">Рефиниции</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../SUMMARY/">Сводка</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Задачи</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Home/">Обзор</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Plans/">Планы</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Backlog/">Бэклог</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Surypus ERP</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Database Contract</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/surypus/surypus/edit/master/docs/architecture/DB_CONTRACT.md">Edit on surypus/surypus</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="database-contract">Database Contract</h1>
+<blockquote>
+<p>Surypus ERP/CRM
+Generated: 2026-09-02</p>
+</blockquote>
+<h2 id="overview">Overview</h2>
+<p>The database contract ensures that SQL migrations are consistent with the domain contract defined in <code>dsl/schema.yaml</code>. Every table, constraint, and migration must be verifiable against the domain model.</p>
+<h2 id="schema-mapping">Schema Mapping</h2>
+<h3 id="entity-to-table-mapping">Entity-to-Table Mapping</h3>
+<table>
+<thead>
+<tr>
+<th>Domain Entity</th>
+<th>SQL Table</th>
+<th>Migration File</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PersonEntity</td>
+<td>person</td>
+<td>aggregate/V012__person_aggregate.sql</td>
+</tr>
+<tr>
+<td>CustomerEntity</td>
+<td>customer</td>
+<td>aggregate/V013__customer_aggregate.sql</td>
+</tr>
+<tr>
+<td>ProductionOrderEntity</td>
+<td>production_order</td>
+<td>aggregate/V014__production_order_aggregate.sql</td>
+</tr>
+<tr>
+<td>ReportConfigEntity</td>
+<td>report_config</td>
+<td>aggregate/V015__report_config_aggregate.sql</td>
+</tr>
+<tr>
+<td>InventoryEntity</td>
+<td>inventory</td>
+<td>aggregate/V001__inventory_aggregate.sql</td>
+</tr>
+<tr>
+<td>BillEntity</td>
+<td>bill</td>
+<td>aggregate/V002__bill_aggregate.sql</td>
+</tr>
+</tbody>
+</table>
+<h3 id="constraints">Constraints</h3>
+<table>
+<thead>
+<tr>
+<th>Constraint Type</th>
+<th>Location</th>
+<th>Verification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Primary Key</td>
+<td>All entity tables</td>
+<td><code>PRIMARY KEY</code> clause</td>
+</tr>
+<tr>
+<td>Foreign Key</td>
+<td>Cross-reference tables</td>
+<td><code>REFERENCES</code> clause</td>
+</tr>
+<tr>
+<td>Unique</td>
+<td>Identifiers</td>
+<td><code>UNIQUE</code> constraint</td>
+</tr>
+<tr>
+<td>Check</td>
+<td>Status, type fields</td>
+<td><code>CHECK</code> constraint</td>
+</tr>
+<tr>
+<td>Not Null</td>
+<td>Mandatory fields</td>
+<td><code>NOT NULL</code> clause</td>
+</tr>
+</tbody>
+</table>
+<h2 id="migration-ordering">Migration Ordering</h2>
+<p>Migrations use the standard format: <code>V{number}__{description}.sql</code></p>
+<ul>
+<li>Aggregate migrations: <code>sql/aggregate/V*.sql</code></li>
+<li>Core migrations: <code>sql/core/</code></li>
+<li>Event migrations: <code>sql/event/</code></li>
+<li>Procedure migrations: <code>sql/procedures/</code></li>
+<li>Policy migrations: <code>sql/policy/</code></li>
+<li>Projection migrations: <code>sql/projection/</code></li>
+<li>Seed migrations: <code>sql/seeds/</code></li>
+<li>Service migrations: <code>sql/service/</code></li>
+<li>Test migrations: <code>sql/test/</code></li>
+</ul>
+<h2 id="contract-to-sql-verification">Contract-to-SQL Verification</h2>
+<p>Every entity in <code>dsl/schema.yaml</code> must have:
+1. A corresponding migration file
+2. Table name matching <code>sql_table</code> in schema
+3. All mandatory fields (<code>nullable: false</code>) as <code>NOT NULL</code> columns
+4. All identifiers as <code>UNIQUE</code> or <code>PRIMARY KEY</code></p>
+<h2 id="drift-detection">Drift Detection</h2>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check for schema vs SQL drift</span>
+python3<span class="w"> </span>tools/documentation/generate-inventory.py
+<span class="c1"># Compare entities against migration files</span>
+grep<span class="w"> </span>-r<span class="w"> </span><span class="s2">&quot;CREATE TABLE&quot;</span><span class="w"> </span>sql/aggregate/<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-v<span class="w"> </span><span class="s2">&quot;/*&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort
+</code></pre></div>
+<h2 id="sql-assertions">SQL Assertions</h2>
+<h3 id="primaryforeignuniquecheck-constraints">Primary/Foreign/Unique/Check Constraints</h3>
+<p>Each migration file must include explicit assertions for:
+- Primary key definition
+- Foreign key references
+- Unique constraints
+- Check constraints for validation</p>
+<h3 id="migration-ordering-test">Migration Ordering Test</h3>
+<p>Migrations must be applied in version order:
+- V001 → V002 → ... → V015+
+- No gaps in version numbers
+- No duplicate version numbers</p>
+<h3 id="idempotent-migration-behavior">Idempotent Migration Behavior</h3>
+<p>All migrations must be idempotent:
+- Running a migration twice produces the same result
+- <code>IF NOT EXISTS</code> clauses for tables
+- <code>IF NOT EXISTS</code> clauses for constraints</p>
+<h2 id="frozen-state">Frozen State</h2>
+<p>The <code>sql/frozen/</code> directory contains verified, frozen migration files that must not change.</p>
+<h2 id="test-coverage">Test Coverage</h2>
+<p>SQL tests are located in <code>sql/tests/contract/</code> and <code>sql/test/</code>.</p>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/surypus/surypus" class="fa fa-code-fork" style="color: #fcfcfc"> surypus/surypus</a>
+        </span>
+    
+    
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

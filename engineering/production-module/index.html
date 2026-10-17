@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://surypus.github.io/surypus/engineering/production-module/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>production-module.md - Surypus ERP</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "production-module.md";
+        var mkdocs_page_input_path = "engineering/production-module.md";
+        var mkdocs_page_url = "/surypus/engineering/production-module/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Surypus ERP
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Главная</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../ARCHITECTURE/">Архитектура</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../TYPES/">Система типов</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../API/">API</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DATABASE/">Хранилище данных</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DEPLOYMENT/">Развёртывание</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../GUIDE/">Руководство</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Руководства</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/accounting/">Как работает бухгалтерия</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/inventory/">Как работает инвентарь</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/rbac/">Как работает RBAC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/jwt/">Как работает JWT-аутентификация</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/persistence/">Как работает персистентность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/event-store/">Как работает Event Store</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">ADR</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0001-haskell-primary-language/">ADR-001: Haskell как основной язык</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0002-mkdocs-site/">ADR-002: MkDocs для сайта документации</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../architecture/EVENT_SOURCING/">Архитектура событий</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Инженерные модули</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../api-conventions/">api-conventions.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../bill-module/">bill-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../document-module/">document-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../hr-payroll-module/">hr-payroll-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../job-server-etl/">job-server-etl.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../person-module/">person-module.md</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">production-module.md</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#1-techcpp">1. Что делает исходная реализация (фокус на tech.cpp)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-surypus">2. Где Surypus должен усиливать архитектуру</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-hardware">3. Связь с Hardware</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4-ci">4. Проверки и CI</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5">5. Следующие задачи</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reports-portal/">reports-portal.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../schema-uniqueness/">schema-uniqueness.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../testing-guide/">testing-guide.md</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/EXAMPLES/">Примеры</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../REFINEMENT/">Рефиниции</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../SUMMARY/">Сводка</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Задачи</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Home/">Обзор</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Plans/">Планы</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Backlog/">Бэклог</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Surypus ERP</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Инженерные модули</li>
+      <li class="breadcrumb-item active">production-module.md</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/surypus/surypus/edit/master/docs/engineering/production-module.md">Edit on surypus/surypus</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="module-03-production-hardware">Module 03 — Production / Hardware</h1>
+<p>После стабилизации Document и HR/Payroll следующий критический блок — производство и связанный Hardware (MRP, техкарты, нормативы, job-сервер). Общий сценарий описан в <code>tech.cpp</code>, <code>ppbuild.cpp</code>, <code>ppordr.cpp</code> и смежных файлах: технологическая карта (<code>PPObjTech</code>), ресурсоёмкие заказы (<code>PPObjWorkOrder</code>), перемещения между складами и связка с <code>BillCore</code>/<code>AccTurn</code>.</p>
+<h2 id="1-techcpp">1. Что делает исходная реализация (фокус на <code>tech.cpp</code>)</h2>
+<ul>
+<li><code>PPObjTech</code> хранит технологические структуры (<code>TechTbl</code>), которые связывают процессор (документ <code>Processor</code>) с товарами, формулами и типами операций (<code>TECK_AUTO</code>, <code>TECK_MANUAL</code>).</li>
+<li><code>TechLines</code> (<code>TGSArray</code>) управляют списком <code>GoodsID</code> с коэффициентами (<code>Sign</code>) и формулами; реализованы методы <code>GetGoodsList</code>, <code>AddItem</code>, <code>SearchGoods_</code>, <code>CreateAutoTech</code>. Это позволяет из MRP автоматически подставлять компоненты и найти техкарту по сырью.</li>
+<li><code>PPObjTech::GenerateCode</code> увеличивает глобальный счетчик <code>TecCounter</code> в <code>PPObjProcessor</code> и генерирует уникальные коды (с префиксом <code>TLNG</code> для tooling). Surypus должен сохранить этот счётчик в одной из таблиц (например, <code>tech_counter</code>) и гарантировать атомарность через транзакции.</li>
+<li><code>PPObjTech::SearchAuto</code> и <code>SearchAutoForGoodsCreation</code> ищут автоматические техкарты по принадлежности товара к группе (<code>GoodsObj::BelongToGroup</code>). Производственные документы полагаются на эти поиски для определения компонентов, и они должны быть пока <code>Hasql</code> строит профили.</li>
+</ul>
+<h2 id="2-surypus">2. Где Surypus должен усиливать архитектуру</h2>
+<ol>
+<li>
+<p><strong>SQL-схемы</strong>: создать <code>schema_tech.sql</code>, <code>schema_work_order.sql</code>, <code>schema_mrp.sql</code>. Таблицы:
+   - <code>tech_card</code> (id, processor_id, goods_group_id, kind, formula, flags, code);
+   - <code>tech_line</code> (tech_id, line_no, goods_id, qty, sign, formula_text);
+   - <code>work_order</code> (id, code, goods_id, qty_plan, qty_released, status, scheduled_at, start_at, end_at, processor_id);
+   - <code>work_order_line</code> и <code>work_order_movement</code> (статики для склада, запасов).
+   Добавить индексы на <code>processor_id</code>, <code>code</code>, <code>status</code>, <code>goods_id</code>. Уникальность: <code>(processor_id, goods_id, kind, code)</code> и <code>(work_order.code)</code>. Constraints:
+   - <code>qty_plan &gt;= 0</code>, <code>qty_released &gt;= 0</code>, <code>status ∈ {0..4}</code> (например, pending/running/completed/cancelled/failed);
+   - <code>tech_line.qty &gt;= 0</code>, <code>sign ∈ {-1,0,1}</code>.</p>
+</li>
+<li>
+<p><strong>LiquidHaskell-инварианты</strong>:
+   - Тип <code>TechLine</code> (часть <code>Core.Production.Types</code>) с <code>qty &gt;= 0</code>, <code>sign</code> из дискретного множества, <code>formula</code> не пустой для автоматических линий.
+   - <code>WorkOrder</code> с <code>qtyPlanned &gt;= qtyReleased</code>, <code>status</code> корректен (в перечислении <code>WorkOrderStatus</code>), <code>schedule</code> &amp; <code>dates</code> согласованы (<code>scheduled_at &lt;= start &lt;= end</code>), <code>processor</code>/<code>goods</code> обязательно существует в домене.
+   - <code>MRPRequirement</code> (тип Sec). <code>calcMRPNeed</code> должен доказывать, что суммарный спрос равен сумме потребного ранее минус уже выделенные запасы (инвариант <code>Σ need &gt;= 0</code>).</p>
+</li>
+<li>
+<p><strong>Hasql и Stored procedures</strong>:
+   - Внести функции <code>create_tech_card</code>, <code>create_tech_line</code>, <code>find_auto_tech(cards)</code>, <code>reserve_mrp_requirements</code>, <code>release_work_order</code>, <code>complete_work_order</code>. Они должны включать <code>RAISE EXCEPTION</code> при нарушениях (наличие дублей, нехватка ресурсов, неоднозначный статус).
+   - Добавить процедуры, моделирующие <code>BillCore::Post</code> для WorkOrder (создание <code>acc_turn</code>/<code>stock_movement</code>, обновление <code>lot</code>). Вызов <code>calc_stock_balance</code>/<code>fifo_select_lots</code> уже есть — надо адаптировать.</p>
+</li>
+<li>
+<p><strong>API/QML/JobServer</strong>:
+   - Расширить <code>DB.Production</code>/<code>Domain.Production</code> на новые endpoints: <code>GET /production/work-orders</code>, <code>POST /production/work-orders</code>, <code>POST /production/work-orders/:id/release</code>, <code>POST /production/work-orders/:id/complete</code>, <code>GET /production/tech</code>.
+   - Добавить JWT-мидлвар, логирование, property tests (например, проверка, что суммарный <code>qty_released &lt;= qty_plan</code>).
+   - JobServer: <code>job</code>-типы <code>production_release</code>, <code>production_snapshot</code>. <code>DB.JobQueue.enqueueJob</code> должен запускать MRP-джобы (генерация Jasper/Pentaho/Helical <code>production_mrp.jrxml</code>).
+   - QML: создать раздел “Production” с формами <code>TechCard</code>, <code>WorkOrder</code>, визуализация <code>MRP graph</code>.</p>
+</li>
+<li>
+<p><strong>Reports</strong>:
+   - Jasper/Pentaho: <code>production_mrp.jrxml</code>, <code>work_order_status.jrxml</code>, <code>tech_card_bom.jrxml</code>.
+   - JobServer =&gt; <code>report_render</code> job <code>production_work_order</code>, <code>production_capacity</code>.
+   - Интеграция <code>Reports</code> (REST: <code>/reports</code>, <code>/reports/:name</code>), <code>Reports.ReportDef</code> → SQL/HR result via <code>calc_stock_balance</code>/<code>get_lot_bounds</code>.</p>
+</li>
+</ol>
+<h2 id="3-hardware">3. Связь с Hardware</h2>
+<ul>
+<li><code>Hardware</code> (например, <code>PPObjProcessor</code>, <code>PPObjProcessorConfig</code>) задаёт ресурсы, которые включают машины и инструменты (<code>processor</code> + <code>tech</code>).</li>
+<li>Нужно связать <code>tech_card.processor_id</code> с Hardware (эмулировать <code>PPProcessor</code> и <code>PPProcessorConfig</code>), включая атомарную генерацию кода (<code>TecCounter</code> → <code>tech_counter</code>), чтобы Surypus мог формировать заявки на машины.</li>
+<li>Добавить таблицу <code>hardware_resource</code>, <code>hardware_schedule</code> (для планирования), инварианты: ресурс не используется одновременно двумя заказами, <code>scheduled_at</code> + <code>occupied_until</code> согласованы.</li>
+</ul>
+<h2 id="4-ci">4. Проверки и CI</h2>
+<ul>
+<li>QuickCheck: <code>prop_release_not_exceed_plan</code>, <code>prop_tech_qty_nonneg</code>, <code>prop_mrp_conservation</code>.</li>
+<li>Интеграции: <code>stack test --test-arguments "--match Production"</code> и <code>--match HR</code> (после стабилизации <code>vector</code>/<code>directory</code>).</li>
+<li>CI (<code>.github/workflows/ci.yml</code>) обязуется: сборка, тесты, отчёты, <code>stack exec scripts/check_schema_uniqueness.sh</code>, <code>stack exec hindent</code>, <code>stack exec hlint</code>.</li>
+</ul>
+<h2 id="5">5. Следующие задачи</h2>
+<ol>
+<li>Описать таблицы/schemas (см. <code>config/schema_production.sql</code>, <code>config/schema_tech.sql</code>), добавить миграции <code>init_db.sh</code>.</li>
+<li>Реализовать <code>Core.Production.Types</code>/<code>Domain.Production</code> с LiquidHaskell-типами, <code>DB.Production</code> (Hasql) и API/QML/JobServer.</li>
+<li>Написать отчёты Jasper/Pentaho/Helical, job-джобы, property tests.</li>
+<li>После каждого блока добавлять документацию в <code>docs/engineering</code> и фиксировать прогон <code>stack test</code> (и eventual <code>stack test --match Production</code>).</li>
+</ol>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../person-module/" class="btn btn-neutral float-left" title="person-module.md"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../reports-portal/" class="btn btn-neutral float-right" title="reports-portal.md">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/surypus/surypus" class="fa fa-code-fork" style="color: #fcfcfc"> surypus/surypus</a>
+        </span>
+    
+    
+      <span><a href="../person-module/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../reports-portal/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

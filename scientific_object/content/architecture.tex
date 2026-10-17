@@ -1,0 +1,89 @@
+\chapter{System Architecture: Surypus
+ERP/CRM}\label{system-architecture-surypus-erpcrm}
+
+\section{Архитектурные
+принципы}\label{ux430ux440ux445ux438ux442ux435ux43aux442ux443ux440ux43dux44bux435-ux43fux440ux438ux43dux446ux438ux43fux44b}
+
+Система построена на принципах разделения ответственности (Layered
+Architecture) и доменно-ориентированного проектирования (DDD).
+
+\subsection{Слои системы (Layer
+Separation)}\label{ux441ux43bux43eux438-ux441ux438ux441ux442ux435ux43cux44b-layer-separation}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Domain/}: Чистые доменные модели, типы данных и инварианты. Не
+  зависят от БД или API.
+\item
+  \textbf{Core/ (Service Layer)}: Бизнес-логика (расчет налогов,
+  проведение документов, учет). Оркестрирует работу между DAL и внешними
+  интерфейсами.
+\item
+  \textbf{DAL/ (Data Access Layer)}: Доступ к PostgreSQL через Hasql и
+  Rel8. Содержит репозитории и Event Store.
+\item
+  \textbf{API/ (Handlers)}: REST эндпоинты (Scotty), преобразование JSON
+  (Aeson) и Swagger спецификация.
+\item
+  \textbf{Infra/}: Утилиты, логирование, работа с JWT, WebSocket и
+  интеграции.
+\end{enumerate}
+
+\section{Схема данных (Database
+Schema)}\label{ux441ux445ux435ux43cux430-ux434ux430ux43dux43dux44bux445-database-schema}
+
+Основные домены в PostgreSQL:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{RBAC}: \texttt{roles}, \texttt{permissions},
+  \texttt{user\_roles}.
+\item
+  \textbf{Inventory}: \texttt{goods}, \texttt{locations},
+  \texttt{stock}, \texttt{stock\_movements}.
+\item
+  \textbf{Accounting}: \texttt{accounts} (План счетов),
+  \texttt{accounting\_entries} (Проводки).
+\item
+  \textbf{Documents}: \texttt{bills} (Документы), \texttt{bill\_items}
+  (Строки документов).
+\item
+  \textbf{Service}: \texttt{jobs} (Очередь задач), \texttt{audit\_log},
+  \texttt{schema\_migrations}.
+\end{itemize}
+
+\section{Event Sourcing}\label{event-sourcing}
+
+В Phase 3 внедряется Event Sourcing для критических изменений: - Все
+изменения состояния порождают события в таблице \texttt{event\_store}. -
+Читаемые модели (projections) обновляются на основе потока событий. -
+Позволяет реализовать ``Time Travel'' аудит и надежную репликацию.
+
+\section{Безопасность
+(Security)}\label{ux431ux435ux437ux43eux43fux430ux441ux43dux43eux441ux442ux44c-security}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Аутентификация}: JWT (Access + Refresh tokens).
+\item
+  \textbf{Авторизация}: RBAC middleware проверяет разрешения
+  (\texttt{requirePermission}) перед выполнением handler-а.
+\item
+  \textbf{Целостность}: Формальная верификация через LiquidHaskell для
+  финансовых расчетов (внедряется).
+\end{itemize}
+
+\section{Генерация
+отчетов}\label{ux433ux435ux43dux435ux440ux430ux446ux438ux44f-ux43eux442ux447ux435ux442ux43eux432}
+
+Используется гибридный подход: - \textbf{PDF-Slave}: YAML-шаблоны для
+быстрой генерации стандартных форм. - \textbf{JasperReports}: Сложные
+аналитические отчеты.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\emph{Последнее обновление: 2026-05-14}

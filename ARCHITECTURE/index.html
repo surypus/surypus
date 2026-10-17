@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://surypus.github.io/surypus/ARCHITECTURE/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Архитектура - Surypus ERP</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "\u0410\u0440\u0445\u0438\u0442\u0435\u043a\u0442\u0443\u0440\u0430";
+        var mkdocs_page_input_path = "ARCHITECTURE.md";
+        var mkdocs_page_url = "/surypus/ARCHITECTURE/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Surypus ERP
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Главная</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Архитектура</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#1-c4-model-level-1-context">1. Контекстная диаграмма (C4 Model — Level 1: Context)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#_1">Внешние системы</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-adr">2. Архитектурные решения (ADR)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#adr-001-haskell">ADR-001: Haskell как основной язык</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#adr-002-stack-vs-cabal">ADR-002: Stack vs Cabal</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#adr-003-postgresql">ADR-003: PostgreSQL как единое хранилище</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#adr-004-servant-rest-api">ADR-004: Servant для REST API</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#adr-005-event-sourcing-cqrs">ADR-005: Event Sourcing + CQRS</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#adr-006-persistent-esqueleto-orm">ADR-006: Persistent + Esqueleto для ORM</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#adr-007-jwt">ADR-007: JWT для аутентификации</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#adr-008-vanilla-js-">ADR-008: Vanilla JS (без фреймворка) для веб-клиента</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-ddd-domain-driven-design">3. Предметная область (DDD — Domain-Driven Design)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#_2">Домены и универсальный язык</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#-_1">Ключевые бизнес-правила (Инварианты)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#constraint">Ограничения (Constraint) в БД</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4-c4-level-2-containers">4. Диаграмма слоёв (C4 Level 2: Containers)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#middleware-chain">Middleware Chain (порядок применения)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5">5. Ключевые потоки данных</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#fifo">Списание товаров (FIFO)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_3">Расчёт налогов</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#6">6. Ключевые нефункциональные требования</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#7">7. Связанные документы</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../TYPES/">Система типов</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../API/">API</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../DATABASE/">Хранилище данных</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../DEPLOYMENT/">Развёртывание</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../GUIDE/">Руководство</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Руководства</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/accounting/">Как работает бухгалтерия</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/inventory/">Как работает инвентарь</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/rbac/">Как работает RBAC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/jwt/">Как работает JWT-аутентификация</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/persistence/">Как работает персистентность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/event-store/">Как работает Event Store</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">ADR</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../adr/0001-haskell-primary-language/">ADR-001: Haskell как основной язык</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../adr/0002-mkdocs-site/">ADR-002: MkDocs для сайта документации</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../architecture/EVENT_SOURCING/">Архитектура событий</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Инженерные модули</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/api-conventions/">api-conventions.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/bill-module/">bill-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/document-module/">document-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/hr-payroll-module/">hr-payroll-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/job-server-etl/">job-server-etl.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/person-module/">person-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/production-module/">production-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/reports-portal/">reports-portal.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/schema-uniqueness/">schema-uniqueness.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/testing-guide/">testing-guide.md</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/EXAMPLES/">Примеры</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../REFINEMENT/">Рефиниции</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../SUMMARY/">Сводка</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Задачи</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tasks/Home/">Обзор</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tasks/Plans/">Планы</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tasks/Backlog/">Бэклог</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Surypus ERP</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Архитектура</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/surypus/surypus/edit/master/docs/ARCHITECTURE.md">Edit on surypus/surypus</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="-">Архитектура и бизнес-контекст</h1>
+<blockquote>
+<p>Раздел описывает системную архитектуру Surypus, журнал архитектурных решений (ADR), контекстную диаграмму C4 и предметные домены (DDD).</p>
+</blockquote>
+<hr />
+<h2 id="1-c4-model-level-1-context">1. Контекстная диаграмма (C4 Model — Level 1: Context)</h2>
+<div class="highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────────────────┐
+│                      Surypus ERP System                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐   │
+│  │ Склад    │  │ Бухгал-  │  │ Закупки  │  │ Производство │   │
+│  │ (Goods,  │  │ терия    │  │ и про-   │  │ (TechCards,  │   │
+│  │ Lots,    │  │ (Accoun- │  │ дажи     │  │ WorkOrders)  │   │
+│  │ Stock)   │  │ ting)    │  │ (Bills)  │  │              │   │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────────┘   │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐   │
+│  │ HR/      │  │ CRM      │  │ Налоги   │  │ Отчёты       │   │
+│  │ Зарплата │  │ (Deals,  │  │ (Tax,    │  │ (PDF,        │   │
+│  │ (Payroll)│  │ Contacts)│  │ VAT)     │  │ Dashboard)   │   │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────────┘   │
+└──────────────────────┬──────────────────────────────────────────┘
+                       │ REST API (HTTPS :443)
+                       │ WebSocket (wss://)
+          ┌────────────┼────────────────────────────┐
+          ▼            ▼                            ▼
+   ┌──────────┐  ┌──────────┐              ┌──────────────┐
+   │ Веб-     │  │ Внешние  │              │ Гос.         │
+   │ клиент   │  │ CRM/     │              │ порталы      │
+   │ (JS)     │  │ Банки    │              │ (налоговая)  │
+   └──────────┘  └──────────┘              └──────────────┘
+</code></pre></div>
+<h3 id="_1">Внешние системы</h3>
+<table>
+<thead>
+<tr>
+<th>Система</th>
+<th>Взаимодействие</th>
+<th>Протокол</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Веб-клиент (vanilla JS)</td>
+<td>UI, авторизация</td>
+<td>REST + WebSocket</td>
+</tr>
+<tr>
+<td>Мобильные клиенты (QML)</td>
+<td>Складские операции</td>
+<td>REST (планируется)</td>
+</tr>
+<tr>
+<td>Банки</td>
+<td>Выписки, платежи</td>
+<td>REST/API</td>
+</tr>
+<tr>
+<td>Гос. порталы</td>
+<td>Налоговая отчётность</td>
+<td>REST</td>
+</tr>
+<tr>
+<td>Внешние CRM</td>
+<td>Синхронизация контактов и сделок</td>
+<td>REST/API</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-adr">2. Архитектурные решения (ADR)</h2>
+<h3 id="adr-001-haskell">ADR-001: Haskell как основной язык</h3>
+<p><strong>Контекст:</strong> Проект переписывается с C++ на язык, обеспечивающий формальную верификацию и безопасность типов.</p>
+<p><strong>Решение:</strong> Haskell 2010 с GHC 9.6.5.</p>
+<p><strong>Обоснование:</strong>
+- Сильная статическая типизация исключает целые классы ошибок (null pointer, type confusion)
+- Система эффектов (IO, STM, ReaderT) делает сайд-эффекты явными
+- LiquidHaskell позволяет доказывать инварианты (налоги &gt;= 0, дебет = кредит)
+- Однопроходная сборка мусора упрощает конкурентность
+- Компиляция в статический бинарник упрощает деплой</p>
+<p><strong>Последствия:</strong>
+- Жёсткие требования к типовой безопасности
+- Необходимость Haskell-разработчиков для поддержки
+- Нативная интеграция с PostgreSQL через Persistent/Esqueleto</p>
+<h3 id="adr-002-stack-vs-cabal">ADR-002: Stack vs Cabal</h3>
+<p><strong>Контекст:</strong> Выбор системы сборки для Haskell-проекта.</p>
+<p><strong>Решение:</strong> Stack с resolver lts-22.21 (GHC 9.6.5).</p>
+<p><strong>Обоснование:</strong>
+- Воспроизводимые сборки (lock-файлы resolver)
+- Изолированный GHC (не требует системного)
+- Удобное управление зависимостями
+- Интеграция с Hackage и Stackage</p>
+<p><strong>Последствия:</strong>
+- <code>stack.yaml</code> как единый источник истины для версий
+- <code>extra-deps</code> для пакетов вне Stackage (ekg, cryptonite, jose)</p>
+<h3 id="adr-003-postgresql">ADR-003: PostgreSQL как единое хранилище</h3>
+<p><strong>Контекст:</strong> Выбор базы данных для ERP-системы.</p>
+<p><strong>Решение:</strong> PostgreSQL 16 как основная БД + Redis для кэша и очередей.</p>
+<p><strong>Обоснование:</strong>
+- ACID-транзакции критичны для финансовых операций
+- Мощные оконные функции для расчёта себестоимости (FIFO)
+- JSONB для гибких схем (классификаторы, метаданные)
+- Расширяемость (триггеры, хранимые процедуры, LISTEN/NOTIFY)
+- Event Sourcing через <code>jsonb</code> и <code>BIGSERIAL</code> для порядка событий</p>
+<p><strong>Последствия:</strong>
+- Тяжёлые вычисления вынесены в хранимые процедуры (calc_vat, calc_bill_totals)
+- Триггеры для аудита и консистентности
+- Partitioning для таблиц событий</p>
+<h3 id="adr-004-servant-rest-api">ADR-004: Servant для REST API</h3>
+<p><strong>Контекст:</strong> Выбор веб-фреймворка.</p>
+<p><strong>Решение:</strong> Servant с генерацией типизированных API.</p>
+<p><strong>Обоснование:</strong>
+- Типобезопасные эндпоинты — компилятор проверяет маршруты
+- Автоматическая генерация клиентов и swagger-спецификации
+- Middleware-композиция через типы
+- Интеграция с Aeson для JSON</p>
+<p><strong>Последствия:</strong>
+- API определён на уровне типов (Server.hs)
+- Swagger-документация (planned via servant-swagger)
+- Middleware chain: Metrics → RateLimiter → Correlation → Tenant → Auth → RBAC</p>
+<h3 id="adr-005-event-sourcing-cqrs">ADR-005: Event Sourcing + CQRS</h3>
+<p><strong>Контекст:</strong> Архитектурный паттерн для ключевых доменов (склад, бухгалтерия).</p>
+<p><strong>Решение:</strong> Event Sourcing с CQRS для Inventory и Accounting доменов.</p>
+<p><strong>Обоснование:</strong>
+- Полная аудит-трасса всех изменений
+- Возможность восстановить состояние на любую дату
+- FIFO-расчёт себестоимости через проекции событий
+- Разделение команд и запросов оптимизирует производительность</p>
+<p><strong>Статус:</strong> Реализовано для Inventory (списание по FIFO через LotEntity), Accounting (журнал проводок). EventStore — реальный PostgreSQL-бэкенд (262 строки).</p>
+<p><strong>Детали:</strong> См. <code>docs/architecture/EVENT_SOURCING.md</code>.</p>
+<h3 id="adr-006-persistent-esqueleto-orm">ADR-006: Persistent + Esqueleto для ORM</h3>
+<p><strong>Контекст:</strong> Доступ к базе данных из Haskell.</p>
+<p><strong>Решение:</strong> Persistent (шаблонная генерация схемы) + Esqueleto (типобезопасные JOIN).</p>
+<p><strong>Обоснование:</strong>
+- Template Haskell-генерация типов из схемы
+- Esqueleto даёт типобезопасные SQL-запросы
+- Raw SQL для сложных процедур (FIFO, себестоимость)</p>
+<p><strong>Последствия:</strong>
+- Модели данных в <code>DAL/Schema.hs</code> (43 сущности)
+- Типы в <code>DAL/Types.hs</code> с экземплярами FromJSON/ToJSON
+- Конверсия entity→domain тип в <code>DAL/Conversion.hs</code></p>
+<h3 id="adr-007-jwt">ADR-007: JWT для аутентификации</h3>
+<p><strong>Контекст:</strong> Механизм аутентификации для REST API.</p>
+<p><strong>Решение:</strong> JWT (JSON Web Tokens) с библиотекой jose.</p>
+<p><strong>Обоснование:</strong>
+- Stateless — не требуется серверная сессия
+- Поддержка tenant_id в claims для мультиарендности
+- Стандартный протокол, поддержка во всех клиентах</p>
+<p><strong>Реализация:</strong> <code>src/Surypus/JWT/</code> — генерация и верификация токенов.</p>
+<h3 id="adr-008-vanilla-js-">ADR-008: Vanilla JS (без фреймворка) для веб-клиента</h3>
+<p><strong>Контекст:</strong> Выбор фронтенд-технологии.</p>
+<p><strong>Решение:</strong> Vanilla JavaScript без внешних фреймворков.</p>
+<p><strong>Обоснование:</strong>
+- Минимальные зависимости
+- Прямой контроль над DOM и UX
+- API-клиент через Axios для HTTP
+- localStorage для JWT и tenant context</p>
+<p><strong>Последствия:</strong>
+- Один файл <code>web/index.html</code> (~2778 строк)
+- Модуль <code>web/js/api.js</code> для API-методов
+- Нет необходимости в npm/webpack</p>
+<hr />
+<h2 id="3-ddd-domain-driven-design">3. Предметная область (DDD — Domain-Driven Design)</h2>
+<h3 id="_2">Домены и универсальный язык</h3>
+<table>
+<thead>
+<tr>
+<th>Домен (Bounded Context)</th>
+<th>Ядро</th>
+<th>Агрегаты</th>
+<th>События</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Inventory (Склад)</strong></td>
+<td>Товары, остатки, партии, склады</td>
+<td>Goods, Lot, Stock</td>
+<td>GoodsReceived, GoodsShipped, LotCreated</td>
+</tr>
+<tr>
+<td><strong>Accounting (Бухгалтерия)</strong></td>
+<td>План счетов, проводки, обороты</td>
+<td>AccPlan, LedgerEntry</td>
+<td>EntryPosted, BalanceChanged</td>
+</tr>
+<tr>
+<td><strong>Sales/Purchases (Закупки/Продажи)</strong></td>
+<td>Счета, заказы, клиенты</td>
+<td>Bill, Order, Person</td>
+<td>BillPosted, OrderFulfilled</td>
+</tr>
+<tr>
+<td><strong>Tax (Налоги)</strong></td>
+<td>Ставки, расчёты, отчётность</td>
+<td>TaxRate, TaxReport</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Payroll (Зарплата)</strong></td>
+<td>Сотрудники, начисления, выплаты</td>
+<td>Employee, Salary</td>
+<td>SalaryPaid</td>
+</tr>
+<tr>
+<td><strong>CRM</strong></td>
+<td>Сделки, контакты, компании</td>
+<td>Deal, Contact, Company</td>
+<td>DealWon, DealLost</td>
+</tr>
+<tr>
+<td><strong>Production (Производство)</strong></td>
+<td>Техкарты, заказы, MRP</td>
+<td>TechCard, WorkOrder</td>
+<td>ProductionCompleted</td>
+</tr>
+<tr>
+<td><strong>Reports (Отчёты)</strong></td>
+<td>Шаблоны, генерация, экспорт</td>
+<td>ReportTemplate</td>
+<td>ReportGenerated</td>
+</tr>
+<tr>
+<td><strong>MultiTenancy</strong></td>
+<td>Организации, пользователи</td>
+<td>Tenant, User</td>
+<td>TenantCreated</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-_1">Ключевые бизнес-правила (Инварианты)</h3>
+<div class="highlight"><pre><span></span><code><span class="err">──</span><span class="w"> </span><span class="kt">Налог:</span><span class="w"> </span><span class="n">результат</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">и</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">цена</span>
+<span class="nf">calcVAT</span><span class="w"> </span><span class="n">amount</span><span class="w"> </span><span class="n">rate</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">amount</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">rate</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">100.0</span><span class="p">)</span>
+<span class="err">──</span><span class="w"> </span><span class="n">свойство</span><span class="kt">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">calcVAT</span><span class="w"> </span><span class="n">amount</span><span class="w"> </span><span class="n">rate</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">amount</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Бухгалтерия:</span><span class="w"> </span><span class="kt">Σ</span><span class="w"> </span><span class="kt">Дебет</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Σ</span><span class="w"> </span><span class="kt">Кредит</span>
+<span class="err">──</span><span class="w"> </span><span class="n">для</span><span class="w"> </span><span class="n">каждой</span><span class="w"> </span><span class="n">проводки</span><span class="kt">:</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="n">debits</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">sum</span><span class="w"> </span><span class="n">credits</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Склад:</span><span class="w"> </span><span class="kt">Остаток</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Начальный</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="kt">Приход</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="kt">Расход</span>
+<span class="err">──</span><span class="w"> </span><span class="n">для</span><span class="w"> </span><span class="n">каждой</span><span class="w"> </span><span class="n">позиции</span><span class="kt">:</span><span class="w"> </span><span class="kt">Stock</span><span class="o">.</span><span class="n">qtty</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">FIFO:</span><span class="w"> </span><span class="n">списание</span><span class="w"> </span><span class="n">по</span><span class="w"> </span><span class="n">себестоимости</span><span class="w"> </span><span class="n">первых</span><span class="w"> </span><span class="n">по</span><span class="w"> </span><span class="n">времени</span><span class="w"> </span><span class="n">партий</span>
+<span class="err">──</span><span class="w"> </span><span class="kt">Lot</span><span class="o">.</span><span class="n">rest</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">для</span><span class="w"> </span><span class="n">каждой</span><span class="w"> </span><span class="n">партии</span>
+</code></pre></div>
+<h3 id="constraint">Ограничения (Constraint) в БД</h3>
+<div class="highlight"><pre><span></span><code><span class="c1">-- CHECK constraint на уровне БД</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">stock</span><span class="w"> </span><span class="k">ADD</span><span class="w"> </span><span class="k">CONSTRAINT</span><span class="w"> </span><span class="n">stock_qtty_nonneg</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">qtty</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">lots</span><span class="w"> </span><span class="k">ADD</span><span class="w"> </span><span class="k">CONSTRAINT</span><span class="w"> </span><span class="n">lots_rest_nonneg</span><span class="w"> </span><span class="k">CHECK</span><span class="w"> </span><span class="p">(</span><span class="n">rest</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="k">ALTER</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">acc_entry</span><span class="w"> </span><span class="k">ADD</span><span class="w"> </span><span class="k">CONSTRAINT</span><span class="w"> </span><span class="n">acc_entry_balanced</span>
+<span class="w">  </span><span class="k">CHECK</span><span class="w"> </span><span class="p">((</span><span class="k">SELECT</span><span class="w"> </span><span class="k">SUM</span><span class="p">(</span><span class="n">debit</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">SUM</span><span class="p">(</span><span class="n">credit</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">acc_entry</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">doc_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">NEW</span><span class="p">.</span><span class="n">doc_id</span><span class="p">));</span>
+</code></pre></div>
+<hr />
+<h2 id="4-c4-level-2-containers">4. Диаграмма слоёв (C4 Level 2: Containers)</h2>
+<div class="highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────────────┐
+│                    Surypus Server (Haskell)                    │
+│  ┌──────────┐  ┌──────────────┐  ┌────────────────────────┐  │
+│  │ Servant  │  │ Service Layer │  │ Domain Core            │  │
+│  │ API      │──┤ (Core.Servi- │──┤ ├── Core.Tax           │  │
+│  │ (26      │  │  ces)        │  │ ├── Core.Goods         │  │
+│  │ handlers)│  │              │  │ ├── Core.Accounting    │  │
+│  └──────────┘  └──────────────┘  │ └── ...                │  │
+│       │                          └───────────┬────────────┘  │
+│       ▼                                       │              │
+│  ┌──────────┐                    ┌────────────▼───────────┐  │
+│  │ Middleware│                   │      DAL Layer          │  │
+│  │ Chain    │                    │ ┌────────────────────┐  │  │
+│  │ (Auth,   │                    │ │QueriesORM (Esqueleto)│  │  │
+│  │ Tenant,  │                    │ │Schema (Persistent)  │  │  │
+│  │ RBAC)    │                    │ │EventStore           │  │  │
+│  └──────────┘                    │ │Conversion           │  │  │
+│                                  │ └────────────────────┘  │  │
+│  ┌──────────┐                    └────────────┬────────────┘  │
+│  │ Отчёты   │                                 │              │
+│  │ (PDF)    │                                 ▼              │
+│  └──────────┘                    ┌────────────────────────┐  │
+│  ┌──────────┐                    │   PostgreSQL 16        │  │
+│  │ WebSocket│                    │   + Redis 7            │  │
+│  └──────────┘                    └────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<h3 id="middleware-chain">Middleware Chain (порядок применения)</h3>
+<ol>
+<li><strong>MetricsMiddleware</strong> — сбор метрик (ekg)</li>
+<li><strong>RateLimiter</strong> — ограничение запросов</li>
+<li><strong>Correlation</strong> — correlation ID для трассировки</li>
+<li><strong>Tenant</strong> — определение текущего tenant</li>
+<li><strong>Auth (JWT)</strong> — проверка токена</li>
+<li><strong>RBAC Authorization</strong> — проверка прав доступа</li>
+<li><strong>Handler</strong> — бизнес-логика</li>
+</ol>
+<hr />
+<h2 id="5">5. Ключевые потоки данных</h2>
+<h3 id="fifo">Списание товаров (FIFO)</h3>
+<div class="highlight"><pre><span></span><code>Команда: POST /api/v1/bills/:id/post
+     │
+     ▼
+ ┌─────────────┐
+ │ BillService  │  Валидация счёта
+ │ .postBill    │
+ └──────┬──────┘
+        │
+        ▼
+ ┌─────────────┐
+ │ Inventory    │  Списание по FIFO:
+ │ .processShip│  для каждой позиции берём
+ │              │  первые партии по дате
+ └──────┬──────┘
+        │
+        ▼
+ ┌─────────────┐
+ │ EventStore   │  Событие: GoodsShipped
+ │ .append      │
+ └──────┬──────┘
+        │
+        ▼
+ ┌─────────────┐
+ │ DAL.Proced- │  UPDATE lots SET rest = rest - qtty
+ │ ures        │  UPDATE stock SET qtty = qtty - qtty
+ └─────────────┘
+        │
+        ▼
+ ┌─────────────┐
+ │ Ledger      │  Проводки:
+ │ .postEntry  │    Дебет 90.2 (Себестоимость)
+ │              │    Кредит 41 (Товары)
+ └─────────────┘
+</code></pre></div>
+<h3 id="_3">Расчёт налогов</h3>
+<div class="highlight"><pre><span></span><code>Запрос: GET /api/v1/reports/pnl?dateFrom=...&amp;dateTo=...
+     │
+     ▼
+ ┌─────────────┐
+ │ Reports     │  Сбор данных о продажах за период
+ │ .pnl        │
+ └──────┬──────┘
+        │
+        ▼
+ ┌─────────────┐
+ │ Core.Tax    │  Расчёт НДС по ставкам
+ │ .calcVAT    │  (20%, 10%, 0%, без НДС)
+ └──────┬──────┘
+        │
+        ▼
+ ┌─────────────┐
+ │ Reports     │  Генерация HTML → PDF
+ │ .generate   │  (через weasyprint)
+ └─────────────┘
+</code></pre></div>
+<hr />
+<h2 id="6">6. Ключевые нефункциональные требования</h2>
+<table>
+<thead>
+<tr>
+<th>Требование</th>
+<th>Реализация</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Консистентность</strong></td>
+<td>ACID-транзакции PostgreSQL, CHECK constraints, триггеры</td>
+</tr>
+<tr>
+<td><strong>Аудит</strong></td>
+<td>Event Store — append-only лог всех изменений</td>
+</tr>
+<tr>
+<td><strong>Мультиарендность</strong></td>
+<td>TenantId в JWT claims, изоляция на уровне запросов</td>
+</tr>
+<tr>
+<td><strong>Производительность</strong></td>
+<td>Redis-кэш, пагинация, оконные функции</td>
+</tr>
+<tr>
+<td><strong>Безопасность</strong></td>
+<td>JWT + RBAC (30+ прав, 4 роли)</td>
+</tr>
+<tr>
+<td><strong>Отказоустойчивость</strong></td>
+<td>Docker Compose, health checks, dumb-init</td>
+</tr>
+<tr>
+<td><strong>Наблюдаемость</strong></td>
+<td>ekg (метрики), correlation ID, логирование</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7">7. Связанные документы</h2>
+<ul>
+<li><code>docs/architecture/EVENT_SOURCING.md</code> — Event Sourcing детально</li>
+<li><code>docs/engineering/api-conventions.md</code> — Соглашения по API</li>
+<li><code>ARCHITECTURE.md</code> (корень) — Формальная верификация и LiquidHaskell</li>
+<li><code>RBAC.md</code> (корень) — Ролевая модель</li>
+<li><code>sql/docs/ARCHITECTURE.md</code> — Архитектура SQL-слоя</li>
+<li><code>.planning/codebase/ARCHITECTURE.md</code> — Внутренний аудит кодовой базы</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Главная"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../TYPES/" class="btn btn-neutral float-right" title="Система типов">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/surypus/surypus" class="fa fa-code-fork" style="color: #fcfcfc"> surypus/surypus</a>
+        </span>
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../TYPES/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

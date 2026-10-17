@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://surypus.github.io/surypus/TYPES/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Система типов - Surypus ERP</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "\u0421\u0438\u0441\u0442\u0435\u043c\u0430 \u0442\u0438\u043f\u043e\u0432";
+        var mkdocs_page_input_path = "TYPES.md";
+        var mkdocs_page_url = "/surypus/TYPES/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Surypus ERP
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Главная</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../ARCHITECTURE/">Архитектура</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Система типов</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#1">1. Карта типов предметной области</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#_1">Финансовые типы</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_2">Инварианты, гарантируемые типами</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#api-dto">Типы для API (DTO)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#liquidhaskell-">LiquidHaskell-рефайнменты (формальная верификация)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2">2. Управление эффектами (монады)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#_3">Основной стек эффектов</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#_4">Типы ошибок</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#vs">Чистые vs эффектные функции</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3">3. Конкурентность и параллелизм</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#stm-software-transactional-memory">STM (Software Transactional Memory)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#async">Async (для параллельных операций)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#database">Пул соединений (Database)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ioref">IORef для кэша в памяти</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4">4. Ключевые библиотеки и их роль</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5">5. Модульная структура (ключевые слои)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#6">6. Паттерны и идиомы</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#pattern-1-entity-domain-type-json">Pattern 1: Entity → Domain Type → JSON</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pattern-2-service-">Pattern 2: Service-функция (оркестрация)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pattern-3-resource-bracket">Pattern 3: Resource-паттерн (bracket)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pattern-4-event-event-sourcing">Pattern 4: Event-события (Event Sourcing)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pattern-5-om-readert-design-pattern">Pattern 5: НOM-паттерн (ReaderT design pattern)</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../API/">API</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../DATABASE/">Хранилище данных</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../DEPLOYMENT/">Развёртывание</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../GUIDE/">Руководство</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Руководства</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/accounting/">Как работает бухгалтерия</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/inventory/">Как работает инвентарь</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/rbac/">Как работает RBAC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/jwt/">Как работает JWT-аутентификация</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/persistence/">Как работает персистентность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../guides/event-store/">Как работает Event Store</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">ADR</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../adr/0001-haskell-primary-language/">ADR-001: Haskell как основной язык</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../adr/0002-mkdocs-site/">ADR-002: MkDocs для сайта документации</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../architecture/EVENT_SOURCING/">Архитектура событий</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Инженерные модули</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/api-conventions/">api-conventions.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/bill-module/">bill-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/document-module/">document-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/hr-payroll-module/">hr-payroll-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/job-server-etl/">job-server-etl.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/person-module/">person-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/production-module/">production-module.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/reports-portal/">reports-portal.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/schema-uniqueness/">schema-uniqueness.md</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../engineering/testing-guide/">testing-guide.md</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/EXAMPLES/">Примеры</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../REFINEMENT/">Рефиниции</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../SUMMARY/">Сводка</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Задачи</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tasks/Home/">Обзор</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tasks/Plans/">Планы</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tasks/Backlog/">Бэклог</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Surypus ERP</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Система типов</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/surypus/surypus/edit/master/docs/TYPES.md">Edit on surypus/surypus</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="haskell-">Система типов и Haskell-специфика</h1>
+<blockquote>
+<p>Раздел описывает ключевые типы предметной области, управление эффектами (монады), конкурентность и паттерны, специфичные для Haskell в контексте ERP-системы.</p>
+</blockquote>
+<hr />
+<h2 id="1">1. Карта типов предметной области</h2>
+<h3 id="_1">Финансовые типы</h3>
+<div class="highlight"><pre><span></span><code><span class="err">──</span><span class="w"> </span><span class="kt">Точные</span><span class="w"> </span><span class="n">десятичные</span><span class="w"> </span><span class="n">дроби</span><span class="w"> </span><span class="p">(</span><span class="n">избегаем</span><span class="w"> </span><span class="kt">Double</span><span class="w"> </span><span class="n">для</span><span class="w"> </span><span class="n">денег</span><span class="o">!</span><span class="p">)</span>
+<span class="kr">newtype</span><span class="w"> </span><span class="kt">Money</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Money</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">unMoney</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Decimal</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="kr">deriving</span><span class="w"> </span><span class="p">(</span><span class="kt">Eq</span><span class="p">,</span><span class="w"> </span><span class="kt">Num</span><span class="p">,</span><span class="w"> </span><span class="kt">Ord</span><span class="p">)</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Налоговая</span><span class="w"> </span><span class="n">ставка</span><span class="w"> </span><span class="p">(</span><span class="n">проценты</span><span class="kt">:</span><span class="w"> </span><span class="mi">0</span><span class="o">..</span><span class="mi">100</span><span class="p">)</span>
+<span class="kr">data</span><span class="w"> </span><span class="kt">TaxRate</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">TaxRate</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="n">trId</span><span class="w">    </span><span class="ow">::</span><span class="w"> </span><span class="kt">Int64</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">trName</span><span class="w">  </span><span class="ow">::</span><span class="w"> </span><span class="kt">Text</span><span class="w">          </span><span class="err">──</span><span class="w"> </span><span class="s">&quot;НДС 20%&quot;</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">trRate</span><span class="w">  </span><span class="ow">::</span><span class="w"> </span><span class="kt">Double</span><span class="w">        </span><span class="err">──</span><span class="w"> </span><span class="mf">20.0</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">trFlags</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Int</span><span class="w">           </span><span class="err">──</span><span class="w"> </span><span class="n">битовые</span><span class="w"> </span><span class="n">флаги</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="kr">deriving</span><span class="w"> </span><span class="p">(</span><span class="kt">Show</span><span class="p">,</span><span class="w"> </span><span class="kt">Eq</span><span class="p">)</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Счёт</span><span class="w"> </span><span class="p">(</span><span class="n">накладная</span><span class="p">,</span><span class="w"> </span><span class="n">заказ</span><span class="p">)</span>
+<span class="kr">data</span><span class="w"> </span><span class="kt">BillType</span>
+<span class="w">  </span><span class="ow">=</span><span class="w"> </span><span class="kt">PPOPT_GOODSRECEIPT</span><span class="w">       </span><span class="err">──</span><span class="w"> </span><span class="kt">Приход</span><span class="w"> </span><span class="n">товара</span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">PPOPT_SALES</span><span class="w">              </span><span class="err">──</span><span class="w"> </span><span class="kt">Продажа</span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">PPOPT_TRANSFER</span><span class="w">           </span><span class="err">──</span><span class="w"> </span><span class="kt">Перемещение</span>
+<span class="w">  </span><span class="kr">deriving</span><span class="w"> </span><span class="p">(</span><span class="kt">Eq</span><span class="p">,</span><span class="w"> </span><span class="kt">Show</span><span class="p">)</span>
+
+<span class="kr">data</span><span class="w"> </span><span class="kt">DocStatus</span>
+<span class="w">  </span><span class="ow">=</span><span class="w"> </span><span class="kt">DRAFT</span><span class="w">                    </span><span class="err">──</span><span class="w"> </span><span class="kt">Черновик</span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">POSTED</span><span class="w">                   </span><span class="err">──</span><span class="w"> </span><span class="kt">Проведён</span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">CANCELLED</span><span class="w">                </span><span class="err">──</span><span class="w"> </span><span class="kt">Аннулирован</span>
+<span class="w">  </span><span class="kr">deriving</span><span class="w"> </span><span class="p">(</span><span class="kt">Eq</span><span class="p">,</span><span class="w"> </span><span class="kt">Show</span><span class="p">)</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Проводка</span><span class="w"> </span><span class="p">(</span><span class="n">бухгалтерская</span><span class="w"> </span><span class="n">запись</span><span class="p">)</span>
+<span class="kr">data</span><span class="w"> </span><span class="kt">LedgerEntry</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">LedgerEntry</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="n">leId</span><span class="w">       </span><span class="ow">::</span><span class="w"> </span><span class="kt">Int64</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">leDocId</span><span class="w">    </span><span class="ow">::</span><span class="w"> </span><span class="kt">Int64</span><span class="w">      </span><span class="err">──</span><span class="w"> </span><span class="n">ссылка</span><span class="w"> </span><span class="n">на</span><span class="w"> </span><span class="n">документ</span><span class="o">-</span><span class="n">основание</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">leDebit</span><span class="w">    </span><span class="ow">::</span><span class="w"> </span><span class="kt">Int64</span><span class="w">      </span><span class="err">──</span><span class="w"> </span><span class="n">счёт</span><span class="w"> </span><span class="n">дебета</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">leCredit</span><span class="w">   </span><span class="ow">::</span><span class="w"> </span><span class="kt">Int64</span><span class="w">      </span><span class="err">──</span><span class="w"> </span><span class="n">счёт</span><span class="w"> </span><span class="n">кредита</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">leAmount</span><span class="w">   </span><span class="ow">::</span><span class="w"> </span><span class="kt">Money</span><span class="w">      </span><span class="err">──</span><span class="w"> </span><span class="n">сумма</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">leDate</span><span class="w">     </span><span class="ow">::</span><span class="w"> </span><span class="kt">DocDate</span><span class="w">    </span><span class="err">──</span><span class="w"> </span><span class="n">дата</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">leDescr</span><span class="w">    </span><span class="ow">::</span><span class="w"> </span><span class="kt">Text</span><span class="w">       </span><span class="err">──</span><span class="w"> </span><span class="n">описание</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Партия</span><span class="w"> </span><span class="n">товара</span><span class="w"> </span><span class="p">(</span><span class="kt">FIFO</span><span class="p">)</span>
+<span class="kr">data</span><span class="w"> </span><span class="kt">Lot</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Lot</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="n">lotId</span><span class="w">       </span><span class="ow">::</span><span class="w"> </span><span class="kt">Int64</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">lotGoodsId</span><span class="w">  </span><span class="ow">::</span><span class="w"> </span><span class="kt">GoodsID</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">lotLocationId</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">LocationID</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">lotBillId</span><span class="w">   </span><span class="ow">::</span><span class="w"> </span><span class="kt">BillID</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">lotDt</span><span class="w">       </span><span class="ow">::</span><span class="w"> </span><span class="kt">DocDate</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">lotExpDt</span><span class="w">    </span><span class="ow">::</span><span class="w"> </span><span class="kt">Maybe</span><span class="w"> </span><span class="kt">DocDate</span><span class="w">   </span><span class="err">──</span><span class="w"> </span><span class="n">срок</span><span class="w"> </span><span class="n">годности</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">lotRest</span><span class="w">     </span><span class="ow">::</span><span class="w"> </span><span class="kt">Double</span><span class="w">          </span><span class="err">──</span><span class="w"> </span><span class="n">остаток</span><span class="w"> </span><span class="p">(</span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">lotCost</span><span class="w">     </span><span class="ow">::</span><span class="w"> </span><span class="kt">Money</span><span class="w">           </span><span class="err">──</span><span class="w"> </span><span class="n">себестоимость</span><span class="w"> </span><span class="n">единицы</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">lotPrice</span><span class="w">    </span><span class="ow">::</span><span class="w"> </span><span class="kt">Money</span><span class="w">           </span><span class="err">──</span><span class="w"> </span><span class="n">цена</span><span class="w"> </span><span class="n">продажи</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">lotSerial</span><span class="w">   </span><span class="ow">::</span><span class="w"> </span><span class="kt">Maybe</span><span class="w"> </span><span class="kt">Text</span><span class="w">      </span><span class="err">──</span><span class="w"> </span><span class="n">серийный</span><span class="w"> </span><span class="n">номер</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">lotFlags</span><span class="w">    </span><span class="ow">::</span><span class="w"> </span><span class="kt">Int</span>
+<span class="w">  </span><span class="p">}</span>
+</code></pre></div>
+<h3 id="_2">Инварианты, гарантируемые типами</h3>
+<div class="highlight"><pre><span></span><code><span class="err">──</span><span class="w"> </span><span class="mi">1</span><span class="o">.</span><span class="w"> </span><span class="kt">Остаток</span><span class="w"> </span><span class="n">партии</span><span class="w"> </span><span class="n">неотрицателен</span><span class="w"> </span><span class="p">(</span><span class="kt">CHECK</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">тип</span><span class="p">)</span>
+<span class="err">──</span><span class="w">    </span><span class="kt">Свойство:</span><span class="w"> </span><span class="kt">Lot</span><span class="o">.</span><span class="n">rest</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="n">всегда</span>
+
+<span class="err">──</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="w"> </span><span class="kt">Сумма</span><span class="w"> </span><span class="n">проводок</span><span class="w"> </span><span class="n">сбалансирована</span>
+<span class="err">──</span><span class="w">    </span><span class="n">forall</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">LedgerEntry</span><span class="w"> </span><span class="o">.</span><span class="w"> </span><span class="n">sum</span><span class="p">(</span><span class="n">debit</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">sum</span><span class="p">(</span><span class="n">credit</span><span class="p">)</span>
+
+<span class="err">──</span><span class="w"> </span><span class="mi">3</span><span class="o">.</span><span class="w"> </span><span class="kt">Налог</span><span class="w"> </span><span class="n">не</span><span class="w"> </span><span class="n">превышает</span><span class="w"> </span><span class="n">сумму</span>
+<span class="err">──</span><span class="w">    </span><span class="n">calcVAT</span><span class="w"> </span><span class="n">amount</span><span class="w"> </span><span class="n">rate</span><span class="kt">:</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">результат</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">amount</span>
+
+<span class="err">──</span><span class="w"> </span><span class="mi">4</span><span class="o">.</span><span class="w"> </span><span class="kt">Цена</span><span class="w"> </span><span class="n">неотрицательна</span>
+<span class="err">──</span><span class="w">    </span><span class="kt">Money:</span><span class="w"> </span><span class="n">только</span><span class="w"> </span><span class="n">неотрицательные</span><span class="w"> </span><span class="kt">Decimal</span>
+</code></pre></div>
+<h3 id="api-dto">Типы для API (DTO)</h3>
+<div class="highlight"><pre><span></span><code><span class="err">──</span><span class="w"> </span><span class="kt">Входные</span><span class="w"> </span><span class="n">данные</span><span class="w"> </span><span class="p">(</span><span class="kt">FromJSON</span><span class="p">)</span>
+<span class="kr">data</span><span class="w"> </span><span class="kt">BillInput</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">BillInput</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="n">biBillType</span><span class="w">   </span><span class="ow">::</span><span class="w"> </span><span class="kt">BillType</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">biDocDate</span><span class="w">    </span><span class="ow">::</span><span class="w"> </span><span class="kt">DocDate</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">biPersonId</span><span class="w">   </span><span class="ow">::</span><span class="w"> </span><span class="kt">Int64</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">biLocationId</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Int64</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">biLines</span><span class="w">      </span><span class="ow">::</span><span class="w"> </span><span class="p">[</span><span class="kt">BillLineInput</span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Выходные</span><span class="w"> </span><span class="n">данные</span><span class="w"> </span><span class="p">(</span><span class="kt">ToJSON</span><span class="p">)</span>
+<span class="kr">data</span><span class="w"> </span><span class="kt">Bill</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Bill</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="n">bId</span><span class="w">           </span><span class="ow">::</span><span class="w"> </span><span class="kt">Int64</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">bCode</span><span class="w">         </span><span class="ow">::</span><span class="w"> </span><span class="kt">Text</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">bBillType</span><span class="w">     </span><span class="ow">::</span><span class="w"> </span><span class="kt">BillType</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">bDocStatus</span><span class="w">    </span><span class="ow">::</span><span class="w"> </span><span class="kt">DocStatus</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">bDocDate</span><span class="w">      </span><span class="ow">::</span><span class="w"> </span><span class="kt">DocDate</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">bTotal</span><span class="w">        </span><span class="ow">::</span><span class="w"> </span><span class="kt">Money</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">bDiscountAmount</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Money</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">bTaxAmount</span><span class="w">    </span><span class="ow">::</span><span class="w"> </span><span class="kt">Money</span>
+<span class="w">  </span><span class="p">}</span>
+</code></pre></div>
+<h3 id="liquidhaskell-">LiquidHaskell-рефайнменты (формальная верификация)</h3>
+<div class="highlight"><pre><span></span><code><span class="cm">{-@ type NonNeg = {v:Double | v &gt;= 0} @-}</span>
+<span class="cm">{-@ type Percent = {v:Double | 0 &lt;= v &amp;&amp; v &lt;= 100} @-}</span>
+<span class="cm">{-@ type Positive = {v:Double | v &gt; 0} @-}</span>
+
+<span class="cm">{-@ calcVAT :: Double -&gt; Percent -&gt; NonNeg @-}</span>
+<span class="nf">calcVAT</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Double</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Double</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Double</span>
+<span class="nf">calcVAT</span><span class="w"> </span><span class="n">amount</span><span class="w"> </span><span class="n">rate</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">amount</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">rate</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">100.0</span><span class="p">)</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Доказанное</span><span class="w"> </span><span class="n">свойство</span><span class="kt">:</span><span class="w"> </span><span class="n">результат</span><span class="w"> </span><span class="n">всегда</span><span class="w"> </span><span class="n">неотрицателен</span>
+<span class="err">──</span><span class="w"> </span><span class="n">и</span><span class="w"> </span><span class="n">не</span><span class="w"> </span><span class="n">превышает</span><span class="w"> </span><span class="n">исходной</span><span class="w"> </span><span class="n">суммы</span><span class="w"> </span><span class="p">(</span><span class="n">при</span><span class="w"> </span><span class="n">rate</span><span class="w"> </span><span class="err">∈</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">100</span><span class="p">])</span>
+</code></pre></div>
+<hr />
+<h2 id="2">2. Управление эффектами (монады)</h2>
+<h3 id="_3">Основной стек эффектов</h3>
+<div class="highlight"><pre><span></span><code><span class="err">──</span><span class="w"> </span><span class="kt">Базовый</span><span class="w"> </span><span class="n">тип</span><span class="w"> </span><span class="n">для</span><span class="w"> </span><span class="n">всех</span><span class="w"> </span><span class="n">операций</span><span class="w"> </span><span class="n">с</span><span class="w"> </span><span class="kt">БД</span>
+<span class="kr">type</span><span class="w"> </span><span class="kt">DB</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">ReaderT</span><span class="w"> </span><span class="kt">DbContext</span><span class="w"> </span><span class="kt">IO</span><span class="w"> </span><span class="n">a</span>
+<span class="err">──</span><span class="w">   </span><span class="n">где</span><span class="w"> </span><span class="kt">DbContext</span><span class="w"> </span><span class="n">содержит</span><span class="w"> </span><span class="n">пул</span><span class="w"> </span><span class="n">соединений</span><span class="p">,</span><span class="w"> </span><span class="n">конфиг</span><span class="p">,</span><span class="w"> </span><span class="n">метрики</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">API</span><span class="o">-</span><span class="n">хендлеры</span><span class="w"> </span><span class="p">(</span><span class="n">с</span><span class="w"> </span><span class="n">аутентификацией</span><span class="p">)</span>
+<span class="kr">type</span><span class="w"> </span><span class="kt">AuthHandler</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">ReaderT</span><span class="w"> </span><span class="kt">AuthContext</span><span class="w"> </span><span class="kt">Handler</span><span class="w"> </span><span class="n">a</span>
+<span class="err">──</span><span class="w">   </span><span class="n">где</span><span class="w"> </span><span class="kt">AuthContext</span><span class="w"> </span><span class="n">содержит</span><span class="w"> </span><span class="n">пользователя</span><span class="p">,</span><span class="w"> </span><span class="n">tenant</span><span class="p">,</span><span class="w"> </span><span class="n">права</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Пример:</span><span class="w"> </span><span class="n">сервис</span><span class="w"> </span><span class="n">создания</span><span class="w"> </span><span class="n">счёта</span>
+<span class="nf">createBill</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">AuthContext</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">BillInput</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">DB</span><span class="w"> </span><span class="p">(</span><span class="kt">Either</span><span class="w"> </span><span class="kt">ServiceError</span><span class="w"> </span><span class="kt">Bill</span><span class="p">)</span>
+<span class="nf">createBill</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kr">do</span>
+<span class="w">  </span><span class="err">──</span><span class="w"> </span><span class="mi">1</span><span class="o">.</span><span class="w"> </span><span class="kt">Валидация</span><span class="w"> </span><span class="p">(</span><span class="n">чистая</span><span class="w"> </span><span class="n">функция</span><span class="p">)</span>
+<span class="w">  </span><span class="kr">case</span><span class="w"> </span><span class="n">validateBillInput</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="kr">of</span>
+<span class="w">    </span><span class="kt">Left</span><span class="w"> </span><span class="n">err</span><span class="w">  </span><span class="ow">-&gt;</span><span class="w"> </span><span class="n">return</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="kt">Left</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="kt">ValidationError</span><span class="w"> </span><span class="n">err</span>
+<span class="w">    </span><span class="kt">Right</span><span class="w"> </span><span class="n">b</span><span class="w">   </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kr">do</span>
+<span class="w">      </span><span class="err">──</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="w"> </span><span class="kt">Проверка</span><span class="w"> </span><span class="n">прав</span><span class="w"> </span><span class="p">(</span><span class="n">эффект</span><span class="w"> </span><span class="n">чтения</span><span class="w"> </span><span class="n">контекста</span><span class="p">)</span>
+<span class="w">      </span><span class="n">unless</span><span class="w"> </span><span class="p">(</span><span class="n">hasPermission</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="s">&quot;bill:create&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">$</span>
+<span class="w">        </span><span class="n">return</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="kt">Left</span><span class="w"> </span><span class="kt">Forbidden</span>
+<span class="w">      </span><span class="err">──</span><span class="w"> </span><span class="mi">3</span><span class="o">.</span><span class="w"> </span><span class="kt">Транзакция</span><span class="w"> </span><span class="kt">БД</span><span class="w"> </span><span class="p">(</span><span class="n">эффект</span><span class="w"> </span><span class="kt">БД</span><span class="p">)</span>
+<span class="w">      </span><span class="n">result</span><span class="w"> </span><span class="ow">&lt;-</span><span class="w"> </span><span class="kt">DAL</span><span class="o">.</span><span class="kt">Bill</span><span class="o">.</span><span class="n">create</span><span class="w"> </span><span class="n">b</span>
+<span class="w">      </span><span class="err">└──</span><span class="w"> </span><span class="n">права</span><span class="w"> </span><span class="n">доступа</span>
+<span class="w">  </span><span class="err">──</span><span class="w"> </span><span class="mi">4</span><span class="o">.</span><span class="w"> </span><span class="kt">Постобработка</span>
+<span class="w">      </span><span class="n">return</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="kr">case</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="kr">of</span>
+<span class="w">        </span><span class="kt">Left</span><span class="w"> </span><span class="n">e</span><span class="w">  </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Left</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="kt">DBError</span><span class="w"> </span><span class="n">e</span>
+<span class="w">        </span><span class="kt">Right</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Right</span><span class="w"> </span><span class="n">x</span>
+</code></pre></div>
+<h3 id="_4">Типы ошибок</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">data</span><span class="w"> </span><span class="kt">ServiceError</span>
+<span class="w">  </span><span class="ow">=</span><span class="w"> </span><span class="kt">ValidationError</span><span class="w"> </span><span class="kt">Text</span><span class="w">    </span><span class="err">──</span><span class="w"> </span><span class="kt">Ошибка</span><span class="w"> </span><span class="n">валидации</span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">NotFound</span><span class="w"> </span><span class="kt">Text</span><span class="w">           </span><span class="err">──</span><span class="w"> </span><span class="kt">Не</span><span class="w"> </span><span class="n">найдено</span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">Forbidden</span><span class="w">               </span><span class="err">──</span><span class="w"> </span><span class="kt">Нет</span><span class="w"> </span><span class="n">прав</span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">Conflict</span><span class="w"> </span><span class="kt">Text</span><span class="w">           </span><span class="err">──</span><span class="w"> </span><span class="kt">Конфликт</span><span class="w"> </span><span class="p">(</span><span class="n">дубликат</span><span class="p">)</span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">DBError</span><span class="w"> </span><span class="kt">DBError</span><span class="w">         </span><span class="err">──</span><span class="w"> </span><span class="kt">Ошибка</span><span class="w"> </span><span class="kt">БД</span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">InternalError</span><span class="w"> </span><span class="kt">Text</span><span class="w">      </span><span class="err">──</span><span class="w"> </span><span class="kt">Внутренняя</span><span class="w"> </span><span class="n">ошибка</span>
+</code></pre></div>
+<h3 id="vs">Чистые vs эффектные функции</h3>
+<div class="highlight"><pre><span></span><code><span class="err">──</span><span class="w"> </span><span class="kt">Чистые</span><span class="w"> </span><span class="n">функции</span><span class="w"> </span><span class="p">(</span><span class="n">без</span><span class="w"> </span><span class="kt">IO</span><span class="p">)</span><span class="kt">:</span><span class="w"> </span><span class="n">в</span><span class="w"> </span><span class="kt">Core</span><span class="o">/</span>
+<span class="nf">validateTaxRate</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">TaxRate</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Either</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="kt">TaxRate</span>
+<span class="nf">calcVAT</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Double</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Double</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Double</span>
+<span class="nf">fifoCost</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="p">[</span><span class="kt">Lot</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Double</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">(</span><span class="kt">Double</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="kt">Lot</span><span class="p">])</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Эффектные</span><span class="w"> </span><span class="n">функции</span><span class="w"> </span><span class="p">(</span><span class="n">с</span><span class="w"> </span><span class="kt">IO</span><span class="p">)</span><span class="kt">:</span><span class="w"> </span><span class="n">в</span><span class="w"> </span><span class="kt">Service</span><span class="o">/</span>
+<span class="nf">createBill</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">AuthContext</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">BillInput</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IO</span><span class="w"> </span><span class="p">(</span><span class="kt">Either</span><span class="w"> </span><span class="kt">ServiceError</span><span class="w"> </span><span class="kt">Bill</span><span class="p">)</span>
+<span class="nf">postBill</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">AuthContext</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">BillID</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IO</span><span class="w"> </span><span class="p">(</span><span class="kt">Either</span><span class="w"> </span><span class="kt">ServiceError</span><span class="w"> </span><span class="nb">()</span><span class="p">)</span>
+<span class="nf">generateReport</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">ReportParams</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IO</span><span class="w"> </span><span class="p">(</span><span class="kt">Either</span><span class="w"> </span><span class="kt">ServiceError</span><span class="w"> </span><span class="kt">FilePath</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="3">3. Конкурентность и параллелизм</h2>
+<h3 id="stm-software-transactional-memory">STM (Software Transactional Memory)</h3>
+<div class="highlight"><pre><span></span><code><span class="err">──</span><span class="w"> </span><span class="kt">Атомарное</span><span class="w"> </span><span class="n">обновление</span><span class="w"> </span><span class="n">остатков</span><span class="w"> </span><span class="n">склада</span>
+<span class="nf">adjustStock</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">GoodsID</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">LocationID</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Double</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">STM</span><span class="w"> </span><span class="nb">()</span>
+<span class="nf">adjustStock</span><span class="w"> </span><span class="n">gid</span><span class="w"> </span><span class="n">lid</span><span class="w"> </span><span class="n">delta</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kr">do</span>
+<span class="w">  </span><span class="n">current</span><span class="w"> </span><span class="ow">&lt;-</span><span class="w"> </span><span class="n">readTVar</span><span class="w"> </span><span class="p">(</span><span class="n">stockMap</span><span class="w"> </span><span class="kt">TVar</span><span class="p">)</span>
+<span class="w">  </span><span class="kr">let</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="p">(</span><span class="n">gid</span><span class="p">,</span><span class="w"> </span><span class="n">lid</span><span class="p">)</span>
+<span class="w">      </span><span class="n">newQtty</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">M</span><span class="o">.</span><span class="n">lookup</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="n">current</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">delta</span>
+<span class="w">  </span><span class="n">when</span><span class="w"> </span><span class="p">(</span><span class="n">newQtty</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">retry</span><span class="w">  </span><span class="err">──</span><span class="w"> </span><span class="n">блокировка</span><span class="p">,</span><span class="w"> </span><span class="n">если</span><span class="w"> </span><span class="n">остаток</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span>
+<span class="w">  </span><span class="n">writeTVar</span><span class="w"> </span><span class="p">(</span><span class="n">stockMap</span><span class="w"> </span><span class="kt">TVar</span><span class="p">)</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="kt">M</span><span class="o">.</span><span class="n">insert</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="n">newQtty</span><span class="w"> </span><span class="n">current</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Использование</span><span class="w"> </span><span class="n">в</span><span class="w"> </span><span class="kt">IO:</span>
+<span class="nf">atomically</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">adjustStock</span><span class="w"> </span><span class="mi">42</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">(</span><span class="o">-</span><span class="mf">5.0</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="async">Async (для параллельных операций)</h3>
+<div class="highlight"><pre><span></span><code><span class="err">──</span><span class="w"> </span><span class="kt">Параллельная</span><span class="w"> </span><span class="n">генерация</span><span class="w"> </span><span class="n">нескольких</span><span class="w"> </span><span class="n">отчётов</span>
+<span class="nf">generateReports</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="p">[</span><span class="kt">ReportParams</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IO</span><span class="w"> </span><span class="p">[</span><span class="kt">Either</span><span class="w"> </span><span class="kt">ServiceError</span><span class="w"> </span><span class="kt">FilePath</span><span class="p">]</span>
+<span class="nf">generateReports</span><span class="w"> </span><span class="n">params</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kr">do</span>
+<span class="w">  </span><span class="n">results</span><span class="w"> </span><span class="ow">&lt;-</span><span class="w"> </span><span class="n">mapConcurrently</span><span class="w"> </span><span class="n">generateReport</span><span class="w"> </span><span class="n">params</span>
+<span class="w">  </span><span class="n">return</span><span class="w"> </span><span class="n">results</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Тайм</span><span class="o">-</span><span class="n">аут</span><span class="w"> </span><span class="n">для</span><span class="w"> </span><span class="n">долгих</span><span class="w"> </span><span class="n">операций</span>
+<span class="nf">withTimeout</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Int</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IO</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IO</span><span class="w"> </span><span class="p">(</span><span class="kt">Maybe</span><span class="w"> </span><span class="n">a</span><span class="p">)</span>
+<span class="nf">withTimeout</span><span class="w"> </span><span class="n">us</span><span class="w"> </span><span class="n">action</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kr">do</span>
+<span class="w">  </span><span class="n">result</span><span class="w"> </span><span class="ow">&lt;-</span><span class="w"> </span><span class="n">race</span><span class="w"> </span><span class="p">(</span><span class="n">threadDelay</span><span class="w"> </span><span class="n">us</span><span class="p">)</span><span class="w"> </span><span class="n">action</span>
+<span class="w">  </span><span class="n">return</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="kr">case</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="kr">of</span>
+<span class="w">    </span><span class="kt">Left</span><span class="w"> </span><span class="kr">_</span><span class="w">      </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Nothing</span><span class="w">      </span><span class="err">──</span><span class="w"> </span><span class="n">тайм</span><span class="o">-</span><span class="n">аут</span>
+<span class="w">    </span><span class="kt">Right</span><span class="w"> </span><span class="n">val</span><span class="w">   </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Just</span><span class="w"> </span><span class="n">val</span><span class="w">     </span><span class="err">──</span><span class="w"> </span><span class="n">успех</span>
+</code></pre></div>
+<h3 id="database">Пул соединений (Database)</h3>
+<div class="highlight"><pre><span></span><code><span class="err">──</span><span class="w"> </span><span class="kt">Пул</span><span class="w"> </span><span class="kt">PostgreSQL</span><span class="o">-</span><span class="n">соединений</span><span class="w"> </span><span class="p">(</span><span class="kt">Data</span><span class="o">.</span><span class="kt">Pool</span><span class="p">)</span>
+<span class="nf">createPostgresPool</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">PGConfig</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IO</span><span class="w"> </span><span class="p">(</span><span class="kt">Pool</span><span class="w"> </span><span class="kt">Connection</span><span class="p">)</span>
+<span class="err">──</span><span class="w"> </span><span class="n">max</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="n">соединений</span><span class="p">,</span><span class="w"> </span><span class="n">idle</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="n">секунд</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Использование</span><span class="w"> </span><span class="n">в</span><span class="w"> </span><span class="kt">ReaderT</span>
+<span class="nf">withPool</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Pool</span><span class="w"> </span><span class="kt">Connection</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">ReaderT</span><span class="w"> </span><span class="kt">DbContext</span><span class="w"> </span><span class="kt">IO</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IO</span><span class="w"> </span><span class="n">a</span>
+</code></pre></div>
+<h3 id="ioref">IORef для кэша в памяти</h3>
+<div class="highlight"><pre><span></span><code><span class="err">──</span><span class="w"> </span><span class="kt">Кэш</span><span class="w"> </span><span class="n">сгенерированных</span><span class="w"> </span><span class="kt">PDF</span><span class="o">-</span><span class="n">файлов</span><span class="w"> </span><span class="p">(</span><span class="kr">in</span><span class="o">-</span><span class="n">memory</span><span class="p">)</span>
+<span class="nf">reportCache</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">IORef</span><span class="w"> </span><span class="p">(</span><span class="kt">Map</span><span class="w"> </span><span class="kt">Text</span><span class="w"> </span><span class="kt">FilePath</span><span class="p">)</span>
+<span class="nf">reportCache</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">unsafePerformIO</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">newIORef</span><span class="w"> </span><span class="kt">M</span><span class="o">.</span><span class="n">empty</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Атомарное</span><span class="w"> </span><span class="n">обновление</span>
+<span class="nf">atomicModifyIORef&#39;</span><span class="w"> </span><span class="n">reportCache</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="kt">M</span><span class="o">.</span><span class="n">insert</span><span class="w"> </span><span class="n">uuid</span><span class="w"> </span><span class="n">filepath</span>
+</code></pre></div>
+<hr />
+<h2 id="4">4. Ключевые библиотеки и их роль</h2>
+<table>
+<thead>
+<tr>
+<th>Библиотека</th>
+<th>Роль</th>
+<th>Модуль</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>persistent</strong></td>
+<td>ORM-генерация схемы и типов</td>
+<td><code>DAL.Schema</code>, <code>DAL.Queries</code></td>
+</tr>
+<tr>
+<td><strong>esqueleto</strong></td>
+<td>Типобезопасные JOIN-запросы</td>
+<td><code>DAL.QueriesORM</code></td>
+</tr>
+<tr>
+<td><strong>aeson</strong></td>
+<td>JSON-сериализация API</td>
+<td><code>DAL.Types</code> (FromJSON/ToJSON)</td>
+</tr>
+<tr>
+<td><strong>servant</strong></td>
+<td>Типизированные REST-эндпоинты</td>
+<td><code>Surypus.API.Server</code></td>
+</tr>
+<tr>
+<td><strong>warp</strong></td>
+<td>HTTP-сервер</td>
+<td><code>Surypus.App.Main</code></td>
+</tr>
+<tr>
+<td><strong>jose</strong></td>
+<td>JWT-токены</td>
+<td><code>Surypus.JWT</code></td>
+</tr>
+<tr>
+<td><strong>cryptonite</strong></td>
+<td>Хеширование паролей</td>
+<td><code>Surypus.API.Auth</code></td>
+</tr>
+<tr>
+<td><strong>stm</strong></td>
+<td>Software Transactional Memory</td>
+<td><code>Infrastructure.*</code></td>
+</tr>
+<tr>
+<td><strong>async</strong></td>
+<td>Параллельные операции</td>
+<td><code>Surypus.*</code></td>
+</tr>
+<tr>
+<td><strong>ekg</strong></td>
+<td>Метрики приложения</td>
+<td><code>Surypus.Metrics</code></td>
+</tr>
+<tr>
+<td><strong>hedis</strong></td>
+<td>Redis-клиент</td>
+<td><code>Infrastructure.Redis</code></td>
+</tr>
+<tr>
+<td><strong>websockets</strong></td>
+<td>WebSocket-поддержка</td>
+<td><code>Surypus.WebSocket</code></td>
+</tr>
+<tr>
+<td><strong>Decimal</strong></td>
+<td>Точные финансовые расчёты</td>
+<td><code>Core.Finance</code></td>
+</tr>
+<tr>
+<td><strong>QuickCheck</strong></td>
+<td>Property-based testing</td>
+<td><code>test/</code></td>
+</tr>
+<tr>
+<td><strong>hspec</strong></td>
+<td>Unit-тесты</td>
+<td><code>test/</code></td>
+</tr>
+<tr>
+<td><strong>liquidhaskell</strong></td>
+<td>Формальная верификация</td>
+<td>Core-модули</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5">5. Модульная структура (ключевые слои)</h2>
+<div class="highlight"><pre><span></span><code>── Доменный слой (чистая бизнес-логика, без IO)
+Core/
+├── Tax.hs          ── расчёты налогов
+├── Goods.hs        ── товары, категории, единицы
+├── Accounting.hs   ── план счетов, проводки
+├── Inventory.hs    ── FIFO, остатки
+├── Person.hs       ── контрагенты
+├── Document.hs     ── документы, регистры
+└── Services/
+    └── Accounting.hs  ── сервисный слой
+
+── Слой данных (IO + Database)
+DAL/
+├── Schema.hs       ── Persistent-сущности (43 шт.)
+├── Types.hs        ── Domain-типы + JSON
+├── Conversion.hs   ── Entity → Domain
+├── QueriesORM.hs   ── Esqueleto-запросы
+├── EventStore.hs   ── Event Sourcing storage
+├── Procedures.hs   ── Хранимые процедуры
+└── Mutations.hs    ── RAW SQL мутации
+
+── API-слой (HTTP + Auth)
+Surypus.API/
+├── Server.hs       ── Определение всех маршрутов
+├── Auth.hs         ── Логин/регистрация
+├── Bills.hs        ── Счета
+├── Accounting.hs   ── Бухгалтерия
+├── Payroll.hs      ── Зарплата
+├── Reports.hs      ── Отчёты (PDF)
+└── ... (26 хендлеров)
+</code></pre></div>
+<hr />
+<h2 id="6">6. Паттерны и идиомы</h2>
+<h3 id="pattern-1-entity-domain-type-json">Pattern 1: Entity → Domain Type → JSON</h3>
+<div class="highlight"><pre><span></span><code><span class="err">──</span><span class="w"> </span><span class="mi">1</span><span class="o">.</span><span class="w"> </span><span class="kt">Persistent</span><span class="w"> </span><span class="n">генерирует</span><span class="w"> </span><span class="kt">Entity</span><span class="w"> </span><span class="p">(</span><span class="n">с</span><span class="w"> </span><span class="n">префиксом</span><span class="p">)</span>
+<span class="err">──</span><span class="w">    </span><span class="kt">BillEntity</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">billId</span><span class="p">,</span><span class="w"> </span><span class="n">billCode</span><span class="p">,</span><span class="w"> </span><span class="o">...</span><span class="w"> </span><span class="p">}</span>
+
+<span class="err">──</span><span class="w"> </span><span class="mi">2</span><span class="o">.</span><span class="w"> </span><span class="kt">Domain</span><span class="o">-</span><span class="n">тип</span><span class="w"> </span><span class="n">в</span><span class="w"> </span><span class="kt">DAL</span><span class="o">/</span><span class="kt">Types</span><span class="o">.</span><span class="n">hs</span>
+<span class="kr">data</span><span class="w"> </span><span class="kt">Bill</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Bill</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">bId</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Int64</span><span class="p">,</span><span class="w"> </span><span class="n">bCode</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Text</span><span class="p">,</span><span class="w"> </span><span class="o">...</span><span class="w"> </span><span class="p">}</span>
+
+<span class="err">──</span><span class="w"> </span><span class="mi">3</span><span class="o">.</span><span class="w"> </span><span class="kt">Конверсия</span><span class="w"> </span><span class="n">в</span><span class="w"> </span><span class="kt">DAL</span><span class="o">/</span><span class="kt">Conversion</span><span class="o">.</span><span class="n">hs</span>
+<span class="nf">billFromEntity</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">BillEntity</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Bill</span>
+<span class="nf">billFromEntity</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Bill</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="n">bId</span><span class="w">   </span><span class="ow">=</span><span class="w"> </span><span class="n">billId</span><span class="w"> </span><span class="n">be</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">bCode</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">billCode</span><span class="w"> </span><span class="n">be</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="o">...</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="err">──</span><span class="w"> </span><span class="mi">4</span><span class="o">.</span><span class="w"> </span><span class="kt">JSON</span><span class="o">-</span><span class="n">сериализация</span><span class="w"> </span><span class="n">в</span><span class="w"> </span><span class="kt">DAL</span><span class="o">/</span><span class="kt">Types</span><span class="o">.</span><span class="n">hs</span>
+<span class="kr">instance</span><span class="w"> </span><span class="kt">ToJSON</span><span class="w"> </span><span class="kt">Bill</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">  </span><span class="n">toJSON</span><span class="w"> </span><span class="kt">Bill</span><span class="p">{</span><span class="o">..</span><span class="p">}</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">object</span>
+<span class="w">    </span><span class="p">[</span><span class="w"> </span><span class="s">&quot;id&quot;</span><span class="w">   </span><span class="o">.=</span><span class="w"> </span><span class="n">bId</span>
+<span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="s">&quot;code&quot;</span><span class="w"> </span><span class="o">.=</span><span class="w"> </span><span class="n">bCode</span>
+<span class="w">    </span><span class="p">]</span>
+</code></pre></div>
+<h3 id="pattern-2-service-">Pattern 2: Service-функция (оркестрация)</h3>
+<div class="highlight"><pre><span></span><code><span class="nf">createBill</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">AuthContext</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">BillInput</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IO</span><span class="w"> </span><span class="p">(</span><span class="kt">Either</span><span class="w"> </span><span class="kt">ServiceError</span><span class="w"> </span><span class="kt">Bill</span><span class="p">)</span>
+<span class="nf">createBill</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="ow">=</span>
+<span class="w">  </span><span class="n">runReaderT</span><span class="w"> </span><span class="p">(</span><span class="n">createBillDB</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="n">input</span><span class="p">)</span><span class="w"> </span><span class="o">=&lt;&lt;</span><span class="w"> </span><span class="n">ask</span>
+<span class="w">  </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">createBillDB</span><span class="w"> </span><span class="n">ctx</span><span class="w"> </span><span class="n">input</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kr">do</span>
+<span class="w">      </span><span class="n">validate</span>
+<span class="w">      </span><span class="n">checkPermission</span>
+<span class="w">      </span><span class="n">result</span><span class="w"> </span><span class="ow">&lt;-</span><span class="w"> </span><span class="kt">DAL</span><span class="o">.</span><span class="kt">Bill</span><span class="o">.</span><span class="n">create</span>
+<span class="w">      </span><span class="n">postprocess</span><span class="w"> </span><span class="n">result</span>
+</code></pre></div>
+<h3 id="pattern-3-resource-bracket">Pattern 3: Resource-паттерн (bracket)</h3>
+<div class="highlight"><pre><span></span><code><span class="err">──</span><span class="w"> </span><span class="kt">Безопасная</span><span class="w"> </span><span class="n">работа</span><span class="w"> </span><span class="n">с</span><span class="w"> </span><span class="n">ресурсами</span>
+<span class="nf">withDbPool</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">PGConfig</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="p">(</span><span class="kt">Pool</span><span class="w"> </span><span class="kt">Connection</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IO</span><span class="w"> </span><span class="n">a</span><span class="p">)</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IO</span><span class="w"> </span><span class="n">a</span>
+<span class="nf">withDbPool</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="n">bracket</span>
+<span class="w">  </span><span class="p">(</span><span class="n">createPool</span><span class="w"> </span><span class="n">config</span><span class="p">)</span><span class="w">     </span><span class="err">──</span><span class="w"> </span><span class="n">acquire</span>
+<span class="w">  </span><span class="n">destroyPool</span><span class="w">             </span><span class="err">──</span><span class="w"> </span><span class="n">release</span>
+</code></pre></div>
+<h3 id="pattern-4-event-event-sourcing">Pattern 4: Event-события (Event Sourcing)</h3>
+<div class="highlight"><pre><span></span><code><span class="kr">data</span><span class="w"> </span><span class="kt">InventoryEvent</span>
+<span class="w">  </span><span class="ow">=</span><span class="w"> </span><span class="kt">GoodsReceived</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">goodsId</span><span class="p">,</span><span class="w"> </span><span class="n">locationId</span><span class="p">,</span><span class="w"> </span><span class="n">qtty</span><span class="p">,</span><span class="w"> </span><span class="n">cost</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">GoodsShipped</span><span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="n">goodsId</span><span class="p">,</span><span class="w"> </span><span class="n">locationId</span><span class="p">,</span><span class="w"> </span><span class="n">qtty</span><span class="p">,</span><span class="w"> </span><span class="n">cost</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="o">|</span><span class="w"> </span><span class="kt">LotCreated</span><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="n">lot</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="kr">deriving</span><span class="w"> </span><span class="p">(</span><span class="kt">Generic</span><span class="p">,</span><span class="w"> </span><span class="kt">ToJSON</span><span class="p">,</span><span class="w"> </span><span class="kt">FromJSON</span><span class="p">)</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Аппенд</span><span class="o">-</span><span class="n">только</span><span class="w"> </span><span class="n">лог</span>
+<span class="nf">appendEvent</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">EventStore</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">InventoryEvent</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IO</span><span class="w"> </span><span class="nb">()</span>
+<span class="nf">readEvents</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">EventStore</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">AggregateID</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">IO</span><span class="w"> </span><span class="p">[</span><span class="kt">InventoryEvent</span><span class="p">]</span>
+</code></pre></div>
+<h3 id="pattern-5-om-readert-design-pattern">Pattern 5: НOM-паттерн (ReaderT design pattern)</h3>
+<div class="highlight"><pre><span></span><code><span class="err">──</span><span class="w"> </span><span class="kt">Вместо</span><span class="w"> </span><span class="n">передачи</span><span class="w"> </span><span class="n">параметров</span><span class="w"> </span><span class="n">через</span><span class="w"> </span><span class="n">аргументы</span><span class="p">,</span>
+<span class="err">──</span><span class="w"> </span><span class="n">используем</span><span class="w"> </span><span class="kt">ReaderT</span><span class="w"> </span><span class="n">для</span><span class="w"> </span><span class="n">конфигурации</span><span class="w"> </span><span class="n">и</span><span class="w"> </span><span class="n">контекста</span>
+
+<span class="kr">data</span><span class="w"> </span><span class="kt">Env</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">Env</span>
+<span class="w">  </span><span class="p">{</span><span class="w"> </span><span class="n">envPool</span><span class="w">      </span><span class="ow">::</span><span class="w"> </span><span class="kt">Pool</span><span class="w"> </span><span class="kt">Connection</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">envConfig</span><span class="w">    </span><span class="ow">::</span><span class="w"> </span><span class="kt">Config</span>
+<span class="w">  </span><span class="p">,</span><span class="w"> </span><span class="n">envMetrics</span><span class="w">   </span><span class="ow">::</span><span class="w"> </span><span class="kt">MetricsStore</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="kr">type</span><span class="w"> </span><span class="kt">App</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kt">ReaderT</span><span class="w"> </span><span class="kt">Env</span><span class="w"> </span><span class="kt">IO</span>
+
+<span class="err">──</span><span class="w"> </span><span class="kt">Все</span><span class="w"> </span><span class="n">функции</span><span class="w"> </span><span class="n">в</span><span class="w"> </span><span class="kt">ReaderT</span><span class="w"> </span><span class="n">имеют</span><span class="w"> </span><span class="n">доступ</span><span class="w"> </span><span class="n">к</span><span class="w"> </span><span class="kt">Env</span>
+<span class="nf">getBill</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">BillID</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">App</span><span class="w"> </span><span class="p">(</span><span class="kt">Maybe</span><span class="w"> </span><span class="kt">Bill</span><span class="p">)</span>
+<span class="nf">getBill</span><span class="w"> </span><span class="n">bid</span><span class="w"> </span><span class="ow">=</span><span class="w"> </span><span class="kr">do</span>
+<span class="w">  </span><span class="n">pool</span><span class="w"> </span><span class="ow">&lt;-</span><span class="w"> </span><span class="n">asks</span><span class="w"> </span><span class="n">envPool</span>
+<span class="w">  </span><span class="n">liftIO</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">runQuery</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">$</span><span class="w"> </span><span class="n">selectBill</span><span class="w"> </span><span class="n">bid</span>
+</code></pre></div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../ARCHITECTURE/" class="btn btn-neutral float-left" title="Архитектура"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../API/" class="btn btn-neutral float-right" title="API">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/surypus/surypus" class="fa fa-code-fork" style="color: #fcfcfc"> surypus/surypus</a>
+        </span>
+    
+    
+      <span><a href="../ARCHITECTURE/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../API/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
