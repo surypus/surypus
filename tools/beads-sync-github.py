@@ -197,7 +197,7 @@ def write_wiki(issues: list[dict], out_dir: Path) -> list[Path]:
 |---|---|
 | Beads (база задач) | `.beads/` в репозитории, remote — [DoltHub]({DOLTHUB_URL}) |
 | GitHub Issues | https://github.com/{REPO}/issues |
-| GitHub Project | [{PROJECT_URL}]({PROJECT_URL}) |
+| GitHub Project | {PROJECT_URL} |
 | Репозиторий | https://github.com/{REPO} |
 
 ## Статус задач
@@ -248,7 +248,7 @@ def write_wiki(issues: list[dict], out_dir: Path) -> list[Path]:
             backlog.append(f"- `{i['id']}` ({PRIORITY.get(i['priority'], 'P?')}) {i['title']}")
 
     files = {
-        "Home.md": "\n".join(home),
+        "Home.md": home,
         "Plans.md": "\n".join(plans),
         "Backlog.md": "\n".join(backlog),
     }
