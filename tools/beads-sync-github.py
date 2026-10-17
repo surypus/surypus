@@ -65,11 +65,19 @@ def gh_graphql(query: str, variables: dict) -> Any:
 def export_issues() -> list[dict]:
     """Export every beads issue as a JSON object."""
     out = Path("/tmp/beads-sync.jsonl")
-    subprocess.run(
+    result = subprocess.run(
         ["bd", "export", "--all", "-o", str(out)],
-        capture_output=True, text=True, check=True,
+        capture_output=True, text=True,
     )
+    if result.returncode != 0:
+        # In CI the beads database is not present; the caller decides whether
+        # that is fatal.
+        raise BeadsUnavailable(result.stderr.strip() or "bd export failed")
     return [json.loads(line) for line in out.read_text().splitlines() if line.strip()]
+
+
+class BeadsUnavailable(RuntimeError):
+    """Raised when the beads database cannot be reached."""
 
 
 def issue_body(issue: dict) -> str:
@@ -440,9 +448,20 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true", help="report without changing anything")
     ap.add_argument("--push", action="store_true", help="publish the wiki")
     ap.add_argument("--wiki-dir", default="wiki")
+    ap.add_argument(
+        "--require-beads", action="store_true",
+        help="exit non-zero when the beads database is unavailable "
+             "(default: warn and continue with the docs that exist)",
+    )
     args = ap.parse_args()
 
-    issues = export_issues()
+    try:
+        issues = export_issues()
+    except BeadsUnavailable as exc:
+        if args.require_beads:
+            raise
+        print(f"beads unavailable, skipping task sync: {exc}")
+        return 0
     print(f"beads: {len(issues)} issues")
 
     print("\n== Issues ==")
