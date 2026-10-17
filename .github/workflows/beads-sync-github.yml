@@ -23,6 +23,8 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    env:
+      HAS_PROJECT_TOKEN: ${{ secrets.GH_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -32,7 +34,7 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Sync
-        if: ${{ secrets.GH_TOKEN != '' }}
+        if: env.HAS_PROJECT_TOKEN == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: python3 tools/beads-sync-github.py --push
