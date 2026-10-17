@@ -439,7 +439,7 @@ QML generation and Servant API are fit for a real client, not just a theoretical
 ### Medium
 - Extend the DSL transpiler to a second domain aggregate (after Invoice) — likely InventoryItem or Employee — to prove the transpiler architecture is generalizable, not special-cased.
 - Observability: structured logging correlated by event-sourcing correlation ID across all domains.
-- Formalize the OpenPapyrus (C++) migration strategy — a gradual cutover plan needs separate data-compatibility work if that remains a target.
+- Formalize the legacy migration strategy — a gradual cutover plan needs separate data-compatibility work if that remains a target.
 - Document refinement predicates *as part of the DSL schema* (not only in code) for non-technical stakeholder auditability.
 
 ### Low (deferred until Critical/High close — expanding scope now widens the design/implementation gap)
