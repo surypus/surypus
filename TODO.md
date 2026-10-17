@@ -316,7 +316,7 @@ bd ready
 - [x] US-3-2: Account read-model replay (P1, 5SP) — rebuild balances from event stream
 
 ### Epic: US-3 Infrastructure
-- [x] US-3-3: Read models Redis cache (P2, 5SP) — Redis TTL cache (5s) wired into the read model; Redis Streams for events still open
+- [x] US-3-3: Read models Redis cache (P2, 5SP) — Redis TTL cache (5s) wired into the read model; Redis Streams for events implemented (Infrastructure.Redis.EventStream + fan-out from the accounting event store)
 - [x] US-3-5: Redis Queue (P3, 5SP) — Redis/Bull for background tasks; retry on failure
 
 ### Epic: US-3 API Gateway
@@ -492,7 +492,7 @@ bd ready
   - `getCachedBalance`/`putCachedBalance`/`deleteCachedBalance`: TTL-bounded Redis operations
   - `getCurrentBalanceCached` in `Core.Accounting.ReadModel`: cache-first, falls back to replay
   - Added `Core.Accounting.RedisCacheSpec` (8 tests); the Redis round-trip is pending without a server
-  - Phase 3 backlog reconciled: US-3-1/2/4/5/6 marked done, US-3-7 still open
+  - Phase 3 backlog reconciled: US-3-1/2/3/4/5/6/7 all done
 
 - [x] Remove dead stub modules and implement the external API client (2026-10-16)
   - Deleted `DAL.SchemaStubs` (duplicate of the entities in `DAL.Schema`, zero importers)
