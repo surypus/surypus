@@ -42,6 +42,26 @@ def gh(*args: str, json_out: bool = False) -> Any:
     return json.loads(result.stdout) if json_out else result.stdout
 
 
+def gh_graphql(query: str, variables: dict) -> Any:
+    """Run a GraphQL mutation.
+
+    gh's -F flag type-infers values, so a numeric option id such as 98236657 is
+    sent as a JSON number and GitHub rejects it where a String is expected.
+    Sending the whole payload as JSON avoids that coercion.
+    """
+    payload = json.dumps({"query": query, "variables": variables})
+    result = subprocess.run(
+        ["gh", "api", "graphql", "--input", "-"],
+        input=payload, capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"graphql failed: {result.stderr.strip()[:200]}")
+    data = json.loads(result.stdout)
+    if "errors" in data:
+        raise RuntimeError(f"graphql error: {json.dumps(data['errors'])[:200]}")
+    return data
+
+
 def export_issues() -> list[dict]:
     """Export every beads issue as a JSON object."""
     out = Path("/tmp/beads-sync.jsonl")
@@ -261,16 +281,15 @@ def sync_status(issues: list[dict], project_id: str, dry_run: bool) -> tuple[int
             "updateProjectV2ItemFieldValue(input:{projectId:$p,itemId:$i,"
             "fieldId:$f,value:{singleSelectOptionId:$o}}){projectV2Item{id}}}"
         )
-        result = subprocess.run(
-            ["gh", "api", "graphql", "-f", f"query={mutation}",
-             "-F", f"p={project_id}", "-F", f"i={item['id']}",
-             "-F", f"f={field_id}", "-F", f"o={options[target]}"],
-            capture_output=True, text=True,
-        )
-        if "projectV2Item" in result.stdout:
+        try:
+            gh_graphql(mutation, {
+                "p": project_id, "i": item["id"],
+                "f": field_id, "o": options[target],
+            })
             set_ += 1
-        else:
+        except RuntimeError as exc:
             failed += 1
+            print(f"  status failed for #{number}: {exc}")
     return set_, failed
 
 
@@ -405,6 +424,11 @@ def push_wiki(out_dir: Path) -> None:
     for src in out_dir.glob("*.md"):
         (wiki / src.name).write_text(src.read_text())
     subprocess.run(["git", "add", "-A"], cwd=wiki, check=True)
+    # Nothing to commit is a normal outcome when the wiki is already current.
+    diff = subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=wiki)
+    if diff.returncode == 0:
+        print("wiki already up to date")
+        return
     subprocess.run(
         ["git", "commit", "-m", "docs(wiki): refresh from beads"], cwd=wiki, check=True
     )
