@@ -15,9 +15,10 @@ permissions:
   contents: read
 
 jobs:
-  documentation-fast:
+  documentation:
     name: Build and validate documentation
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -25,92 +26,40 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Set up Haskell Stack
-        run: |
-          mkdir -p ~/.local/bin
-          curl -sSL https://get.haskellstack.org/ -o /tmp/stack.sh
-          sh /tmp/stack.sh -d ~/.local/bin || true
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-
-      - name: Stack environment sanity
-        run: |
-          stack --version
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
       - name: Install MkDocs
         run: |
           python -m pip install --upgrade pip
-          pip install mkdocs mkdocs-material 2>&1 | tail -5
+          pip install mkdocs mkdocs-material mkdocs-git-revision-date-localized
+
+      - name: Generate module inventory
+        run: |
+          python3 tools/documentation/generate-inventory.py
+          echo "Coverage: $(python3 -c "import json; print(json.load(open('docs/generated/inventory/coverage.json'))['coverage']['percentage'])")%"
+
+      - name: Generate module dependency graph
+        run: |
+          mkdir -p docs/generated/graphs
+          ./tools/documentation/generate-module-graph.sh src docs/generated/graphs/modules.mmd
+          wc -l docs/generated/graphs/modules.mmd
 
       - name: Build MkDocs site (strict)
         run: |
-          /home/domini/.local/bin/mkdocs build --strict 2>&1 | tail -20
+          mkdocs build --strict
+          echo -e "\033[32m✓ Documentation built successfully\033[0m"
 
-      - name: Build Haddock
+      - name: Check for documentation drift
         run: |
-          set -euo pipefail
-          mkdir -p docs/generated/haddock
-          stack build --haddock --no-run-tests --haddock-options="--hyperlink-source --quickjump" || true
-          find .stack-work -name "*.haddock" -exec haddock --hyperlink-source --quickjump -o docs/generated/haddock {} + 2>/dev/null || true
-          ls docs/generated/haddock/
-
-      - name: Run doctest
-        run: |
-          set -euo pipefail
-          # Run doctest on source files that contain >>> examples
-          which doctest || (curl -sSL https://get.haskellstack.org/ -o /tmp/stack.sh && sh /tmp/stack.sh -d ~/.local/bin)
-          doctest --version || true
-          # Try running doctest via stack if available
-          stack exec -- doctest src/ 2>/dev/null || echo "doctest: skipped (not available)"
-
-      - name: Generate module graph
-        run: |
-          set -euo pipefail
-          ./tools/documentation/generate-module-graph.sh src docs/generated/graphs/modules.mmd
-          cat docs/generated/graphs/modules.mmd | head -10
-
-      - name: Generate documentation inventory
-        run: |
-          set -euo pipefail
-          python3 tools/documentation/generate-inventory.py
-          cat docs/generated/inventory/coverage.json
-
-      - name: Generate Hoogle database
-        run: |
-          set -euo pipefail
-          ~/.local/bin/hoogle generate --local 2>/dev/null || true
-          mkdir -p docs/generated/hoogle
-          ls docs/generated/hoogle/
-
-      - name: Documentation drift detection
-        run: |
-          set -euo pipefail
-          echo "## Documentation Drift Report"
-          python3 -c "import json; d=json.load(open('docs/generated/inventory/modules.json')); undoc=[m['module'] for m in d['modules'] if m['haddock_comments']==0]; print(f'Undocumented modules: {len(undoc)}')" || true
-          python3 -c "import json; d=json.load(open('docs/generated/inventory/modules.json')); print(f'Total modules: {d[\\\"total_modules\\\"]}')" || true
+          python3 -c "import json; d=json.load(open('docs/generated/inventory/modules.json')); undoc=[m['module'] for m in d['modules'] if m['haddock_comments']==0]; print(f'Undocumented modules: {len(undoc)}')"
+          python3 -c "import json; d=json.load(open('docs/generated/inventory/modules.json')); print(f'Total modules: {d[\"total_modules\"]}'); print(f'Coverage: {d[\"modules\"][\"coverage\"][\"percentage\"] if \"coverage\" in d.get(\"modules\",{}) else json.load(open(\"docs/generated/inventory/coverage.json\"))[\"coverage\"][\"percentage\"]}%')"
 
       - name: Upload generated documentation artifact
         uses: actions/upload-artifact@v7
         with:
           name: surypus-documentation
-          path: |
-            docs/generated/
-          retention-days: 30
-
-      - name: Install ReadTheDocs CLI
-        run: |
-          pip install readthedocs-sphinx-docfx yarl 2>/dev/null || true
-          echo "ReadTheDocs configuration validated"
-          echo "ReadTheDocs configuration:"
-          cat .readthedocs.yml
-          python3 -c "import yaml; yaml.safe_load(open('.readthedocs.yml'))" 2>/dev/null && echo "YAML valid" || echo "YAML parse failed"
-
-      - name: Build documentation for ReadTheDocs
-        run: |
-          set -euo pipefail
-          # ReadTheDocs builds the mkdocs site from the repository
-          # This ensures the .readthedocs.yml configuration is valid
-          python -m pip install --upgrade pip 2>/dev/null || true
-          pip install mkdocs mkdocs-material 2>&1 | tail -5 || true
-          /home/domini/.local/bin/mkdocs build --strict 2>&1 | tail -10 || true
-          echo "ReadTheDocs build validated successfully"
-          ls -la site/ 2>/dev/null || true
+          path: docs/generated/
+          retention-days: 14

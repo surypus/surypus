@@ -4,9 +4,10 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
-  contents: write   # required to push the built site to the gh-pages branch
+  contents: write
   pages: write
   id-token: write
 
@@ -14,6 +15,7 @@ jobs:
   deploy-documentation:
     name: Deploy documentation to GitHub Pages
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     concurrency:
       group: docs-pages
       cancel-in-progress: false
@@ -25,29 +27,57 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Set up Hugo / MkDocs
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install MkDocs
         run: |
           python -m pip install --upgrade pip
-          pip install mkdocs mkdocs-material 2>&1 | tail -5
+          pip install mkdocs mkdocs-material mkdocs-git-revision-date-localized
+
+      - name: Install beads
+        if: ${{ !contains(steps.checkout.outputs.submodules, 'beads') }}
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/gastownhall/beads/main/scripts/install.sh | bash
+
+      - name: Generate module inventory
+        run: |
+          python3 tools/documentation/generate-inventory.py
+
+      - name: Generate module dependency graph
+        run: |
+          mkdir -p docs/generated/graphs
+          ./tools/documentation/generate-module-graph.sh src docs/generated/graphs/modules.mmd
+
+      - name: Generate Haddock documentation
+        run: |
+          mkdir -p docs/generated/haddock
+          stack build --haddock --no-run-tests --haddock-options="--hyperlink-source --quickjump"
+          find .stack-work -type f -name "*.html" -exec cp {} docs/generated/haddock/ \; || true
+          ls docs/generated/haddock/ | head -5
+
+      - name: Generate OpenAI API spec (optional)
+        run: |
+          stack exec surypus -- --generate-openapi > docs/api/openapi.json 2>/dev/null || echo "OpenAPI generation skipped"
+          mkdir -p docs/api
+          ls docs/api/
 
       - name: Generate task pages from beads
         run: |
-          # The task list lives in beads; render the same pages the GitHub wiki
-          # gets into docs/tasks/ so the site stays in sync with the tracker.
+          mkdir -p docs/tasks
           if command -v bd >/dev/null 2>&1; then
-            mkdir -p docs/tasks
+            bd dolt start >/dev/null 2>&1 || true
             python3 tools/beads-sync-github.py --wiki-dir docs/tasks --require-beads
           else
-            echo "bd not on PATH; installing beads"
-            curl -fsSL https://raw.githubusercontent.com/gastownhall/beads/main/scripts/install.sh | bash
-            export PATH="$HOME/.local/bin:$PATH"
-            mkdir -p docs/tasks
             python3 tools/beads-sync-github.py --wiki-dir docs/tasks
           fi
 
       - name: Build documentation site
         run: |
-          mkdocs build --strict 2>&1 | tail -20
+          mkdocs build --strict
+          du -sh site/
 
       - name: Upload documentation artifact
         uses: actions/upload-artifact@v7
@@ -57,7 +87,6 @@ jobs:
           retention-days: 30
 
       - name: Deploy to GitHub Pages
-        id: deployment
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
