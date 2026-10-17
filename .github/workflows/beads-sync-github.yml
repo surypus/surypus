@@ -1,0 +1,38 @@
+name: Sync beads to GitHub
+
+# Mirrors the beads issue database into GitHub Issues, the project board and
+# the wiki. Runs on a schedule and can be triggered by hand.
+#
+# The default GITHUB_TOKEN cannot write to a project, so this workflow needs
+# GH_TOKEN configured as a repository secret (PAT or app token with repo,
+# project and workflow scopes). Without it the sync step is skipped.
+
+on:
+  schedule:
+    - cron: "37 */6 * * *"
+  workflow_dispatch:
+  push:
+    paths:
+      - ".beads/**"
+      - "tools/beads-sync-github.py"
+      - ".github/workflows/beads-sync-github.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install beads
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/gastownhall/beads/main/scripts/install.sh | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Sync
+        if: ${{ secrets.GH_TOKEN != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: python3 tools/beads-sync-github.py --push

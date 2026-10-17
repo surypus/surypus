@@ -1,0 +1,69 @@
+# Backlog
+
+Закрытые задачи — 65. Обновлено: 2026-10-17.
+
+- `Surypus-2j3` (P0) Real DB queries in all API handlers — replace pure (SomeResponse []) with DAL calls
+- `Surypus-awg` (P0) Implement proper requirePermission with user context
+- `Surypus-122` (P0) Fix requirePermission_ to actually check user permissions
+- `Surypus-ayj` (P0) Fix Nix build environment for test execution
+- `Surypus-2w6` (P0) 1.3 — Stabilize DB migrations (resolve conflicts)
+- `Surypus-600` (P0) Подключить реальные DB-запросы в API handlers
+- `Surypus-603` (P0) Завершить RBAC middleware для всех endpoints
+- `Surypus-608` (P0) Интеграционные тесты API endpoints против реальной PostgreSQL
+- `Surypus-611` (P0) Реализовать полный Bill posting flow
+- `Surypus-3k7` (P1) Fix stack build: hashtables C compile error on GHC 9.6.5
+- `Surypus-uja` (P1) Integrate Event Store into Inventory service
+- `Surypus-0qr` (P1) Phase 1.2: Implement real RBAC checks in requirePermissionText_
+- `Surypus-dn2` (P1) Fix stub API handlers returning hardcoded data
+- `Surypus-h57` (P1) Implement JWT authentication middleware
+- `Surypus-9vq` (P1) Create WebSocket module infrastructure
+- `Surypus-zn8` (P1) Provide test database with schema for local testing
+- `Surypus-8e5` (P1) Add database test fixture infrastructure for RBAC tests
+- `Surypus-p65` (P1) Setup test App.hs module with mkApp implementation
+- `Surypus-cdz` (P1) Implement remaining API handlers with real DB queries
+- `Surypus-627` (P1) 2.2 — LiquidHaskell invariants для Bill (NonNeg, balance conservation)
+- `Surypus-628` (P1) 3.3 — Устранить SURYPUS_SKIP_RBAC_TESTS флаг
+- `Surypus-629` (P1) 6.3 — CI/CD gates: stack build+test, hlint, matrix testing
+- `Surypus-605` (P1) Реализовать полноценный сервисный слой (Service.*)
+- `Surypus-606` (P1) Завершить WebSocket реальные уведомления
+- `Surypus-607` (P1) Реализовать Job Worker и background processing
+- `Surypus-609` (P1) QuickCheck property tests для всех domain invariants
+- `Surypus-610` (P1) Repair failing test infrastructure и добавить CI gates
+- `Surypus-612` (P1) Завершить модуль Payroll: SalaryCharge, периоды, расчёты
+- `Surypus-613` (P1) Реализовать инвентаризацию (Inventory document lifecycle)
+- `Surypus-616` (P1) Connection pooling, health checks, circuit breaker
+- `Surypus-619` (P1) Web UI: подключить к реальному API
+- `Surypus-but` (P2) в Bill и Payment учитывать currency_id и exchange_rate
+- `Surypus-197` (P2) Add AuthProtect to SurypusApi for JWT authentication
+- `Surypus-aps` (P2) Implement real JWT token validation
+- `Surypus-5r1` (P2) Fix remaining stub API handlers (reports, dashboard, jobs)
+- `Surypus-1nd` (P2) Analyze current API handlers - identify hardcoded data
+- `Surypus-ds3` (P2) Create new project structure and workflow
+- `Surypus-zou` (P2) Integrate Hasql-based EventStore into Accounting and Inventory services
+- `Surypus-7kr` (P2) Document test execution blockers and provide runbook
+- `Surypus-614` (P2) Реализовать модуль Production: TechCard, WorkOrder, MRP
+- `Surypus-615` (P2) Multi-currency support: конвертация, курсы, расчёты
+- `Surypus-620` (P2) GraphQL proxy: завершить schema и resolvers
+- `Surypus-623` (P2) Structured logging с correlation IDs
+- `Surypus-624` (P2) Docker multi-stage build оптимизация
+- `Surypus-08t` (P2) US-2-2: Create Account (P1, 5SP)
+- `Surypus-0z4` (P2) US-2-6: Health & Readiness (P2, 2SP)
+- `Surypus-1oi` (P2) US-3-4: GraphQL Proxy (P2, 5SP)
+- `Surypus-348` (P2) US-2-7: OpenAPI Docs (P3, 2SP)
+- `Surypus-37h` (P2) US-3-5: Redis Queue (P3, 5SP)
+- `Surypus-3vh` (P2) US-2-11: Read-model caching (P2, 3SP)
+- `Surypus-4s9` (P2) US-3-3: Read models Redis cache (P2, 5SP)
+- `Surypus-5gq` (P2) US-2-1: Login and RBAC (P1, 3SP)
+- `Surypus-929` (P2) US-2-12: Phase 2 Integration tests (P2, 5SP)
+- `Surypus-bm3` (P2) US-2-8: Read model account_balances (P2, 5SP)
+- `Surypus-knx` (P2) US-2-9: Read model ledger_projection (P2, 5SP)
+- `Surypus-lmw` (P2) US-3-2: Account read-model replay (P1, 5SP)
+- `Surypus-n1i` (P2) US-3-1: Accounts Event Store (P1, 8SP)
+- `Surypus-noa` (P2) US-2-10: Dashboard endpoint (P2, 3SP)
+- `Surypus-p21` (P2) US-3-7: Proxy usage and client migration plan (P3, 3SP)
+- `Surypus-tpj` (P2) US-2-4: Create Journal Entry (P1, 5SP)
+- `Surypus-v3t` (P2) US-3-6: WebSocket real-time (P3, 5SP)
+- `Surypus-x0e` (P2) US-2-3: Read Accounts (P2, 3SP)
+- `Surypus-ykn` (P2) US-2-5: RBAC negative test (P2, 2SP)
+- `Surypus-625` (P3) Обновить README и API docs под текущее состояние
+- `Surypus-626` (P3) Seed data и demo environment
