@@ -64,7 +64,7 @@ modelFor accountId =
     { armAccountId = accountId,
       armCode = Just "51",
       armName = Just "Test account",
-      armAccountType = Just 1,
+      armAccountType = Just "asset",
       armCurrencyId = Just 1,
       armBalanceState =
         BalanceState
@@ -216,12 +216,13 @@ spec = describe "Core.Accounting.ReadModel JSON replay" $ do
     armCode model `shouldBe` Nothing
     armName model `shouldBe` Nothing
 
-  it "does not fabricate an account type from the producer's Text acType" $ do
-    -- acType is "asset"/"liability" Text, armAccountType is an Int id, and no
-    -- mapping exists — the replay must not invent one.
+  it "keeps the producer's Text account type" $ do
+    -- account_type is a TEXT column and the producer writes acType as the same
+    -- Text category, so the read model carries it through rather than mapping it
+    -- to a non-existent Int id (which used to be discarded as Nothing).
     let model = applyAccountCreated (modelFor 100)
                   (mkCreatedEvent 100 (producerAccountCreated 100 "01" "Fixed assets"))
-    armAccountType model `shouldBe` Nothing
+    armAccountType model `shouldBe` Just "asset"
     armCurrencyId model `shouldBe` Nothing
 
   it "applies a changeAmount BalanceAdjusted relative to the old balance" $ do

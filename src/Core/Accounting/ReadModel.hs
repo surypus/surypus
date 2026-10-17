@@ -70,7 +70,7 @@ data AccountReadModel = AccountReadModel
   { armAccountId :: Int64
   , armCode :: Maybe Text
   , armName :: Maybe Text
-  , armAccountType :: Maybe Int
+  , armAccountType :: Maybe Text
   , armCurrencyId :: Maybe Int64
   , armBalanceState :: BalanceState
   , armCreatedAt :: UTCTime
@@ -97,18 +97,19 @@ applyEvent model event
 -- (@acCode@/@acName@/@acType@/@acParentId@). The code and name are read from
 -- there (legacy flat payloads are still honoured); the previous version
 -- discarded them and always set Nothing, so a replayed model carried no
--- account identity. 'armAccountType' stays Nothing on purpose: the producer's
--- @acType@ is a Text category (@\"asset\"@/@\"liability\"@/…) while the read
--- model expects an Int account-type id, and no mapping between the two exists
--- in the codebase — inventing one here would fabricate data. Same for
--- 'armCurrencyId' (the producer event has no currency field). Defining the
--- Text→Int mapping is a follow-up.
+-- account identity. The type is 'Maybe Text' because that is what the schema
+-- actually holds: @account_type@ is a TEXT column (@ASSET@/@LIABILITY@/…) and
+-- the producer writes @acType@ as the same Text category, so no id mapping is
+-- needed or invented. The field used to be @Maybe Int@ and was always set to
+-- 'Nothing' because no Int mapping existed anywhere in the codebase, which
+-- silently discarded the category on every replay. 'armCurrencyId' stays
+-- 'Nothing' for a different reason: the producer event has no currency field.
 applyAccountCreated :: AccountReadModel -> ES.Event -> AccountReadModel
 applyAccountCreated model event = model
   { armAccountId = ES.eventAggregateId event
   , armCode = entryCode
   , armName = entryName
-  , armAccountType = Nothing
+  , armAccountType = entryType
   , armCurrencyId = Nothing
   , armBalanceState = BalanceState
       { bsAccountId = ES.eventAggregateId event
@@ -132,6 +133,7 @@ applyAccountCreated model event = model
         Nothing -> Nothing
     entryCode = lookupText "acCode"
     entryName = lookupText "acName"
+    entryType = lookupText "acType"
 
 -- | Apply JournalEntryPosted event
 --
