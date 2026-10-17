@@ -30,6 +30,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install mkdocs mkdocs-material 2>&1 | tail -5
 
+      - name: Generate task pages from beads
+        run: |
+          # The task list lives in beads; render the same pages the GitHub wiki
+          # gets into docs/tasks/ so the site stays in sync with the tracker.
+          if command -v bd >/dev/null 2>&1; then
+            mkdir -p docs/tasks
+            python3 tools/beads-sync-github.py --wiki-dir docs/tasks --require-beads
+          else
+            echo "bd not on PATH; installing beads"
+            curl -fsSL https://raw.githubusercontent.com/gastownhall/beads/main/scripts/install.sh | bash
+            export PATH="$HOME/.local/bin:$PATH"
+            mkdir -p docs/tasks
+            python3 tools/beads-sync-github.py --wiki-dir docs/tasks
+          fi
+
       - name: Build documentation site
         run: |
           mkdocs build --strict 2>&1 | tail -20
