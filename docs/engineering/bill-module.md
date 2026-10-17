@@ -2,7 +2,7 @@
 
 *Chosen as the first real porting target because `Src/PPLib/BILL.CPP` is the central actor in document management, and Surypus already has a partial Bill/Invoice domain (API, DTOs, schema, invariants) that can be formalized and extended.*
 
-## 1. OpenPapyrus source analysis
+## 1. Анализ исходной реализации
 - `BillCore` encapsulates searches (`SearchByID`), memo storage (`PutItemMemo`/`GetItemMemo`), amount tables (`BillAmountTbl`) and EDI flags (`BillTbl::Rec`).
 - Documents coordinate: EDI/Flags → amount lookups → posting/stock movements → status updates (posted, archived, canceled).
 - File references such as `CheckAmtTypeRef`, `GetAmountList`, `CalcBillLineAmount` define invariants that Surypus must encode with LiquidHaskell.
@@ -38,7 +38,7 @@
 - PostgreSQL schema has `bill`, `bill_line`, `stock`, and procedures in `sql/procedures.sql`, but they need to mirror BillCore flows (amount tables, statuses, stock ALE). `schema_bill.sql` exists, but there is no dedicated schema per `Core.Document` vs `Core.Accounting` causing name collisions (e.g., `acc_sheet`).
 
 ## 3. Unique schema/module plan
-- **Schema isolation.** Each OpenPapyrus object (AccSheet, Register, OpCounter, RegisterType, etc.) now has a dedicated SQL schema file and table (`document_register`, `document_register_type`, `ppobj_register`, `document_op_counter`, `common_op_counter`, `acc_sheet_accounting`, `acc_sheet_finance`, etc.), ensuring the Finance/Accounting kernels cannot collide with the Document/Legal registries. Initialization scripts were re-ordered so that type tables are created before they are referenced by dependent views/triggers.
+- **Schema isolation.** Each object (AccSheet, Register, OpCounter, RegisterType, etc.) now has a dedicated SQL schema file and table (`document_register`, `document_register_type`, `ppobj_register`, `document_op_counter`, `common_op_counter`, `acc_sheet_accounting`, `acc_sheet_finance`, etc.), ensuring the Finance/Accounting kernels cannot collide with the Document/Legal registries. Initialization scripts were re-ordered so that type tables are created before they are referenced by dependent views/triggers.
 - **LiquidHaskell foundation.** `Core.Document.Types` declares `DocumentRegister`, `DocumentRegisterType`, `DocumentOpCounter` with refinements (non-empty numbers, bounded flags, prefix length constraints) and helper validators (`validateDocumentRegister`, `validateDocumentOpCounter`) that the Domain layer can reuse when ingesting API payloads.
 - **Repository boundaries.** Unique Hasql modules will eventually wrap the new tables (e.g., `DB.Document.Register`, `DB.Document.Counter`) so that the document-side logic is isolated from the shared `bill`, `stock`, and `accounting` infrastructure.
 
@@ -73,4 +73,4 @@
 1. Formalize `Core.Document.Types`/`Core.Document.Register` to reflect C++ invariants, create LiquidHaskell refinements. 
 2. Expand `DB.Bill` with new statements, ensuring unique schema file for each register. 
 3. Implement real JWT auth + middleware and extend API routes for posting/EDI handling. 
-4. Keep iterating on schema/per procedure to encode OpenPapyrus logic (HR/Payroll, Production, Hardware will follow after Document core is stable).
+4. Keep iterating on schema/per procedure to encode the original logic (HR/Payroll, Production, Hardware will follow after Document core is stable).

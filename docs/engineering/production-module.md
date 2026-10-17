@@ -1,8 +1,8 @@
 # Module 03 — Production / Hardware
 
-После стабилизации Document и HR/Payroll следующий критический блок — производство и связанный Hardware (MRP, техкарты, нормативы, job-сервер). Общий сценарий OpenPapyrus описан в `tech.cpp`, `ppbuild.cpp`, `ppordr.cpp` и смежных файлах: технологическая карта (`PPObjTech`), ресурсоёмкие заказы (`PPObjWorkOrder`), перемещения между складами и связка с `BillCore`/`AccTurn`.
+После стабилизации Document и HR/Payroll следующий критический блок — производство и связанный Hardware (MRP, техкарты, нормативы, job-сервер). Общий сценарий описан в `tech.cpp`, `ppbuild.cpp`, `ppordr.cpp` и смежных файлах: технологическая карта (`PPObjTech`), ресурсоёмкие заказы (`PPObjWorkOrder`), перемещения между складами и связка с `BillCore`/`AccTurn`.
 
-## 1. Что делает OpenPapyrus (фокус на `tech.cpp`)
+## 1. Что делает исходная реализация (фокус на `tech.cpp`)
 - `PPObjTech` хранит технологические структуры (`TechTbl`), которые связывают процессор (документ `Processor`) с товарами, формулами и типами операций (`TECK_AUTO`, `TECK_MANUAL`).
 - `TechLines` (`TGSArray`) управляют списком `GoodsID` с коэффициентами (`Sign`) и формулами; реализованы методы `GetGoodsList`, `AddItem`, `SearchGoods_`, `CreateAutoTech`. Это позволяет из MRP автоматически подставлять компоненты и найти техкарту по сырью.
 - `PPObjTech::GenerateCode` увеличивает глобальный счетчик `TecCounter` в `PPObjProcessor` и генерирует уникальные коды (с префиксом `TLNG` для tooling). Surypus должен сохранить этот счётчик в одной из таблиц (например, `tech_counter`) и гарантировать атомарность через транзакции.

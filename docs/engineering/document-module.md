@@ -1,8 +1,8 @@
-# Документальный модуль Surypus — обратная инженерия OpenPapyrus
+# Документальный модуль Surypus
 
-## 1. Что делает оригинал (OpenPapyrus / C++)
+## 1. Что делает оригинальная реализация
 
-- `PPObjRegister` и `PPObjRegisterType` (`OpenPapyrus/Src/pplib/objreg.cpp:356`, `objregt.cpp` и `include/pp.h:25570-25578`) описывают регистры документов, их типы и флаги `REGTF_*` (`UNIQUE`, `DUPNUMBER`, `ONLYNUMBER`, `LOCATION`, `WARNEXPIRY` и др.).  
+- `PPObjRegister` и `PPObjRegisterType` описывают регистры документов, их типы и флаги `REGTF_*` (`UNIQUE`, `DUPNUMBER`, `ONLYNUMBER`, `LOCATION`, `WARNEXPIRY` и др.).  
   Регистры называются по номеру `Num`, привязаны к объектам (`PPOBJ_PERSON` / `PPOBJ_LOCATION`) и, при необходимости, требуют уникальности номера (`CheckUniqueNumber`), учитывают тип объекта и предупреждают об истечении срока (`REGTF_WARNEXPIRY`).  
 - При создании регистра (`PPObjRegister::HandleMsg`, `Helper_EditDialog`) система подбирает `RegType`, автоматически вычисляет даты (`ExpiryPeriod`), переводит пользователя на ввод только номера (`REGTF_ONLYNUMBER`) и запрещает дублирование номеров по типу, если у типа нет `REGTF_DUPNUMBER`.  
 - Номера регистров получают из хранимой процедуры `document_get_next_register_number` (`config/schema_Core_Document_Register.sql`), а проверки концентрации выполняются функцией `document_register_number_exists`.  

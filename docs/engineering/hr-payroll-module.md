@@ -1,6 +1,6 @@
 # Module 02 — HR / Payroll
 
-*Следующий крупный модуль после документов — управление персоналом и расчёт заработной платы, поскольку `OpenPapyrus/Src/PPLib/salary.cpp` и связанные файлы (`Objstaff.cpp`, `v_staff.cpp`) гарантируют правила валидности начислений и взаимосвязь с бухгалтерскими документами.*
+*Следующий крупный модуль после документов — управление персоналом и расчёт заработной платы: правила валидности начислений и взаимосвязь с бухгалтерскими документами уже описаны в исходной реализации (`salary.cpp`, `Objstaff.cpp`, `v_staff.cpp`).*
 
 ## 1. Анализ
 - `SalaryCore::Validate` требует: числа идентификаторов положительные, `Beg <= End`, `Amount` в пределах серебряной десяти, `Flags == 0`, ссылки на счета (`LinkBillID`, `GenBillID`, `RByGenBill`) в допустимом диапазоне.
@@ -19,7 +19,7 @@
 5. **QML/Reports/CI/test**: добавить QML-формы для `HR → Сотрудники → Начисления`, Jasper-отчёт `payroll_summary.jrxml`, и property-based тесты `Domain.HR` (наличие неотрицательных сумм, корректный период). Добавить CI-шаг `stack test --fast` включающий HR-тесты.
 6. **Документация**: описать API, SQL хранимые процедуры, invariants LiquidHaskell; обновить `README` и `docs/engineering`.
 
-## 4. Интеграция с OpenPapyrus
+## 4. Интеграция
 - Поддерживать связи `SalaryTbl::LinkBillID` → `bill.id` через Hasql и `LinkBill` (экспорт `DB.Bill`/`DB.Payroll`).
 - Повторно использовать `employee`/`department`/`position` из `schema_hr.sql` и HR API (т.е. новые `hrRoutes` должны опираться на эти таблицы). 
 - Отчёты `Salary` должны быть переписаны в Jasper+Pentaho, а не использовать Crystal Reports.

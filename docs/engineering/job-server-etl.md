@@ -1,6 +1,6 @@
 # Job Server / ETL
 
-Surypus наследует JobServer/OpenPapyrusHS в виде надёжной очереди задач, которая позволяет запускать ETL-работы, импорт/экспорт данных, генерацию отчётов и синхронизацию внешних систем (Меркурий, Честный Знак, WMS). Мы численно перенесли основные элементы:
+Surypus реализует надёжную очередь задач (JobServer), которая позволяет запускать ETL-работы, импорт/экспорт данных, генерацию отчётов и синхронизацию внешних систем (Меркурий, Честный Знак, WMS). Мы численно перенесли основные элементы:
 
 1. **SQL-ядро**: `config/schema_job_server.sql` описывает таблицы `job`, `job_dependency`, `job_result` и просмотры очереди. Дополнительно, `DB.Connection.initSchema` создаёт упрощённую версию `job` с кодом (`code`), приоритетом, JSON-данными (`job_data`) и временными метками (`scheduled_at`, `started_at`, `completed_at`). Индексы по `status`/`priority` обеспечивают быстрый выбор.
 2. **Hasql & домен**: `Domain.Job` описывает типы `JobRequest`, `JobRecord`, `JobFilter`, `JobStatus` и формальные инварианты (например, `priority ∈ [1,10]`, код/название/тип не пусты). `DB.JobQueue` связывает Hasql с таблицей, реализуя `enqueueJob`, `fetchPendingJob`, `listJobs`, `getJob`, `setJobStatus` и логирование (`service_events`). Также агрегируются зависимости из `job_dependency`, которые отражаются в `JobRecord.jobDependencies`, и добавлена функция `addJobDependency`.

@@ -2,7 +2,6 @@
 
 **Status:** Accepted
 **Date:** 2025-01-15
-**Context:** Project was originally implemented in C++ (OpenPapyrus)
 
 ## Decision
 
