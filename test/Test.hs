@@ -28,6 +28,7 @@ import qualified Surypus.RBAC.StoreSpec
 import qualified ConcurrencySpec
 import qualified QuickCheckInvariantsSpec
 import qualified Domain.InvariantsSpec
+import qualified Core.DSL.ParserSpec
 import qualified Inventory.StockSpec
 import qualified Inventory.WarehouseSpec
 import qualified Inventory.GoodsSpec
@@ -113,3 +114,4 @@ main = hspec $ do
   Infrastructure.Redis.EventStreamSpec.spec
   Infrastructure.EventStore.AccountingIntegration.spec
   Domain.InvariantsSpec.spec
+  Core.DSL.ParserSpec.spec
