@@ -11,6 +11,7 @@ import qualified Surypus.ValidationSpec
 import qualified Core.PayrollSpec
 import qualified Core.Accounting.CacheSpec
 import qualified Core.Accounting.RedisCacheSpec
+import qualified System.DiscoverySpec
 import qualified System.RateLimiterSpec
 import qualified System.CacheSpec
 import qualified System.CircuitBreakerSpec
@@ -66,6 +67,7 @@ main = hspec $ do
   Finance.BillSpec.spec
   Surypus.ValidationSpec.spec
   Core.PayrollSpec.spec
+  System.DiscoverySpec.spec
   System.RateLimiterSpec.spec
   System.CacheSpec.spec
   System.CircuitBreakerSpec.spec
