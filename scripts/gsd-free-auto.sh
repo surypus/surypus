@@ -1,21 +1,34 @@
 #!/usr/bin/env bash
-# gsd-free-auto.sh — unattended `gsd auto` on a Cursor free plan.
+# gsd-free-auto.sh — unattended `gsd` runs on the ChatGPT-account Codex backend.
 #
-# Cursor's free plan accepts only the `auto` model: every named model is
-# rejected with "Named models unavailable Free plans can only use Auto".
-# That means this wrapper needs no API keys at all — it makes sure the
-# cursor-agent provider is selected and hands control to GSD.
+# GSD has no bundled `openai-codex` provider, and its `custom-openai` provider
+# cannot set a `base_url`. So the path here is:
 #
-# No secrets are read here; the AutonomousSecretsStore stays empty and unused.
+#   GSD (provider "codex", api openai-completions)
+#     -> codex-openai-proxy.py  (127.0.0.1:8787/v1, OpenAI-shaped)
+#       -> chatgpt.com/backend-api/codex/responses
+#         (credential: ~/.codex/auth.json, ChatGPT OAuth — refreshed on demand)
+#
+# No API key is needed and no secret is written outside ~/.codex/auth.json.
+#
+# Usage:  ./scripts/gsd-free-auto.sh headless quick "<task>"
+#         ./scripts/gsd-free-auto.sh headless auto
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
+PROXY_HOST="${CODEX_PROXY_HOST:-127.0.0.1}"
+PROXY_PORT="${CODEX_PROXY_PORT:-8787}"
 SETTINGS="$HOME/.gsd/agent/settings.json"
+PROXY_SCRIPT="$REPO_ROOT/scripts/codex-openai-proxy.py"
 
 if [ ! -f "$SETTINGS" ]; then
     echo "missing $SETTINGS" >&2
+    exit 1
+fi
+if [ ! -f "$PROXY_SCRIPT" ]; then
+    echo "missing $PROXY_SCRIPT" >&2
     exit 1
 fi
 
@@ -28,16 +41,30 @@ except Exception:
     print("unknown/unknown")
 PY
 )"
-
 echo "gsd provider: ${PROVIDER}" >&2
 
-case "$PROVIDER" in
-    cursor-agent/*)
-        ;;
-    *)
-        echo "provider is not cursor-agent; refusing to run unattended" >&2
-        exit 1
-        ;;
-esac
+if [ "$PROVIDER" != "codex/gpt-6-luna" ]; then
+    echo "expected codex/gpt-6-luna, refusing to run unattended" >&2
+    exit 1
+fi
 
-exec gsd auto --mode auto
+# Start the proxy when it is not already listening.
+if ! curl -sf --max-time 4 "http://${PROXY_HOST}:${PROXY_PORT}/healthz" >/dev/null 2>&1; then
+    echo "starting codex-openai-proxy on ${PROXY_HOST}:${PROXY_PORT}" >&2
+    mkdir -p "$HOME/.cache"
+    CODEX_PROXY_HOST="$PROXY_HOST" CODEX_PROXY_PORT="$PROXY_PORT" \
+        setsid python3 "$PROXY_SCRIPT" >>"$HOME/.cache/codex-openai-proxy.log" 2>&1 &
+    for _ in $(seq 1 20); do
+        if curl -sf --max-time 4 "http://${PROXY_HOST}:${PROXY_PORT}/healthz" >/dev/null 2>&1; then
+            break
+        fi
+        sleep 0.5
+    done
+fi
+
+if ! curl -sf --max-time 4 "http://${PROXY_HOST}:${PROXY_PORT}/healthz" >/dev/null 2>&1; then
+    echo "codex-openai-proxy did not come up; see ~/.cache/codex-openai-proxy.log" >&2
+    exit 1
+fi
+
+exec gsd "$@"
