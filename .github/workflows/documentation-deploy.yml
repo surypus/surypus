@@ -57,6 +57,16 @@ jobs:
         run: |
           curl -fsSL https://raw.githubusercontent.com/gastownhall/beads/main/scripts/install.sh | bash
 
+      - name: Install dolt
+        run: |
+          # beads' dolt backend needs the dolt binary; the runner has neither.
+          mkdir -p "$HOME/.local/bin"
+          curl -fsSL -o /tmp/dolt.tgz \
+            "https://github.com/dolthub/dolt/releases/download/v2.5.0/dolt-linux-amd64.tar.gz"
+          tar xzf /tmp/dolt.tgz -C /tmp
+          install -m 0755 /tmp/dolt-linux-amd64/bin/dolt "$HOME/.local/bin/dolt"
+          "$HOME/.local/bin/dolt" version
+
       - name: Generate module inventory
         run: python3 tools/documentation/generate-inventory.py
 
@@ -87,7 +97,10 @@ jobs:
           mkdir -p docs/tasks
           export PATH="$HOME/.local/bin:$PATH"
           bd dolt start >/dev/null 2>&1 || true
-          python3 tools/beads-sync-github.py --wiki-dir docs/tasks --require-beads
+          # beads is an optional task source: when its dolt backend is
+          # unavailable the rest of the site must still build, so this step
+          # is best-effort rather than fatal.
+          python3 tools/beads-sync-github.py --wiki-dir docs/tasks
 
       - name: Build documentation site
         run: |
