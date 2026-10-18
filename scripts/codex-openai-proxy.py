@@ -142,7 +142,26 @@ def chat_to_codex(payload: dict) -> dict:
             input_items.append({"type": "function_call_output", "call_id": message.get("tool_call_id", ""), "output": text})
             continue
         if role == "assistant":
-            input_items.append({"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": text}]})
+            item: dict = {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": text}]}
+            tool_calls = message.get("tool_calls") or []
+            if tool_calls:
+                calls = []
+                for call in tool_calls:
+                    function = call.get("function", {}) or {}
+                    calls.append({
+                        "type": "function_call",
+                        "call_id": call.get("id", ""),
+                        "name": function.get("name", ""),
+                        "arguments": function.get("arguments", "{}"),
+                    })
+                item = {"type": "function_call", "call_id": calls[0]["call_id"],
+                        "name": calls[0]["name"], "arguments": calls[0]["arguments"]}
+                input_items.append(item)
+                for extra in calls[1:]:
+                    input_items.append({"type": "function_call", "call_id": extra["call_id"],
+                                       "name": extra["name"], "arguments": extra["arguments"]})
+                continue
+            input_items.append(item)
             continue
         input_items.append({"type": "message", "role": "user", "content": [{"type": "input_text", "text": text}]})
     model = payload.get("model") or DEFAULT_MODEL
@@ -154,7 +173,20 @@ def chat_to_codex(payload: dict) -> dict:
     }
     if instructions:
         body["instructions"] = "\n\n".join(instructions)
+    tools = payload.get("tools")
+    if tools:
+        body["tools"] = [_openai_tool_to_codex(t) for t in tools]
     return body
+
+
+def _openai_tool_to_codex(tool: dict) -> dict:
+    function = tool.get("function", tool) or {}
+    return {
+        "type": "function",
+        "name": function.get("name", ""),
+        "description": function.get("description", ""),
+        "parameters": function.get("parameters", {"type": "object", "properties": {}}),
+    }
 
 
 def responses_to_codex(payload: dict) -> dict:
@@ -214,6 +246,9 @@ def rewrite_stream(raw: bytes, *, out_format: str, model: str) -> bytes:
     """Translate codex SSE events into OpenAI-shaped SSE, preserving chunking."""
     out: list[bytes] = []
     text_buf: list[str] = []
+    pending_tool_name: str | None = None
+    tool_index = 0
+    tool_calls_emitted = False
     for line in raw.decode("utf-8", "replace").splitlines():
         line = line.strip()
         if not line.startswith("data:"):
@@ -232,6 +267,28 @@ def rewrite_stream(raw: bytes, *, out_format: str, model: str) -> bytes:
                 out.append(_chat_chunk(model, delta))
             else:
                 out.append(_responses_chunk(model, delta))
+        elif etype in ("response.function_call_arguments.delta", "response.custom_tool_call_input.delta"):
+            name = pending_tool_name
+            if name:
+                if out_format == "chat":
+                    out.append(_chat_tool_delta(model, name, event.get("delta", "")))
+                else:
+                    out.append(_responses_tool_delta(model, name, event.get("delta", "")))
+        elif etype in ("response.function_call_arguments.done", "response.custom_tool_call_input.done"):
+            name = pending_tool_name or ""
+            args = event.get("arguments", "")
+            call_id = event.get("call_id") or f"call_{tool_index}"
+            if out_format == "chat":
+                out.append(_chat_tool_call(model, name, args, call_id))
+            else:
+                out.append(_responses_tool_call(model, name, args, call_id))
+            tool_index += 1
+            tool_calls_emitted = True
+            pending_tool_name = None
+        elif etype in ("response.output_item.added", "response.output_item.done"):
+            item = event.get("item", {}) or {}
+            if item.get("type") in ("function_call", "custom_tool_call"):
+                pending_tool_name = item.get("name", "")
         elif etype == "response.completed":
             break
         elif etype == "error":
@@ -241,12 +298,66 @@ def rewrite_stream(raw: bytes, *, out_format: str, model: str) -> bytes:
             else:
                 out.append(_responses_error(message))
             break
+    if tool_calls_emitted and out_format == "chat":
+        # A tool-call turn ends with finish_reason "tool_calls", not "stop".
+        out = [chunk for chunk in out if b'"finish_reason": "stop"' not in chunk]
+        out.append(_chat_tool_finish(model))
     if out_format == "chat":
-        out.append(_chat_finish(model))
         out.append(b"data: [DONE]\n\n")
     else:
         out.append(b"data: " + json.dumps({"type": "response.completed", "response": {"status": "completed", "output": []}}).encode() + b"\n\n")
     return b"".join(out)
+
+
+def _chat_tool_delta(model: str, name: str, delta: str) -> bytes:
+    payload = {
+        "id": "chatcmpl-proxy",
+        "object": "chat.completion.chunk",
+        "created": int(time.time()),
+        "model": model,
+        "choices": [{"index": 0, "delta": {"tool_calls": [
+            {"index": 0, "id": "", "type": "function",
+             "function": {"name": name, "arguments": delta}}
+        ]}, "finish_reason": None}],
+    }
+    return b"data: " + json.dumps(payload).encode() + b"\n\n"
+
+
+def _chat_tool_call(model: str, name: str, arguments: str, call_id: str) -> bytes:
+    payload = {
+        "id": "chatcmpl-proxy",
+        "object": "chat.completion.chunk",
+        "created": int(time.time()),
+        "model": model,
+        "choices": [{"index": 0, "delta": {"tool_calls": [
+            {"index": 0, "id": call_id, "type": "function",
+             "function": {"name": name, "arguments": arguments}}
+        ]}, "finish_reason": None}],
+    }
+    return b"data: " + json.dumps(payload).encode() + b"\n\n"
+
+
+def _chat_tool_finish(model: str) -> bytes:
+    payload = {
+        "id": "chatcmpl-proxy",
+        "object": "chat.completion.chunk",
+        "created": int(time.time()),
+        "model": model,
+        "choices": [{"index": 0, "delta": {}, "finish_reason": "tool_calls"}],
+    }
+    return b"data: " + json.dumps(payload).encode() + b"\n\n"
+
+
+def _responses_tool_delta(model: str, name: str, delta: str) -> bytes:
+    payload = {"type": "response.function_call_arguments.delta", "delta": delta,
+               "item_id": "fc_proxy", "output_index": 0}
+    return b"data: " + json.dumps(payload).encode() + b"\n\n"
+
+
+def _responses_tool_call(model: str, name: str, arguments: str, call_id: str) -> bytes:
+    payload = {"type": "response.function_call_arguments.done", "arguments": arguments,
+               "item_id": "fc_proxy", "output_index": 0}
+    return b"data: " + json.dumps(payload).encode() + b"\n\n"
 
 
 def _chat_chunk(model: str, delta: str) -> bytes:
