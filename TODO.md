@@ -277,6 +277,10 @@ bd ready
   - Exported `defOptimizationState` from `Core.Optimization` (was missing from the export list; zero production callers, no behaviour change)
   - No latent bug found — `Core.Optimization` is a correct 4-function module. The 0-importer status means any future caller gets a tested contract.
   - Verified: **662 examples, 0 failures, 6 pending** (639 → 662)
+- [x] Fix `-Wx-partial` warnings in System.MetricsCollectorSpec + remove duplicate monad-logger dep (2026-10-18)
+  - Replaced two `head points` calls (lines 94, 101) with `points !! 0` — the preceding `length points `shouldBe` 1` guard makes the index safe, but `head` is a partial function that triggers GHC's `-Wx-partial` warning
+  - Removed duplicate `monad-logger` entry from test-suite `build-depends` in Surypus.cabal (was listed twice, harmless but untidy)
+  - Verified: **793 examples, 0 failures, 3 pending** — no new warnings, all tests pass
 
 ### DevOps
 - [x] Add Docker configuration
