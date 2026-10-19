@@ -4,6 +4,8 @@
 module Main where
 
 import Test.Hspec
+import qualified Finance.ExchangeRateSpec
+import qualified Finance.CurrencySpec
 import qualified Finance.TaxSpec
 import qualified Finance.AccountingSpec
 import qualified Finance.BillSpec
@@ -62,6 +64,8 @@ import qualified Infrastructure.EventStore.AccountingIntegration
 
 main :: IO ()
 main = hspec $ do
+  Finance.ExchangeRateSpec.spec
+  Finance.CurrencySpec.spec
   Finance.TaxSpec.spec
   Finance.AccountingSpec.spec
   Finance.BillSpec.spec

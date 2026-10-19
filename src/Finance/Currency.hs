@@ -49,6 +49,7 @@ data ExchangeRate = ExchangeRate
 {-@ convertAmount :: Currency -> Currency -> NonNeg -> NonNeg @-}
 convertAmount :: Currency -> Currency -> Double -> Double
 convertAmount from to amount
+  | curId from == curId to = amount
   | curRate to == 0 = 0
   | otherwise = amount * curRate from / curRate to
 
