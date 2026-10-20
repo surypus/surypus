@@ -558,6 +558,7 @@ bd ready
 | Done (New: System.Retry) | 1 |
 | Done (New: Commerce.Price + 3 fixes) | 1 |
 | Done (New: System.CircuitBreaker) | 1 |
+| Done (New: Inventory.StockSpec QuickCheck invariants) | 1 |
 | Done (New: Commerce.Discount) | 1 |
 | Done (New: Core.Tax) | 1 |
 | Done (New: Commerce.CashSessionTemp) | 1 |

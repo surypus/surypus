@@ -9,6 +9,7 @@ module Surypus.Metrics
     recordGauge,
     httpRequestsTotal,
     httpRequestDuration,
+    histBuckets,
     httpRequestsError,
     dbPoolConnections,
     jobQueueSize,
