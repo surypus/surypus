@@ -6,6 +6,8 @@ module Main where
 import Test.Hspec
 import qualified Finance.ExchangeRateSpec
 import qualified Finance.CurrencySpec
+import qualified Finance.AccountSpec
+import qualified Commerce.PaymentSpec
 import qualified Finance.TaxSpec
 import qualified Finance.AccountingSpec
 import qualified Finance.BillSpec
@@ -51,8 +53,12 @@ import qualified Core.OptimizationSpec
 import qualified Contract.SchemaSpec
 import qualified Commerce.PriceSpec
 import qualified Commerce.CashSessionTempSpec
+import qualified Commerce.InvoiceSpec
+import qualified Commerce.ServiceBillSpec
+import qualified Commerce.ContractSpec
 import qualified EmailSpec
 import qualified System.ValidationSpec
+import qualified Surypus.MetricsSpec
 import qualified TranscendenceSpec
 import qualified AdditionalTests
 import qualified DAL.TypesSpec
@@ -66,6 +72,7 @@ main :: IO ()
 main = hspec $ do
   Finance.ExchangeRateSpec.spec
   Finance.CurrencySpec.spec
+  Finance.AccountSpec.spec
   Finance.TaxSpec.spec
   Finance.AccountingSpec.spec
   Finance.BillSpec.spec
@@ -109,8 +116,12 @@ main = hspec $ do
   Contract.SchemaSpec.spec
   Commerce.PriceSpec.spec
   Commerce.CashSessionTempSpec.spec
+  Commerce.InvoiceSpec.spec
+  Commerce.PaymentSpec.spec
+  Commerce.ContractSpec.spec
   EmailSpec.spec
   System.ValidationSpec.spec
+  Surypus.MetricsSpec.spec
   AdditionalTests.spec
   TranscendenceSpec.spec
   DAL.TypesSpec.spec
@@ -121,3 +132,4 @@ main = hspec $ do
   Infrastructure.EventStore.AccountingIntegration.spec
   Domain.InvariantsSpec.spec
   Core.DSL.ParserSpec.spec
+
