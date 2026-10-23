@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-comment">-- | WebSocket-EventBus integration for real-time notifications</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- Broadcasts events to WebSocket clients when events occur</span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.WebSocket.Integration.html"><span class="hs-identifier">Surypus.WebSocket.Integration</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Concurrent.STM</span></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">forever</span></span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Surypus.WebSocket.html"><span class="hs-identifier">Surypus.WebSocket</span></a></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Integration.API.EventBusAdvanced.html"><span class="hs-identifier">Integration.API.EventBusAdvanced</span></a></span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="annot"><span class="hs-comment">-- | Start WebSocket event broadcaster</span></span><span>
+</span><span id="line-14"></span><span class="annot"><a href="Surypus.WebSocket.Integration.html#startEventBroadcaster"><span class="hs-identifier hs-type">startEventBroadcaster</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.WebSocket.html#WebSocketHandler"><span class="hs-identifier hs-type">WebSocketHandler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Integration.API.EventBusAdvanced.html#EventBusAdvanced"><span class="hs-identifier hs-type">EventBusAdvanced</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span id="startEventBroadcaster"><span class="annot"><span class="annottext">startEventBroadcaster :: WebSocketHandler -&gt; EventBusAdvanced -&gt; IO ()
+</span><a href="Surypus.WebSocket.Integration.html#startEventBroadcaster"><span class="hs-identifier hs-var hs-var">startEventBroadcaster</span></a></span></span><span> </span><span id="local-6989586621680356082"><span class="annot"><span class="annottext">WebSocketHandler
+</span><a href="#local-6989586621680356082"><span class="hs-identifier hs-var">wsHandler</span></a></span></span><span> </span><span id="local-6989586621680356083"><span class="annot"><span class="annottext">EventBusAdvanced
+</span><a href="#local-6989586621680356083"><span class="hs-identifier hs-var">bus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO () -&gt; IO ()
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">forever</span></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; IO ()) -&gt; IO () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-16"></span><span>  </span><span id="local-6989586621680356084"><span class="annot"><a href="#local-6989586621680356084"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">EventBusAdvanced -&gt; IO (Maybe BusMessage)
+</span><a href="Integration.API.EventBusAdvanced.html#consumeAdvanced"><span class="hs-identifier hs-var">consumeAdvanced</span></a></span><span> </span><span class="annot"><span class="annottext">EventBusAdvanced
+</span><a href="#local-6989586621680356083"><span class="hs-identifier hs-var">bus</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680356084"><span class="hs-identifier hs-type">msg</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-18"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680356086"><span class="annot"><span class="annottext">BusMessage
+</span><a href="#local-6989586621680356086"><span class="hs-identifier hs-var">busMsg</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">WebSocketHandler -&gt; BusMessage -&gt; IO ()
+</span><a href="Surypus.WebSocket.Integration.html#broadcastEvent"><span class="hs-identifier hs-var">broadcastEvent</span></a></span><span> </span><span class="annot"><span class="annottext">WebSocketHandler
+</span><a href="#local-6989586621680356082"><span class="hs-identifier hs-var">wsHandler</span></a></span><span> </span><span class="annot"><span class="annottext">BusMessage
+</span><a href="#local-6989586621680356086"><span class="hs-identifier hs-var">busMsg</span></a></span><span>
+</span><span id="line-19"></span><span>    </span><span class="annot"><span class="annottext">Maybe BusMessage
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; IO ()
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="annot"><span class="hs-comment">-- | Broadcast event to appropriate room</span></span><span>
+</span><span id="line-22"></span><span class="annot"><a href="Surypus.WebSocket.Integration.html#broadcastEvent"><span class="hs-identifier hs-type">broadcastEvent</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.WebSocket.html#WebSocketHandler"><span class="hs-identifier hs-type">WebSocketHandler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Integration.API.EventBusAdvanced.html#BusMessage"><span class="hs-identifier hs-type">BusMessage</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span id="broadcastEvent"><span class="annot"><span class="annottext">broadcastEvent :: WebSocketHandler -&gt; BusMessage -&gt; IO ()
+</span><a href="Surypus.WebSocket.Integration.html#broadcastEvent"><span class="hs-identifier hs-var hs-var">broadcastEvent</span></a></span></span><span> </span><span id="local-6989586621680356088"><span class="annot"><span class="annottext">WebSocketHandler
+</span><a href="#local-6989586621680356088"><span class="hs-identifier hs-var">wsHandler</span></a></span></span><span> </span><span id="local-6989586621680356089"><span class="annot"><span class="annottext">BusMessage
+</span><a href="#local-6989586621680356089"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680356090"><span class="annot"><span class="annottext">room :: Text
+</span><a href="#local-6989586621680356090"><span class="hs-identifier hs-var hs-var hs-var">room</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BusMessage -&gt; Text
+</span><a href="Surypus.WebSocket.Integration.html#getRoomForMessage"><span class="hs-identifier hs-var">getRoomForMessage</span></a></span><span> </span><span class="annot"><span class="annottext">BusMessage
+</span><a href="#local-6989586621680356089"><span class="hs-identifier hs-var">msg</span></a></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680356092"><span class="annot"><span class="annottext">payload :: Text
+</span><a href="#local-6989586621680356092"><span class="hs-identifier hs-var hs-var">payload</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BusMessage -&gt; Text
+</span><a href="Surypus.WebSocket.Integration.html#encodeMessage"><span class="hs-identifier hs-var">encodeMessage</span></a></span><span> </span><span class="annot"><span class="annottext">BusMessage
+</span><a href="#local-6989586621680356089"><span class="hs-identifier hs-var">msg</span></a></span><span>
+</span><span id="line-26"></span><span>  </span><span class="annot"><span class="annottext">WebSocketHandler -&gt; Text -&gt; Text -&gt; IO ()
+</span><a href="Surypus.WebSocket.html#broadcastToRoom"><span class="hs-identifier hs-var">broadcastToRoom</span></a></span><span> </span><span class="annot"><span class="annottext">WebSocketHandler
+</span><a href="#local-6989586621680356088"><span class="hs-identifier hs-var">wsHandler</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680356090"><span class="hs-identifier hs-var">room</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680356092"><span class="hs-identifier hs-var">payload</span></a></span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="annot"><span class="hs-comment">-- | Determine room from message routing key</span></span><span>
+</span><span id="line-29"></span><span class="annot"><a href="Surypus.WebSocket.Integration.html#getRoomForMessage"><span class="hs-identifier hs-type">getRoomForMessage</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.API.EventBusAdvanced.html#BusMessage"><span class="hs-identifier hs-type">BusMessage</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-30"></span><span id="getRoomForMessage"><span class="annot"><span class="annottext">getRoomForMessage :: BusMessage -&gt; Text
+</span><a href="Surypus.WebSocket.Integration.html#getRoomForMessage"><span class="hs-identifier hs-var hs-var">getRoomForMessage</span></a></span></span><span> </span><span id="local-6989586621680356095"><span class="annot"><span class="annottext">BusMessage
+</span><a href="#local-6989586621680356095"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">BusMessage -&gt; Text
+</span><a href="Integration.API.EventBusAdvanced.html#msgRoutingKey"><span class="hs-identifier hs-var">msgRoutingKey</span></a></span><span> </span><span class="annot"><span class="annottext">BusMessage
+</span><a href="#local-6989586621680356095"><span class="hs-identifier hs-var">msg</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-32"></span><span>    </span><span id="local-6989586621680356097"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680356097"><span class="hs-identifier hs-var">key</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;bill&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Bool
+</span><span class="hs-operator hs-var">`T.isPrefixOf`</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680356097"><span class="hs-identifier hs-var">key</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;bills&quot;</span></span><span>
+</span><span id="line-33"></span><span>    </span><span id="local-6989586621680356099"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680356099"><span class="hs-identifier hs-var">key</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;stock&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Bool
+</span><span class="hs-operator hs-var">`T.isPrefixOf`</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680356099"><span class="hs-identifier hs-var">key</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;inventory&quot;</span></span><span>
+</span><span id="line-34"></span><span>    </span><span id="local-6989586621680356100"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680356100"><span class="hs-identifier hs-var">key</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;person&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Bool
+</span><span class="hs-operator hs-var">`T.isPrefixOf`</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680356100"><span class="hs-identifier hs-var">key</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;persons&quot;</span></span><span>
+</span><span id="line-35"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;notifications&quot;</span></span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="annot"><span class="hs-comment">-- | Encode message to JSON text</span></span><span>
+</span><span id="line-38"></span><span class="annot"><a href="Surypus.WebSocket.Integration.html#encodeMessage"><span class="hs-identifier hs-type">encodeMessage</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.API.EventBusAdvanced.html#BusMessage"><span class="hs-identifier hs-type">BusMessage</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-39"></span><span id="encodeMessage"><span class="annot"><span class="annottext">encodeMessage :: BusMessage -&gt; Text
+</span><a href="Surypus.WebSocket.Integration.html#encodeMessage"><span class="hs-identifier hs-var hs-var">encodeMessage</span></a></span></span><span> </span><span id="local-6989586621680356101"><span class="annot"><span class="annottext">BusMessage
+</span><a href="#local-6989586621680356101"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-40"></span><span>  </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;{ \&quot;id\&quot;: \&quot;&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">BusMessage -&gt; Text
+</span><a href="Integration.API.EventBusAdvanced.html#msgId"><span class="hs-identifier hs-var">msgId</span></a></span><span> </span><span class="annot"><span class="annottext">BusMessage
+</span><a href="#local-6989586621680356101"><span class="hs-identifier hs-var">msg</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;\&quot;, \&quot;routingKey\&quot;: \&quot;&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">BusMessage -&gt; Text
+</span><a href="Integration.API.EventBusAdvanced.html#msgRoutingKey"><span class="hs-identifier hs-var">msgRoutingKey</span></a></span><span> </span><span class="annot"><span class="annottext">BusMessage
+</span><a href="#local-6989586621680356101"><span class="hs-identifier hs-var">msg</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;\&quot;&quot;</span></span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="annot"><span class="hs-comment">-- | Complete the JSON by closing it</span></span><span>
+</span><span id="line-43"></span><span class="annot"><a href="Surypus.WebSocket.Integration.html#finalizeMessage"><span class="hs-identifier hs-type">finalizeMessage</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-44"></span><span id="finalizeMessage"><span class="annot"><span class="annottext">finalizeMessage :: Text -&gt; Text
+</span><a href="Surypus.WebSocket.Integration.html#finalizeMessage"><span class="hs-identifier hs-var hs-var">finalizeMessage</span></a></span></span><span> </span><span id="local-6989586621680356104"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680356104"><span class="hs-identifier hs-var">txt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680356104"><span class="hs-identifier hs-var">txt</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;}&quot;</span></span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="annot"><span class="hs-comment">-- | Subscribe handler to event bus</span></span><span>
+</span><span id="line-47"></span><span class="annot"><a href="Surypus.WebSocket.Integration.html#subscribeToEvents"><span class="hs-identifier hs-type">subscribeToEvents</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.WebSocket.html#WebSocketHandler"><span class="hs-identifier hs-type">WebSocketHandler</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Integration.API.EventBusAdvanced.html#EventBusAdvanced"><span class="hs-identifier hs-type">EventBusAdvanced</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span id="subscribeToEvents"><span class="annot"><span class="annottext">subscribeToEvents :: WebSocketHandler -&gt; EventBusAdvanced -&gt; Text -&gt; IO ()
+</span><a href="Surypus.WebSocket.Integration.html#subscribeToEvents"><span class="hs-identifier hs-var hs-var">subscribeToEvents</span></a></span></span><span> </span><span id="local-6989586621680356106"><span class="annot"><span class="annottext">WebSocketHandler
+</span><a href="#local-6989586621680356106"><span class="hs-identifier hs-var">wsHandler</span></a></span></span><span> </span><span id="local-6989586621680356107"><span class="annot"><span class="annottext">EventBusAdvanced
+</span><a href="#local-6989586621680356107"><span class="hs-identifier hs-var">bus</span></a></span></span><span> </span><span id="local-6989586621680356108"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680356108"><span class="hs-identifier hs-var">routingKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-49"></span><span>  </span><span class="annot"><span class="annottext">EventBusAdvanced -&gt; Text -&gt; (BusMessage -&gt; IO ()) -&gt; IO ()
+</span><a href="Integration.API.EventBusAdvanced.html#subscribeAdvanced"><span class="hs-identifier hs-var">subscribeAdvanced</span></a></span><span> </span><span class="annot"><span class="annottext">EventBusAdvanced
+</span><a href="#local-6989586621680356107"><span class="hs-identifier hs-var">bus</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680356108"><span class="hs-identifier hs-var">routingKey</span></a></span><span> </span><span class="annot"><span class="annottext">((BusMessage -&gt; IO ()) -&gt; IO ()) -&gt; (BusMessage -&gt; IO ()) -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621680356110"><span class="annot"><span class="annottext">BusMessage
+</span><a href="#local-6989586621680356110"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-50"></span><span>    </span><span class="annot"><span class="annottext">WebSocketHandler -&gt; BusMessage -&gt; IO ()
+</span><a href="Surypus.WebSocket.Integration.html#broadcastEvent"><span class="hs-identifier hs-var">broadcastEvent</span></a></span><span> </span><span class="annot"><span class="annottext">WebSocketHandler
+</span><a href="#local-6989586621680356106"><span class="hs-identifier hs-var">wsHandler</span></a></span><span> </span><span class="annot"><span class="annottext">BusMessage
+</span><a href="#local-6989586621680356110"><span class="hs-identifier hs-var">msg</span></a></span><span>
+</span><span id="line-51"></span><span>    </span><span class="annot"><span class="annottext">() -&gt; IO ()
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span></pre></body></html>

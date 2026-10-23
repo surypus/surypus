@@ -1,0 +1,806 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE LambdaCase #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html"><span class="hs-identifier">Surypus.API.Notifications</span></a></span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPref"><span class="hs-identifier">NotificationPref</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Surypus.API.Notifications.html#Notification"><span class="hs-identifier">Notification</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationInput"><span class="hs-identifier">NotificationInput</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPrefInput"><span class="hs-identifier">NotificationPrefInput</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Surypus.API.Notifications.html#getPreferences"><span class="hs-identifier">getPreferences</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Surypus.API.Notifications.html#updatePreferences"><span class="hs-identifier">updatePreferences</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="Surypus.API.Notifications.html#listNotifications"><span class="hs-identifier">listNotifications</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="Surypus.API.Notifications.html#createNotification"><span class="hs-identifier">createNotification</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="Surypus.API.Notifications.html#markNotificationRead"><span class="hs-identifier">markNotificationRead</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span class="annot"><a href="Surypus.API.Notifications.html#getNotificationPrefs"><span class="hs-identifier">getNotificationPrefs</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>    </span><span class="annot"><a href="Surypus.API.Notifications.html#updateNotificationPrefs"><span class="hs-identifier">updateNotificationPrefs</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>    </span><span class="annot"><a href="Surypus.API.Notifications.html#sendEmailNotification"><span class="hs-identifier">sendEmailNotification</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span class="annot"><a href="Surypus.API.Notifications.html#sendDigestNotification"><span class="hs-identifier">sendDigestNotification</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span class="annot"><a href="Surypus.API.Notifications.html#sendTestNotification"><span class="hs-identifier">sendTestNotification</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">join</span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.IO.Class</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">liftIO</span></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.Types.html"><span class="hs-identifier">DAL.Types</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier">QueryResult</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier">FromJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier">ToJSON</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">fromMaybe</span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.html"><span class="hs-identifier">Database.Persist.Sql</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier">ConnectionPool</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistValue"><span class="hs-identifier">PersistValue</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawExecute"><span class="hs-identifier">rawExecute</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier">rawSql</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier">runSqlPool</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier">Single</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">data</span><span> </span><span id="NotificationPref"><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPref"><span class="hs-identifier hs-var">NotificationPref</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="NotificationPref"><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPref"><span class="hs-identifier hs-var">NotificationPref</span></a></span></span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="npEmail"><span class="annot"><span class="annottext">NotificationPref -&gt; Bool
+</span><a href="Surypus.API.Notifications.html#npEmail"><span class="hs-identifier hs-var hs-var">npEmail</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="npPush"><span class="annot"><span class="annottext">NotificationPref -&gt; Bool
+</span><a href="Surypus.API.Notifications.html#npPush"><span class="hs-identifier hs-var hs-var">npPush</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="npDigest"><span class="annot"><span class="annottext">NotificationPref -&gt; Text
+</span><a href="Surypus.API.Notifications.html#npDigest"><span class="hs-identifier hs-var hs-var">npDigest</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680308662"><span id="local-6989586621680308671"><span id="local-6989586621680308675"><span class="annot"><span class="annottext">Int -&gt; NotificationPref -&gt; ShowS
+[NotificationPref] -&gt; ShowS
+NotificationPref -&gt; String
+(Int -&gt; NotificationPref -&gt; ShowS)
+-&gt; (NotificationPref -&gt; String)
+-&gt; ([NotificationPref] -&gt; ShowS)
+-&gt; Show NotificationPref
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; NotificationPref -&gt; ShowS
+showsPrec :: Int -&gt; NotificationPref -&gt; ShowS
+$cshow :: NotificationPref -&gt; String
+show :: NotificationPref -&gt; String
+$cshowList :: [NotificationPref] -&gt; ShowS
+showList :: [NotificationPref] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680308680"><span id="local-6989586621680308687"><span class="annot"><span class="annottext">NotificationPref -&gt; NotificationPref -&gt; Bool
+(NotificationPref -&gt; NotificationPref -&gt; Bool)
+-&gt; (NotificationPref -&gt; NotificationPref -&gt; Bool)
+-&gt; Eq NotificationPref
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: NotificationPref -&gt; NotificationPref -&gt; Bool
+== :: NotificationPref -&gt; NotificationPref -&gt; Bool
+$c/= :: NotificationPref -&gt; NotificationPref -&gt; Bool
+/= :: NotificationPref -&gt; NotificationPref -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680308692"><span id="local-6989586621680308694"><span class="annot"><span class="annottext">(forall x. NotificationPref -&gt; Rep NotificationPref x)
+-&gt; (forall x. Rep NotificationPref x -&gt; NotificationPref)
+-&gt; Generic NotificationPref
+forall x. Rep NotificationPref x -&gt; NotificationPref
+forall x. NotificationPref -&gt; Rep NotificationPref x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. NotificationPref -&gt; Rep NotificationPref x
+from :: forall x. NotificationPref -&gt; Rep NotificationPref x
+$cto :: forall x. Rep NotificationPref x -&gt; NotificationPref
+to :: forall x. Rep NotificationPref x -&gt; NotificationPref
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680308700"><span id="local-6989586621680308707"><span id="local-6989586621680308710"><span id="local-6989586621680308713"><span id="local-6989586621680308716"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPref"><span class="hs-identifier hs-type">NotificationPref</span></a></span></span></span></span></span></span><span>
+</span><span id="line-41"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680308832"><span id="local-6989586621680308839"><span id="local-6989586621680308842"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPref"><span class="hs-identifier hs-type">NotificationPref</span></a></span></span></span></span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">data</span><span> </span><span id="Notification"><span class="annot"><a href="Surypus.API.Notifications.html#Notification"><span class="hs-identifier hs-var">Notification</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Notification"><span class="annot"><a href="Surypus.API.Notifications.html#Notification"><span class="hs-identifier hs-var">Notification</span></a></span></span><span>
+</span><span id="line-44"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="notifId"><span class="annot"><span class="annottext">Notification -&gt; Text
+</span><a href="Surypus.API.Notifications.html#notifId"><span class="hs-identifier hs-var hs-var">notifId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-45"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="notifTitle"><span class="annot"><span class="annottext">Notification -&gt; Text
+</span><a href="Surypus.API.Notifications.html#notifTitle"><span class="hs-identifier hs-var hs-var">notifTitle</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-46"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="notifBody"><span class="annot"><span class="annottext">Notification -&gt; Maybe Text
+</span><a href="Surypus.API.Notifications.html#notifBody"><span class="hs-identifier hs-var hs-var">notifBody</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="notifStatus"><span class="annot"><span class="annottext">Notification -&gt; Text
+</span><a href="Surypus.API.Notifications.html#notifStatus"><span class="hs-identifier hs-var hs-var">notifStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-48"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-49"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680308924"><span id="local-6989586621680308932"><span id="local-6989586621680308936"><span class="annot"><span class="annottext">Int -&gt; Notification -&gt; ShowS
+[Notification] -&gt; ShowS
+Notification -&gt; String
+(Int -&gt; Notification -&gt; ShowS)
+-&gt; (Notification -&gt; String)
+-&gt; ([Notification] -&gt; ShowS)
+-&gt; Show Notification
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Notification -&gt; ShowS
+showsPrec :: Int -&gt; Notification -&gt; ShowS
+$cshow :: Notification -&gt; String
+show :: Notification -&gt; String
+$cshowList :: [Notification] -&gt; ShowS
+showList :: [Notification] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680308939"><span id="local-6989586621680308946"><span class="annot"><span class="annottext">Notification -&gt; Notification -&gt; Bool
+(Notification -&gt; Notification -&gt; Bool)
+-&gt; (Notification -&gt; Notification -&gt; Bool) -&gt; Eq Notification
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Notification -&gt; Notification -&gt; Bool
+== :: Notification -&gt; Notification -&gt; Bool
+$c/= :: Notification -&gt; Notification -&gt; Bool
+/= :: Notification -&gt; Notification -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680308950"><span id="local-6989586621680308952"><span class="annot"><span class="annottext">(forall x. Notification -&gt; Rep Notification x)
+-&gt; (forall x. Rep Notification x -&gt; Notification)
+-&gt; Generic Notification
+forall x. Rep Notification x -&gt; Notification
+forall x. Notification -&gt; Rep Notification x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Notification -&gt; Rep Notification x
+from :: forall x. Notification -&gt; Rep Notification x
+$cto :: forall x. Rep Notification x -&gt; Notification
+to :: forall x. Rep Notification x -&gt; Notification
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680308955"><span id="local-6989586621680308962"><span id="local-6989586621680308965"><span id="local-6989586621680308968"><span id="local-6989586621680308971"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#Notification"><span class="hs-identifier hs-type">Notification</span></a></span></span></span></span></span></span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="hs-keyword">data</span><span> </span><span id="NotificationInput"><span class="annot"><a href="Surypus.API.Notifications.html#NotificationInput"><span class="hs-identifier hs-var">NotificationInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="NotificationInput"><span class="annot"><a href="Surypus.API.Notifications.html#NotificationInput"><span class="hs-identifier hs-var">NotificationInput</span></a></span></span><span>
+</span><span id="line-53"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="niUserId"><span class="annot"><span class="annottext">NotificationInput -&gt; Int64
+</span><a href="Surypus.API.Notifications.html#niUserId"><span class="hs-identifier hs-var hs-var">niUserId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-54"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="niTitle"><span class="annot"><span class="annottext">NotificationInput -&gt; Text
+</span><a href="Surypus.API.Notifications.html#niTitle"><span class="hs-identifier hs-var hs-var">niTitle</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-55"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="niBody"><span class="annot"><span class="annottext">NotificationInput -&gt; Text
+</span><a href="Surypus.API.Notifications.html#niBody"><span class="hs-identifier hs-var hs-var">niBody</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-56"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="niType"><span class="annot"><span class="annottext">NotificationInput -&gt; Text
+</span><a href="Surypus.API.Notifications.html#niType"><span class="hs-identifier hs-var hs-var">niType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-57"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-58"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680309069"><span id="local-6989586621680309077"><span id="local-6989586621680309081"><span class="annot"><span class="annottext">Int -&gt; NotificationInput -&gt; ShowS
+[NotificationInput] -&gt; ShowS
+NotificationInput -&gt; String
+(Int -&gt; NotificationInput -&gt; ShowS)
+-&gt; (NotificationInput -&gt; String)
+-&gt; ([NotificationInput] -&gt; ShowS)
+-&gt; Show NotificationInput
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; NotificationInput -&gt; ShowS
+showsPrec :: Int -&gt; NotificationInput -&gt; ShowS
+$cshow :: NotificationInput -&gt; String
+show :: NotificationInput -&gt; String
+$cshowList :: [NotificationInput] -&gt; ShowS
+showList :: [NotificationInput] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680309084"><span id="local-6989586621680309091"><span class="annot"><span class="annottext">NotificationInput -&gt; NotificationInput -&gt; Bool
+(NotificationInput -&gt; NotificationInput -&gt; Bool)
+-&gt; (NotificationInput -&gt; NotificationInput -&gt; Bool)
+-&gt; Eq NotificationInput
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: NotificationInput -&gt; NotificationInput -&gt; Bool
+== :: NotificationInput -&gt; NotificationInput -&gt; Bool
+$c/= :: NotificationInput -&gt; NotificationInput -&gt; Bool
+/= :: NotificationInput -&gt; NotificationInput -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680309095"><span id="local-6989586621680309097"><span class="annot"><span class="annottext">(forall x. NotificationInput -&gt; Rep NotificationInput x)
+-&gt; (forall x. Rep NotificationInput x -&gt; NotificationInput)
+-&gt; Generic NotificationInput
+forall x. Rep NotificationInput x -&gt; NotificationInput
+forall x. NotificationInput -&gt; Rep NotificationInput x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. NotificationInput -&gt; Rep NotificationInput x
+from :: forall x. NotificationInput -&gt; Rep NotificationInput x
+$cto :: forall x. Rep NotificationInput x -&gt; NotificationInput
+to :: forall x. Rep NotificationInput x -&gt; NotificationInput
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-59"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680309100"><span id="local-6989586621680309107"><span id="local-6989586621680309110"><span id="local-6989586621680309113"><span id="local-6989586621680309116"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationInput"><span class="hs-identifier hs-type">NotificationInput</span></a></span></span></span></span></span></span><span>
+</span><span id="line-60"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680309209"><span id="local-6989586621680309216"><span id="local-6989586621680309219"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationInput"><span class="hs-identifier hs-type">NotificationInput</span></a></span></span></span></span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span class="hs-keyword">data</span><span> </span><span id="NotificationPrefInput"><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPrefInput"><span class="hs-identifier hs-var">NotificationPrefInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="NotificationPrefInput"><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPrefInput"><span class="hs-identifier hs-var">NotificationPrefInput</span></a></span></span><span>
+</span><span id="line-63"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="npiEmail"><span class="annot"><span class="annottext">NotificationPrefInput -&gt; Bool
+</span><a href="Surypus.API.Notifications.html#npiEmail"><span class="hs-identifier hs-var hs-var">npiEmail</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-64"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="npiPush"><span class="annot"><span class="annottext">NotificationPrefInput -&gt; Bool
+</span><a href="Surypus.API.Notifications.html#npiPush"><span class="hs-identifier hs-var hs-var">npiPush</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-65"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="npiDigest"><span class="annot"><span class="annottext">NotificationPrefInput -&gt; Text
+</span><a href="Surypus.API.Notifications.html#npiDigest"><span class="hs-identifier hs-var hs-var">npiDigest</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-66"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-67"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680309291"><span id="local-6989586621680309297"><span id="local-6989586621680309301"><span class="annot"><span class="annottext">Int -&gt; NotificationPrefInput -&gt; ShowS
+[NotificationPrefInput] -&gt; ShowS
+NotificationPrefInput -&gt; String
+(Int -&gt; NotificationPrefInput -&gt; ShowS)
+-&gt; (NotificationPrefInput -&gt; String)
+-&gt; ([NotificationPrefInput] -&gt; ShowS)
+-&gt; Show NotificationPrefInput
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; NotificationPrefInput -&gt; ShowS
+showsPrec :: Int -&gt; NotificationPrefInput -&gt; ShowS
+$cshow :: NotificationPrefInput -&gt; String
+show :: NotificationPrefInput -&gt; String
+$cshowList :: [NotificationPrefInput] -&gt; ShowS
+showList :: [NotificationPrefInput] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680309304"><span id="local-6989586621680309309"><span class="annot"><span class="annottext">NotificationPrefInput -&gt; NotificationPrefInput -&gt; Bool
+(NotificationPrefInput -&gt; NotificationPrefInput -&gt; Bool)
+-&gt; (NotificationPrefInput -&gt; NotificationPrefInput -&gt; Bool)
+-&gt; Eq NotificationPrefInput
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: NotificationPrefInput -&gt; NotificationPrefInput -&gt; Bool
+== :: NotificationPrefInput -&gt; NotificationPrefInput -&gt; Bool
+$c/= :: NotificationPrefInput -&gt; NotificationPrefInput -&gt; Bool
+/= :: NotificationPrefInput -&gt; NotificationPrefInput -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680309313"><span id="local-6989586621680309315"><span class="annot"><span class="annottext">(forall x. NotificationPrefInput -&gt; Rep NotificationPrefInput x)
+-&gt; (forall x. Rep NotificationPrefInput x -&gt; NotificationPrefInput)
+-&gt; Generic NotificationPrefInput
+forall x. Rep NotificationPrefInput x -&gt; NotificationPrefInput
+forall x. NotificationPrefInput -&gt; Rep NotificationPrefInput x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. NotificationPrefInput -&gt; Rep NotificationPrefInput x
+from :: forall x. NotificationPrefInput -&gt; Rep NotificationPrefInput x
+$cto :: forall x. Rep NotificationPrefInput x -&gt; NotificationPrefInput
+to :: forall x. Rep NotificationPrefInput x -&gt; NotificationPrefInput
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-68"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680309318"><span id="local-6989586621680309325"><span id="local-6989586621680309328"><span id="local-6989586621680309331"><span id="local-6989586621680309334"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPrefInput"><span class="hs-identifier hs-type">NotificationPrefInput</span></a></span></span></span></span></span></span><span>
+</span><span id="line-69"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680309411"><span id="local-6989586621680309418"><span id="local-6989586621680309421"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPrefInput"><span class="hs-identifier hs-type">NotificationPrefInput</span></a></span></span></span></span><span>
+</span><span id="line-70"></span><span>
+</span><span id="line-71"></span><span class="annot"><a href="Surypus.API.Notifications.html#parseNotification"><span class="hs-identifier hs-type">parseNotification</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#Notification"><span class="hs-identifier hs-type">Notification</span></a></span><span>
+</span><span id="line-72"></span><span id="parseNotification"><span class="annot"><span class="annottext">parseNotification :: (Single Text, Single Text, Single (Maybe Text), Single Text)
+-&gt; Notification
+</span><a href="Surypus.API.Notifications.html#parseNotification"><span class="hs-identifier hs-var hs-var">parseNotification</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680309479"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309479"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680309480"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309480"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680309481"><span class="annot"><span class="annottext">Maybe Text
+</span><a href="#local-6989586621680309481"><span class="hs-identifier hs-var">b</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680309482"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309482"><span class="hs-identifier hs-var">s</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Maybe Text -&gt; Text -&gt; Notification
+</span><a href="Surypus.API.Notifications.html#Notification"><span class="hs-identifier hs-var">Notification</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309479"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309480"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Text
+</span><a href="#local-6989586621680309481"><span class="hs-identifier hs-var">b</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309482"><span class="hs-identifier hs-var">s</span></a></span><span>
+</span><span id="line-73"></span><span>
+</span><span id="line-74"></span><span class="annot"><a href="Surypus.API.Notifications.html#parsePref"><span class="hs-identifier hs-type">parsePref</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPref"><span class="hs-identifier hs-type">NotificationPref</span></a></span><span>
+</span><span id="line-75"></span><span id="parsePref"><span class="annot"><span class="annottext">parsePref :: (Single Bool, Single Bool, Single Text) -&gt; NotificationPref
+</span><a href="Surypus.API.Notifications.html#parsePref"><span class="hs-identifier hs-var hs-var">parsePref</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680309484"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621680309484"><span class="hs-identifier hs-var">e</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680309485"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621680309485"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span id="local-6989586621680309486"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309486"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Text -&gt; NotificationPref
+</span><a href="Surypus.API.Notifications.html#NotificationPref"><span class="hs-identifier hs-var">NotificationPref</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621680309484"><span class="hs-identifier hs-var">e</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621680309485"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309486"><span class="hs-identifier hs-var">d</span></a></span><span>
+</span><span id="line-76"></span><span>
+</span><span id="line-77"></span><span class="annot"><a href="Surypus.API.Notifications.html#listNotifications"><span class="hs-identifier hs-type">listNotifications</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Surypus.API.Notifications.html#Notification"><span class="hs-identifier hs-type">Notification</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-78"></span><span id="listNotifications"><span class="annot"><span class="annottext">listNotifications :: ConnectionPool -&gt; Int64 -&gt; IO (QueryResult [Notification])
+</span><a href="Surypus.API.Notifications.html#listNotifications"><span class="hs-identifier hs-var hs-var">listNotifications</span></a></span></span><span> </span><span id="local-6989586621680309487"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309487"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680309488"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680309488"><span class="hs-identifier hs-var">recipientId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-79"></span><span>    </span><span id="local-6989586621680309489"><span class="annot"><a href="#local-6989586621680309489"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+-&gt; IO
+     [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+forall a. IO a -&gt; IO a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+ -&gt; IO
+      [(Single Text, Single Text, Single (Maybe Text), Single Text)])
+-&gt; IO
+     [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+-&gt; IO
+     [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ReaderT
+  SqlBackend
+  IO
+  [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+-&gt; ConnectionPool
+-&gt; IO
+     [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span>
+</span><span id="line-80"></span><span>        </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; ReaderT
+     SqlBackend
+     IO
+     [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-81"></span><span>            </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id, subject, body, \
+            \  CASE status WHEN 0 THEN 'draft' WHEN 1 THEN 'pending' WHEN 2 THEN 'sent' \
+            \    WHEN 3 THEN 'delivered' WHEN 4 THEN 'read' ELSE 'archived' END \
+            \FROM notification WHERE recipient_id = ? ORDER BY created_at DESC LIMIT 100&quot;</span></span><span>
+</span><span id="line-85"></span><span>            </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int64 -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistInt64"><span class="hs-identifier hs-var">PersistInt64</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680309488"><span class="hs-identifier hs-var">recipientId</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309487"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-86"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">map</span></span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#parseNotification"><span class="hs-identifier hs-type">parseNotification</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680309489"><span class="hs-identifier hs-type">result</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span class="annot"><a href="Surypus.API.Notifications.html#createNotification"><span class="hs-identifier hs-type">createNotification</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationInput"><span class="hs-identifier hs-type">NotificationInput</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#Notification"><span class="hs-identifier hs-type">Notification</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-89"></span><span id="createNotification"><span class="annot"><span class="annottext">createNotification :: ConnectionPool
+-&gt; NotificationInput -&gt; IO (QueryResult Notification)
+</span><a href="Surypus.API.Notifications.html#createNotification"><span class="hs-identifier hs-var hs-var">createNotification</span></a></span></span><span> </span><span id="local-6989586621680309492"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309492"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680309493"><span class="annot"><span class="annottext">NotificationInput
+</span><a href="#local-6989586621680309493"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-90"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680309495"><span class="annot"><span class="annottext">sql :: Text
+</span><a href="#local-6989586621680309495"><span class="hs-identifier hs-var hs-var hs-var">sql</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;INSERT INTO notification (ntype, priority, recipient_id, subject, body, status) \
+              \VALUES (1, 3, ?, ?, ?, 1) \
+              \RETURNING id, subject, body, 'pending'&quot;</span></span><span>
+</span><span id="line-93"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680309496"><span class="annot"><span class="annottext">params :: [PersistValue]
+</span><a href="#local-6989586621680309496"><span class="hs-identifier hs-var hs-var hs-var">params</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistInt64"><span class="hs-identifier hs-var">PersistInt64</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NotificationInput -&gt; Int64
+</span><a href="Surypus.API.Notifications.html#niUserId"><span class="hs-identifier hs-var">niUserId</span></a></span><span> </span><span class="annot"><span class="annottext">NotificationInput
+</span><a href="#local-6989586621680309493"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NotificationInput -&gt; Text
+</span><a href="Surypus.API.Notifications.html#niTitle"><span class="hs-identifier hs-var">niTitle</span></a></span><span> </span><span class="annot"><span class="annottext">NotificationInput
+</span><a href="#local-6989586621680309493"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NotificationInput -&gt; Text
+</span><a href="Surypus.API.Notifications.html#niBody"><span class="hs-identifier hs-var">niBody</span></a></span><span> </span><span class="annot"><span class="annottext">NotificationInput
+</span><a href="#local-6989586621680309493"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">]</span><span>
+</span><span id="line-94"></span><span>    </span><span id="local-6989586621680309498"><span class="annot"><a href="#local-6989586621680309498"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+-&gt; IO
+     [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+forall a. IO a -&gt; IO a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+ -&gt; IO
+      [(Single Text, Single Text, Single (Maybe Text), Single Text)])
+-&gt; IO
+     [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+-&gt; IO
+     [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ReaderT
+  SqlBackend
+  IO
+  [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+-&gt; ConnectionPool
+-&gt; IO
+     [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; ReaderT
+     SqlBackend
+     IO
+     [(Single Text, Single Text, Single (Maybe Text), Single Text)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309495"><span class="hs-identifier hs-var">sql</span></a></span><span> </span><span class="annot"><span class="annottext">[PersistValue]
+</span><a href="#local-6989586621680309496"><span class="hs-identifier hs-var">params</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309492"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-95"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680309498"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-96"></span><span>        </span><span class="hs-special">(</span><span id="local-6989586621680309499"><span class="annot"><span class="annottext">(Single Text, Single Text, Single (Maybe Text), Single Text)
+</span><a href="#local-6989586621680309499"><span class="hs-identifier hs-var">row</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span class="annot"><span class="annottext">[(Single Text, Single Text, Single (Maybe Text), Single Text)]
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult Notification -&gt; IO (QueryResult Notification)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(QueryResult Notification -&gt; IO (QueryResult Notification))
+-&gt; QueryResult Notification -&gt; IO (QueryResult Notification)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Notification -&gt; QueryResult Notification
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Single Text, Single Text, Single (Maybe Text), Single Text)
+-&gt; Notification
+</span><a href="Surypus.API.Notifications.html#parseNotification"><span class="hs-identifier hs-var">parseNotification</span></a></span><span> </span><span class="annot"><span class="annottext">(Single Text, Single Text, Single (Maybe Text), Single Text)
+</span><a href="#local-6989586621680309499"><span class="hs-identifier hs-var">row</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-97"></span><span>        </span><span class="annot"><span class="annottext">[(Single Text, Single Text, Single (Maybe Text), Single Text)]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult Notification -&gt; IO (QueryResult Notification)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(QueryResult Notification -&gt; IO (QueryResult Notification))
+-&gt; QueryResult Notification -&gt; IO (QueryResult Notification)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; QueryResult Notification
+forall a. Text -&gt; QueryResult a
+</span><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-var">QueryError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Failed to create notification&quot;</span></span><span>
+</span><span id="line-98"></span><span>
+</span><span id="line-99"></span><span class="annot"><a href="Surypus.API.Notifications.html#markNotificationRead"><span class="hs-identifier hs-type">markNotificationRead</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-100"></span><span id="markNotificationRead"><span class="annot"><span class="annottext">markNotificationRead :: ConnectionPool -&gt; Text -&gt; IO (QueryResult ())
+</span><a href="Surypus.API.Notifications.html#markNotificationRead"><span class="hs-identifier hs-var hs-var">markNotificationRead</span></a></span></span><span> </span><span id="local-6989586621680309501"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309501"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680309502"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309502"><span class="hs-identifier hs-var">nId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-101"></span><span>    </span><span class="annot"><span class="annottext">IO () -&gt; IO ()
+forall a. IO a -&gt; IO a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; IO ()) -&gt; IO () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ReaderT SqlBackend IO () -&gt; ConnectionPool -&gt; IO ()
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span>
+</span><span id="line-102"></span><span>        </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; [PersistValue] -&gt; ReaderT SqlBackend IO ()
+forall (m :: * -&gt; *) backend.
+(MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m ()
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawExecute"><span class="hs-identifier hs-var">rawExecute</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;UPDATE notification SET status = 4, read_at = NOW() WHERE id = ?&quot;</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309502"><span class="hs-identifier hs-var">nId</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309501"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-103"></span><span>    </span><span class="annot"><span class="annottext">QueryResult () -&gt; IO (QueryResult ())
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(QueryResult () -&gt; IO (QueryResult ()))
+-&gt; QueryResult () -&gt; IO (QueryResult ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">() -&gt; QueryResult ()
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-104"></span><span>
+</span><span id="line-105"></span><span class="annot"><a href="Surypus.API.Notifications.html#getNotificationPrefs"><span class="hs-identifier hs-type">getNotificationPrefs</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPref"><span class="hs-identifier hs-type">NotificationPref</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-106"></span><span id="getNotificationPrefs"><span class="annot"><span class="annottext">getNotificationPrefs :: ConnectionPool -&gt; Int64 -&gt; IO (QueryResult NotificationPref)
+</span><a href="Surypus.API.Notifications.html#getNotificationPrefs"><span class="hs-identifier hs-var hs-var">getNotificationPrefs</span></a></span></span><span> </span><span id="local-6989586621680309503"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309503"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680309504"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680309504"><span class="hs-identifier hs-var">userId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-107"></span><span>    </span><span id="local-6989586621680309505"><span class="annot"><a href="#local-6989586621680309505"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO [(Single Bool, Single Bool, Single Text)]
+-&gt; IO [(Single Bool, Single Bool, Single Text)]
+forall a. IO a -&gt; IO a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO [(Single Bool, Single Bool, Single Text)]
+ -&gt; IO [(Single Bool, Single Bool, Single Text)])
+-&gt; IO [(Single Bool, Single Bool, Single Text)]
+-&gt; IO [(Single Bool, Single Bool, Single Text)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ReaderT SqlBackend IO [(Single Bool, Single Bool, Single Text)]
+-&gt; ConnectionPool -&gt; IO [(Single Bool, Single Bool, Single Text)]
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span>
+</span><span id="line-108"></span><span>        </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; ReaderT SqlBackend IO [(Single Bool, Single Bool, Single Text)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT notify_email, notify_push, digest_frequency FROM notification_prefs WHERE usr_id = ?&quot;</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int64 -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistInt64"><span class="hs-identifier hs-var">PersistInt64</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680309504"><span class="hs-identifier hs-var">userId</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309503"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-109"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680309505"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-110"></span><span>        </span><span class="hs-special">(</span><span id="local-6989586621680309506"><span class="annot"><span class="annottext">(Single Bool, Single Bool, Single Text)
+</span><a href="#local-6989586621680309506"><span class="hs-identifier hs-var">row</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span class="annot"><span class="annottext">[(Single Bool, Single Bool, Single Text)]
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult NotificationPref -&gt; IO (QueryResult NotificationPref)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(QueryResult NotificationPref -&gt; IO (QueryResult NotificationPref))
+-&gt; QueryResult NotificationPref
+-&gt; IO (QueryResult NotificationPref)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">NotificationPref -&gt; QueryResult NotificationPref
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Single Bool, Single Bool, Single Text) -&gt; NotificationPref
+</span><a href="Surypus.API.Notifications.html#parsePref"><span class="hs-identifier hs-var">parsePref</span></a></span><span> </span><span class="annot"><span class="annottext">(Single Bool, Single Bool, Single Text)
+</span><a href="#local-6989586621680309506"><span class="hs-identifier hs-var">row</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-111"></span><span>        </span><span class="annot"><span class="annottext">[(Single Bool, Single Bool, Single Text)]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult NotificationPref -&gt; IO (QueryResult NotificationPref)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(QueryResult NotificationPref -&gt; IO (QueryResult NotificationPref))
+-&gt; QueryResult NotificationPref
+-&gt; IO (QueryResult NotificationPref)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">NotificationPref -&gt; QueryResult NotificationPref
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Text -&gt; NotificationPref
+</span><a href="Surypus.API.Notifications.html#NotificationPref"><span class="hs-identifier hs-var">NotificationPref</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;daily&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-112"></span><span>
+</span><span id="line-113"></span><span class="annot"><a href="Surypus.API.Notifications.html#updateNotificationPrefs"><span class="hs-identifier hs-type">updateNotificationPrefs</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPrefInput"><span class="hs-identifier hs-type">NotificationPrefInput</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPref"><span class="hs-identifier hs-type">NotificationPref</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-114"></span><span id="updateNotificationPrefs"><span class="annot"><span class="annottext">updateNotificationPrefs :: ConnectionPool
+-&gt; Int64
+-&gt; NotificationPrefInput
+-&gt; IO (QueryResult NotificationPref)
+</span><a href="Surypus.API.Notifications.html#updateNotificationPrefs"><span class="hs-identifier hs-var hs-var">updateNotificationPrefs</span></a></span></span><span> </span><span id="local-6989586621680309507"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309507"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680309508"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680309508"><span class="hs-identifier hs-var">userId</span></a></span></span><span> </span><span id="local-6989586621680309509"><span class="annot"><span class="annottext">NotificationPrefInput
+</span><a href="#local-6989586621680309509"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-115"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680309528"><span class="annot"><span class="annottext">sql :: Text
+</span><a href="#local-6989586621680309528"><span class="hs-identifier hs-var hs-var hs-var">sql</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;WITH updated AS (&quot;</span></span><span>
+</span><span id="line-116"></span><span>              </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;UPDATE notification_prefs SET notify_email = ?, notify_push = ?, digest_frequency = ? &quot;</span></span><span>
+</span><span id="line-117"></span><span>              </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;WHERE usr_id = ? &quot;</span></span><span>
+</span><span id="line-118"></span><span>              </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;RETURNING notify_email, notify_push, digest_frequency &quot;</span></span><span>
+</span><span id="line-119"></span><span>              </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;) &quot;</span></span><span>
+</span><span id="line-120"></span><span>              </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;INSERT INTO notification_prefs (usr_id, notify_email, notify_push, digest_frequency) &quot;</span></span><span>
+</span><span id="line-121"></span><span>              </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT ?, ?, ?, ? &quot;</span></span><span>
+</span><span id="line-122"></span><span>              </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;WHERE NOT EXISTS (SELECT 1 FROM updated) &quot;</span></span><span>
+</span><span id="line-123"></span><span>              </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;RETURNING notify_email, notify_push, digest_frequency&quot;</span></span><span>
+</span><span id="line-124"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680309529"><span class="annot"><span class="annottext">params :: [PersistValue]
+</span><a href="#local-6989586621680309529"><span class="hs-identifier hs-var hs-var hs-var">params</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistBool"><span class="hs-identifier hs-var">PersistBool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NotificationPrefInput -&gt; Bool
+</span><a href="Surypus.API.Notifications.html#npiEmail"><span class="hs-identifier hs-var">npiEmail</span></a></span><span> </span><span class="annot"><span class="annottext">NotificationPrefInput
+</span><a href="#local-6989586621680309509"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistBool"><span class="hs-identifier hs-var">PersistBool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NotificationPrefInput -&gt; Bool
+</span><a href="Surypus.API.Notifications.html#npiPush"><span class="hs-identifier hs-var">npiPush</span></a></span><span> </span><span class="annot"><span class="annottext">NotificationPrefInput
+</span><a href="#local-6989586621680309509"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NotificationPrefInput -&gt; Text
+</span><a href="Surypus.API.Notifications.html#npiDigest"><span class="hs-identifier hs-var">npiDigest</span></a></span><span> </span><span class="annot"><span class="annottext">NotificationPrefInput
+</span><a href="#local-6989586621680309509"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistInt64"><span class="hs-identifier hs-var">PersistInt64</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680309508"><span class="hs-identifier hs-var">userId</span></a></span><span>
+</span><span id="line-125"></span><span>                 </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistInt64"><span class="hs-identifier hs-var">PersistInt64</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680309508"><span class="hs-identifier hs-var">userId</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistBool"><span class="hs-identifier hs-var">PersistBool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NotificationPrefInput -&gt; Bool
+</span><a href="Surypus.API.Notifications.html#npiEmail"><span class="hs-identifier hs-var">npiEmail</span></a></span><span> </span><span class="annot"><span class="annottext">NotificationPrefInput
+</span><a href="#local-6989586621680309509"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistBool"><span class="hs-identifier hs-var">PersistBool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NotificationPrefInput -&gt; Bool
+</span><a href="Surypus.API.Notifications.html#npiPush"><span class="hs-identifier hs-var">npiPush</span></a></span><span> </span><span class="annot"><span class="annottext">NotificationPrefInput
+</span><a href="#local-6989586621680309509"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NotificationPrefInput -&gt; Text
+</span><a href="Surypus.API.Notifications.html#npiDigest"><span class="hs-identifier hs-var">npiDigest</span></a></span><span> </span><span class="annot"><span class="annottext">NotificationPrefInput
+</span><a href="#local-6989586621680309509"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-126"></span><span>                 </span><span class="hs-special">]</span><span>
+</span><span id="line-127"></span><span>    </span><span id="local-6989586621680309531"><span class="annot"><a href="#local-6989586621680309531"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO [(Single Bool, Single Bool, Single Text)]
+-&gt; IO [(Single Bool, Single Bool, Single Text)]
+forall a. IO a -&gt; IO a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO [(Single Bool, Single Bool, Single Text)]
+ -&gt; IO [(Single Bool, Single Bool, Single Text)])
+-&gt; IO [(Single Bool, Single Bool, Single Text)]
+-&gt; IO [(Single Bool, Single Bool, Single Text)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ReaderT SqlBackend IO [(Single Bool, Single Bool, Single Text)]
+-&gt; ConnectionPool -&gt; IO [(Single Bool, Single Bool, Single Text)]
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; ReaderT SqlBackend IO [(Single Bool, Single Bool, Single Text)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309528"><span class="hs-identifier hs-var">sql</span></a></span><span> </span><span class="annot"><span class="annottext">[PersistValue]
+</span><a href="#local-6989586621680309529"><span class="hs-identifier hs-var">params</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309507"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-128"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680309531"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-129"></span><span>        </span><span class="hs-special">(</span><span id="local-6989586621680309532"><span class="annot"><span class="annottext">(Single Bool, Single Bool, Single Text)
+</span><a href="#local-6989586621680309532"><span class="hs-identifier hs-var">row</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span class="annot"><span class="annottext">[(Single Bool, Single Bool, Single Text)]
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult NotificationPref -&gt; IO (QueryResult NotificationPref)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(QueryResult NotificationPref -&gt; IO (QueryResult NotificationPref))
+-&gt; QueryResult NotificationPref
+-&gt; IO (QueryResult NotificationPref)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">NotificationPref -&gt; QueryResult NotificationPref
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Single Bool, Single Bool, Single Text) -&gt; NotificationPref
+</span><a href="Surypus.API.Notifications.html#parsePref"><span class="hs-identifier hs-var">parsePref</span></a></span><span> </span><span class="annot"><span class="annottext">(Single Bool, Single Bool, Single Text)
+</span><a href="#local-6989586621680309532"><span class="hs-identifier hs-var">row</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-130"></span><span>        </span><span class="annot"><span class="annottext">[(Single Bool, Single Bool, Single Text)]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult NotificationPref -&gt; IO (QueryResult NotificationPref)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(QueryResult NotificationPref -&gt; IO (QueryResult NotificationPref))
+-&gt; QueryResult NotificationPref
+-&gt; IO (QueryResult NotificationPref)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; QueryResult NotificationPref
+forall a. Text -&gt; QueryResult a
+</span><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-var">QueryError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Failed to update notification prefs&quot;</span></span><span>
+</span><span id="line-131"></span><span>
+</span><span id="line-132"></span><span class="annot"><a href="Surypus.API.Notifications.html#getPreferences"><span class="hs-identifier hs-type">getPreferences</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPref"><span class="hs-identifier hs-type">NotificationPref</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-133"></span><span id="getPreferences"><span class="annot"><span class="annottext">getPreferences :: ConnectionPool -&gt; IO (QueryResult NotificationPref)
+</span><a href="Surypus.API.Notifications.html#getPreferences"><span class="hs-identifier hs-var hs-var">getPreferences</span></a></span></span><span> </span><span id="local-6989586621680309533"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309533"><span class="hs-identifier hs-var">_pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">QueryResult NotificationPref -&gt; IO (QueryResult NotificationPref)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(QueryResult NotificationPref -&gt; IO (QueryResult NotificationPref))
+-&gt; QueryResult NotificationPref
+-&gt; IO (QueryResult NotificationPref)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">NotificationPref -&gt; QueryResult NotificationPref
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="annot"><span class="annottext">(NotificationPref -&gt; QueryResult NotificationPref)
+-&gt; NotificationPref -&gt; QueryResult NotificationPref
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Text -&gt; NotificationPref
+</span><a href="Surypus.API.Notifications.html#NotificationPref"><span class="hs-identifier hs-var">NotificationPref</span></a></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;daily&quot;</span></span><span>
+</span><span id="line-134"></span><span>
+</span><span id="line-135"></span><span class="annot"><a href="Surypus.API.Notifications.html#updatePreferences"><span class="hs-identifier hs-type">updatePreferences</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPref"><span class="hs-identifier hs-type">NotificationPref</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationPref"><span class="hs-identifier hs-type">NotificationPref</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-136"></span><span id="updatePreferences"><span class="annot"><span class="annottext">updatePreferences :: ConnectionPool
+-&gt; NotificationPref -&gt; IO (QueryResult NotificationPref)
+</span><a href="Surypus.API.Notifications.html#updatePreferences"><span class="hs-identifier hs-var hs-var">updatePreferences</span></a></span></span><span> </span><span id="local-6989586621680309534"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309534"><span class="hs-identifier hs-var">_pool</span></a></span></span><span> </span><span id="local-6989586621680309535"><span class="annot"><span class="annottext">NotificationPref
+</span><a href="#local-6989586621680309535"><span class="hs-identifier hs-var">prefs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">QueryResult NotificationPref -&gt; IO (QueryResult NotificationPref)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(QueryResult NotificationPref -&gt; IO (QueryResult NotificationPref))
+-&gt; QueryResult NotificationPref
+-&gt; IO (QueryResult NotificationPref)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">NotificationPref -&gt; QueryResult NotificationPref
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="annot"><span class="annottext">NotificationPref
+</span><a href="#local-6989586621680309535"><span class="hs-identifier hs-var">prefs</span></a></span><span>
+</span><span id="line-137"></span><span>
+</span><span id="line-138"></span><span class="annot"><a href="Surypus.API.Notifications.html#lookupUserEmail"><span class="hs-identifier hs-type">lookupUserEmail</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-139"></span><span id="lookupUserEmail"><span class="annot"><span class="annottext">lookupUserEmail :: ConnectionPool -&gt; Int64 -&gt; IO (Maybe Text)
+</span><a href="Surypus.API.Notifications.html#lookupUserEmail"><span class="hs-identifier hs-var hs-var">lookupUserEmail</span></a></span></span><span> </span><span id="local-6989586621680309537"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309537"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680309538"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680309538"><span class="hs-identifier hs-var">userId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-140"></span><span>    </span><span id="local-6989586621680309539"><span class="annot"><a href="#local-6989586621680309539"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO [Single (Maybe Text)] -&gt; IO [Single (Maybe Text)]
+forall a. IO a -&gt; IO a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO [Single (Maybe Text)] -&gt; IO [Single (Maybe Text)])
+-&gt; IO [Single (Maybe Text)] -&gt; IO [Single (Maybe Text)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ReaderT SqlBackend IO [Single (Maybe Text)]
+-&gt; ConnectionPool -&gt; IO [Single (Maybe Text)]
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span>
+</span><span id="line-141"></span><span>        </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue] -&gt; ReaderT SqlBackend IO [Single (Maybe Text)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT email FROM users WHERE id = ?&quot;</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int64 -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistInt64"><span class="hs-identifier hs-var">PersistInt64</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680309538"><span class="hs-identifier hs-var">userId</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309537"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-142"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680309539"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-143"></span><span>        </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">Single</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680309540"><span class="annot"><span class="annottext">Maybe Text
+</span><a href="#local-6989586621680309540"><span class="hs-identifier hs-var">mbEmail</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe Text
+</span><a href="#local-6989586621680309540"><span class="hs-identifier hs-var">mbEmail</span></a></span><span>
+</span><span id="line-144"></span><span>        </span><span class="annot"><span class="annottext">[Single (Maybe Text)]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-145"></span><span>
+</span><span id="line-146"></span><span class="annot"><a href="Surypus.API.Notifications.html#sendEmailNotification"><span class="hs-identifier hs-type">sendEmailNotification</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.API.Notifications.html#NotificationInput"><span class="hs-identifier hs-type">NotificationInput</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-147"></span><span id="sendEmailNotification"><span class="annot"><span class="annottext">sendEmailNotification :: ConnectionPool -&gt; NotificationInput -&gt; IO (QueryResult ())
+</span><a href="Surypus.API.Notifications.html#sendEmailNotification"><span class="hs-identifier hs-var hs-var">sendEmailNotification</span></a></span></span><span> </span><span id="local-6989586621680309541"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309541"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680309542"><span class="annot"><span class="annottext">NotificationInput
+</span><a href="#local-6989586621680309542"><span class="hs-identifier hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-148"></span><span>    </span><span id="local-6989586621680309543"><span class="annot"><a href="#local-6989586621680309543"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; NotificationInput -&gt; IO (QueryResult Notification)
+</span><a href="Surypus.API.Notifications.html#createNotification"><span class="hs-identifier hs-var">createNotification</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309541"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">NotificationInput
+</span><a href="#local-6989586621680309542"><span class="hs-identifier hs-var">input</span></a></span><span>
+</span><span id="line-149"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680309543"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-150"></span><span>        </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="annot"><span class="annottext">Notification
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-151"></span><span>            </span><span id="local-6989586621680309544"><span class="annot"><a href="#local-6989586621680309544"><span class="hs-identifier hs-var">mbEmail</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool -&gt; Int64 -&gt; IO (Maybe Text)
+</span><a href="Surypus.API.Notifications.html#lookupUserEmail"><span class="hs-identifier hs-var">lookupUserEmail</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309541"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NotificationInput -&gt; Int64
+</span><a href="Surypus.API.Notifications.html#niUserId"><span class="hs-identifier hs-var">niUserId</span></a></span><span> </span><span class="annot"><span class="annottext">NotificationInput
+</span><a href="#local-6989586621680309542"><span class="hs-identifier hs-var">input</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-152"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680309546"><span class="annot"><a href="#local-6989586621680309546"><span class="hs-identifier hs-var hs-var">_email</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Maybe Text -&gt; Text
+forall a. a -&gt; Maybe a -&gt; a
+</span><span class="hs-identifier hs-var">fromMaybe</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;user@surypus.local&quot;</span></span><span> </span><span class="annot"><span class="annottext">Maybe Text
+</span><a href="#local-6989586621680309544"><span class="hs-identifier hs-var">mbEmail</span></a></span><span>
+</span><span id="line-153"></span><span>            </span><span class="hs-comment">-- Mock: email sending disabled in Phase 1 prototype</span><span>
+</span><span id="line-154"></span><span>            </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-155"></span><span>        </span><span class="annot"><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-type">QueryError</span></a></span><span> </span><span id="local-6989586621680309547"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309547"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult () -&gt; IO (QueryResult ())
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(QueryResult () -&gt; IO (QueryResult ()))
+-&gt; QueryResult () -&gt; IO (QueryResult ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; QueryResult ()
+forall a. Text -&gt; QueryResult a
+</span><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-var">QueryError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309547"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-156"></span><span>
+</span><span id="line-157"></span><span class="annot"><a href="Surypus.API.Notifications.html#sendDigestNotification"><span class="hs-identifier hs-type">sendDigestNotification</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-158"></span><span id="sendDigestNotification"><span class="annot"><span class="annottext">sendDigestNotification :: ConnectionPool -&gt; Int64 -&gt; Text -&gt; IO (QueryResult ())
+</span><a href="Surypus.API.Notifications.html#sendDigestNotification"><span class="hs-identifier hs-var hs-var">sendDigestNotification</span></a></span></span><span> </span><span id="local-6989586621680309548"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309548"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680309549"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680309549"><span class="hs-identifier hs-var">userId</span></a></span></span><span> </span><span id="local-6989586621680309550"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309550"><span class="hs-identifier hs-var">frequency</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-159"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680309558"><span class="annot"><span class="annottext">input :: NotificationInput
+</span><a href="#local-6989586621680309558"><span class="hs-identifier hs-var hs-var hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-160"></span><span>            </span><span class="annot"><span class="annottext">Int64 -&gt; Text -&gt; Text -&gt; Text -&gt; NotificationInput
+</span><a href="Surypus.API.Notifications.html#NotificationInput"><span class="hs-identifier hs-var">NotificationInput</span></a></span><span>
+</span><span id="line-161"></span><span>                </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680309549"><span class="hs-identifier hs-var">userId</span></a></span><span>
+</span><span id="line-162"></span><span>                </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Digest: &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309550"><span class="hs-identifier hs-var">frequency</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-163"></span><span>                </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Your &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309550"><span class="hs-identifier hs-var">frequency</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; digest notification&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-164"></span><span>                </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;digest&quot;</span></span><span>
+</span><span id="line-165"></span><span>    </span><span id="local-6989586621680309559"><span class="annot"><a href="#local-6989586621680309559"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; NotificationInput -&gt; IO (QueryResult Notification)
+</span><a href="Surypus.API.Notifications.html#createNotification"><span class="hs-identifier hs-var">createNotification</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309548"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">NotificationInput
+</span><a href="#local-6989586621680309558"><span class="hs-identifier hs-var">input</span></a></span><span>
+</span><span id="line-166"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680309559"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-167"></span><span>        </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="annot"><span class="annottext">Notification
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult () -&gt; IO (QueryResult ())
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(QueryResult () -&gt; IO (QueryResult ()))
+-&gt; QueryResult () -&gt; IO (QueryResult ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">() -&gt; QueryResult ()
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-168"></span><span>        </span><span class="annot"><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-type">QueryError</span></a></span><span> </span><span id="local-6989586621680309560"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309560"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult () -&gt; IO (QueryResult ())
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(QueryResult () -&gt; IO (QueryResult ()))
+-&gt; QueryResult () -&gt; IO (QueryResult ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; QueryResult ()
+forall a. Text -&gt; QueryResult a
+</span><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-var">QueryError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309560"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-169"></span><span>
+</span><span id="line-170"></span><span class="annot"><a href="Surypus.API.Notifications.html#sendTestNotification"><span class="hs-identifier hs-type">sendTestNotification</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-171"></span><span id="sendTestNotification"><span class="annot"><span class="annottext">sendTestNotification :: ConnectionPool -&gt; IO (QueryResult ())
+</span><a href="Surypus.API.Notifications.html#sendTestNotification"><span class="hs-identifier hs-var hs-var">sendTestNotification</span></a></span></span><span> </span><span id="local-6989586621680309561"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309561"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-172"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680309567"><span class="annot"><span class="annottext">input :: NotificationInput
+</span><a href="#local-6989586621680309567"><span class="hs-identifier hs-var hs-var hs-var">input</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Text -&gt; Text -&gt; Text -&gt; NotificationInput
+</span><a href="Surypus.API.Notifications.html#NotificationInput"><span class="hs-identifier hs-var">NotificationInput</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Test Notification&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;This is a test notification&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;test&quot;</span></span><span>
+</span><span id="line-173"></span><span>    </span><span id="local-6989586621680309568"><span class="annot"><a href="#local-6989586621680309568"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; NotificationInput -&gt; IO (QueryResult Notification)
+</span><a href="Surypus.API.Notifications.html#createNotification"><span class="hs-identifier hs-var">createNotification</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680309561"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">NotificationInput
+</span><a href="#local-6989586621680309567"><span class="hs-identifier hs-var">input</span></a></span><span>
+</span><span id="line-174"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680309568"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-175"></span><span>        </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="annot"><span class="annottext">Notification
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult () -&gt; IO (QueryResult ())
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(QueryResult () -&gt; IO (QueryResult ()))
+-&gt; QueryResult () -&gt; IO (QueryResult ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">() -&gt; QueryResult ()
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-176"></span><span>        </span><span class="annot"><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-type">QueryError</span></a></span><span> </span><span id="local-6989586621680309569"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309569"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult () -&gt; IO (QueryResult ())
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(QueryResult () -&gt; IO (QueryResult ()))
+-&gt; QueryResult () -&gt; IO (QueryResult ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; QueryResult ()
+forall a. Text -&gt; QueryResult a
+</span><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-var">QueryError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680309569"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-177"></span></pre></body></html>

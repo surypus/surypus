@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="annot"><span class="hs-comment">-- | ServiceManager coordinates daemonized jobs and Cron tasks.</span></span><span>
+</span><span id="line-5"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Production.ServiceManager.html"><span class="hs-identifier">Production.ServiceManager</span></a></span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Production.ServiceManager.html#runDaemon"><span class="hs-identifier">runDaemon</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Production.ServiceManager.html#runJobQueueOnce"><span class="hs-identifier">runJobQueueOnce</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Production.ServiceManager.html#runCronOnce"><span class="hs-identifier">runCronOnce</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Production.ServiceManager.html#daemonTickDelay"><span class="hs-identifier">daemonTickDelay</span></a></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Concurrent</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">forkIO</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">threadDelay</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Exception</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">SomeException</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">try</span></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">forever</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">void</span></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time.Clock</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">getCurrentTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="annot"><span class="hs-comment">-- | Stub type for Pool</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">type</span><span> </span><span id="Pool"><span class="annot"><a href="Production.ServiceManager.html#Pool"><span class="hs-identifier hs-var">Pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="annot"><a href="Production.ServiceManager.html#daemonTickDelay"><span class="hs-identifier hs-type">daemonTickDelay</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-20"></span><span id="daemonTickDelay"><span class="annot"><span class="annottext">daemonTickDelay :: Int
+</span><a href="Production.ServiceManager.html#daemonTickDelay"><span class="hs-identifier hs-var hs-var">daemonTickDelay</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">5</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1000000</span></span><span> </span><span class="hs-comment">-- 5 seconds</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="annot"><a href="Production.ServiceManager.html#runJobQueueOnce"><span class="hs-identifier hs-type">runJobQueueOnce</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.ServiceManager.html#Pool"><span class="hs-identifier hs-type">Pool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span id="runJobQueueOnce"><span class="annot"><span class="annottext">runJobQueueOnce :: Pool -&gt; IO Pool
+</span><a href="Production.ServiceManager.html#runJobQueueOnce"><span class="hs-identifier hs-var hs-var">runJobQueueOnce</span></a></span></span><span> </span><span id="local-6989586621680289815"><span class="annot"><span class="annottext">Pool
+</span><a href="#local-6989586621680289815"><span class="hs-identifier hs-var">_pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-24"></span><span>  </span><span id="local-6989586621680289816"><span class="annot"><a href="#local-6989586621680289816"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO UTCTime
+</span><span class="hs-identifier hs-var">getCurrentTime</span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">putStrLn</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><span class="hs-string">&quot;Job queue sweep at &quot;</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">&lt;&gt;</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">show</span></span><span> </span><span class="annot"><a href="#local-6989586621680289816"><span class="hs-identifier hs-type">now</span></a></span><span>
+</span><span id="line-26"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">putStrLn</span></span><span> </span><span class="annot"><span class="hs-string">&quot;Job queue idle&quot;</span></span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="annot"><a href="Production.ServiceManager.html#runCronOnce"><span class="hs-identifier hs-type">runCronOnce</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.ServiceManager.html#Pool"><span class="hs-identifier hs-type">Pool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span id="runCronOnce"><span class="annot"><span class="annottext">runCronOnce :: Pool -&gt; IO Pool
+</span><a href="Production.ServiceManager.html#runCronOnce"><span class="hs-identifier hs-var hs-var">runCronOnce</span></a></span></span><span> </span><span id="local-6989586621680289819"><span class="annot"><span class="annottext">Pool
+</span><a href="#local-6989586621680289819"><span class="hs-identifier hs-var">_pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-30"></span><span>  </span><span id="local-6989586621680289820"><span class="annot"><a href="#local-6989586621680289820"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO UTCTime
+</span><span class="hs-identifier hs-var">getCurrentTime</span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">putStrLn</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><span class="hs-string">&quot;Cron tick at &quot;</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">&lt;&gt;</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">show</span></span><span> </span><span class="annot"><a href="#local-6989586621680289820"><span class="hs-identifier hs-type">now</span></a></span><span>
+</span><span id="line-32"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">putStrLn</span></span><span> </span><span class="annot"><span class="hs-string">&quot;Cron idle&quot;</span></span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="annot"><span class="hs-comment">-- | Run both job queue and cron loops in parallel.</span></span><span>
+</span><span id="line-35"></span><span class="annot"><a href="Production.ServiceManager.html#runDaemon"><span class="hs-identifier hs-type">runDaemon</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.ServiceManager.html#Pool"><span class="hs-identifier hs-type">Pool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span id="runDaemon"><span class="annot"><span class="annottext">runDaemon :: Pool -&gt; IO Pool
+</span><a href="Production.ServiceManager.html#runDaemon"><span class="hs-identifier hs-var hs-var">runDaemon</span></a></span></span><span> </span><span id="local-6989586621680289821"><span class="annot"><span class="annottext">Pool
+</span><a href="#local-6989586621680289821"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-37"></span><span>  </span><span class="annot"><span class="annottext">String -&gt; IO Pool
+</span><span class="hs-identifier hs-var">putStrLn</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Daemon: starting job queue and cron loops&quot;</span></span><span>
+</span><span id="line-38"></span><span>  </span><span class="annot"><span class="annottext">IO ThreadId -&gt; IO Pool
+forall (f :: * -&gt; *) a. Functor f =&gt; f a -&gt; f Pool
+</span><span class="hs-identifier hs-var">void</span></span><span> </span><span class="annot"><span class="annottext">(IO ThreadId -&gt; IO Pool)
+-&gt; (IO Pool -&gt; IO ThreadId) -&gt; IO Pool -&gt; IO Pool
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">IO Pool -&gt; IO ThreadId
+</span><span class="hs-identifier hs-var">forkIO</span></span><span> </span><span class="annot"><span class="annottext">(IO Pool -&gt; IO ThreadId)
+-&gt; (IO Pool -&gt; IO Pool) -&gt; IO Pool -&gt; IO ThreadId
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">IO Pool -&gt; IO Pool
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">forever</span></span><span> </span><span class="annot"><span class="annottext">(IO Pool -&gt; IO Pool) -&gt; IO Pool -&gt; IO Pool
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">IO Pool -&gt; IO Pool
+</span><a href="Production.ServiceManager.html#tryRun"><span class="hs-identifier hs-var">tryRun</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Pool -&gt; IO Pool
+</span><a href="Production.ServiceManager.html#runJobQueueOnce"><span class="hs-identifier hs-var">runJobQueueOnce</span></a></span><span> </span><span class="annot"><span class="annottext">Pool
+</span><a href="#local-6989586621680289821"><span class="hs-identifier hs-var">pool</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span>  </span><span class="annot"><span class="annottext">IO ThreadId -&gt; IO Pool
+forall (f :: * -&gt; *) a. Functor f =&gt; f a -&gt; f Pool
+</span><span class="hs-identifier hs-var">void</span></span><span> </span><span class="annot"><span class="annottext">(IO ThreadId -&gt; IO Pool)
+-&gt; (IO Pool -&gt; IO ThreadId) -&gt; IO Pool -&gt; IO Pool
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">IO Pool -&gt; IO ThreadId
+</span><span class="hs-identifier hs-var">forkIO</span></span><span> </span><span class="annot"><span class="annottext">(IO Pool -&gt; IO ThreadId)
+-&gt; (IO Pool -&gt; IO Pool) -&gt; IO Pool -&gt; IO ThreadId
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">IO Pool -&gt; IO Pool
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">forever</span></span><span> </span><span class="annot"><span class="annottext">(IO Pool -&gt; IO Pool) -&gt; IO Pool -&gt; IO Pool
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">IO Pool -&gt; IO Pool
+</span><a href="Production.ServiceManager.html#tryRun"><span class="hs-identifier hs-var">tryRun</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Pool -&gt; IO Pool
+</span><a href="Production.ServiceManager.html#runCronOnce"><span class="hs-identifier hs-var">runCronOnce</span></a></span><span> </span><span class="annot"><span class="annottext">Pool
+</span><a href="#local-6989586621680289821"><span class="hs-identifier hs-var">pool</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span>  </span><span class="annot"><span class="annottext">IO Pool -&gt; IO Pool
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">forever</span></span><span> </span><span class="annot"><span class="annottext">(IO Pool -&gt; IO Pool) -&gt; IO Pool -&gt; IO Pool
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; IO Pool
+</span><span class="hs-identifier hs-var">threadDelay</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="Production.ServiceManager.html#daemonTickDelay"><span class="hs-identifier hs-var">daemonTickDelay</span></a></span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="annot"><a href="Production.ServiceManager.html#tryRun"><span class="hs-identifier hs-type">tryRun</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span id="tryRun"><span class="annot"><span class="annottext">tryRun :: IO Pool -&gt; IO Pool
+</span><a href="Production.ServiceManager.html#tryRun"><span class="hs-identifier hs-var hs-var">tryRun</span></a></span></span><span> </span><span id="local-6989586621680289824"><span class="annot"><span class="annottext">IO Pool
+</span><a href="#local-6989586621680289824"><span class="hs-identifier hs-var">action</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-44"></span><span>  </span><span id="local-6989586621680289825"><span class="annot"><a href="#local-6989586621680289825"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO Pool -&gt; IO (Either SomeException Pool)
+forall e a. Exception e =&gt; IO a -&gt; IO (Either e a)
+</span><span class="hs-identifier hs-var">try</span></span><span> </span><span class="annot"><span class="annottext">IO Pool
+</span><a href="#local-6989586621680289824"><span class="hs-identifier hs-var">action</span></a></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680289825"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-46"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680289826"><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621680289826"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; IO Pool
+</span><span class="hs-identifier hs-var">putStrLn</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; IO Pool) -&gt; String -&gt; IO Pool
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Daemon tick failed: &quot;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">SomeException -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621680289826"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-47"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Pool -&gt; IO Pool
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">threadDelay</span></span><span> </span><span class="annot"><a href="Production.ServiceManager.html#daemonTickDelay"><span class="hs-identifier hs-type">daemonTickDelay</span></a></span><span>
+</span><span id="line-49"></span></pre></body></html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | JobQueue module - Background jobs</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Production.JobQueue.html"><span class="hs-identifier">Production.JobQueue</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="annot"><span class="hs-comment">-- | Job - Background job</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">data</span><span> </span><span id="Job"><span class="annot"><a href="Production.JobQueue.html#Job"><span class="hs-identifier hs-var">Job</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Job"><span class="annot"><a href="Production.JobQueue.html#Job"><span class="hs-identifier hs-var">Job</span></a></span></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="jobId"><span class="annot"><span class="annottext">Job -&gt; Int64
+</span><a href="Production.JobQueue.html#jobId"><span class="hs-identifier hs-var hs-var">jobId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="jobType"><span class="annot"><span class="annottext">Job -&gt; JobType
+</span><a href="Production.JobQueue.html#jobType"><span class="hs-identifier hs-var hs-var">jobType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.JobQueue.html#JobType"><span class="hs-identifier hs-type">JobType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="jobParams"><span class="annot"><span class="annottext">Job -&gt; Text
+</span><a href="Production.JobQueue.html#jobParams"><span class="hs-identifier hs-var hs-var">jobParams</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- JSON</span><span>
+</span><span id="line-13"></span><span>    </span><span id="jobStatus"><span class="annot"><span class="annottext">Job -&gt; JobStatus
+</span><a href="Production.JobQueue.html#jobStatus"><span class="hs-identifier hs-var hs-var">jobStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.JobQueue.html#JobStatus"><span class="hs-identifier hs-type">JobStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="jobPriority"><span class="annot"><span class="annottext">Job -&gt; Int
+</span><a href="Production.JobQueue.html#jobPriority"><span class="hs-identifier hs-var hs-var">jobPriority</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="jobCreated"><span class="annot"><span class="annottext">Job -&gt; UTCTime
+</span><a href="Production.JobQueue.html#jobCreated"><span class="hs-identifier hs-var hs-var">jobCreated</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span id="jobStarted"><span class="annot"><span class="annottext">Job -&gt; Maybe UTCTime
+</span><a href="Production.JobQueue.html#jobStarted"><span class="hs-identifier hs-var hs-var">jobStarted</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>    </span><span id="jobFinished"><span class="annot"><span class="annottext">Job -&gt; Maybe UTCTime
+</span><a href="Production.JobQueue.html#jobFinished"><span class="hs-identifier hs-var hs-var">jobFinished</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>    </span><span id="jobResult"><span class="annot"><span class="annottext">Job -&gt; Maybe Text
+</span><a href="Production.JobQueue.html#jobResult"><span class="hs-identifier hs-var hs-var">jobResult</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680287949"><span id="local-6989586621680287969"><span id="local-6989586621680287973"><span class="annot"><span class="annottext">Int -&gt; Job -&gt; ShowS
+[Job] -&gt; ShowS
+Job -&gt; String
+(Int -&gt; Job -&gt; ShowS)
+-&gt; (Job -&gt; String) -&gt; ([Job] -&gt; ShowS) -&gt; Show Job
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Job -&gt; ShowS
+showsPrec :: Int -&gt; Job -&gt; ShowS
+$cshow :: Job -&gt; String
+show :: Job -&gt; String
+$cshowList :: [Job] -&gt; ShowS
+showList :: [Job] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680287978"><span id="local-6989586621680287995"><span class="annot"><span class="annottext">Job -&gt; Job -&gt; Bool
+(Job -&gt; Job -&gt; Bool) -&gt; (Job -&gt; Job -&gt; Bool) -&gt; Eq Job
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Job -&gt; Job -&gt; Bool
+== :: Job -&gt; Job -&gt; Bool
+$c/= :: Job -&gt; Job -&gt; Bool
+/= :: Job -&gt; Job -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">data</span><span> </span><span id="JobType"><span class="annot"><a href="Production.JobQueue.html#JobType"><span class="hs-identifier hs-var">JobType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="JTSync"><span class="annot"><a href="Production.JobQueue.html#JTSync"><span class="hs-identifier hs-var">JTSync</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="JTImport"><span class="annot"><a href="Production.JobQueue.html#JTImport"><span class="hs-identifier hs-var">JTImport</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="JTExport"><span class="annot"><a href="Production.JobQueue.html#JTExport"><span class="hs-identifier hs-var">JTExport</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="JTReport"><span class="annot"><a href="Production.JobQueue.html#JTReport"><span class="hs-identifier hs-var">JTReport</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="JTCleanup"><span class="annot"><a href="Production.JobQueue.html#JTCleanup"><span class="hs-identifier hs-var">JTCleanup</span></a></span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680288005"><span id="local-6989586621680288007"><span id="local-6989586621680288010"><span class="annot"><span class="annottext">Int -&gt; JobType -&gt; ShowS
+[JobType] -&gt; ShowS
+JobType -&gt; String
+(Int -&gt; JobType -&gt; ShowS)
+-&gt; (JobType -&gt; String) -&gt; ([JobType] -&gt; ShowS) -&gt; Show JobType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; JobType -&gt; ShowS
+showsPrec :: Int -&gt; JobType -&gt; ShowS
+$cshow :: JobType -&gt; String
+show :: JobType -&gt; String
+$cshowList :: [JobType] -&gt; ShowS
+showList :: [JobType] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680288013"><span id="local-6989586621680288018"><span class="annot"><span class="annottext">JobType -&gt; JobType -&gt; Bool
+(JobType -&gt; JobType -&gt; Bool)
+-&gt; (JobType -&gt; JobType -&gt; Bool) -&gt; Eq JobType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: JobType -&gt; JobType -&gt; Bool
+== :: JobType -&gt; JobType -&gt; Bool
+$c/= :: JobType -&gt; JobType -&gt; Bool
+/= :: JobType -&gt; JobType -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">data</span><span> </span><span id="JobStatus"><span class="annot"><a href="Production.JobQueue.html#JobStatus"><span class="hs-identifier hs-var">JobStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="JSPending"><span class="annot"><a href="Production.JobQueue.html#JSPending"><span class="hs-identifier hs-var">JSPending</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="JSRunning"><span class="annot"><a href="Production.JobQueue.html#JSRunning"><span class="hs-identifier hs-var">JSRunning</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="JSCompleted"><span class="annot"><a href="Production.JobQueue.html#JSCompleted"><span class="hs-identifier hs-var">JSCompleted</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="JSFailed"><span class="annot"><a href="Production.JobQueue.html#JSFailed"><span class="hs-identifier hs-var">JSFailed</span></a></span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680288025"><span id="local-6989586621680288027"><span id="local-6989586621680288030"><span class="annot"><span class="annottext">Int -&gt; JobStatus -&gt; ShowS
+[JobStatus] -&gt; ShowS
+JobStatus -&gt; String
+(Int -&gt; JobStatus -&gt; ShowS)
+-&gt; (JobStatus -&gt; String)
+-&gt; ([JobStatus] -&gt; ShowS)
+-&gt; Show JobStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; JobStatus -&gt; ShowS
+showsPrec :: Int -&gt; JobStatus -&gt; ShowS
+$cshow :: JobStatus -&gt; String
+show :: JobStatus -&gt; String
+$cshowList :: [JobStatus] -&gt; ShowS
+showList :: [JobStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680288033"><span id="local-6989586621680288037"><span class="annot"><span class="annottext">JobStatus -&gt; JobStatus -&gt; Bool
+(JobStatus -&gt; JobStatus -&gt; Bool)
+-&gt; (JobStatus -&gt; JobStatus -&gt; Bool) -&gt; Eq JobStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: JobStatus -&gt; JobStatus -&gt; Bool
+== :: JobStatus -&gt; JobStatus -&gt; Bool
+$c/= :: JobStatus -&gt; JobStatus -&gt; Bool
+/= :: JobStatus -&gt; JobStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="annot"><span class="hs-comment">-- | JobServer - Job processor</span></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">data</span><span> </span><span id="JobServer"><span class="annot"><a href="Production.JobQueue.html#JobServer"><span class="hs-identifier hs-var">JobServer</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="JobServer"><span class="annot"><a href="Production.JobQueue.html#JobServer"><span class="hs-identifier hs-var">JobServer</span></a></span></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="jsId"><span class="annot"><span class="annottext">JobServer -&gt; Int64
+</span><a href="Production.JobQueue.html#jsId"><span class="hs-identifier hs-var hs-var">jsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-31"></span><span>    </span><span id="jsName"><span class="annot"><span class="annottext">JobServer -&gt; Text
+</span><a href="Production.JobQueue.html#jsName"><span class="hs-identifier hs-var hs-var">jsName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-32"></span><span>    </span><span id="jsHost"><span class="annot"><span class="annottext">JobServer -&gt; Text
+</span><a href="Production.JobQueue.html#jsHost"><span class="hs-identifier hs-var hs-var">jsHost</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-33"></span><span>    </span><span id="jsPort"><span class="annot"><span class="annottext">JobServer -&gt; Int
+</span><a href="Production.JobQueue.html#jsPort"><span class="hs-identifier hs-var hs-var">jsPort</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-34"></span><span>    </span><span id="jsStatus"><span class="annot"><span class="annottext">JobServer -&gt; ServerStatus
+</span><a href="Production.JobQueue.html#jsStatus"><span class="hs-identifier hs-var hs-var">jsStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.JobQueue.html#ServerStatus"><span class="hs-identifier hs-type">ServerStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>    </span><span id="jsFlags"><span class="annot"><span class="annottext">JobServer -&gt; Int
+</span><a href="Production.JobQueue.html#jsFlags"><span class="hs-identifier hs-var hs-var">jsFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680288047"><span id="local-6989586621680288057"><span id="local-6989586621680288061"><span class="annot"><span class="annottext">Int -&gt; JobServer -&gt; ShowS
+[JobServer] -&gt; ShowS
+JobServer -&gt; String
+(Int -&gt; JobServer -&gt; ShowS)
+-&gt; (JobServer -&gt; String)
+-&gt; ([JobServer] -&gt; ShowS)
+-&gt; Show JobServer
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; JobServer -&gt; ShowS
+showsPrec :: Int -&gt; JobServer -&gt; ShowS
+$cshow :: JobServer -&gt; String
+show :: JobServer -&gt; String
+$cshowList :: [JobServer] -&gt; ShowS
+showList :: [JobServer] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680288064"><span id="local-6989586621680288073"><span class="annot"><span class="annottext">JobServer -&gt; JobServer -&gt; Bool
+(JobServer -&gt; JobServer -&gt; Bool)
+-&gt; (JobServer -&gt; JobServer -&gt; Bool) -&gt; Eq JobServer
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: JobServer -&gt; JobServer -&gt; Bool
+== :: JobServer -&gt; JobServer -&gt; Bool
+$c/= :: JobServer -&gt; JobServer -&gt; Bool
+/= :: JobServer -&gt; JobServer -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="hs-keyword">data</span><span> </span><span id="ServerStatus"><span class="annot"><a href="Production.JobQueue.html#ServerStatus"><span class="hs-identifier hs-var">ServerStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SSOnline"><span class="annot"><a href="Production.JobQueue.html#SSOnline"><span class="hs-identifier hs-var">SSOnline</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SSOffline"><span class="annot"><a href="Production.JobQueue.html#SSOffline"><span class="hs-identifier hs-var">SSOffline</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SSBusy"><span class="annot"><a href="Production.JobQueue.html#SSBusy"><span class="hs-identifier hs-var">SSBusy</span></a></span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680288080"><span id="local-6989586621680288082"><span id="local-6989586621680288085"><span class="annot"><span class="annottext">Int -&gt; ServerStatus -&gt; ShowS
+[ServerStatus] -&gt; ShowS
+ServerStatus -&gt; String
+(Int -&gt; ServerStatus -&gt; ShowS)
+-&gt; (ServerStatus -&gt; String)
+-&gt; ([ServerStatus] -&gt; ShowS)
+-&gt; Show ServerStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ServerStatus -&gt; ShowS
+showsPrec :: Int -&gt; ServerStatus -&gt; ShowS
+$cshow :: ServerStatus -&gt; String
+show :: ServerStatus -&gt; String
+$cshowList :: [ServerStatus] -&gt; ShowS
+showList :: [ServerStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680288088"><span id="local-6989586621680288092"><span class="annot"><span class="annottext">ServerStatus -&gt; ServerStatus -&gt; Bool
+(ServerStatus -&gt; ServerStatus -&gt; Bool)
+-&gt; (ServerStatus -&gt; ServerStatus -&gt; Bool) -&gt; Eq ServerStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ServerStatus -&gt; ServerStatus -&gt; Bool
+== :: ServerStatus -&gt; ServerStatus -&gt; Bool
+$c/= :: ServerStatus -&gt; ServerStatus -&gt; Bool
+/= :: ServerStatus -&gt; ServerStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="annot"><span class="hs-comment">-- | Check if job is overdue (running &gt; 1 hour)</span></span><span>
+</span><span id="line-43"></span><span class="annot"><a href="Production.JobQueue.html#isJobOverdue"><span class="hs-identifier hs-type">isJobOverdue</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.JobQueue.html#Job"><span class="hs-identifier hs-type">Job</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-44"></span><span id="isJobOverdue"><span class="annot"><span class="annottext">isJobOverdue :: Job -&gt; UTCTime -&gt; Bool
+</span><a href="Production.JobQueue.html#isJobOverdue"><span class="hs-identifier hs-var hs-var">isJobOverdue</span></a></span></span><span> </span><span id="local-6989586621680288095"><span class="annot"><span class="annottext">Job
+</span><a href="#local-6989586621680288095"><span class="hs-identifier hs-var">job</span></a></span></span><span> </span><span id="local-6989586621680288096"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680288096"><span class="hs-identifier hs-var">_now</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Job -&gt; Maybe UTCTime
+</span><a href="Production.JobQueue.html#jobStarted"><span class="hs-identifier hs-var">jobStarted</span></a></span><span> </span><span class="annot"><span class="annottext">Job
+</span><a href="#local-6989586621680288095"><span class="hs-identifier hs-var">job</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-45"></span><span>  </span><span class="annot"><span class="annottext">Maybe UTCTime
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680288097"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680288097"><span class="hs-identifier hs-var">_st</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Job -&gt; JobStatus
+</span><a href="Production.JobQueue.html#jobStatus"><span class="hs-identifier hs-var">jobStatus</span></a></span><span> </span><span class="annot"><span class="annottext">Job
+</span><a href="#local-6989586621680288095"><span class="hs-identifier hs-var">job</span></a></span><span> </span><span class="annot"><span class="annottext">JobStatus -&gt; JobStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">JobStatus
+</span><a href="Production.JobQueue.html#JSRunning"><span class="hs-identifier hs-var">JSRunning</span></a></span><span>
+</span><span id="line-47"></span></pre></body></html>

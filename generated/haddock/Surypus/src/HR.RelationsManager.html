@@ -1,0 +1,893 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680261289"><span id="local-6989586621680261290"><span id="local-6989586621680261291"><span id="local-6989586621680261292"></span></span></span></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="HR.RelationsManager.html"><span class="hs-identifier">HR.RelationsManager</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Types</span></span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="HR.RelationsManager.html#RelationType"><span class="hs-identifier">RelationType</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="HR.RelationsManager.html#RelationStatus"><span class="hs-identifier">RelationStatus</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="HR.RelationsManager.html#CreateRelationRequest"><span class="hs-identifier">CreateRelationRequest</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="HR.RelationsManager.html#RelationOperationResult"><span class="hs-identifier">RelationOperationResult</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Operations</span></span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="HR.RelationsManager.html#createRelation"><span class="hs-identifier">createRelation</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="HR.RelationsManager.html#readRelation"><span class="hs-identifier">readRelation</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="HR.RelationsManager.html#endRelation"><span class="hs-identifier">endRelation</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="HR.RelationsManager.html#listRelations"><span class="hs-identifier">listRelations</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Queries</span></span><span>
+</span><span id="line-18"></span><span>    </span><span class="annot"><a href="HR.RelationsManager.html#subordinates"><span class="hs-identifier">subordinates</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span class="annot"><a href="HR.RelationsManager.html#managers"><span class="hs-identifier">managers</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span class="annot"><a href="HR.RelationsManager.html#colleagues"><span class="hs-identifier">colleagues</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span class="annot"><a href="HR.RelationsManager.html#organizationalHierarchy"><span class="hs-identifier">organizationalHierarchy</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Validation</span></span><span>
+</span><span id="line-24"></span><span>    </span><span class="annot"><a href="HR.RelationsManager.html#validateRelation"><span class="hs-identifier">validateRelation</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span class="annot"><a href="HR.RelationsManager.html#RelationValidationError"><span class="hs-identifier">RelationValidationError</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">mapMaybe</span></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier">FromJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier">ToJSON</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="HR.Person.html"><span class="hs-identifier">HR.Person</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="HR.Person.html#Person"><span class="hs-identifier">Person</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="HR.Person.html#pId"><span class="hs-identifier">pId</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="annot"><span class="hs-comment">-- | Relation type</span></span><span>
+</span><span id="line-39"></span><span class="hs-keyword">data</span><span> </span><span id="RelationType"><span class="annot"><a href="HR.RelationsManager.html#RelationType"><span class="hs-identifier hs-var">RelationType</span></a></span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Manager"><span class="annot"><a href="HR.RelationsManager.html#Manager"><span class="hs-identifier hs-var">Manager</span></a></span></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Subordinate"><span class="annot"><a href="HR.RelationsManager.html#Subordinate"><span class="hs-identifier hs-var">Subordinate</span></a></span></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Colleague"><span class="annot"><a href="HR.RelationsManager.html#Colleague"><span class="hs-identifier hs-var">Colleague</span></a></span></span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Mentor"><span class="annot"><a href="HR.RelationsManager.html#Mentor"><span class="hs-identifier hs-var">Mentor</span></a></span></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Peer"><span class="annot"><a href="HR.RelationsManager.html#Peer"><span class="hs-identifier hs-var">Peer</span></a></span></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Parent"><span class="annot"><a href="HR.RelationsManager.html#Parent"><span class="hs-identifier hs-var">Parent</span></a></span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Child"><span class="annot"><a href="HR.RelationsManager.html#Child"><span class="hs-identifier hs-var">Child</span></a></span></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680261344"><span id="local-6989586621680261346"><span id="local-6989586621680261350"><span class="annot"><span class="annottext">Int -&gt; RelationType -&gt; ShowS
+[RelationType] -&gt; ShowS
+RelationType -&gt; String
+(Int -&gt; RelationType -&gt; ShowS)
+-&gt; (RelationType -&gt; String)
+-&gt; ([RelationType] -&gt; ShowS)
+-&gt; Show RelationType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; RelationType -&gt; ShowS
+showsPrec :: Int -&gt; RelationType -&gt; ShowS
+$cshow :: RelationType -&gt; String
+show :: RelationType -&gt; String
+$cshowList :: [RelationType] -&gt; ShowS
+showList :: [RelationType] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680261355"><span id="local-6989586621680261360"><span class="annot"><span class="annottext">RelationType -&gt; RelationType -&gt; Bool
+(RelationType -&gt; RelationType -&gt; Bool)
+-&gt; (RelationType -&gt; RelationType -&gt; Bool) -&gt; Eq RelationType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: RelationType -&gt; RelationType -&gt; Bool
+== :: RelationType -&gt; RelationType -&gt; Bool
+$c/= :: RelationType -&gt; RelationType -&gt; Bool
+/= :: RelationType -&gt; RelationType -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680261364"><span id="local-6989586621680261373"><span id="local-6989586621680261380"><span id="local-6989586621680261394"><span id="local-6989586621680261397"><span id="local-6989586621680261402"><span id="local-6989586621680261408"><span id="local-6989586621680261412"><span class="annot"><span class="annottext">Int -&gt; RelationType
+RelationType -&gt; Int
+RelationType -&gt; [RelationType]
+RelationType -&gt; RelationType
+RelationType -&gt; RelationType -&gt; [RelationType]
+RelationType -&gt; RelationType -&gt; RelationType -&gt; [RelationType]
+(RelationType -&gt; RelationType)
+-&gt; (RelationType -&gt; RelationType)
+-&gt; (Int -&gt; RelationType)
+-&gt; (RelationType -&gt; Int)
+-&gt; (RelationType -&gt; [RelationType])
+-&gt; (RelationType -&gt; RelationType -&gt; [RelationType])
+-&gt; (RelationType -&gt; RelationType -&gt; [RelationType])
+-&gt; (RelationType -&gt; RelationType -&gt; RelationType -&gt; [RelationType])
+-&gt; Enum RelationType
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: RelationType -&gt; RelationType
+succ :: RelationType -&gt; RelationType
+$cpred :: RelationType -&gt; RelationType
+pred :: RelationType -&gt; RelationType
+$ctoEnum :: Int -&gt; RelationType
+toEnum :: Int -&gt; RelationType
+$cfromEnum :: RelationType -&gt; Int
+fromEnum :: RelationType -&gt; Int
+$cenumFrom :: RelationType -&gt; [RelationType]
+enumFrom :: RelationType -&gt; [RelationType]
+$cenumFromThen :: RelationType -&gt; RelationType -&gt; [RelationType]
+enumFromThen :: RelationType -&gt; RelationType -&gt; [RelationType]
+$cenumFromTo :: RelationType -&gt; RelationType -&gt; [RelationType]
+enumFromTo :: RelationType -&gt; RelationType -&gt; [RelationType]
+$cenumFromThenTo :: RelationType -&gt; RelationType -&gt; RelationType -&gt; [RelationType]
+enumFromThenTo :: RelationType -&gt; RelationType -&gt; RelationType -&gt; [RelationType]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680261420"><span id="local-6989586621680261422"><span class="annot"><span class="annottext">(forall x. RelationType -&gt; Rep RelationType x)
+-&gt; (forall x. Rep RelationType x -&gt; RelationType)
+-&gt; Generic RelationType
+forall x. Rep RelationType x -&gt; RelationType
+forall x. RelationType -&gt; Rep RelationType x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. RelationType -&gt; Rep RelationType x
+from :: forall x. RelationType -&gt; Rep RelationType x
+$cto :: forall x. Rep RelationType x -&gt; RelationType
+to :: forall x. Rep RelationType x -&gt; RelationType
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680261428"><span id="local-6989586621680261435"><span id="local-6989586621680261438"><span id="local-6989586621680261441"><span id="local-6989586621680261444"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationType"><span class="hs-identifier hs-type">RelationType</span></a></span></span></span></span></span></span><span>
+</span><span id="line-50"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680261639"><span id="local-6989586621680261646"><span id="local-6989586621680261649"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationType"><span class="hs-identifier hs-type">RelationType</span></a></span></span></span></span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="annot"><span class="hs-comment">-- | Relation status</span></span><span>
+</span><span id="line-53"></span><span class="hs-keyword">data</span><span> </span><span id="RelationStatus"><span class="annot"><a href="HR.RelationsManager.html#RelationStatus"><span class="hs-identifier hs-var">RelationStatus</span></a></span></span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="RelationActive"><span class="annot"><a href="HR.RelationsManager.html#RelationActive"><span class="hs-identifier hs-var">RelationActive</span></a></span></span><span>
+</span><span id="line-55"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="RelationInactive"><span class="annot"><a href="HR.RelationsManager.html#RelationInactive"><span class="hs-identifier hs-var">RelationInactive</span></a></span></span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="RelationEnded"><span class="annot"><a href="HR.RelationsManager.html#RelationEnded"><span class="hs-identifier hs-var">RelationEnded</span></a></span></span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680261803"><span id="local-6989586621680261805"><span id="local-6989586621680261809"><span class="annot"><span class="annottext">Int -&gt; RelationStatus -&gt; ShowS
+[RelationStatus] -&gt; ShowS
+RelationStatus -&gt; String
+(Int -&gt; RelationStatus -&gt; ShowS)
+-&gt; (RelationStatus -&gt; String)
+-&gt; ([RelationStatus] -&gt; ShowS)
+-&gt; Show RelationStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; RelationStatus -&gt; ShowS
+showsPrec :: Int -&gt; RelationStatus -&gt; ShowS
+$cshow :: RelationStatus -&gt; String
+show :: RelationStatus -&gt; String
+$cshowList :: [RelationStatus] -&gt; ShowS
+showList :: [RelationStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680261812"><span id="local-6989586621680261816"><span class="annot"><span class="annottext">RelationStatus -&gt; RelationStatus -&gt; Bool
+(RelationStatus -&gt; RelationStatus -&gt; Bool)
+-&gt; (RelationStatus -&gt; RelationStatus -&gt; Bool) -&gt; Eq RelationStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: RelationStatus -&gt; RelationStatus -&gt; Bool
+== :: RelationStatus -&gt; RelationStatus -&gt; Bool
+$c/= :: RelationStatus -&gt; RelationStatus -&gt; Bool
+/= :: RelationStatus -&gt; RelationStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680261819"><span id="local-6989586621680261826"><span id="local-6989586621680261833"><span id="local-6989586621680261844"><span id="local-6989586621680261847"><span id="local-6989586621680261851"><span id="local-6989586621680261857"><span id="local-6989586621680261861"><span class="annot"><span class="annottext">Int -&gt; RelationStatus
+RelationStatus -&gt; Int
+RelationStatus -&gt; [RelationStatus]
+RelationStatus -&gt; RelationStatus
+RelationStatus -&gt; RelationStatus -&gt; [RelationStatus]
+RelationStatus
+-&gt; RelationStatus -&gt; RelationStatus -&gt; [RelationStatus]
+(RelationStatus -&gt; RelationStatus)
+-&gt; (RelationStatus -&gt; RelationStatus)
+-&gt; (Int -&gt; RelationStatus)
+-&gt; (RelationStatus -&gt; Int)
+-&gt; (RelationStatus -&gt; [RelationStatus])
+-&gt; (RelationStatus -&gt; RelationStatus -&gt; [RelationStatus])
+-&gt; (RelationStatus -&gt; RelationStatus -&gt; [RelationStatus])
+-&gt; (RelationStatus
+    -&gt; RelationStatus -&gt; RelationStatus -&gt; [RelationStatus])
+-&gt; Enum RelationStatus
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: RelationStatus -&gt; RelationStatus
+succ :: RelationStatus -&gt; RelationStatus
+$cpred :: RelationStatus -&gt; RelationStatus
+pred :: RelationStatus -&gt; RelationStatus
+$ctoEnum :: Int -&gt; RelationStatus
+toEnum :: Int -&gt; RelationStatus
+$cfromEnum :: RelationStatus -&gt; Int
+fromEnum :: RelationStatus -&gt; Int
+$cenumFrom :: RelationStatus -&gt; [RelationStatus]
+enumFrom :: RelationStatus -&gt; [RelationStatus]
+$cenumFromThen :: RelationStatus -&gt; RelationStatus -&gt; [RelationStatus]
+enumFromThen :: RelationStatus -&gt; RelationStatus -&gt; [RelationStatus]
+$cenumFromTo :: RelationStatus -&gt; RelationStatus -&gt; [RelationStatus]
+enumFromTo :: RelationStatus -&gt; RelationStatus -&gt; [RelationStatus]
+$cenumFromThenTo :: RelationStatus
+-&gt; RelationStatus -&gt; RelationStatus -&gt; [RelationStatus]
+enumFromThenTo :: RelationStatus
+-&gt; RelationStatus -&gt; RelationStatus -&gt; [RelationStatus]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680261864"><span id="local-6989586621680261866"><span class="annot"><span class="annottext">(forall x. RelationStatus -&gt; Rep RelationStatus x)
+-&gt; (forall x. Rep RelationStatus x -&gt; RelationStatus)
+-&gt; Generic RelationStatus
+forall x. Rep RelationStatus x -&gt; RelationStatus
+forall x. RelationStatus -&gt; Rep RelationStatus x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. RelationStatus -&gt; Rep RelationStatus x
+from :: forall x. RelationStatus -&gt; Rep RelationStatus x
+$cto :: forall x. Rep RelationStatus x -&gt; RelationStatus
+to :: forall x. Rep RelationStatus x -&gt; RelationStatus
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680261869"><span id="local-6989586621680261876"><span id="local-6989586621680261879"><span id="local-6989586621680261882"><span id="local-6989586621680261885"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationStatus"><span class="hs-identifier hs-type">RelationStatus</span></a></span></span></span></span></span></span><span>
+</span><span id="line-60"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680261960"><span id="local-6989586621680261967"><span id="local-6989586621680261970"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationStatus"><span class="hs-identifier hs-type">RelationStatus</span></a></span></span></span></span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span class="annot"><span class="hs-comment">-- | Person relation</span></span><span>
+</span><span id="line-63"></span><span class="hs-keyword">data</span><span> </span><span id="PersonRelation"><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-var">PersonRelation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PersonRelation"><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-var">PersonRelation</span></a></span></span><span>
+</span><span id="line-64"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="relId"><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relId"><span class="hs-identifier hs-var hs-var">relId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-65"></span><span>    </span><span id="relFromPersonId"><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relFromPersonId"><span class="hs-identifier hs-var hs-var">relFromPersonId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-66"></span><span>    </span><span id="relToPersonId"><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relToPersonId"><span class="hs-identifier hs-var hs-var">relToPersonId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-67"></span><span>    </span><span id="relType"><span class="annot"><span class="annottext">PersonRelation -&gt; RelationType
+</span><a href="HR.RelationsManager.html#relType"><span class="hs-identifier hs-var hs-var">relType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationType"><span class="hs-identifier hs-type">RelationType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-68"></span><span>    </span><span id="relStatus"><span class="annot"><span class="annottext">PersonRelation -&gt; RelationStatus
+</span><a href="HR.RelationsManager.html#relStatus"><span class="hs-identifier hs-var hs-var">relStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationStatus"><span class="hs-identifier hs-type">RelationStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-69"></span><span>    </span><span id="relStartDate"><span class="annot"><span class="annottext">PersonRelation -&gt; Day
+</span><a href="HR.RelationsManager.html#relStartDate"><span class="hs-identifier hs-var hs-var">relStartDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-70"></span><span>    </span><span id="relEndDate"><span class="annot"><span class="annottext">PersonRelation -&gt; Maybe Day
+</span><a href="HR.RelationsManager.html#relEndDate"><span class="hs-identifier hs-var hs-var">relEndDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-71"></span><span>    </span><span id="relDescription"><span class="annot"><span class="annottext">PersonRelation -&gt; Maybe Text
+</span><a href="HR.RelationsManager.html#relDescription"><span class="hs-identifier hs-var hs-var">relDescription</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-72"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680262040"><span id="local-6989586621680262055"><span id="local-6989586621680262059"><span class="annot"><span class="annottext">Int -&gt; PersonRelation -&gt; ShowS
+[PersonRelation] -&gt; ShowS
+PersonRelation -&gt; String
+(Int -&gt; PersonRelation -&gt; ShowS)
+-&gt; (PersonRelation -&gt; String)
+-&gt; ([PersonRelation] -&gt; ShowS)
+-&gt; Show PersonRelation
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PersonRelation -&gt; ShowS
+showsPrec :: Int -&gt; PersonRelation -&gt; ShowS
+$cshow :: PersonRelation -&gt; String
+show :: PersonRelation -&gt; String
+$cshowList :: [PersonRelation] -&gt; ShowS
+showList :: [PersonRelation] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262063"><span id="local-6989586621680262076"><span class="annot"><span class="annottext">PersonRelation -&gt; PersonRelation -&gt; Bool
+(PersonRelation -&gt; PersonRelation -&gt; Bool)
+-&gt; (PersonRelation -&gt; PersonRelation -&gt; Bool) -&gt; Eq PersonRelation
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PersonRelation -&gt; PersonRelation -&gt; Bool
+== :: PersonRelation -&gt; PersonRelation -&gt; Bool
+$c/= :: PersonRelation -&gt; PersonRelation -&gt; Bool
+/= :: PersonRelation -&gt; PersonRelation -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262081"><span id="local-6989586621680262083"><span class="annot"><span class="annottext">(forall x. PersonRelation -&gt; Rep PersonRelation x)
+-&gt; (forall x. Rep PersonRelation x -&gt; PersonRelation)
+-&gt; Generic PersonRelation
+forall x. Rep PersonRelation x -&gt; PersonRelation
+forall x. PersonRelation -&gt; Rep PersonRelation x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PersonRelation -&gt; Rep PersonRelation x
+from :: forall x. PersonRelation -&gt; Rep PersonRelation x
+$cto :: forall x. Rep PersonRelation x -&gt; PersonRelation
+to :: forall x. Rep PersonRelation x -&gt; PersonRelation
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-73"></span><span>
+</span><span id="line-74"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680262086"><span id="local-6989586621680262093"><span id="local-6989586621680262096"><span id="local-6989586621680262099"><span id="local-6989586621680262102"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span></span></span></span></span></span><span>
+</span><span id="line-75"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680262289"><span id="local-6989586621680262296"><span id="local-6989586621680262299"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span></span></span></span><span>
+</span><span id="line-76"></span><span>
+</span><span id="line-77"></span><span class="annot"><span class="hs-comment">-- | Request to create relation</span></span><span>
+</span><span id="line-78"></span><span class="hs-keyword">data</span><span> </span><span id="CreateRelationRequest"><span class="annot"><a href="HR.RelationsManager.html#CreateRelationRequest"><span class="hs-identifier hs-var">CreateRelationRequest</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CreateRelationRequest"><span class="annot"><a href="HR.RelationsManager.html#CreateRelationRequest"><span class="hs-identifier hs-var">CreateRelationRequest</span></a></span></span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="crFromPersonId"><span class="annot"><span class="annottext">CreateRelationRequest -&gt; Int64
+</span><a href="HR.RelationsManager.html#crFromPersonId"><span class="hs-identifier hs-var hs-var">crFromPersonId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-80"></span><span>    </span><span id="crToPersonId"><span class="annot"><span class="annottext">CreateRelationRequest -&gt; Int64
+</span><a href="HR.RelationsManager.html#crToPersonId"><span class="hs-identifier hs-var hs-var">crToPersonId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-81"></span><span>    </span><span id="crRelationType"><span class="annot"><span class="annottext">CreateRelationRequest -&gt; RelationType
+</span><a href="HR.RelationsManager.html#crRelationType"><span class="hs-identifier hs-var hs-var">crRelationType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationType"><span class="hs-identifier hs-type">RelationType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-82"></span><span>    </span><span id="crStartDate"><span class="annot"><span class="annottext">CreateRelationRequest -&gt; Day
+</span><a href="HR.RelationsManager.html#crStartDate"><span class="hs-identifier hs-var hs-var">crStartDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-83"></span><span>    </span><span id="crDescription"><span class="annot"><span class="annottext">CreateRelationRequest -&gt; Maybe Text
+</span><a href="HR.RelationsManager.html#crDescription"><span class="hs-identifier hs-var hs-var">crDescription</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-84"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680262425"><span id="local-6989586621680262434"><span id="local-6989586621680262438"><span class="annot"><span class="annottext">Int -&gt; CreateRelationRequest -&gt; ShowS
+[CreateRelationRequest] -&gt; ShowS
+CreateRelationRequest -&gt; String
+(Int -&gt; CreateRelationRequest -&gt; ShowS)
+-&gt; (CreateRelationRequest -&gt; String)
+-&gt; ([CreateRelationRequest] -&gt; ShowS)
+-&gt; Show CreateRelationRequest
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CreateRelationRequest -&gt; ShowS
+showsPrec :: Int -&gt; CreateRelationRequest -&gt; ShowS
+$cshow :: CreateRelationRequest -&gt; String
+show :: CreateRelationRequest -&gt; String
+$cshowList :: [CreateRelationRequest] -&gt; ShowS
+showList :: [CreateRelationRequest] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262441"><span id="local-6989586621680262449"><span class="annot"><span class="annottext">CreateRelationRequest -&gt; CreateRelationRequest -&gt; Bool
+(CreateRelationRequest -&gt; CreateRelationRequest -&gt; Bool)
+-&gt; (CreateRelationRequest -&gt; CreateRelationRequest -&gt; Bool)
+-&gt; Eq CreateRelationRequest
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CreateRelationRequest -&gt; CreateRelationRequest -&gt; Bool
+== :: CreateRelationRequest -&gt; CreateRelationRequest -&gt; Bool
+$c/= :: CreateRelationRequest -&gt; CreateRelationRequest -&gt; Bool
+/= :: CreateRelationRequest -&gt; CreateRelationRequest -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262453"><span id="local-6989586621680262455"><span class="annot"><span class="annottext">(forall x. CreateRelationRequest -&gt; Rep CreateRelationRequest x)
+-&gt; (forall x. Rep CreateRelationRequest x -&gt; CreateRelationRequest)
+-&gt; Generic CreateRelationRequest
+forall x. Rep CreateRelationRequest x -&gt; CreateRelationRequest
+forall x. CreateRelationRequest -&gt; Rep CreateRelationRequest x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. CreateRelationRequest -&gt; Rep CreateRelationRequest x
+from :: forall x. CreateRelationRequest -&gt; Rep CreateRelationRequest x
+$cto :: forall x. Rep CreateRelationRequest x -&gt; CreateRelationRequest
+to :: forall x. Rep CreateRelationRequest x -&gt; CreateRelationRequest
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-85"></span><span>
+</span><span id="line-86"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680262458"><span id="local-6989586621680262465"><span id="local-6989586621680262468"><span id="local-6989586621680262471"><span id="local-6989586621680262474"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="HR.RelationsManager.html#CreateRelationRequest"><span class="hs-identifier hs-type">CreateRelationRequest</span></a></span></span></span></span></span></span><span>
+</span><span id="line-87"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680262586"><span id="local-6989586621680262593"><span id="local-6989586621680262596"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="HR.RelationsManager.html#CreateRelationRequest"><span class="hs-identifier hs-type">CreateRelationRequest</span></a></span></span></span></span><span>
+</span><span id="line-88"></span><span>
+</span><span id="line-89"></span><span class="annot"><span class="hs-comment">-- | Validation errors</span></span><span>
+</span><span id="line-90"></span><span class="hs-keyword">data</span><span> </span><span id="RelationValidationError"><span class="annot"><a href="HR.RelationsManager.html#RelationValidationError"><span class="hs-identifier hs-var">RelationValidationError</span></a></span></span><span>
+</span><span id="line-91"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="SamePersonRelation"><span class="annot"><a href="HR.RelationsManager.html#SamePersonRelation"><span class="hs-identifier hs-var">SamePersonRelation</span></a></span></span><span>
+</span><span id="line-92"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PersonNotFound"><span class="annot"><a href="HR.RelationsManager.html#PersonNotFound"><span class="hs-identifier hs-var">PersonNotFound</span></a></span></span><span>
+</span><span id="line-93"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="RelationNotFound"><span class="annot"><a href="HR.RelationsManager.html#RelationNotFound"><span class="hs-identifier hs-var">RelationNotFound</span></a></span></span><span>
+</span><span id="line-94"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="InvalidRelationType"><span class="annot"><a href="HR.RelationsManager.html#InvalidRelationType"><span class="hs-identifier hs-var">InvalidRelationType</span></a></span></span><span>
+</span><span id="line-95"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="InvalidDateRange"><span class="annot"><a href="HR.RelationsManager.html#InvalidDateRange"><span class="hs-identifier hs-var">InvalidDateRange</span></a></span></span><span>
+</span><span id="line-96"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680262679"><span id="local-6989586621680262681"><span id="local-6989586621680262685"><span class="annot"><span class="annottext">Int -&gt; RelationValidationError -&gt; ShowS
+[RelationValidationError] -&gt; ShowS
+RelationValidationError -&gt; String
+(Int -&gt; RelationValidationError -&gt; ShowS)
+-&gt; (RelationValidationError -&gt; String)
+-&gt; ([RelationValidationError] -&gt; ShowS)
+-&gt; Show RelationValidationError
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; RelationValidationError -&gt; ShowS
+showsPrec :: Int -&gt; RelationValidationError -&gt; ShowS
+$cshow :: RelationValidationError -&gt; String
+show :: RelationValidationError -&gt; String
+$cshowList :: [RelationValidationError] -&gt; ShowS
+showList :: [RelationValidationError] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262688"><span id="local-6989586621680262692"><span class="annot"><span class="annottext">RelationValidationError -&gt; RelationValidationError -&gt; Bool
+(RelationValidationError -&gt; RelationValidationError -&gt; Bool)
+-&gt; (RelationValidationError -&gt; RelationValidationError -&gt; Bool)
+-&gt; Eq RelationValidationError
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: RelationValidationError -&gt; RelationValidationError -&gt; Bool
+== :: RelationValidationError -&gt; RelationValidationError -&gt; Bool
+$c/= :: RelationValidationError -&gt; RelationValidationError -&gt; Bool
+/= :: RelationValidationError -&gt; RelationValidationError -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262696"><span id="local-6989586621680262698"><span class="annot"><span class="annottext">(forall x.
+ RelationValidationError -&gt; Rep RelationValidationError x)
+-&gt; (forall x.
+    Rep RelationValidationError x -&gt; RelationValidationError)
+-&gt; Generic RelationValidationError
+forall x. Rep RelationValidationError x -&gt; RelationValidationError
+forall x. RelationValidationError -&gt; Rep RelationValidationError x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. RelationValidationError -&gt; Rep RelationValidationError x
+from :: forall x. RelationValidationError -&gt; Rep RelationValidationError x
+$cto :: forall x. Rep RelationValidationError x -&gt; RelationValidationError
+to :: forall x. Rep RelationValidationError x -&gt; RelationValidationError
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-97"></span><span>
+</span><span id="line-98"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680262701"><span id="local-6989586621680262708"><span id="local-6989586621680262711"><span id="local-6989586621680262714"><span id="local-6989586621680262717"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationValidationError"><span class="hs-identifier hs-type">RelationValidationError</span></a></span></span></span></span></span></span><span>
+</span><span id="line-99"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680262838"><span id="local-6989586621680262845"><span id="local-6989586621680262848"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationValidationError"><span class="hs-identifier hs-type">RelationValidationError</span></a></span></span></span></span><span>
+</span><span id="line-100"></span><span>
+</span><span id="line-101"></span><span class="annot"><span class="hs-comment">-- | Operation result</span></span><span>
+</span><span id="line-102"></span><span class="hs-keyword">data</span><span> </span><span id="RelationOperationResult"><span class="annot"><a href="HR.RelationsManager.html#RelationOperationResult"><span class="hs-identifier hs-var">RelationOperationResult</span></a></span></span><span> </span><span id="local-6989586621680261269"><span class="annot"><a href="#local-6989586621680261269"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-103"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="RelationSuccess"><span class="annot"><a href="HR.RelationsManager.html#RelationSuccess"><span class="hs-identifier hs-var">RelationSuccess</span></a></span></span><span> </span><span class="annot"><a href="#local-6989586621680261269"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-104"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="RelationError"><span class="annot"><a href="HR.RelationsManager.html#RelationError"><span class="hs-identifier hs-var">RelationError</span></a></span></span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationValidationError"><span class="hs-identifier hs-type">RelationValidationError</span></a></span><span>
+</span><span id="line-105"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680262948"><span id="local-6989586621680262954"><span id="local-6989586621680262958"><span class="annot"><span class="annottext">Int -&gt; RelationOperationResult a -&gt; ShowS
+[RelationOperationResult a] -&gt; ShowS
+RelationOperationResult a -&gt; String
+(Int -&gt; RelationOperationResult a -&gt; ShowS)
+-&gt; (RelationOperationResult a -&gt; String)
+-&gt; ([RelationOperationResult a] -&gt; ShowS)
+-&gt; Show (RelationOperationResult a)
+forall a. Show a =&gt; Int -&gt; RelationOperationResult a -&gt; ShowS
+forall a. Show a =&gt; [RelationOperationResult a] -&gt; ShowS
+forall a. Show a =&gt; RelationOperationResult a -&gt; String
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: forall a. Show a =&gt; Int -&gt; RelationOperationResult a -&gt; ShowS
+showsPrec :: Int -&gt; RelationOperationResult a -&gt; ShowS
+$cshow :: forall a. Show a =&gt; RelationOperationResult a -&gt; String
+show :: RelationOperationResult a -&gt; String
+$cshowList :: forall a. Show a =&gt; [RelationOperationResult a] -&gt; ShowS
+showList :: [RelationOperationResult a] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262962"><span id="local-6989586621680262968"><span class="annot"><span class="annottext">RelationOperationResult a -&gt; RelationOperationResult a -&gt; Bool
+(RelationOperationResult a -&gt; RelationOperationResult a -&gt; Bool)
+-&gt; (RelationOperationResult a -&gt; RelationOperationResult a -&gt; Bool)
+-&gt; Eq (RelationOperationResult a)
+forall a.
+Eq a =&gt;
+RelationOperationResult a -&gt; RelationOperationResult a -&gt; Bool
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: forall a.
+Eq a =&gt;
+RelationOperationResult a -&gt; RelationOperationResult a -&gt; Bool
+== :: RelationOperationResult a -&gt; RelationOperationResult a -&gt; Bool
+$c/= :: forall a.
+Eq a =&gt;
+RelationOperationResult a -&gt; RelationOperationResult a -&gt; Bool
+/= :: RelationOperationResult a -&gt; RelationOperationResult a -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680262972"><span id="local-6989586621680262974"><span class="annot"><span class="annottext">(forall x.
+ RelationOperationResult a -&gt; Rep (RelationOperationResult a) x)
+-&gt; (forall x.
+    Rep (RelationOperationResult a) x -&gt; RelationOperationResult a)
+-&gt; Generic (RelationOperationResult a)
+forall x.
+Rep (RelationOperationResult a) x -&gt; RelationOperationResult a
+forall x.
+RelationOperationResult a -&gt; Rep (RelationOperationResult a) x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+forall a x.
+Rep (RelationOperationResult a) x -&gt; RelationOperationResult a
+forall a x.
+RelationOperationResult a -&gt; Rep (RelationOperationResult a) x
+$cfrom :: forall a x.
+RelationOperationResult a -&gt; Rep (RelationOperationResult a) x
+from :: forall x.
+RelationOperationResult a -&gt; Rep (RelationOperationResult a) x
+$cto :: forall a x.
+Rep (RelationOperationResult a) x -&gt; RelationOperationResult a
+to :: forall x.
+Rep (RelationOperationResult a) x -&gt; RelationOperationResult a
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-106"></span><span>
+</span><span id="line-107"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680261255"><span id="local-6989586621680262978"><span id="local-6989586621680262985"><span id="local-6989586621680262988"><span id="local-6989586621680262991"><span id="local-6989586621680262994"><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680261255"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="HR.RelationsManager.html#RelationOperationResult"><span class="hs-identifier hs-type">RelationOperationResult</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680261255"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span></span></span></span></span><span>
+</span><span id="line-108"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680261265"><span id="local-6989586621680263057"><span id="local-6989586621680263064"><span id="local-6989586621680263067"><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680261265"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="HR.RelationsManager.html#RelationOperationResult"><span class="hs-identifier hs-type">RelationOperationResult</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680261265"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span></span></span></span><span>
+</span><span id="line-109"></span><span>
+</span><span id="line-110"></span><span class="annot"><span class="hs-comment">-- | Validate relation creation</span></span><span>
+</span><span id="line-111"></span><span class="annot"><a href="HR.RelationsManager.html#validateRelation"><span class="hs-identifier hs-type">validateRelation</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.Person.html#Person"><span class="hs-identifier hs-type">Person</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="HR.RelationsManager.html#CreateRelationRequest"><span class="hs-identifier hs-type">CreateRelationRequest</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationValidationError"><span class="hs-identifier hs-type">RelationValidationError</span></a></span><span>
+</span><span id="line-112"></span><span id="validateRelation"><span class="annot"><span class="annottext">validateRelation :: [Person] -&gt; CreateRelationRequest -&gt; Maybe RelationValidationError
+</span><a href="HR.RelationsManager.html#validateRelation"><span class="hs-identifier hs-var hs-var">validateRelation</span></a></span></span><span> </span><span id="local-6989586621680263117"><span class="annot"><span class="annottext">[Person]
+</span><a href="#local-6989586621680263117"><span class="hs-identifier hs-var">persons</span></a></span></span><span> </span><span id="local-6989586621680263118"><span class="annot"><span class="annottext">CreateRelationRequest
+</span><a href="#local-6989586621680263118"><span class="hs-identifier hs-var">req</span></a></span></span><span>
+</span><span id="line-113"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest -&gt; Int64
+</span><a href="HR.RelationsManager.html#crFromPersonId"><span class="hs-identifier hs-var">crFromPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest
+</span><a href="#local-6989586621680263118"><span class="hs-identifier hs-var">req</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest -&gt; Int64
+</span><a href="HR.RelationsManager.html#crToPersonId"><span class="hs-identifier hs-var">crToPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest
+</span><a href="#local-6989586621680263118"><span class="hs-identifier hs-var">req</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">RelationValidationError -&gt; Maybe RelationValidationError
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">RelationValidationError
+</span><a href="HR.RelationsManager.html#SamePersonRelation"><span class="hs-identifier hs-var">SamePersonRelation</span></a></span><span>
+</span><span id="line-114"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Person -&gt; Bool) -&gt; [Person] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">any</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680263121"><span class="annot"><span class="annottext">Person
+</span><a href="#local-6989586621680263121"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Person -&gt; Int64
+</span><a href="HR.Person.html#pId"><span class="hs-identifier hs-var">pId</span></a></span><span> </span><span class="annot"><span class="annottext">Person
+</span><a href="#local-6989586621680263121"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest -&gt; Int64
+</span><a href="HR.RelationsManager.html#crFromPersonId"><span class="hs-identifier hs-var">crFromPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest
+</span><a href="#local-6989586621680263118"><span class="hs-identifier hs-var">req</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Person]
+</span><a href="#local-6989586621680263117"><span class="hs-identifier hs-var">persons</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">RelationValidationError -&gt; Maybe RelationValidationError
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">RelationValidationError
+</span><a href="HR.RelationsManager.html#PersonNotFound"><span class="hs-identifier hs-var">PersonNotFound</span></a></span><span>
+</span><span id="line-115"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Person -&gt; Bool) -&gt; [Person] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">any</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680263122"><span class="annot"><span class="annottext">Person
+</span><a href="#local-6989586621680263122"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Person -&gt; Int64
+</span><a href="HR.Person.html#pId"><span class="hs-identifier hs-var">pId</span></a></span><span> </span><span class="annot"><span class="annottext">Person
+</span><a href="#local-6989586621680263122"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest -&gt; Int64
+</span><a href="HR.RelationsManager.html#crToPersonId"><span class="hs-identifier hs-var">crToPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest
+</span><a href="#local-6989586621680263118"><span class="hs-identifier hs-var">req</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Person]
+</span><a href="#local-6989586621680263117"><span class="hs-identifier hs-var">persons</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">RelationValidationError -&gt; Maybe RelationValidationError
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">RelationValidationError
+</span><a href="HR.RelationsManager.html#PersonNotFound"><span class="hs-identifier hs-var">PersonNotFound</span></a></span><span>
+</span><span id="line-116"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe RelationValidationError
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-117"></span><span>
+</span><span id="line-118"></span><span class="annot"><span class="hs-comment">-- | Create a new relation</span></span><span>
+</span><span id="line-119"></span><span class="annot"><a href="HR.RelationsManager.html#createRelation"><span class="hs-identifier hs-type">createRelation</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.Person.html#Person"><span class="hs-identifier hs-type">Person</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="HR.RelationsManager.html#CreateRelationRequest"><span class="hs-identifier hs-type">CreateRelationRequest</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationOperationResult"><span class="hs-identifier hs-type">RelationOperationResult</span></a></span><span> </span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span>
+</span><span id="line-120"></span><span id="createRelation"><span class="annot"><span class="annottext">createRelation :: [PersonRelation]
+-&gt; [Person]
+-&gt; CreateRelationRequest
+-&gt; RelationOperationResult PersonRelation
+</span><a href="HR.RelationsManager.html#createRelation"><span class="hs-identifier hs-var hs-var">createRelation</span></a></span></span><span> </span><span id="local-6989586621680263123"><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263123"><span class="hs-identifier hs-var">relations</span></a></span></span><span> </span><span id="local-6989586621680263124"><span class="annot"><span class="annottext">[Person]
+</span><a href="#local-6989586621680263124"><span class="hs-identifier hs-var">persons</span></a></span></span><span> </span><span id="local-6989586621680263125"><span class="annot"><span class="annottext">CreateRelationRequest
+</span><a href="#local-6989586621680263125"><span class="hs-identifier hs-var">req</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">[Person] -&gt; CreateRelationRequest -&gt; Maybe RelationValidationError
+</span><a href="HR.RelationsManager.html#validateRelation"><span class="hs-identifier hs-var">validateRelation</span></a></span><span> </span><span class="annot"><span class="annottext">[Person]
+</span><a href="#local-6989586621680263124"><span class="hs-identifier hs-var">persons</span></a></span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest
+</span><a href="#local-6989586621680263125"><span class="hs-identifier hs-var">req</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-121"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680263126"><span class="annot"><span class="annottext">RelationValidationError
+</span><a href="#local-6989586621680263126"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">RelationValidationError -&gt; RelationOperationResult PersonRelation
+forall a. RelationValidationError -&gt; RelationOperationResult a
+</span><a href="HR.RelationsManager.html#RelationError"><span class="hs-identifier hs-var">RelationError</span></a></span><span> </span><span class="annot"><span class="annottext">RelationValidationError
+</span><a href="#local-6989586621680263126"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-122"></span><span>  </span><span class="annot"><span class="annottext">Maybe RelationValidationError
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-123"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680263135"><span class="annot"><span class="annottext">newId :: Int64
+</span><a href="#local-6989586621680263135"><span class="hs-identifier hs-var hs-var">newId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Int64] -&gt; Int64
+forall a. Ord a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Ord a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">maximum</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(PersonRelation -&gt; Int64) -&gt; [PersonRelation] -&gt; [Int64]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relId"><span class="hs-identifier hs-var">relId</span></a></span><span> </span><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263123"><span class="hs-identifier hs-var">relations</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Int64
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">`max`</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Int64
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">1</span></span><span>
+</span><span id="line-124"></span><span>        </span><span id="local-6989586621680263139"><span class="annot"><span class="annottext">newRelation :: PersonRelation
+</span><a href="#local-6989586621680263139"><span class="hs-identifier hs-var hs-var">newRelation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span>
+</span><span id="line-125"></span><span>          </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">relId :: Int64
+</span><a href="HR.RelationsManager.html#relId"><span class="hs-identifier hs-var">relId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263135"><span class="hs-identifier hs-var">newId</span></a></span><span>
+</span><span id="line-126"></span><span>          </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">relFromPersonId :: Int64
+</span><a href="HR.RelationsManager.html#relFromPersonId"><span class="hs-identifier hs-var">relFromPersonId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest -&gt; Int64
+</span><a href="HR.RelationsManager.html#crFromPersonId"><span class="hs-identifier hs-var">crFromPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest
+</span><a href="#local-6989586621680263125"><span class="hs-identifier hs-var">req</span></a></span><span>
+</span><span id="line-127"></span><span>          </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">relToPersonId :: Int64
+</span><a href="HR.RelationsManager.html#relToPersonId"><span class="hs-identifier hs-var">relToPersonId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest -&gt; Int64
+</span><a href="HR.RelationsManager.html#crToPersonId"><span class="hs-identifier hs-var">crToPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest
+</span><a href="#local-6989586621680263125"><span class="hs-identifier hs-var">req</span></a></span><span>
+</span><span id="line-128"></span><span>          </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">relType :: RelationType
+</span><a href="HR.RelationsManager.html#relType"><span class="hs-identifier hs-var">relType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest -&gt; RelationType
+</span><a href="HR.RelationsManager.html#crRelationType"><span class="hs-identifier hs-var">crRelationType</span></a></span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest
+</span><a href="#local-6989586621680263125"><span class="hs-identifier hs-var">req</span></a></span><span>
+</span><span id="line-129"></span><span>          </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">relStatus :: RelationStatus
+</span><a href="HR.RelationsManager.html#relStatus"><span class="hs-identifier hs-var">relStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">RelationStatus
+</span><a href="HR.RelationsManager.html#RelationActive"><span class="hs-identifier hs-var">RelationActive</span></a></span><span>
+</span><span id="line-130"></span><span>          </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">relStartDate :: Day
+</span><a href="HR.RelationsManager.html#relStartDate"><span class="hs-identifier hs-var">relStartDate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest -&gt; Day
+</span><a href="HR.RelationsManager.html#crStartDate"><span class="hs-identifier hs-var">crStartDate</span></a></span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest
+</span><a href="#local-6989586621680263125"><span class="hs-identifier hs-var">req</span></a></span><span>
+</span><span id="line-131"></span><span>          </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">relEndDate :: Maybe Day
+</span><a href="HR.RelationsManager.html#relEndDate"><span class="hs-identifier hs-var">relEndDate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Day
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-132"></span><span>          </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">relDescription :: Maybe Text
+</span><a href="HR.RelationsManager.html#relDescription"><span class="hs-identifier hs-var">relDescription</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest -&gt; Maybe Text
+</span><a href="HR.RelationsManager.html#crDescription"><span class="hs-identifier hs-var">crDescription</span></a></span><span> </span><span class="annot"><span class="annottext">CreateRelationRequest
+</span><a href="#local-6989586621680263125"><span class="hs-identifier hs-var">req</span></a></span><span>
+</span><span id="line-133"></span><span>          </span><span class="hs-special">}</span><span>
+</span><span id="line-134"></span><span>    </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">PersonRelation -&gt; RelationOperationResult PersonRelation
+forall a. a -&gt; RelationOperationResult a
+</span><a href="HR.RelationsManager.html#RelationSuccess"><span class="hs-identifier hs-var">RelationSuccess</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263139"><span class="hs-identifier hs-var">newRelation</span></a></span><span>
+</span><span id="line-135"></span><span>
+</span><span id="line-136"></span><span class="annot"><span class="hs-comment">-- | Read relation by ID</span></span><span>
+</span><span id="line-137"></span><span class="annot"><a href="HR.RelationsManager.html#readRelation"><span class="hs-identifier hs-type">readRelation</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationOperationResult"><span class="hs-identifier hs-type">RelationOperationResult</span></a></span><span> </span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span>
+</span><span id="line-138"></span><span id="readRelation"><span class="annot"><span class="annottext">readRelation :: [PersonRelation] -&gt; Int64 -&gt; RelationOperationResult PersonRelation
+</span><a href="HR.RelationsManager.html#readRelation"><span class="hs-identifier hs-var hs-var">readRelation</span></a></span></span><span> </span><span id="local-6989586621680263140"><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263140"><span class="hs-identifier hs-var">relations</span></a></span></span><span> </span><span id="local-6989586621680263141"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263141"><span class="hs-identifier hs-var">rid</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263142"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="local-6989586621680263142"><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263142"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263140"><span class="hs-identifier hs-var">relations</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relId"><span class="hs-identifier hs-var">relId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263142"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263141"><span class="hs-identifier hs-var">rid</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-139"></span><span>  </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">RelationValidationError -&gt; RelationOperationResult PersonRelation
+forall a. RelationValidationError -&gt; RelationOperationResult a
+</span><a href="HR.RelationsManager.html#RelationError"><span class="hs-identifier hs-var">RelationError</span></a></span><span> </span><span class="annot"><span class="annottext">RelationValidationError
+</span><a href="HR.RelationsManager.html#RelationNotFound"><span class="hs-identifier hs-var">RelationNotFound</span></a></span><span>
+</span><span id="line-140"></span><span>  </span><span class="hs-special">(</span><span id="local-6989586621680263143"><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263143"><span class="hs-identifier hs-var">r</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span class="annot"><span class="annottext">[PersonRelation]
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">PersonRelation -&gt; RelationOperationResult PersonRelation
+forall a. a -&gt; RelationOperationResult a
+</span><a href="HR.RelationsManager.html#RelationSuccess"><span class="hs-identifier hs-var">RelationSuccess</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263143"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><span id="line-141"></span><span>
+</span><span id="line-142"></span><span class="annot"><span class="hs-comment">-- | End a relation</span></span><span>
+</span><span id="line-143"></span><span class="annot"><a href="HR.RelationsManager.html#endRelation"><span class="hs-identifier hs-type">endRelation</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationOperationResult"><span class="hs-identifier hs-type">RelationOperationResult</span></a></span><span> </span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span>
+</span><span id="line-144"></span><span id="endRelation"><span class="annot"><span class="annottext">endRelation :: [PersonRelation]
+-&gt; Int64 -&gt; Day -&gt; RelationOperationResult PersonRelation
+</span><a href="HR.RelationsManager.html#endRelation"><span class="hs-identifier hs-var hs-var">endRelation</span></a></span></span><span> </span><span id="local-6989586621680263144"><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263144"><span class="hs-identifier hs-var">relations</span></a></span></span><span> </span><span id="local-6989586621680263145"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263145"><span class="hs-identifier hs-var">rid</span></a></span></span><span> </span><span id="local-6989586621680263146"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680263146"><span class="hs-identifier hs-var">endDate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">[PersonRelation] -&gt; Int64 -&gt; RelationOperationResult PersonRelation
+</span><a href="HR.RelationsManager.html#readRelation"><span class="hs-identifier hs-var">readRelation</span></a></span><span> </span><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263144"><span class="hs-identifier hs-var">relations</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263145"><span class="hs-identifier hs-var">rid</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-145"></span><span>  </span><span class="annot"><a href="HR.RelationsManager.html#RelationSuccess"><span class="hs-identifier hs-type">RelationSuccess</span></a></span><span> </span><span id="local-6989586621680263147"><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263147"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-146"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680263148"><span class="annot"><span class="annottext">ended :: PersonRelation
+</span><a href="#local-6989586621680263148"><span class="hs-identifier hs-var hs-var">ended</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263147"><span class="hs-identifier hs-var">r</span></a></span><span>
+</span><span id="line-147"></span><span>          </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="HR.RelationsManager.html#relStatus"><span class="hs-identifier hs-var">relStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationEnded"><span class="hs-identifier hs-type">RelationEnded</span></a></span><span>
+</span><span id="line-148"></span><span>          </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="HR.RelationsManager.html#relEndDate"><span class="hs-identifier hs-var">relEndDate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><a href="#local-6989586621680263146"><span class="hs-identifier hs-type">endDate</span></a></span><span>
+</span><span id="line-149"></span><span>          </span><span class="hs-special">}</span><span>
+</span><span id="line-150"></span><span>    </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">PersonRelation -&gt; RelationOperationResult PersonRelation
+forall a. a -&gt; RelationOperationResult a
+</span><a href="HR.RelationsManager.html#RelationSuccess"><span class="hs-identifier hs-var">RelationSuccess</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263148"><span class="hs-identifier hs-var">ended</span></a></span><span>
+</span><span id="line-151"></span><span>  </span><span id="local-6989586621680263149"><span class="annot"><span class="annottext">RelationOperationResult PersonRelation
+</span><a href="#local-6989586621680263149"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">RelationOperationResult PersonRelation
+</span><a href="#local-6989586621680263149"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-152"></span><span>
+</span><span id="line-153"></span><span class="annot"><span class="hs-comment">-- | List all relations</span></span><span>
+</span><span id="line-154"></span><span class="annot"><a href="HR.RelationsManager.html#listRelations"><span class="hs-identifier hs-type">listRelations</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationOperationResult"><span class="hs-identifier hs-type">RelationOperationResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-155"></span><span id="listRelations"><span class="annot"><span class="annottext">listRelations :: [PersonRelation] -&gt; RelationOperationResult [PersonRelation]
+</span><a href="HR.RelationsManager.html#listRelations"><span class="hs-identifier hs-var hs-var">listRelations</span></a></span></span><span> </span><span id="local-6989586621680263150"><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263150"><span class="hs-identifier hs-var">rels</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[PersonRelation] -&gt; RelationOperationResult [PersonRelation]
+forall a. a -&gt; RelationOperationResult a
+</span><a href="HR.RelationsManager.html#RelationSuccess"><span class="hs-identifier hs-var">RelationSuccess</span></a></span><span> </span><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263150"><span class="hs-identifier hs-var">rels</span></a></span><span>
+</span><span id="line-156"></span><span>
+</span><span id="line-157"></span><span class="annot"><span class="hs-comment">-- | Get subordinates of a person</span></span><span>
+</span><span id="line-158"></span><span class="annot"><a href="HR.RelationsManager.html#subordinates"><span class="hs-identifier hs-type">subordinates</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">]</span><span>
+</span><span id="line-159"></span><span id="subordinates"><span class="annot"><span class="annottext">subordinates :: [PersonRelation] -&gt; Int64 -&gt; [Int64]
+</span><a href="HR.RelationsManager.html#subordinates"><span class="hs-identifier hs-var hs-var">subordinates</span></a></span></span><span> </span><span id="local-6989586621680263151"><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263151"><span class="hs-identifier hs-var">relations</span></a></span></span><span> </span><span id="local-6989586621680263152"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263152"><span class="hs-identifier hs-var">personId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-160"></span><span>  </span><span class="annot"><span class="annottext">(PersonRelation -&gt; Maybe Int64) -&gt; [PersonRelation] -&gt; [Int64]
+forall a b. (a -&gt; Maybe b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">mapMaybe</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680263153"><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263153"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-161"></span><span>    </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relFromPersonId"><span class="hs-identifier hs-var">relFromPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263153"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263152"><span class="hs-identifier hs-var">personId</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span>
+</span><span id="line-162"></span><span>       </span><span class="annot"><span class="annottext">PersonRelation -&gt; RelationType
+</span><a href="HR.RelationsManager.html#relType"><span class="hs-identifier hs-var">relType</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263153"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">RelationType -&gt; RelationType -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">RelationType
+</span><a href="HR.RelationsManager.html#Manager"><span class="hs-identifier hs-var">Manager</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span>
+</span><span id="line-163"></span><span>       </span><span class="annot"><span class="annottext">PersonRelation -&gt; RelationStatus
+</span><a href="HR.RelationsManager.html#relStatus"><span class="hs-identifier hs-var">relStatus</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263153"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">RelationStatus -&gt; RelationStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">RelationStatus
+</span><a href="HR.RelationsManager.html#RelationActive"><span class="hs-identifier hs-var">RelationActive</span></a></span><span>
+</span><span id="line-164"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Maybe Int64
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relToPersonId"><span class="hs-identifier hs-var">relToPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263153"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-165"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Maybe Int64
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263151"><span class="hs-identifier hs-var">relations</span></a></span><span>
+</span><span id="line-166"></span><span>
+</span><span id="line-167"></span><span class="annot"><span class="hs-comment">-- | Get managers of a person</span></span><span>
+</span><span id="line-168"></span><span class="annot"><a href="HR.RelationsManager.html#managers"><span class="hs-identifier hs-type">managers</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">]</span><span>
+</span><span id="line-169"></span><span id="managers"><span class="annot"><span class="annottext">managers :: [PersonRelation] -&gt; Int64 -&gt; [Int64]
+</span><a href="HR.RelationsManager.html#managers"><span class="hs-identifier hs-var hs-var">managers</span></a></span></span><span> </span><span id="local-6989586621680263155"><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263155"><span class="hs-identifier hs-var">relations</span></a></span></span><span> </span><span id="local-6989586621680263156"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263156"><span class="hs-identifier hs-var">personId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-170"></span><span>  </span><span class="annot"><span class="annottext">(PersonRelation -&gt; Maybe Int64) -&gt; [PersonRelation] -&gt; [Int64]
+forall a b. (a -&gt; Maybe b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">mapMaybe</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680263157"><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263157"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-171"></span><span>    </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relToPersonId"><span class="hs-identifier hs-var">relToPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263157"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263156"><span class="hs-identifier hs-var">personId</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span>
+</span><span id="line-172"></span><span>       </span><span class="annot"><span class="annottext">PersonRelation -&gt; RelationType
+</span><a href="HR.RelationsManager.html#relType"><span class="hs-identifier hs-var">relType</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263157"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">RelationType -&gt; RelationType -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">RelationType
+</span><a href="HR.RelationsManager.html#Manager"><span class="hs-identifier hs-var">Manager</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span>
+</span><span id="line-173"></span><span>       </span><span class="annot"><span class="annottext">PersonRelation -&gt; RelationStatus
+</span><a href="HR.RelationsManager.html#relStatus"><span class="hs-identifier hs-var">relStatus</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263157"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">RelationStatus -&gt; RelationStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">RelationStatus
+</span><a href="HR.RelationsManager.html#RelationActive"><span class="hs-identifier hs-var">RelationActive</span></a></span><span>
+</span><span id="line-174"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Maybe Int64
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relFromPersonId"><span class="hs-identifier hs-var">relFromPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263157"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-175"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Maybe Int64
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263155"><span class="hs-identifier hs-var">relations</span></a></span><span>
+</span><span id="line-176"></span><span>
+</span><span id="line-177"></span><span class="annot"><span class="hs-comment">-- | Get colleagues of a person</span></span><span>
+</span><span id="line-178"></span><span class="annot"><a href="HR.RelationsManager.html#colleagues"><span class="hs-identifier hs-type">colleagues</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">]</span><span>
+</span><span id="line-179"></span><span id="colleagues"><span class="annot"><span class="annottext">colleagues :: [PersonRelation] -&gt; Int64 -&gt; [Int64]
+</span><a href="HR.RelationsManager.html#colleagues"><span class="hs-identifier hs-var hs-var">colleagues</span></a></span></span><span> </span><span id="local-6989586621680263158"><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263158"><span class="hs-identifier hs-var">relations</span></a></span></span><span> </span><span id="local-6989586621680263159"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263159"><span class="hs-identifier hs-var">personId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-180"></span><span>  </span><span class="annot"><span class="annottext">(PersonRelation -&gt; Maybe Int64) -&gt; [PersonRelation] -&gt; [Int64]
+forall a b. (a -&gt; Maybe b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">mapMaybe</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680263160"><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263160"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-181"></span><span>    </span><span class="hs-keyword">if</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relFromPersonId"><span class="hs-identifier hs-var">relFromPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263160"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263159"><span class="hs-identifier hs-var">personId</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relToPersonId"><span class="hs-identifier hs-var">relToPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263160"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263159"><span class="hs-identifier hs-var">personId</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span>
+</span><span id="line-182"></span><span>       </span><span class="annot"><span class="annottext">PersonRelation -&gt; RelationType
+</span><a href="HR.RelationsManager.html#relType"><span class="hs-identifier hs-var">relType</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263160"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">RelationType -&gt; RelationType -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">RelationType
+</span><a href="HR.RelationsManager.html#Colleague"><span class="hs-identifier hs-var">Colleague</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span>
+</span><span id="line-183"></span><span>       </span><span class="annot"><span class="annottext">PersonRelation -&gt; RelationStatus
+</span><a href="HR.RelationsManager.html#relStatus"><span class="hs-identifier hs-var">relStatus</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263160"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">RelationStatus -&gt; RelationStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">RelationStatus
+</span><a href="HR.RelationsManager.html#RelationActive"><span class="hs-identifier hs-var">RelationActive</span></a></span><span>
+</span><span id="line-184"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relFromPersonId"><span class="hs-identifier hs-var">relFromPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263160"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263159"><span class="hs-identifier hs-var">personId</span></a></span><span>
+</span><span id="line-185"></span><span>         </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Maybe Int64
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relToPersonId"><span class="hs-identifier hs-var">relToPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263160"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-186"></span><span>         </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Maybe Int64
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relFromPersonId"><span class="hs-identifier hs-var">relFromPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263160"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-187"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Maybe Int64
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263158"><span class="hs-identifier hs-var">relations</span></a></span><span>
+</span><span id="line-188"></span><span>
+</span><span id="line-189"></span><span class="hs-comment">-- | Get organizational hierarchy (recursive)</span><span>
+</span><span id="line-190"></span><span class="hs-comment">-- Returns all subordinates directly and indirectly under a manager</span><span>
+</span><span id="line-191"></span><span class="annot"><a href="HR.RelationsManager.html#organizationalHierarchy"><span class="hs-identifier hs-type">organizationalHierarchy</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">]</span><span>
+</span><span id="line-192"></span><span id="organizationalHierarchy"><span class="annot"><span class="annottext">organizationalHierarchy :: [PersonRelation] -&gt; Int64 -&gt; [Int64]
+</span><a href="HR.RelationsManager.html#organizationalHierarchy"><span class="hs-identifier hs-var hs-var">organizationalHierarchy</span></a></span></span><span> </span><span id="local-6989586621680263162"><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263162"><span class="hs-identifier hs-var">relations</span></a></span></span><span> </span><span id="local-6989586621680263163"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263163"><span class="hs-identifier hs-var">personId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-193"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680263164"><span class="annot"><span class="annottext">direct :: [Int64]
+</span><a href="#local-6989586621680263164"><span class="hs-identifier hs-var hs-var">direct</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[PersonRelation] -&gt; Int64 -&gt; [Int64]
+</span><a href="HR.RelationsManager.html#subordinates"><span class="hs-identifier hs-var">subordinates</span></a></span><span> </span><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263162"><span class="hs-identifier hs-var">relations</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263163"><span class="hs-identifier hs-var">personId</span></a></span><span>
+</span><span id="line-194"></span><span>      </span><span id="local-6989586621680263166"><span class="annot"><span class="annottext">indirect :: [Int64]
+</span><a href="#local-6989586621680263166"><span class="hs-identifier hs-var hs-var">indirect</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Int64 -&gt; [Int64]) -&gt; [Int64] -&gt; [Int64]
+forall (t :: * -&gt; *) a b. Foldable t =&gt; (a -&gt; [b]) -&gt; t a -&gt; [b]
+</span><span class="hs-identifier hs-var">concatMap</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[PersonRelation] -&gt; Int64 -&gt; [Int64]
+</span><a href="HR.RelationsManager.html#organizationalHierarchy"><span class="hs-identifier hs-var">organizationalHierarchy</span></a></span><span> </span><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263162"><span class="hs-identifier hs-var">relations</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Int64]
+</span><a href="#local-6989586621680263164"><span class="hs-identifier hs-var">direct</span></a></span><span>
+</span><span id="line-195"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">[Int64]
+</span><a href="#local-6989586621680263164"><span class="hs-identifier hs-var">direct</span></a></span><span> </span><span class="annot"><span class="annottext">[Int64] -&gt; [Int64] -&gt; [Int64]
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">[Int64]
+</span><a href="#local-6989586621680263166"><span class="hs-identifier hs-var">indirect</span></a></span><span>
+</span><span id="line-196"></span><span>
+</span><span id="line-197"></span><span class="annot"><span class="hs-comment">-- | Validate organizational hierarchy (no cycles)</span></span><span>
+</span><span id="line-198"></span><span class="annot"><a href="HR.RelationsManager.html#validateHierarchyNoCycles"><span class="hs-identifier hs-type">validateHierarchyNoCycles</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-199"></span><span id="validateHierarchyNoCycles"><span class="annot"><span class="annottext">validateHierarchyNoCycles :: [PersonRelation] -&gt; Bool
+</span><a href="HR.RelationsManager.html#validateHierarchyNoCycles"><span class="hs-identifier hs-var hs-var">validateHierarchyNoCycles</span></a></span></span><span> </span><span id="local-6989586621680263169"><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263169"><span class="hs-identifier hs-var">relations</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-200"></span><span>  </span><span class="annot"><span class="annottext">(PersonRelation -&gt; Bool) -&gt; [PersonRelation] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">all</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680263171"><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263171"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; [PersonRelation] -&gt; Bool
+</span><a href="#local-6989586621680263172"><span class="hs-identifier hs-var">hasCycle</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relFromPersonId"><span class="hs-identifier hs-var">relFromPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263171"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relToPersonId"><span class="hs-identifier hs-var">relToPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263171"><span class="hs-identifier hs-var">r</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263169"><span class="hs-identifier hs-var">relations</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263169"><span class="hs-identifier hs-var">relations</span></a></span><span>
+</span><span id="line-201"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-202"></span><span>    </span><span class="annot"><a href="#local-6989586621680263172"><span class="hs-identifier hs-type">hasCycle</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-203"></span><span>    </span><span id="local-6989586621680263172"><span class="annot"><span class="annottext">hasCycle :: Int64 -&gt; Int64 -&gt; [PersonRelation] -&gt; Bool
+</span><a href="#local-6989586621680263172"><span class="hs-identifier hs-var hs-var">hasCycle</span></a></span></span><span> </span><span id="local-6989586621680263173"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263173"><span class="hs-identifier hs-var">from</span></a></span></span><span> </span><span id="local-6989586621680263174"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263174"><span class="hs-identifier hs-var">to</span></a></span></span><span> </span><span id="local-6989586621680263175"><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263175"><span class="hs-identifier hs-var">rels</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263174"><span class="hs-identifier hs-var">to</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; [Int64] -&gt; Bool
+forall a. Eq a =&gt; a -&gt; [a] -&gt; Bool
+forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
+</span><span class="hs-operator hs-var">`elem`</span></span><span> </span><span class="annot"><span class="annottext">[PersonRelation] -&gt; Int64 -&gt; [Int64]
+</span><a href="HR.RelationsManager.html#organizationalHierarchy"><span class="hs-identifier hs-var">organizationalHierarchy</span></a></span><span> </span><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263175"><span class="hs-identifier hs-var">rels</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263173"><span class="hs-identifier hs-var">from</span></a></span><span>
+</span><span id="line-204"></span><span>
+</span><span id="line-205"></span><span class="annot"><span class="hs-comment">-- | Count relations of a type for a person</span></span><span>
+</span><span id="line-206"></span><span class="annot"><a href="HR.RelationsManager.html#countRelationsByType"><span class="hs-identifier hs-type">countRelationsByType</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="HR.RelationsManager.html#RelationType"><span class="hs-identifier hs-type">RelationType</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-207"></span><span id="countRelationsByType"><span class="annot"><span class="annottext">countRelationsByType :: [PersonRelation] -&gt; Int64 -&gt; RelationType -&gt; Int
+</span><a href="HR.RelationsManager.html#countRelationsByType"><span class="hs-identifier hs-var hs-var">countRelationsByType</span></a></span></span><span> </span><span id="local-6989586621680263178"><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263178"><span class="hs-identifier hs-var">relations</span></a></span></span><span> </span><span id="local-6989586621680263179"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263179"><span class="hs-identifier hs-var">personId</span></a></span></span><span> </span><span id="local-6989586621680263180"><span class="annot"><span class="annottext">RelationType
+</span><a href="#local-6989586621680263180"><span class="hs-identifier hs-var">targetRelType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-208"></span><span>  </span><span class="annot"><span class="annottext">[PersonRelation] -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">([PersonRelation] -&gt; Int) -&gt; [PersonRelation] -&gt; Int
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(PersonRelation -&gt; Bool) -&gt; [PersonRelation] -&gt; [PersonRelation]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">filter</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680263182"><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263182"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-209"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relFromPersonId"><span class="hs-identifier hs-var">relFromPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263182"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263179"><span class="hs-identifier hs-var">personId</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relToPersonId"><span class="hs-identifier hs-var">relToPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263182"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263179"><span class="hs-identifier hs-var">personId</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span>
+</span><span id="line-210"></span><span>    </span><span class="annot"><span class="annottext">PersonRelation -&gt; RelationType
+</span><a href="HR.RelationsManager.html#relType"><span class="hs-identifier hs-var">relType</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263182"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">RelationType -&gt; RelationType -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">RelationType
+</span><a href="#local-6989586621680263180"><span class="hs-identifier hs-var">targetRelType</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span>
+</span><span id="line-211"></span><span>    </span><span class="annot"><span class="annottext">PersonRelation -&gt; RelationStatus
+</span><a href="HR.RelationsManager.html#relStatus"><span class="hs-identifier hs-var">relStatus</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263182"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">RelationStatus -&gt; RelationStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">RelationStatus
+</span><a href="HR.RelationsManager.html#RelationActive"><span class="hs-identifier hs-var">RelationActive</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263178"><span class="hs-identifier hs-var">relations</span></a></span><span>
+</span><span id="line-212"></span><span>
+</span><span id="line-213"></span><span class="annot"><span class="hs-comment">-- | Get all active relations for a person</span></span><span>
+</span><span id="line-214"></span><span class="annot"><a href="HR.RelationsManager.html#activeRelationsForPerson"><span class="hs-identifier hs-type">activeRelationsForPerson</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="HR.RelationsManager.html#PersonRelation"><span class="hs-identifier hs-type">PersonRelation</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-215"></span><span id="activeRelationsForPerson"><span class="annot"><span class="annottext">activeRelationsForPerson :: [PersonRelation] -&gt; Int64 -&gt; [PersonRelation]
+</span><a href="HR.RelationsManager.html#activeRelationsForPerson"><span class="hs-identifier hs-var hs-var">activeRelationsForPerson</span></a></span></span><span> </span><span id="local-6989586621680263184"><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263184"><span class="hs-identifier hs-var">relations</span></a></span></span><span> </span><span id="local-6989586621680263185"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263185"><span class="hs-identifier hs-var">personId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-216"></span><span>  </span><span class="annot"><span class="annottext">(PersonRelation -&gt; Bool) -&gt; [PersonRelation] -&gt; [PersonRelation]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">filter</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680263186"><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263186"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-217"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relFromPersonId"><span class="hs-identifier hs-var">relFromPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263186"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263185"><span class="hs-identifier hs-var">personId</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">PersonRelation -&gt; Int64
+</span><a href="HR.RelationsManager.html#relToPersonId"><span class="hs-identifier hs-var">relToPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263186"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680263185"><span class="hs-identifier hs-var">personId</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span>
+</span><span id="line-218"></span><span>    </span><span class="annot"><span class="annottext">PersonRelation -&gt; RelationStatus
+</span><a href="HR.RelationsManager.html#relStatus"><span class="hs-identifier hs-var">relStatus</span></a></span><span> </span><span class="annot"><span class="annottext">PersonRelation
+</span><a href="#local-6989586621680263186"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">RelationStatus -&gt; RelationStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">RelationStatus
+</span><a href="HR.RelationsManager.html#RelationActive"><span class="hs-identifier hs-var">RelationActive</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[PersonRelation]
+</span><a href="#local-6989586621680263184"><span class="hs-identifier hs-var">relations</span></a></span><span>
+</span><span id="line-219"></span></pre></body></html>

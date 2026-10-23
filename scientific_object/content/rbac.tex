@@ -1,0 +1,572 @@
+\chapter{Role-Based Access Control (RBAC)
+System}\label{role-based-access-control-rbac-system}
+
+\section{Overview}\label{overview}
+
+Surypus implements a comprehensive Role-Based Access Control (RBAC)
+system to manage user permissions across the API. This document outlines
+the role hierarchy, permissions, and how they are applied to API
+endpoints.
+
+\section{Role Hierarchy}\label{role-hierarchy}
+
+The system defines four primary roles with different permission levels:
+
+\subsection{\texorpdfstring{1. \textbf{Admin
+(RoleAdmin)}}{1. Admin (RoleAdmin)}}\label{admin-roleadmin}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Description}: Full system access
+\item
+  \textbf{Permissions}: All permissions
+\item
+  \textbf{Typical Users}: System administrators, developers
+\item
+  \textbf{Key Permissions}: AdminAccess, all CRUD operations
+\end{itemize}
+
+\subsection{\texorpdfstring{2. \textbf{Manager
+(RoleManager)}}{2. Manager (RoleManager)}}\label{manager-rolemanager}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Description}: Business operations management
+\item
+  \textbf{Permissions}: Most write operations, all read operations
+\item
+  \textbf{Typical Users}: Department managers, supervisors
+\item
+  \textbf{Limited By}: Cannot access admin functions, cannot delete
+  sensitive data
+\end{itemize}
+
+\subsection{\texorpdfstring{3. \textbf{User
+(RoleUser)}}{3. User (RoleUser)}}\label{user-roleuser}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Description}: Standard user with basic read and write access
+\item
+  \textbf{Permissions}: Limited write operations, basic read operations
+\item
+  \textbf{Typical Users}: Regular employees, data entry staff
+\item
+  \textbf{Limited By}: Read-only for sensitive areas (accounting,
+  payroll), no delete permissions
+\end{itemize}
+
+\subsection{\texorpdfstring{4. \textbf{Viewer
+(RoleViewer)}}{4. Viewer (RoleViewer)}}\label{viewer-roleviewer}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Description}: Read-only access for reporting and analysis
+\item
+  \textbf{Permissions}: Read-only across the system
+\item
+  \textbf{Typical Users}: External stakeholders, auditors, analysts
+\item
+  \textbf{Limited By}: Cannot perform any write or delete operations
+\end{itemize}
+
+\section{Permission Types}\label{permission-types}
+
+Permissions are organized by resource type:
+
+\subsection{Person Management}\label{person-management}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{PersonRead} - Read person data
+\item
+  \texttt{PersonWrite} - Create/update person data
+\item
+  \texttt{PersonDelete} - Delete person records
+\end{itemize}
+
+\subsection{Goods \& Inventory}\label{goods-inventory}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{GoodsRead} - Read goods catalog
+\item
+  \texttt{GoodsWrite} - Create/update goods
+\item
+  \texttt{GoodsDelete} - Delete goods
+\item
+  \texttt{StockRead} - Read stock information
+\item
+  \texttt{StockWrite} - Modify stock (internal use)
+\end{itemize}
+
+\subsection{Billing}\label{billing}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{BillRead} - Read bills/invoices
+\item
+  \texttt{BillWrite} - Create/update bills
+\item
+  \texttt{BillDelete} - Delete bills
+\item
+  \texttt{BillPost} - Post/confirm bills
+\end{itemize}
+
+\subsection{Locations \& Warehouse}\label{locations-warehouse}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{LocationRead} - Read location data
+\item
+  \texttt{LocationWrite} - Create/update locations
+\item
+  \texttt{LocationDelete} - Delete locations
+\end{itemize}
+
+\subsection{Accounting \& Finance}\label{accounting-finance}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{AccountingRead} - Read accounting entries
+\item
+  \texttt{AccountingWrite} - Create/update accounting entries
+\item
+  \texttt{PaymentRead} - Read payment information
+\item
+  \texttt{PaymentWrite} - Create/update payments
+\item
+  \texttt{PaymentDelete} - Delete payments
+\end{itemize}
+
+\subsection{Orders \& Operations}\label{orders-operations}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{OrdersWrite} - Manage orders (read/write/delete)
+\end{itemize}
+
+\subsection{Taxes \& Currencies}\label{taxes-currencies}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{TaxesWrite} - Manage tax rates and calculations
+\item
+  \texttt{CurrenciesWrite} - Manage currency settings
+\end{itemize}
+
+\subsection{Users \& Settings}\label{users-settings}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{UsersRead} - Read user information
+\item
+  \texttt{UsersWrite} - Create/manage users
+\item
+  \texttt{SettingsRead} - Read system settings
+\item
+  \texttt{SettingsWrite} - Modify system settings
+\end{itemize}
+
+\subsection{Payroll}\label{payroll}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{PayrollRead} - Read payroll data
+\item
+  \texttt{PayrollWrite} - Create/update payroll
+\item
+  \texttt{SalariesWrite} - Manage salary information
+\end{itemize}
+
+\subsection{Reports \& Analysis}\label{reports-analysis}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{ReportsRead} - Access reports
+\item
+  \texttt{ReportsWrite} - Create/manage reports
+\end{itemize}
+
+\subsection{Administrative}\label{administrative}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{AdminAccess} - Access administrative functions
+\end{itemize}
+
+\section{API Endpoint Permissions}\label{api-endpoint-permissions}
+
+\subsection{Authentication Endpoints (No Auth
+Required)}\label{authentication-endpoints-no-auth-required}
+
+\begin{verbatim}
+POST /v1/login          - Public (no auth required)
+POST /v1/refresh        - Public (no auth required)
+\end{verbatim}
+
+\subsection{Protected Endpoints}\label{protected-endpoints}
+
+\subsubsection{Persons}\label{persons}
+
+\begin{verbatim}
+GET /v1/persons                - PersonRead
+POST /v1/persons               - PersonWrite
+GET /v1/persons/:id            - PersonRead
+PUT /v1/persons/:id            - PersonWrite
+DELETE /v1/persons/:id         - PersonDelete
+GET /v1/persons/search/:query  - PersonRead
+\end{verbatim}
+
+\subsubsection{Goods}\label{goods}
+
+\begin{verbatim}
+GET /v1/goods           - GoodsRead
+POST /v1/goods          - GoodsWrite
+GET /v1/goods/:id       - GoodsRead
+PUT /v1/goods/:id       - GoodsWrite
+DELETE /v1/goods/:id    - GoodsDelete
+\end{verbatim}
+
+\subsubsection{Locations}\label{locations}
+
+\begin{verbatim}
+GET /v1/locations               - LocationRead
+POST /v1/locations              - LocationWrite
+GET /v1/locations/:id           - LocationRead
+PUT /v1/locations/:id           - LocationWrite
+DELETE /v1/locations/:id        - LocationDelete
+\end{verbatim}
+
+\subsubsection{Bills}\label{bills}
+
+\begin{verbatim}
+GET /v1/bills                   - BillRead
+POST /v1/bills                  - BillWrite
+GET /v1/bills/:id               - BillRead
+PUT /v1/bills/:id               - BillWrite
+DELETE /v1/bills/:id            - BillDelete
+PUT /v1/bills/:id/status        - BillPost
+\end{verbatim}
+
+\subsubsection{Payments}\label{payments}
+
+\begin{verbatim}
+GET /v1/payments                - PaymentRead
+POST /v1/payments               - PaymentWrite
+GET /v1/payments/:id            - PaymentRead
+PUT /v1/payments/:id            - PaymentWrite
+DELETE /v1/payments/:id         - PaymentDelete
+\end{verbatim}
+
+\subsubsection{Orders}\label{orders}
+
+\begin{verbatim}
+GET /v1/orders                  - OrdersWrite (for access)
+POST /v1/orders                 - OrdersWrite
+GET /v1/orders/:id              - OrdersWrite (for access)
+PUT /v1/orders/:id/status       - OrdersWrite
+DELETE /v1/orders/:id           - OrdersWrite
+\end{verbatim}
+
+\subsubsection{Taxes}\label{taxes}
+
+\begin{verbatim}
+GET /v1/taxes                   - TaxesWrite (for access)
+POST /v1/taxes                  - TaxesWrite
+GET /v1/taxes/:id               - TaxesWrite (for access)
+PUT /v1/taxes/:id               - TaxesWrite
+DELETE /v1/taxes/:id            - TaxesWrite
+\end{verbatim}
+
+\subsubsection{Currencies}\label{currencies}
+
+\begin{verbatim}
+GET /v1/currencies              - CurrenciesWrite (for access)
+POST /v1/currencies             - CurrenciesWrite
+GET /v1/currencies/:id          - CurrenciesWrite (for access)
+PUT /v1/currencies/:id          - CurrenciesWrite
+DELETE /v1/currencies/:id       - CurrenciesWrite
+\end{verbatim}
+
+\subsubsection{Stock \& Inventory}\label{stock-inventory}
+
+\begin{verbatim}
+GET /v1/stock                   - StockRead
+GET /v1/stock/summary           - StockRead
+GET /v1/stock/:goodsId/:locId   - StockRead
+GET /v1/stock/goods/:goodsId    - StockRead
+\end{verbatim}
+
+\subsubsection{Accounting}\label{accounting}
+
+\begin{verbatim}
+GET /v1/accounting/accounts         - AccountingRead
+POST /v1/accounting/accounts        - AccountingWrite
+GET /v1/accounting/accounts/:id     - AccountingRead
+PUT /v1/accounting/accounts/:id     - AccountingWrite
+DELETE /v1/accounting/accounts/:id  - AccountingWrite
+
+GET /v1/accounting/entries          - AccountingRead
+POST /v1/accounting/entries         - AccountingWrite
+GET /v1/accounting/entries/:id      - AccountingRead
+PUT /v1/accounting/entries/:id      - AccountingWrite
+DELETE /v1/accounting/entries/:id   - AccountingWrite
+\end{verbatim}
+
+\subsubsection{Payroll}\label{payroll-1}
+
+\begin{verbatim}
+GET /v1/payroll                 - PayrollRead
+GET /v1/payroll/employees       - PayrollRead
+GET /v1/payroll/employees/:id   - PayrollRead
+GET /v1/payroll/salaries        - PayrollRead
+GET /v1/payroll/salaries/:id    - SalariesWrite (for access)
+\end{verbatim}
+
+\subsubsection{Users}\label{users}
+
+\begin{verbatim}
+GET /v1/users           - UsersRead
+POST /v1/users          - UsersWrite
+\end{verbatim}
+
+\subsubsection{RBAC Administration}\label{rbac-administration}
+
+\begin{verbatim}
+GET /v1/rbac/roles              - AdminAccess
+POST /v1/rbac/roles             - AdminAccess
+PUT /v1/rbac/roles/:name        - AdminAccess
+DELETE /v1/rbac/roles/:name     - AdminAccess
+GET /v1/rbac/grants             - AdminAccess
+POST /v1/rbac/grants            - AdminAccess
+GET /v1/rbac/grants/active?principal=...              - AdminAccess
+POST /v1/rbac/grants/cleanup                         - AdminAccess
+PUT /v1/rbac/grants/:from/:to/:permission?resource=... - AdminAccess
+DELETE /v1/rbac/grants/:from/:to/:permission?resource=... - AdminAccess
+GET /v1/rbac/audit?principal=...&resource=...&offset=...&limit=... - AdminAccess
+POST /v1/rbac/audit/cleanup?keep=...                     - AdminAccess
+\end{verbatim}
+
+Dynamic roles are stored as scoped permissions and can be restricted to
+a canonical resource key such as \texttt{location:1}, \texttt{bill:42},
+\texttt{report:sales}, or \texttt{accounting-entry:17}.
+
+Delegation grants support temporary escalation through an expiry
+timestamp. Expired grants can be cleaned up explicitly through the
+cleanup endpoint. Updating a grant refreshes its expiry window while
+keeping its principal and scoped permission key. Audit entries can be
+paginated with \texttt{offset}/\texttt{limit} and trimmed with the audit
+cleanup endpoint.
+
+\subsubsection{Reports}\label{reports}
+
+\begin{verbatim}
+GET /v1/reports                 - ReportsRead
+GET /v1/reports/metadata        - ReportsRead
+GET /v1/reports/templates       - ReportsRead
+GET /v1/reports/:id             - ReportsRead
+GET /v1/reports/:name/jrxml     - ReportsRead
+\end{verbatim}
+
+\section{Implementation Details}\label{implementation-details}
+
+\subsection{Role-Permission Mapping}\label{role-permission-mapping}
+
+The system uses a permission matrix where each role is associated with
+specific permissions:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{data} \DataTypeTok{RolePermission} \OtherTok{=} \DataTypeTok{RolePermission}
+\NormalTok{  \{}\OtherTok{ rpRole ::} \DataTypeTok{Role}
+\NormalTok{  ,}\OtherTok{ rpPermissions ::}\NormalTok{ [}\DataTypeTok{Permission}\NormalTok{]}
+\NormalTok{  \}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Permission Checking}\label{permission-checking}
+
+Permissions are checked using the \texttt{checkPermission} function:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{checkPermission ::} \DataTypeTok{Text} \OtherTok{{-}\textgreater{}} \DataTypeTok{Permission} \OtherTok{{-}\textgreater{}} \DataTypeTok{Either} \DataTypeTok{String}\NormalTok{ ()}
+\end{Highlighting}
+\end{Shaded}
+
+This function: 1. Takes a role (as Text) 2. Takes a required permission
+3. Returns \texttt{Right\ ()} if the role has the permission 4. Returns
+\texttt{Left\ error} if the role lacks the permission
+
+\subsection{API Integration}\label{api-integration}
+
+The \texttt{requirePermission} helper in \texttt{Surypus.API.Server}
+provides access checking:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{requirePermission ::} \DataTypeTok{Text} \OtherTok{{-}\textgreater{}} \DataTypeTok{Permission} \OtherTok{{-}\textgreater{}} \DataTypeTok{Handler}\NormalTok{ ()}
+\end{Highlighting}
+\end{Shaded}
+
+This function returns a 403 Forbidden response if the permission check
+fails.
+
+The runtime request pipeline now also supports a request-aware
+authorization resolver via advanced middleware. It can:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Authenticate non-public requests
+\item
+  Resolve required permission from the incoming request path/method
+\item
+  Load dynamic roles and delegation grants from an RBAC store
+\item
+  Apply resource-level checks using scoped permissions
+\item
+  Emit audit entries for allow/deny decisions
+\end{enumerate}
+
+\section{Usage Examples}\label{usage-examples}
+
+\subsection{Checking Admin Access}\label{checking-admin-access}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{case}\NormalTok{ checkPermission }\StringTok{"admin"} \DataTypeTok{AdminAccess} \KeywordTok{of}
+  \DataTypeTok{Right}\NormalTok{ () }\OtherTok{{-}\textgreater{}} \CommentTok{{-}{-} User is admin}
+  \DataTypeTok{Left}\NormalTok{ err }\OtherTok{{-}\textgreater{}} \CommentTok{{-}{-} User is not admin}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Assigning Permissions to
+Endpoints}\label{assigning-permissions-to-endpoints}
+
+Endpoints use comments to document required permissions:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{personsList ::} \DataTypeTok{Handler} \DataTypeTok{PersonsResponse}
+\CommentTok{{-}{-} | GET /v1/persons {-} Requires PersonRead permission}
+\NormalTok{personsList }\OtherTok{=} \FunctionTok{return} \OperatorTok{$} \DataTypeTok{PersonsResponse}\NormalTok{ [}\OperatorTok{...}\NormalTok{] }\DecValTok{1}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Using Roles in the
+Application}\label{using-roles-in-the-application}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{let}\NormalTok{ userRole }\OtherTok{=}\NormalTok{ roleFromText }\StringTok{"manager"}
+\KeywordTok{if}\NormalTok{ hasPermission userRole }\DataTypeTok{PersonWrite}
+  \KeywordTok{then} \CommentTok{{-}{-} Allow write operation}
+  \KeywordTok{else} \CommentTok{{-}{-} Deny write operation}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Testing}\label{testing}
+
+The RBAC system includes comprehensive tests in
+\texttt{test/RBACSpec.hs} and \texttt{test/Test.hs}:
+
+\begin{itemize}
+\tightlist
+\item
+  Role permission verification
+\item
+  Cross-role permission boundaries
+\item
+  Text-to-role conversion
+\item
+  Permission checking functions
+\end{itemize}
+
+Run tests with:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{stack}\NormalTok{ test}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Future Enhancements}\label{future-enhancements}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Dynamic Roles}: Create custom roles with specific permission
+  sets
+\item
+  \textbf{Permission Delegation}: Allow managers to delegate specific
+  permissions
+\item
+  \textbf{Audit Logging}: Track permission checks and changes
+\item
+  \textbf{Time-based Permissions}: Temporary permission escalation
+\item
+  \textbf{Resource-level Permissions}: Fine-grained access control per
+  resource
+\end{enumerate}
+
+\section{Security Considerations}\label{security-considerations}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Default Deny}: All permissions must be explicitly granted
+\item
+  \textbf{Role Validation}: Invalid roles default to the most
+  restrictive (Viewer)
+\item
+  \textbf{Token-based Verification}: Permissions are verified from JWT
+  tokens
+\item
+  \textbf{Permission Immutability}: Permissions are defined at compile
+  time
+\end{enumerate}
+
+\section{Configuration}\label{configuration}
+
+Role definitions are in \texttt{src/Surypus/RBAC.hs}. To modify
+permissions:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Update the \texttt{Permission} datatype
+\item
+  Add the permission to relevant \texttt{RolePermission} entries
+\item
+  Update endpoint documentation
+\item
+  Add corresponding tests
+\end{enumerate}
+
+\section{Support}\label{support}
+
+For questions or issues with the RBAC system, please: 1. Check the test
+suite in \texttt{test/RBACSpec.hs} 2. Review endpoint documentation
+comments in \texttt{src/Surypus/API/Server.hs} 3. Consult the RBAC
+module documentation in \texttt{src/Surypus/RBAC.hs}

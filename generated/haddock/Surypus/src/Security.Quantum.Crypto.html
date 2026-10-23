@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Security.Quantum.Crypto.html"><span class="hs-identifier">Security.Quantum.Crypto</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Security.Quantum.Crypto.html#PQCSignature"><span class="hs-identifier">PQCSignature</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Security.Quantum.Crypto.html#generateKeyPair"><span class="hs-identifier">generateKeyPair</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Security.Quantum.Crypto.html#signMessage"><span class="hs-identifier">signMessage</span></a></span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Security.Quantum.Crypto.html#verifySignature"><span class="hs-identifier">verifySignature</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Security.Quantum.Crypto.html#Algorithm"><span class="hs-identifier">Algorithm</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ByteString</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">BS</span></span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="annot"><span class="hs-comment">-- | Post-quantum signature algorithm</span></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">data</span><span> </span><span id="Algorithm"><span class="annot"><a href="Security.Quantum.Crypto.html#Algorithm"><span class="hs-identifier hs-var">Algorithm</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Kyber"><span class="annot"><a href="Security.Quantum.Crypto.html#Kyber"><span class="hs-identifier hs-var">Kyber</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Dilithium"><span class="annot"><a href="Security.Quantum.Crypto.html#Dilithium"><span class="hs-identifier hs-var">Dilithium</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Falcon"><span class="annot"><a href="Security.Quantum.Crypto.html#Falcon"><span class="hs-identifier hs-var">Falcon</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SPHINCS"><span class="annot"><a href="Security.Quantum.Crypto.html#SPHINCS"><span class="hs-identifier hs-var">SPHINCS</span></a></span></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680293660"><span id="local-6989586621680293665"><span class="annot"><span class="annottext">Algorithm -&gt; Algorithm -&gt; Bool
+(Algorithm -&gt; Algorithm -&gt; Bool)
+-&gt; (Algorithm -&gt; Algorithm -&gt; Bool) -&gt; Eq Algorithm
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Algorithm -&gt; Algorithm -&gt; Bool
+== :: Algorithm -&gt; Algorithm -&gt; Bool
+$c/= :: Algorithm -&gt; Algorithm -&gt; Bool
+/= :: Algorithm -&gt; Algorithm -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680293670"><span id="local-6989586621680293672"><span id="local-6989586621680293676"><span class="annot"><span class="annottext">Int -&gt; Algorithm -&gt; ShowS
+[Algorithm] -&gt; ShowS
+Algorithm -&gt; String
+(Int -&gt; Algorithm -&gt; ShowS)
+-&gt; (Algorithm -&gt; String)
+-&gt; ([Algorithm] -&gt; ShowS)
+-&gt; Show Algorithm
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Algorithm -&gt; ShowS
+showsPrec :: Int -&gt; Algorithm -&gt; ShowS
+$cshow :: Algorithm -&gt; String
+show :: Algorithm -&gt; String
+$cshowList :: [Algorithm] -&gt; ShowS
+showList :: [Algorithm] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="annot"><span class="hs-comment">-- | PQC signature container</span></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="PQCSignature"><span class="annot"><a href="Security.Quantum.Crypto.html#PQCSignature"><span class="hs-identifier hs-var">PQCSignature</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PQCSignature"><span class="annot"><a href="Security.Quantum.Crypto.html#PQCSignature"><span class="hs-identifier hs-var">PQCSignature</span></a></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="psAlgorithm"><span class="annot"><span class="annottext">PQCSignature -&gt; Algorithm
+</span><a href="Security.Quantum.Crypto.html#psAlgorithm"><span class="hs-identifier hs-var hs-var">psAlgorithm</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Security.Quantum.Crypto.html#Algorithm"><span class="hs-identifier hs-type">Algorithm</span></a></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="psSignature"><span class="annot"><span class="annottext">PQCSignature -&gt; ByteString
+</span><a href="Security.Quantum.Crypto.html#psSignature"><span class="hs-identifier hs-var hs-var">psSignature</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="psPublicKey"><span class="annot"><span class="annottext">PQCSignature -&gt; ByteString
+</span><a href="Security.Quantum.Crypto.html#psPublicKey"><span class="hs-identifier hs-var hs-var">psPublicKey</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680293685"><span id="local-6989586621680293691"><span class="annot"><span class="annottext">PQCSignature -&gt; PQCSignature -&gt; Bool
+(PQCSignature -&gt; PQCSignature -&gt; Bool)
+-&gt; (PQCSignature -&gt; PQCSignature -&gt; Bool) -&gt; Eq PQCSignature
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PQCSignature -&gt; PQCSignature -&gt; Bool
+== :: PQCSignature -&gt; PQCSignature -&gt; Bool
+$c/= :: PQCSignature -&gt; PQCSignature -&gt; Bool
+/= :: PQCSignature -&gt; PQCSignature -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680293695"><span id="local-6989586621680293703"><span id="local-6989586621680293707"><span class="annot"><span class="annottext">Int -&gt; PQCSignature -&gt; ShowS
+[PQCSignature] -&gt; ShowS
+PQCSignature -&gt; String
+(Int -&gt; PQCSignature -&gt; ShowS)
+-&gt; (PQCSignature -&gt; String)
+-&gt; ([PQCSignature] -&gt; ShowS)
+-&gt; Show PQCSignature
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PQCSignature -&gt; ShowS
+showsPrec :: Int -&gt; PQCSignature -&gt; ShowS
+$cshow :: PQCSignature -&gt; String
+show :: PQCSignature -&gt; String
+$cshowList :: [PQCSignature] -&gt; ShowS
+showList :: [PQCSignature] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="annot"><span class="hs-comment">-- | Generate a new PQC key pair</span></span><span>
+</span><span id="line-25"></span><span class="annot"><a href="Security.Quantum.Crypto.html#generateKeyPair"><span class="hs-identifier hs-type">generateKeyPair</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Security.Quantum.Crypto.html#Algorithm"><span class="hs-identifier hs-type">Algorithm</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span id="generateKeyPair"><span class="annot"><span class="annottext">generateKeyPair :: Algorithm -&gt; IO (ByteString, ByteString)
+</span><a href="Security.Quantum.Crypto.html#generateKeyPair"><span class="hs-identifier hs-var hs-var">generateKeyPair</span></a></span></span><span> </span><span class="annot"><span class="annottext">Algorithm
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-comment">-- Placeholder: would use actual PQC library</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680293711"><span class="annot"><span class="annottext">dummyKey :: ByteString
+</span><a href="#local-6989586621680293711"><span class="hs-identifier hs-var hs-var">dummyKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word8 -&gt; ByteString
+</span><span class="hs-identifier hs-var">BS.replicate</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">32</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="annot"><span class="annottext">(ByteString, ByteString) -&gt; IO (ByteString, ByteString)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680293711"><span class="hs-identifier hs-var">dummyKey</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680293711"><span class="hs-identifier hs-var">dummyKey</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="annot"><span class="hs-comment">-- | Sign a message with PQC</span></span><span>
+</span><span id="line-32"></span><span class="annot"><a href="Security.Quantum.Crypto.html#signMessage"><span class="hs-identifier hs-type">signMessage</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Security.Quantum.Crypto.html#Algorithm"><span class="hs-identifier hs-type">Algorithm</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="Security.Quantum.Crypto.html#PQCSignature"><span class="hs-identifier hs-type">PQCSignature</span></a></span><span>
+</span><span id="line-33"></span><span id="signMessage"><span class="annot"><span class="annottext">signMessage :: Algorithm -&gt; ByteString -&gt; ByteString -&gt; IO PQCSignature
+</span><a href="Security.Quantum.Crypto.html#signMessage"><span class="hs-identifier hs-var hs-var">signMessage</span></a></span></span><span> </span><span id="local-6989586621680293713"><span class="annot"><span class="annottext">Algorithm
+</span><a href="#local-6989586621680293713"><span class="hs-identifier hs-var">algo</span></a></span></span><span> </span><span id="local-6989586621680293714"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680293714"><span class="hs-identifier hs-var">privKey</span></a></span></span><span> </span><span id="local-6989586621680293715"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680293715"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-comment">-- Placeholder: would use actual signing</span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680293717"><span class="annot"><span class="annottext">sig :: ByteString
+</span><a href="#local-6989586621680293717"><span class="hs-identifier hs-var hs-var hs-var">sig</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word8 -&gt; ByteString
+</span><span class="hs-identifier hs-var">BS.replicate</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">64</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680293719"><span class="annot"><span class="annottext">pubKey :: ByteString
+</span><a href="#local-6989586621680293719"><span class="hs-identifier hs-var hs-var">pubKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word8 -&gt; ByteString
+</span><span class="hs-identifier hs-var">BS.replicate</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">32</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-37"></span><span>  </span><span class="annot"><span class="annottext">PQCSignature -&gt; IO PQCSignature
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(PQCSignature -&gt; IO PQCSignature)
+-&gt; PQCSignature -&gt; IO PQCSignature
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Algorithm -&gt; ByteString -&gt; ByteString -&gt; PQCSignature
+</span><a href="Security.Quantum.Crypto.html#PQCSignature"><span class="hs-identifier hs-var">PQCSignature</span></a></span><span> </span><span class="annot"><span class="annottext">Algorithm
+</span><a href="#local-6989586621680293713"><span class="hs-identifier hs-var">algo</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680293717"><span class="hs-identifier hs-var">sig</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680293719"><span class="hs-identifier hs-var">pubKey</span></a></span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="annot"><span class="hs-comment">-- | Verify PQC signature</span></span><span>
+</span><span id="line-40"></span><span class="annot"><a href="Security.Quantum.Crypto.html#verifySignature"><span class="hs-identifier hs-type">verifySignature</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Security.Quantum.Crypto.html#PQCSignature"><span class="hs-identifier hs-type">PQCSignature</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-41"></span><span id="verifySignature"><span class="annot"><span class="annottext">verifySignature :: PQCSignature -&gt; ByteString -&gt; Bool
+</span><a href="Security.Quantum.Crypto.html#verifySignature"><span class="hs-identifier hs-var hs-var">verifySignature</span></a></span></span><span> </span><span class="annot"><span class="annottext">PQCSignature
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Placeholder</span></pre></body></html>

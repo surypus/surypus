@@ -1,0 +1,261 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Payment module - Payments (corresponds to PaymentTbl in C&lt;&gt;)</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Commerce.Payment.html"><span class="hs-identifier">Commerce.Payment</span></a></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-8"></span><span class="hs-comment">-- PAYMENT TYPES</span><span>
+</span><span id="line-9"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="annot"><span class="hs-comment">-- | Non-negative amount</span></span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-comment">{-@ type NonNeg = {v:Double | v &gt;= 0} @-}</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="annot"><span class="hs-comment">-- | Payment - Payment record</span></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">data</span><span> </span><span id="Payment"><span class="annot"><a href="Commerce.Payment.html#Payment"><span class="hs-identifier hs-var">Payment</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Payment"><span class="annot"><a href="Commerce.Payment.html#Payment"><span class="hs-identifier hs-var">Payment</span></a></span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="payId"><span class="annot"><span class="annottext">Payment -&gt; Int64
+</span><a href="Commerce.Payment.html#payId"><span class="hs-identifier hs-var hs-var">payId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>    </span><span id="payBillId"><span class="annot"><span class="annottext">Payment -&gt; Int64
+</span><a href="Commerce.Payment.html#payBillId"><span class="hs-identifier hs-var hs-var">payBillId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Linked bill ID</span><span>
+</span><span id="line-19"></span><span>    </span><span id="payDate"><span class="annot"><span class="annottext">Payment -&gt; Day
+</span><a href="Commerce.Payment.html#payDate"><span class="hs-identifier hs-var hs-var">payDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span id="payAmount"><span class="annot"><span class="annottext">Payment -&gt; Double
+</span><a href="Commerce.Payment.html#payAmount"><span class="hs-identifier hs-var hs-var">payAmount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="payMethod"><span class="annot"><span class="annottext">Payment -&gt; PaymentMethod
+</span><a href="Commerce.Payment.html#payMethod"><span class="hs-identifier hs-var hs-var">payMethod</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Payment.html#PaymentMethod"><span class="hs-identifier hs-type">PaymentMethod</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="payStatus"><span class="annot"><span class="annottext">Payment -&gt; PaymentStatus
+</span><a href="Commerce.Payment.html#payStatus"><span class="hs-identifier hs-var hs-var">payStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Payment.html#PaymentStatus"><span class="hs-identifier hs-type">PaymentStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="payCardId"><span class="annot"><span class="annottext">Payment -&gt; Maybe Int64
+</span><a href="Commerce.Payment.html#payCardId"><span class="hs-identifier hs-var hs-var">payCardId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Card ID for card payments</span><span>
+</span><span id="line-24"></span><span>    </span><span id="payCashRegId"><span class="annot"><span class="annottext">Payment -&gt; Maybe Int64
+</span><a href="Commerce.Payment.html#payCashRegId"><span class="hs-identifier hs-var hs-var">payCashRegId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Cash register ID</span><span>
+</span><span id="line-25"></span><span>    </span><span id="payFlags"><span class="annot"><span class="annottext">Payment -&gt; Int
+</span><a href="Commerce.Payment.html#payFlags"><span class="hs-identifier hs-var hs-var">payFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680210051"><span id="local-6989586621680210071"><span id="local-6989586621680210075"><span class="annot"><span class="annottext">Int -&gt; Payment -&gt; ShowS
+[Payment] -&gt; ShowS
+Payment -&gt; String
+(Int -&gt; Payment -&gt; ShowS)
+-&gt; (Payment -&gt; String) -&gt; ([Payment] -&gt; ShowS) -&gt; Show Payment
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Payment -&gt; ShowS
+showsPrec :: Int -&gt; Payment -&gt; ShowS
+$cshow :: Payment -&gt; String
+show :: Payment -&gt; String
+$cshowList :: [Payment] -&gt; ShowS
+showList :: [Payment] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680210080"><span id="local-6989586621680210097"><span class="annot"><span class="annottext">Payment -&gt; Payment -&gt; Bool
+(Payment -&gt; Payment -&gt; Bool)
+-&gt; (Payment -&gt; Payment -&gt; Bool) -&gt; Eq Payment
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Payment -&gt; Payment -&gt; Bool
+== :: Payment -&gt; Payment -&gt; Bool
+$c/= :: Payment -&gt; Payment -&gt; Bool
+/= :: Payment -&gt; Payment -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="annot"><span class="hs-comment">-- | Payment method - corresponds to PPPAYMT_*</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="PaymentMethod"><span class="annot"><a href="Commerce.Payment.html#PaymentMethod"><span class="hs-identifier hs-var">PaymentMethod</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="PMCash"><span class="annot"><a href="Commerce.Payment.html#PMCash"><span class="hs-identifier hs-var">PMCash</span></a></span></span><span> </span><span class="hs-comment">-- Cash (&#1053;&#1072;&#1083;&#1080;&#1095;&#1085;&#1099;&#1077;)</span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PMCard"><span class="annot"><a href="Commerce.Payment.html#PMCard"><span class="hs-identifier hs-var">PMCard</span></a></span></span><span> </span><span class="hs-comment">-- Card (&#1050;&#1072;&#1088;&#1090;&#1072;)</span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PMTransfer"><span class="annot"><a href="Commerce.Payment.html#PMTransfer"><span class="hs-identifier hs-var">PMTransfer</span></a></span></span><span> </span><span class="hs-comment">-- Bank transfer (&#1041;&#1077;&#1079;&#1085;&#1072;&#1083;&#1080;&#1095;&#1085;&#1099;&#1077;)</span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PMBonus"><span class="annot"><a href="Commerce.Payment.html#PMBonus"><span class="hs-identifier hs-var">PMBonus</span></a></span></span><span> </span><span class="hs-comment">-- Bonus points (&#1041;&#1086;&#1085;&#1091;&#1089;&#1099;)</span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PMGiftCard"><span class="annot"><a href="Commerce.Payment.html#PMGiftCard"><span class="hs-identifier hs-var">PMGiftCard</span></a></span></span><span> </span><span class="hs-comment">-- Gift card (&#1055;&#1086;&#1076;&#1072;&#1088;&#1086;&#1095;&#1085;&#1072;&#1103; &#1082;&#1072;&#1088;&#1090;&#1072;)</span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PMCredit"><span class="annot"><a href="Commerce.Payment.html#PMCredit"><span class="hs-identifier hs-var">PMCredit</span></a></span></span><span> </span><span class="hs-comment">-- Credit (&#1050;&#1088;&#1077;&#1076;&#1080;&#1090;)</span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680210108"><span id="local-6989586621680210110"><span id="local-6989586621680210113"><span class="annot"><span class="annottext">Int -&gt; PaymentMethod -&gt; ShowS
+[PaymentMethod] -&gt; ShowS
+PaymentMethod -&gt; String
+(Int -&gt; PaymentMethod -&gt; ShowS)
+-&gt; (PaymentMethod -&gt; String)
+-&gt; ([PaymentMethod] -&gt; ShowS)
+-&gt; Show PaymentMethod
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PaymentMethod -&gt; ShowS
+showsPrec :: Int -&gt; PaymentMethod -&gt; ShowS
+$cshow :: PaymentMethod -&gt; String
+show :: PaymentMethod -&gt; String
+$cshowList :: [PaymentMethod] -&gt; ShowS
+showList :: [PaymentMethod] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680210116"><span id="local-6989586621680210121"><span class="annot"><span class="annottext">PaymentMethod -&gt; PaymentMethod -&gt; Bool
+(PaymentMethod -&gt; PaymentMethod -&gt; Bool)
+-&gt; (PaymentMethod -&gt; PaymentMethod -&gt; Bool) -&gt; Eq PaymentMethod
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PaymentMethod -&gt; PaymentMethod -&gt; Bool
+== :: PaymentMethod -&gt; PaymentMethod -&gt; Bool
+$c/= :: PaymentMethod -&gt; PaymentMethod -&gt; Bool
+/= :: PaymentMethod -&gt; PaymentMethod -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680210124"><span id="local-6989586621680210132"><span id="local-6989586621680210139"><span id="local-6989586621680210147"><span id="local-6989586621680210150"><span id="local-6989586621680210155"><span id="local-6989586621680210161"><span id="local-6989586621680210165"><span class="annot"><span class="annottext">Int -&gt; PaymentMethod
+PaymentMethod -&gt; Int
+PaymentMethod -&gt; [PaymentMethod]
+PaymentMethod -&gt; PaymentMethod
+PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+PaymentMethod -&gt; PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+(PaymentMethod -&gt; PaymentMethod)
+-&gt; (PaymentMethod -&gt; PaymentMethod)
+-&gt; (Int -&gt; PaymentMethod)
+-&gt; (PaymentMethod -&gt; Int)
+-&gt; (PaymentMethod -&gt; [PaymentMethod])
+-&gt; (PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod])
+-&gt; (PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod])
+-&gt; (PaymentMethod
+    -&gt; PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod])
+-&gt; Enum PaymentMethod
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: PaymentMethod -&gt; PaymentMethod
+succ :: PaymentMethod -&gt; PaymentMethod
+$cpred :: PaymentMethod -&gt; PaymentMethod
+pred :: PaymentMethod -&gt; PaymentMethod
+$ctoEnum :: Int -&gt; PaymentMethod
+toEnum :: Int -&gt; PaymentMethod
+$cfromEnum :: PaymentMethod -&gt; Int
+fromEnum :: PaymentMethod -&gt; Int
+$cenumFrom :: PaymentMethod -&gt; [PaymentMethod]
+enumFrom :: PaymentMethod -&gt; [PaymentMethod]
+$cenumFromThen :: PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+enumFromThen :: PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+$cenumFromTo :: PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+enumFromTo :: PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+$cenumFromThenTo :: PaymentMethod -&gt; PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+enumFromThenTo :: PaymentMethod -&gt; PaymentMethod -&gt; PaymentMethod -&gt; [PaymentMethod]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="annot"><span class="hs-comment">-- | Payment status</span></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">data</span><span> </span><span id="PaymentStatus"><span class="annot"><a href="Commerce.Payment.html#PaymentStatus"><span class="hs-identifier hs-var">PaymentStatus</span></a></span></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="PSPending"><span class="annot"><a href="Commerce.Payment.html#PSPending"><span class="hs-identifier hs-var">PSPending</span></a></span></span><span> </span><span class="hs-comment">-- Pending (&#1054;&#1078;&#1080;&#1076;&#1072;&#1085;&#1080;&#1077;)</span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PSCompleted"><span class="annot"><a href="Commerce.Payment.html#PSCompleted"><span class="hs-identifier hs-var">PSCompleted</span></a></span></span><span> </span><span class="hs-comment">-- Completed (&#1055;&#1088;&#1086;&#1074;&#1077;&#1076;&#1077;&#1085;)</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PSFailed"><span class="annot"><a href="Commerce.Payment.html#PSFailed"><span class="hs-identifier hs-var">PSFailed</span></a></span></span><span> </span><span class="hs-comment">-- Failed (&#1054;&#1096;&#1080;&#1073;&#1082;&#1072;)</span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PSRefunded"><span class="annot"><a href="Commerce.Payment.html#PSRefunded"><span class="hs-identifier hs-var">PSRefunded</span></a></span></span><span> </span><span class="hs-comment">-- Refunded (&#1042;&#1086;&#1079;&#1074;&#1088;&#1072;&#1097;&#1077;&#1085;)</span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PSCancelled"><span class="annot"><a href="Commerce.Payment.html#PSCancelled"><span class="hs-identifier hs-var">PSCancelled</span></a></span></span><span> </span><span class="hs-comment">-- Cancelled (&#1054;&#1090;&#1084;&#1077;&#1085;&#1077;&#1085;)</span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680210178"><span id="local-6989586621680210180"><span id="local-6989586621680210183"><span class="annot"><span class="annottext">Int -&gt; PaymentStatus -&gt; ShowS
+[PaymentStatus] -&gt; ShowS
+PaymentStatus -&gt; String
+(Int -&gt; PaymentStatus -&gt; ShowS)
+-&gt; (PaymentStatus -&gt; String)
+-&gt; ([PaymentStatus] -&gt; ShowS)
+-&gt; Show PaymentStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PaymentStatus -&gt; ShowS
+showsPrec :: Int -&gt; PaymentStatus -&gt; ShowS
+$cshow :: PaymentStatus -&gt; String
+show :: PaymentStatus -&gt; String
+$cshowList :: [PaymentStatus] -&gt; ShowS
+showList :: [PaymentStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680210186"><span id="local-6989586621680210190"><span class="annot"><span class="annottext">PaymentStatus -&gt; PaymentStatus -&gt; Bool
+(PaymentStatus -&gt; PaymentStatus -&gt; Bool)
+-&gt; (PaymentStatus -&gt; PaymentStatus -&gt; Bool) -&gt; Eq PaymentStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PaymentStatus -&gt; PaymentStatus -&gt; Bool
+== :: PaymentStatus -&gt; PaymentStatus -&gt; Bool
+$c/= :: PaymentStatus -&gt; PaymentStatus -&gt; Bool
+/= :: PaymentStatus -&gt; PaymentStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span class="annot"><span class="hs-comment">-- | Payment flags - corresponds to PAYMF_*</span></span><span>
+</span><span id="line-49"></span><span class="hs-keyword">data</span><span> </span><span id="PaymentFlags"><span class="annot"><a href="Commerce.Payment.html#PaymentFlags"><span class="hs-identifier hs-var">PaymentFlags</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PaymentFlags"><span class="annot"><a href="Commerce.Payment.html#PaymentFlags"><span class="hs-identifier hs-var">PaymentFlags</span></a></span></span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="pfRetrieved"><span class="annot"><span class="annottext">PaymentFlags -&gt; Bool
+</span><a href="Commerce.Payment.html#pfRetrieved"><span class="hs-identifier hs-var hs-var">pfRetrieved</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- PAYMF_RETRIEVED</span><span>
+</span><span id="line-51"></span><span>    </span><span id="pfOnline"><span class="annot"><span class="annottext">PaymentFlags -&gt; Bool
+</span><a href="Commerce.Payment.html#pfOnline"><span class="hs-identifier hs-var hs-var">pfOnline</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- PAYMF_ONLINE</span><span>
+</span><span id="line-52"></span><span>    </span><span id="pfPreauth"><span class="annot"><span class="annottext">PaymentFlags -&gt; Bool
+</span><a href="Commerce.Payment.html#pfPreauth"><span class="hs-identifier hs-var hs-var">pfPreauth</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-comment">-- PAYMF_PREAUTH (pre-authorization)</span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680210197"><span id="local-6989586621680210204"><span id="local-6989586621680210208"><span class="annot"><span class="annottext">Int -&gt; PaymentFlags -&gt; ShowS
+[PaymentFlags] -&gt; ShowS
+PaymentFlags -&gt; String
+(Int -&gt; PaymentFlags -&gt; ShowS)
+-&gt; (PaymentFlags -&gt; String)
+-&gt; ([PaymentFlags] -&gt; ShowS)
+-&gt; Show PaymentFlags
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PaymentFlags -&gt; ShowS
+showsPrec :: Int -&gt; PaymentFlags -&gt; ShowS
+$cshow :: PaymentFlags -&gt; String
+show :: PaymentFlags -&gt; String
+$cshowList :: [PaymentFlags] -&gt; ShowS
+showList :: [PaymentFlags] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680210211"><span id="local-6989586621680210217"><span class="annot"><span class="annottext">PaymentFlags -&gt; PaymentFlags -&gt; Bool
+(PaymentFlags -&gt; PaymentFlags -&gt; Bool)
+-&gt; (PaymentFlags -&gt; PaymentFlags -&gt; Bool) -&gt; Eq PaymentFlags
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PaymentFlags -&gt; PaymentFlags -&gt; Bool
+== :: PaymentFlags -&gt; PaymentFlags -&gt; Bool
+$c/= :: PaymentFlags -&gt; PaymentFlags -&gt; Bool
+/= :: PaymentFlags -&gt; PaymentFlags -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-57"></span><span class="hs-comment">-- PAYMENT FUNCTIONS</span><span>
+</span><span id="line-58"></span><span class="hs-comment">-- ============================================================================</span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="annot"><span class="hs-comment">-- | Check if payment is completed</span></span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span class="hs-comment">{-@ isCompleted :: Payment -&gt; Bool @-}</span><span>
+</span><span id="line-63"></span><span class="annot"><a href="Commerce.Payment.html#isCompleted"><span class="hs-identifier hs-type">isCompleted</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Payment.html#Payment"><span class="hs-identifier hs-type">Payment</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-64"></span><span id="isCompleted"><span class="annot"><span class="annottext">isCompleted :: Payment -&gt; Bool
+</span><a href="Commerce.Payment.html#isCompleted"><span class="hs-identifier hs-var hs-var">isCompleted</span></a></span></span><span> </span><span id="local-6989586621680210221"><span class="annot"><span class="annottext">Payment
+</span><a href="#local-6989586621680210221"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Payment -&gt; PaymentStatus
+</span><a href="Commerce.Payment.html#payStatus"><span class="hs-identifier hs-var">payStatus</span></a></span><span> </span><span class="annot"><span class="annottext">Payment
+</span><a href="#local-6989586621680210221"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">PaymentStatus -&gt; PaymentStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">PaymentStatus
+</span><a href="Commerce.Payment.html#PSCompleted"><span class="hs-identifier hs-var">PSCompleted</span></a></span><span>
+</span><span id="line-65"></span><span>
+</span><span id="line-66"></span><span class="hs-comment">-- | Check if payment can be refunded</span><span>
+</span><span id="line-67"></span><span class="hs-comment">-- = Invariant: can only refund completed positive payments</span><span>
+</span><span id="line-68"></span><span>
+</span><span id="line-69"></span><span class="hs-comment">{-@ canRefund :: Payment -&gt; Bool @-}</span><span>
+</span><span id="line-70"></span><span class="annot"><a href="Commerce.Payment.html#canRefund"><span class="hs-identifier hs-type">canRefund</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Payment.html#Payment"><span class="hs-identifier hs-type">Payment</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-71"></span><span id="canRefund"><span class="annot"><span class="annottext">canRefund :: Payment -&gt; Bool
+</span><a href="Commerce.Payment.html#canRefund"><span class="hs-identifier hs-var hs-var">canRefund</span></a></span></span><span> </span><span id="local-6989586621680210223"><span class="annot"><span class="annottext">Payment
+</span><a href="#local-6989586621680210223"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Payment -&gt; PaymentStatus
+</span><a href="Commerce.Payment.html#payStatus"><span class="hs-identifier hs-var">payStatus</span></a></span><span> </span><span class="annot"><span class="annottext">Payment
+</span><a href="#local-6989586621680210223"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">PaymentStatus -&gt; PaymentStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">PaymentStatus
+</span><a href="Commerce.Payment.html#PSCompleted"><span class="hs-identifier hs-var">PSCompleted</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Payment -&gt; Double
+</span><a href="Commerce.Payment.html#payAmount"><span class="hs-identifier hs-var">payAmount</span></a></span><span> </span><span class="annot"><span class="annottext">Payment
+</span><a href="#local-6989586621680210223"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="hs-comment">-- | Calculate payment amount (ensure non-negative)</span><span>
+</span><span id="line-74"></span><span class="hs-comment">-- = Invariant: result &gt;= 0</span><span>
+</span><span id="line-75"></span><span>
+</span><span id="line-76"></span><span class="hs-comment">{-@ calcPaymentAmount :: Double -&gt; NonNeg @-}</span><span>
+</span><span id="line-77"></span><span class="annot"><a href="Commerce.Payment.html#calcPaymentAmount"><span class="hs-identifier hs-type">calcPaymentAmount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-78"></span><span id="calcPaymentAmount"><span class="annot"><span class="annottext">calcPaymentAmount :: Double -&gt; Double
+</span><a href="Commerce.Payment.html#calcPaymentAmount"><span class="hs-identifier hs-var hs-var">calcPaymentAmount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">max</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span class="hs-comment">-- | Validate payment</span><span>
+</span><span id="line-81"></span><span class="hs-comment">-- = Invariant: amount must be positive</span><span>
+</span><span id="line-82"></span><span>
+</span><span id="line-83"></span><span class="hs-comment">{-@ validatePayment :: Payment -&gt; Bool @-}</span><span>
+</span><span id="line-84"></span><span class="annot"><a href="Commerce.Payment.html#validatePayment"><span class="hs-identifier hs-type">validatePayment</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Payment.html#Payment"><span class="hs-identifier hs-type">Payment</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-85"></span><span id="validatePayment"><span class="annot"><span class="annottext">validatePayment :: Payment -&gt; Bool
+</span><a href="Commerce.Payment.html#validatePayment"><span class="hs-identifier hs-var hs-var">validatePayment</span></a></span></span><span> </span><span id="local-6989586621680210229"><span class="annot"><span class="annottext">Payment
+</span><a href="#local-6989586621680210229"><span class="hs-identifier hs-var">p</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Payment -&gt; Double
+</span><a href="Commerce.Payment.html#payAmount"><span class="hs-identifier hs-var">payAmount</span></a></span><span> </span><span class="annot"><span class="annottext">Payment
+</span><a href="#local-6989586621680210229"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-86"></span></pre></body></html>

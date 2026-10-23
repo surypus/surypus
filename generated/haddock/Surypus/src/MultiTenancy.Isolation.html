@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="MultiTenancy.Isolation.html"><span class="hs-identifier">MultiTenancy.Isolation</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="MultiTenancy.Isolation.html#TenantContext"><span class="hs-identifier">TenantContext</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="MultiTenancy.Isolation.html#runDbWithTenant"><span class="hs-identifier">runDbWithTenant</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="MultiTenancy.Isolation.html#getTenantFromRequest"><span class="hs-identifier">getTenantFromRequest</span></a></span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="MultiTenancy.Isolation.html#checkTenantAccess"><span class="hs-identifier">checkTenantAccess</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.html"><span class="hs-identifier">Database.Persist.Sql</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#SqlPersistT"><span class="hs-identifier">SqlPersistT</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawExecute"><span class="hs-identifier">rawExecute</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistValue"><span class="hs-identifier">PersistValue</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-postgresql-2.14.3.0-c75b10320c6f8f59cbd6644ed24c4440802693869114296703324544f324ffff/share/doc/html/src/Database.Persist.Postgresql.html"><span class="hs-identifier">Database.Persist.Postgresql</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier">ConnectionPool</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.html"><span class="hs-identifier">Database.Persist.Sql</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier">runSqlPool</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">data</span><span> </span><span id="TenantContext"><span class="annot"><a href="MultiTenancy.Isolation.html#TenantContext"><span class="hs-identifier hs-var">TenantContext</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TenantContext"><span class="annot"><a href="MultiTenancy.Isolation.html#TenantContext"><span class="hs-identifier hs-var">TenantContext</span></a></span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tcTenantId"><span class="annot"><span class="annottext">TenantContext -&gt; Int64
+</span><a href="MultiTenancy.Isolation.html#tcTenantId"><span class="hs-identifier hs-var hs-var">tcTenantId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="tcSchemaName"><span class="annot"><span class="annottext">TenantContext -&gt; Text
+</span><a href="MultiTenancy.Isolation.html#tcSchemaName"><span class="hs-identifier hs-var hs-var">tcSchemaName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="tcUserId"><span class="annot"><span class="annottext">TenantContext -&gt; Int64
+</span><a href="MultiTenancy.Isolation.html#tcUserId"><span class="hs-identifier hs-var hs-var">tcUserId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680287440"><span id="local-6989586621680287447"><span class="annot"><span class="annottext">TenantContext -&gt; TenantContext -&gt; Bool
+(TenantContext -&gt; TenantContext -&gt; Bool)
+-&gt; (TenantContext -&gt; TenantContext -&gt; Bool) -&gt; Eq TenantContext
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TenantContext -&gt; TenantContext -&gt; Bool
+== :: TenantContext -&gt; TenantContext -&gt; Bool
+$c/= :: TenantContext -&gt; TenantContext -&gt; Bool
+/= :: TenantContext -&gt; TenantContext -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680287452"><span id="local-6989586621680287461"><span id="local-6989586621680287465"><span class="annot"><span class="annottext">Int -&gt; TenantContext -&gt; ShowS
+[TenantContext] -&gt; ShowS
+TenantContext -&gt; String
+(Int -&gt; TenantContext -&gt; ShowS)
+-&gt; (TenantContext -&gt; String)
+-&gt; ([TenantContext] -&gt; ShowS)
+-&gt; Show TenantContext
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TenantContext -&gt; ShowS
+showsPrec :: Int -&gt; TenantContext -&gt; ShowS
+$cshow :: TenantContext -&gt; String
+show :: TenantContext -&gt; String
+$cshowList :: [TenantContext] -&gt; ShowS
+showList :: [TenantContext] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="annot"><span class="hs-comment">-- | Run a database action scoped to a specific tenant.</span></span><span>
+</span><span id="line-23"></span><span id="local-6989586621680287400"><span class="annot"><a href="MultiTenancy.Isolation.html#runDbWithTenant"><span class="hs-identifier hs-type">runDbWithTenant</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="MultiTenancy.Isolation.html#TenantContext"><span class="hs-identifier hs-type">TenantContext</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#SqlPersistT"><span class="hs-identifier hs-type">SqlPersistT</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621680287400"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621680287400"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-24"></span><span id="runDbWithTenant"><span class="annot"><span class="annottext">runDbWithTenant :: forall a.
+TenantContext -&gt; ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="MultiTenancy.Isolation.html#runDbWithTenant"><span class="hs-identifier hs-var hs-var">runDbWithTenant</span></a></span></span><span> </span><span id="local-6989586621680287499"><span class="annot"><span class="annottext">TenantContext
+</span><a href="#local-6989586621680287499"><span class="hs-identifier hs-var">ctx</span></a></span></span><span> </span><span id="local-6989586621680287500"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680287500"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680287501"><span class="annot"><span class="annottext">SqlPersistT IO a
+</span><a href="#local-6989586621680287501"><span class="hs-identifier hs-var">action</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-25"></span><span>  </span><span class="annot"><span class="annottext">SqlPersistT IO a -&gt; ConnectionPool -&gt; IO a
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-keyword">do</span><span>
+</span><span id="line-26"></span><span>    </span><span class="annot"><span class="annottext">Text -&gt; [PersistValue] -&gt; ReaderT SqlBackend IO ()
+forall (m :: * -&gt; *) backend.
+(MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m ()
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawExecute"><span class="hs-identifier hs-var">rawExecute</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT set_config('app.tenant_id', ?, TRUE)&quot;</span></span><span>
+</span><span id="line-27"></span><span>      </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Text) -&gt; String -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">(Int64 -&gt; String) -&gt; Int64 -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TenantContext -&gt; Int64
+</span><a href="MultiTenancy.Isolation.html#tcTenantId"><span class="hs-identifier hs-var">tcTenantId</span></a></span><span> </span><span class="annot"><span class="annottext">TenantContext
+</span><a href="#local-6989586621680287499"><span class="hs-identifier hs-var">ctx</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-28"></span><span>    </span><span class="annot"><span class="annottext">Text -&gt; [PersistValue] -&gt; ReaderT SqlBackend IO ()
+forall (m :: * -&gt; *) backend.
+(MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m ()
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawExecute"><span class="hs-identifier hs-var">rawExecute</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT set_config('app.user_id', ?, TRUE)&quot;</span></span><span>
+</span><span id="line-29"></span><span>      </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistText"><span class="hs-identifier hs-var">PersistText</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Text) -&gt; String -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">(Int64 -&gt; String) -&gt; Int64 -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TenantContext -&gt; Int64
+</span><a href="MultiTenancy.Isolation.html#tcUserId"><span class="hs-identifier hs-var">tcUserId</span></a></span><span> </span><span class="annot"><span class="annottext">TenantContext
+</span><a href="#local-6989586621680287499"><span class="hs-identifier hs-var">ctx</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-30"></span><span>    </span><span id="local-6989586621680287505"><span class="annot"><a href="#local-6989586621680287505"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">SqlPersistT IO a
+</span><a href="#local-6989586621680287501"><span class="hs-identifier hs-var">action</span></a></span><span>
+</span><span id="line-31"></span><span>    </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawExecute"><span class="hs-identifier hs-type">rawExecute</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;SELECT set_config('app.tenant_id', '', TRUE)&quot;</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-32"></span><span>    </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawExecute"><span class="hs-identifier hs-type">rawExecute</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;SELECT set_config('app.user_id', '', TRUE)&quot;</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-33"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="annot"><a href="#local-6989586621680287505"><span class="hs-identifier hs-type">result</span></a></span><span>
+</span><span id="line-34"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680287500"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="annot"><a href="MultiTenancy.Isolation.html#getTenantFromRequest"><span class="hs-identifier hs-type">getTenantFromRequest</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="MultiTenancy.Isolation.html#TenantContext"><span class="hs-identifier hs-type">TenantContext</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span id="getTenantFromRequest"><span class="annot"><span class="annottext">getTenantFromRequest :: Text -&gt; IO (Maybe TenantContext)
+</span><a href="MultiTenancy.Isolation.html#getTenantFromRequest"><span class="hs-identifier hs-var hs-var">getTenantFromRequest</span></a></span></span><span> </span><span id="local-6989586621680287506"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680287506"><span class="hs-identifier hs-var">apiKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-38"></span><span>  </span><span class="annot"><span class="annottext">Maybe TenantContext -&gt; IO (Maybe TenantContext)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Maybe TenantContext
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="annot"><a href="MultiTenancy.Isolation.html#checkTenantAccess"><span class="hs-identifier hs-type">checkTenantAccess</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="MultiTenancy.Isolation.html#TenantContext"><span class="hs-identifier hs-type">TenantContext</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-41"></span><span id="checkTenantAccess"><span class="annot"><span class="annottext">checkTenantAccess :: TenantContext -&gt; Text -&gt; Int -&gt; IO Bool
+</span><a href="MultiTenancy.Isolation.html#checkTenantAccess"><span class="hs-identifier hs-var hs-var">checkTenantAccess</span></a></span></span><span> </span><span id="local-6989586621680287507"><span class="annot"><span class="annottext">TenantContext
+</span><a href="#local-6989586621680287507"><span class="hs-identifier hs-var">ctx</span></a></span></span><span> </span><span id="local-6989586621680287508"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680287508"><span class="hs-identifier hs-var">resourceType</span></a></span></span><span> </span><span id="local-6989586621680287509"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680287509"><span class="hs-identifier hs-var">resourceId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-42"></span><span>  </span><span class="annot"><span class="annottext">Bool -&gt; IO Bool
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-43"></span></pre></body></html>

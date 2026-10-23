@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | EGAIS module - Russian alcohol tracking system</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="External.EGAIS.html"><span class="hs-identifier">External.EGAIS</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="annot"><span class="hs-comment">-- | Fix: ET_ prefix is reserved</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">data</span><span> </span><span id="EgaisType2"><span class="annot"><a href="External.EGAIS.html#EgaisType2"><span class="hs-identifier hs-var">EgaisType2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Waybill2"><span class="annot"><a href="External.EGAIS.html#Waybill2"><span class="hs-identifier hs-var">Waybill2</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ActWriteOff2"><span class="annot"><a href="External.EGAIS.html#ActWriteOff2"><span class="hs-identifier hs-var">ActWriteOff2</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ActTurnover2"><span class="annot"><a href="External.EGAIS.html#ActTurnover2"><span class="hs-identifier hs-var">ActTurnover2</span></a></span></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680244918"><span id="local-6989586621680244920"><span id="local-6989586621680244924"><span class="annot"><span class="annottext">Int -&gt; EgaisType2 -&gt; ShowS
+[EgaisType2] -&gt; ShowS
+EgaisType2 -&gt; String
+(Int -&gt; EgaisType2 -&gt; ShowS)
+-&gt; (EgaisType2 -&gt; String)
+-&gt; ([EgaisType2] -&gt; ShowS)
+-&gt; Show EgaisType2
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; EgaisType2 -&gt; ShowS
+showsPrec :: Int -&gt; EgaisType2 -&gt; ShowS
+$cshow :: EgaisType2 -&gt; String
+show :: EgaisType2 -&gt; String
+$cshowList :: [EgaisType2] -&gt; ShowS
+showList :: [EgaisType2] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680244929"><span id="local-6989586621680244934"><span class="annot"><span class="annottext">EgaisType2 -&gt; EgaisType2 -&gt; Bool
+(EgaisType2 -&gt; EgaisType2 -&gt; Bool)
+-&gt; (EgaisType2 -&gt; EgaisType2 -&gt; Bool) -&gt; Eq EgaisType2
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: EgaisType2 -&gt; EgaisType2 -&gt; Bool
+== :: EgaisType2 -&gt; EgaisType2 -&gt; Bool
+$c/= :: EgaisType2 -&gt; EgaisType2 -&gt; Bool
+/= :: EgaisType2 -&gt; EgaisType2 -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="annot"><span class="hs-comment">-- | EGAIS shipment</span></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">data</span><span> </span><span id="EgaisShipment"><span class="annot"><a href="External.EGAIS.html#EgaisShipment"><span class="hs-identifier hs-var">EgaisShipment</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="EgaisShipment"><span class="annot"><a href="External.EGAIS.html#EgaisShipment"><span class="hs-identifier hs-var">EgaisShipment</span></a></span></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="esId"><span class="annot"><span class="annottext">EgaisShipment -&gt; Int64
+</span><a href="External.EGAIS.html#esId"><span class="hs-identifier hs-var hs-var">esId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="esBillId"><span class="annot"><span class="annottext">EgaisShipment -&gt; Int64
+</span><a href="External.EGAIS.html#esBillId"><span class="hs-identifier hs-var hs-var">esBillId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span id="esOrgId"><span class="annot"><span class="annottext">EgaisShipment -&gt; Int64
+</span><a href="External.EGAIS.html#esOrgId"><span class="hs-identifier hs-var hs-var">esOrgId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>    </span><span id="esDate"><span class="annot"><span class="annottext">EgaisShipment -&gt; Day
+</span><a href="External.EGAIS.html#esDate"><span class="hs-identifier hs-var hs-var">esDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>    </span><span id="esType"><span class="annot"><span class="annottext">EgaisShipment -&gt; EgaisType2
+</span><a href="External.EGAIS.html#esType"><span class="hs-identifier hs-var hs-var">esType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="External.EGAIS.html#EgaisType2"><span class="hs-identifier hs-type">EgaisType2</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span id="esStatus"><span class="annot"><span class="annottext">EgaisShipment -&gt; EgaisStatus
+</span><a href="External.EGAIS.html#esStatus"><span class="hs-identifier hs-var hs-var">esStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="External.EGAIS.html#EgaisStatus"><span class="hs-identifier hs-type">EgaisStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span id="esReplyId"><span class="annot"><span class="annottext">EgaisShipment -&gt; Maybe Text
+</span><a href="External.EGAIS.html#esReplyId"><span class="hs-identifier hs-var hs-var">esReplyId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680244947"><span id="local-6989586621680244963"><span id="local-6989586621680244967"><span class="annot"><span class="annottext">Int -&gt; EgaisShipment -&gt; ShowS
+[EgaisShipment] -&gt; ShowS
+EgaisShipment -&gt; String
+(Int -&gt; EgaisShipment -&gt; ShowS)
+-&gt; (EgaisShipment -&gt; String)
+-&gt; ([EgaisShipment] -&gt; ShowS)
+-&gt; Show EgaisShipment
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; EgaisShipment -&gt; ShowS
+showsPrec :: Int -&gt; EgaisShipment -&gt; ShowS
+$cshow :: EgaisShipment -&gt; String
+show :: EgaisShipment -&gt; String
+$cshowList :: [EgaisShipment] -&gt; ShowS
+showList :: [EgaisShipment] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680244971"><span id="local-6989586621680244984"><span class="annot"><span class="annottext">EgaisShipment -&gt; EgaisShipment -&gt; Bool
+(EgaisShipment -&gt; EgaisShipment -&gt; Bool)
+-&gt; (EgaisShipment -&gt; EgaisShipment -&gt; Bool) -&gt; Eq EgaisShipment
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: EgaisShipment -&gt; EgaisShipment -&gt; Bool
+== :: EgaisShipment -&gt; EgaisShipment -&gt; Bool
+$c/= :: EgaisShipment -&gt; EgaisShipment -&gt; Bool
+/= :: EgaisShipment -&gt; EgaisShipment -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">data</span><span> </span><span id="EgaisType"><span class="annot"><a href="External.EGAIS.html#EgaisType"><span class="hs-identifier hs-var">EgaisType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ETWaybill"><span class="annot"><a href="External.EGAIS.html#ETWaybill"><span class="hs-identifier hs-var">ETWaybill</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ETActWriteOff"><span class="annot"><a href="External.EGAIS.html#ETActWriteOff"><span class="hs-identifier hs-var">ETActWriteOff</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ETActTurnover"><span class="annot"><a href="External.EGAIS.html#ETActTurnover"><span class="hs-identifier hs-var">ETActTurnover</span></a></span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680244992"><span id="local-6989586621680244994"><span id="local-6989586621680244998"><span class="annot"><span class="annottext">Int -&gt; EgaisType -&gt; ShowS
+[EgaisType] -&gt; ShowS
+EgaisType -&gt; String
+(Int -&gt; EgaisType -&gt; ShowS)
+-&gt; (EgaisType -&gt; String)
+-&gt; ([EgaisType] -&gt; ShowS)
+-&gt; Show EgaisType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; EgaisType -&gt; ShowS
+showsPrec :: Int -&gt; EgaisType -&gt; ShowS
+$cshow :: EgaisType -&gt; String
+show :: EgaisType -&gt; String
+$cshowList :: [EgaisType] -&gt; ShowS
+showList :: [EgaisType] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680245001"><span id="local-6989586621680245005"><span class="annot"><span class="annottext">EgaisType -&gt; EgaisType -&gt; Bool
+(EgaisType -&gt; EgaisType -&gt; Bool)
+-&gt; (EgaisType -&gt; EgaisType -&gt; Bool) -&gt; Eq EgaisType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: EgaisType -&gt; EgaisType -&gt; Bool
+== :: EgaisType -&gt; EgaisType -&gt; Bool
+$c/= :: EgaisType -&gt; EgaisType -&gt; Bool
+/= :: EgaisType -&gt; EgaisType -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">data</span><span> </span><span id="EgaisStatus"><span class="annot"><a href="External.EGAIS.html#EgaisStatus"><span class="hs-identifier hs-var">EgaisStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ESPending"><span class="annot"><a href="External.EGAIS.html#ESPending"><span class="hs-identifier hs-var">ESPending</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ESSent"><span class="annot"><a href="External.EGAIS.html#ESSent"><span class="hs-identifier hs-var">ESSent</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ESAccepted"><span class="annot"><a href="External.EGAIS.html#ESAccepted"><span class="hs-identifier hs-var">ESAccepted</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ESRejected"><span class="annot"><a href="External.EGAIS.html#ESRejected"><span class="hs-identifier hs-var">ESRejected</span></a></span></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680245013"><span id="local-6989586621680245015"><span id="local-6989586621680245018"><span class="annot"><span class="annottext">Int -&gt; EgaisStatus -&gt; ShowS
+[EgaisStatus] -&gt; ShowS
+EgaisStatus -&gt; String
+(Int -&gt; EgaisStatus -&gt; ShowS)
+-&gt; (EgaisStatus -&gt; String)
+-&gt; ([EgaisStatus] -&gt; ShowS)
+-&gt; Show EgaisStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; EgaisStatus -&gt; ShowS
+showsPrec :: Int -&gt; EgaisStatus -&gt; ShowS
+$cshow :: EgaisStatus -&gt; String
+show :: EgaisStatus -&gt; String
+$cshowList :: [EgaisStatus] -&gt; ShowS
+showList :: [EgaisStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680245021"><span id="local-6989586621680245025"><span class="annot"><span class="annottext">EgaisStatus -&gt; EgaisStatus -&gt; Bool
+(EgaisStatus -&gt; EgaisStatus -&gt; Bool)
+-&gt; (EgaisStatus -&gt; EgaisStatus -&gt; Bool) -&gt; Eq EgaisStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: EgaisStatus -&gt; EgaisStatus -&gt; Bool
+== :: EgaisStatus -&gt; EgaisStatus -&gt; Bool
+$c/= :: EgaisStatus -&gt; EgaisStatus -&gt; Bool
+/= :: EgaisStatus -&gt; EgaisStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="annot"><span class="hs-comment">-- | EGAIS product info</span></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">data</span><span> </span><span id="EgaisProduct"><span class="annot"><a href="External.EGAIS.html#EgaisProduct"><span class="hs-identifier hs-var">EgaisProduct</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="EgaisProduct"><span class="annot"><a href="External.EGAIS.html#EgaisProduct"><span class="hs-identifier hs-var">EgaisProduct</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="epId"><span class="annot"><span class="annottext">EgaisProduct -&gt; Int64
+</span><a href="External.EGAIS.html#epId"><span class="hs-identifier hs-var hs-var">epId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-33"></span><span>    </span><span id="epAlcCode"><span class="annot"><span class="annottext">EgaisProduct -&gt; Text
+</span><a href="External.EGAIS.html#epAlcCode"><span class="hs-identifier hs-var hs-var">epAlcCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Alcohol code</span><span>
+</span><span id="line-34"></span><span>    </span><span id="epName"><span class="annot"><span class="annottext">EgaisProduct -&gt; Text
+</span><a href="External.EGAIS.html#epName"><span class="hs-identifier hs-var hs-var">epName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>    </span><span id="epVolume"><span class="annot"><span class="annottext">EgaisProduct -&gt; Double
+</span><a href="External.EGAIS.html#epVolume"><span class="hs-identifier hs-var hs-var">epVolume</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-36"></span><span>    </span><span id="epStrength"><span class="annot"><span class="annottext">EgaisProduct -&gt; Double
+</span><a href="External.EGAIS.html#epStrength"><span class="hs-identifier hs-var hs-var">epStrength</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-37"></span><span>    </span><span id="epProducerId"><span class="annot"><span class="annottext">EgaisProduct -&gt; Int64
+</span><a href="External.EGAIS.html#epProducerId"><span class="hs-identifier hs-var hs-var">epProducerId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680245035"><span id="local-6989586621680245045"><span id="local-6989586621680245049"><span class="annot"><span class="annottext">Int -&gt; EgaisProduct -&gt; ShowS
+[EgaisProduct] -&gt; ShowS
+EgaisProduct -&gt; String
+(Int -&gt; EgaisProduct -&gt; ShowS)
+-&gt; (EgaisProduct -&gt; String)
+-&gt; ([EgaisProduct] -&gt; ShowS)
+-&gt; Show EgaisProduct
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; EgaisProduct -&gt; ShowS
+showsPrec :: Int -&gt; EgaisProduct -&gt; ShowS
+$cshow :: EgaisProduct -&gt; String
+show :: EgaisProduct -&gt; String
+$cshowList :: [EgaisProduct] -&gt; ShowS
+showList :: [EgaisProduct] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680245052"><span id="local-6989586621680245061"><span class="annot"><span class="annottext">EgaisProduct -&gt; EgaisProduct -&gt; Bool
+(EgaisProduct -&gt; EgaisProduct -&gt; Bool)
+-&gt; (EgaisProduct -&gt; EgaisProduct -&gt; Bool) -&gt; Eq EgaisProduct
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: EgaisProduct -&gt; EgaisProduct -&gt; Bool
+== :: EgaisProduct -&gt; EgaisProduct -&gt; Bool
+$c/= :: EgaisProduct -&gt; EgaisProduct -&gt; Bool
+/= :: EgaisProduct -&gt; EgaisProduct -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="annot"><span class="hs-comment">-- | Validate EGAIS waybill</span></span><span>
+</span><span id="line-42"></span><span class="annot"><a href="External.EGAIS.html#validateEgaisShipment"><span class="hs-identifier hs-type">validateEgaisShipment</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="External.EGAIS.html#EgaisShipment"><span class="hs-identifier hs-type">EgaisShipment</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-43"></span><span id="validateEgaisShipment"><span class="annot"><span class="annottext">validateEgaisShipment :: EgaisShipment -&gt; Bool
+</span><a href="External.EGAIS.html#validateEgaisShipment"><span class="hs-identifier hs-var hs-var">validateEgaisShipment</span></a></span></span><span> </span><span id="local-6989586621680245065"><span class="annot"><span class="annottext">EgaisShipment
+</span><a href="#local-6989586621680245065"><span class="hs-identifier hs-var">es</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">EgaisShipment -&gt; EgaisStatus
+</span><a href="External.EGAIS.html#esStatus"><span class="hs-identifier hs-var">esStatus</span></a></span><span> </span><span class="annot"><span class="annottext">EgaisShipment
+</span><a href="#local-6989586621680245065"><span class="hs-identifier hs-var">es</span></a></span><span> </span><span class="annot"><span class="annottext">EgaisStatus -&gt; EgaisStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">EgaisStatus
+</span><a href="External.EGAIS.html#ESRejected"><span class="hs-identifier hs-var">ESRejected</span></a></span><span>
+</span><span id="line-44"></span></pre></body></html>

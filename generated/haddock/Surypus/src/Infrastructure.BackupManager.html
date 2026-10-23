@@ -1,0 +1,434 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html"><span class="hs-identifier">Infrastructure.BackupManager</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Concurrent.STM</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">TVar</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">atomically</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">newTVarIO</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">readTVar</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">writeTVar</span></span><span class="hs-special">)</span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time.Clock</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">getCurrentTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">addUTCTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Concurrent.STM</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">readTVarIO</span></span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.Directory</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">createDirectoryIfMissing</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">doesDirectoryExist</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">getDirectoryContents</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">removePathForcibly</span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.FilePath</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-operator">(&lt;/&gt;)</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="annot"><span class="hs-comment">-- | Backup configuration</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">data</span><span> </span><span id="BackupConfig"><span class="annot"><a href="Infrastructure.BackupManager.html#BackupConfig"><span class="hs-identifier hs-var">BackupConfig</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BackupConfig"><span class="annot"><a href="Infrastructure.BackupManager.html#BackupConfig"><span class="hs-identifier hs-var">BackupConfig</span></a></span></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="backupSource"><span class="annot"><span class="annottext">BackupConfig -&gt; FilePath
+</span><a href="Infrastructure.BackupManager.html#backupSource"><span class="hs-identifier hs-var hs-var">backupSource</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="backupDestination"><span class="annot"><span class="annottext">BackupConfig -&gt; FilePath
+</span><a href="Infrastructure.BackupManager.html#backupDestination"><span class="hs-identifier hs-var hs-var">backupDestination</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="backupSchedule"><span class="annot"><span class="annottext">BackupConfig -&gt; BackupSchedule
+</span><a href="Infrastructure.BackupManager.html#backupSchedule"><span class="hs-identifier hs-var hs-var">backupSchedule</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#BackupSchedule"><span class="hs-identifier hs-type">BackupSchedule</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span id="backupRetentionDays"><span class="annot"><span class="annottext">BackupConfig -&gt; Int
+</span><a href="Infrastructure.BackupManager.html#backupRetentionDays"><span class="hs-identifier hs-var hs-var">backupRetentionDays</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>    </span><span id="backupCompression"><span class="annot"><span class="annottext">BackupConfig -&gt; Bool
+</span><a href="Infrastructure.BackupManager.html#backupCompression"><span class="hs-identifier hs-var hs-var">backupCompression</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="annot"><span class="hs-comment">-- | Backup schedule</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="BackupSchedule"><span class="annot"><a href="Infrastructure.BackupManager.html#BackupSchedule"><span class="hs-identifier hs-var">BackupSchedule</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Hourly"><span class="annot"><a href="Infrastructure.BackupManager.html#Hourly"><span class="hs-identifier hs-var">Hourly</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Daily"><span class="annot"><a href="Infrastructure.BackupManager.html#Daily"><span class="hs-identifier hs-var">Daily</span></a></span></span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#TimeOfDay"><span class="hs-identifier hs-type">TimeOfDay</span></a></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Weekly"><span class="annot"><a href="Infrastructure.BackupManager.html#Weekly"><span class="hs-identifier hs-var">Weekly</span></a></span></span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#DayOfWeek"><span class="hs-identifier hs-type">DayOfWeek</span></a></span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#TimeOfDay"><span class="hs-identifier hs-type">TimeOfDay</span></a></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Monthly"><span class="annot"><a href="Infrastructure.BackupManager.html#Monthly"><span class="hs-identifier hs-var">Monthly</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#TimeOfDay"><span class="hs-identifier hs-type">TimeOfDay</span></a></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680264724"><span id="local-6989586621680264740"><span id="local-6989586621680264744"><span class="annot"><span class="annottext">Int -&gt; BackupSchedule -&gt; ShowS
+[BackupSchedule] -&gt; ShowS
+BackupSchedule -&gt; FilePath
+(Int -&gt; BackupSchedule -&gt; ShowS)
+-&gt; (BackupSchedule -&gt; FilePath)
+-&gt; ([BackupSchedule] -&gt; ShowS)
+-&gt; Show BackupSchedule
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; FilePath) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BackupSchedule -&gt; ShowS
+showsPrec :: Int -&gt; BackupSchedule -&gt; ShowS
+$cshow :: BackupSchedule -&gt; FilePath
+show :: BackupSchedule -&gt; FilePath
+$cshowList :: [BackupSchedule] -&gt; ShowS
+showList :: [BackupSchedule] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264749"><span id="local-6989586621680264763"><span class="annot"><span class="annottext">BackupSchedule -&gt; BackupSchedule -&gt; Bool
+(BackupSchedule -&gt; BackupSchedule -&gt; Bool)
+-&gt; (BackupSchedule -&gt; BackupSchedule -&gt; Bool) -&gt; Eq BackupSchedule
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BackupSchedule -&gt; BackupSchedule -&gt; Bool
+== :: BackupSchedule -&gt; BackupSchedule -&gt; Bool
+$c/= :: BackupSchedule -&gt; BackupSchedule -&gt; Bool
+/= :: BackupSchedule -&gt; BackupSchedule -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="annot"><span class="hs-comment">-- | Day of week</span></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">data</span><span> </span><span id="DayOfWeek"><span class="annot"><a href="Infrastructure.BackupManager.html#DayOfWeek"><span class="hs-identifier hs-var">DayOfWeek</span></a></span></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Monday"><span class="annot"><a href="Infrastructure.BackupManager.html#Monday"><span class="hs-identifier hs-var">Monday</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Tuesday"><span class="annot"><a href="Infrastructure.BackupManager.html#Tuesday"><span class="hs-identifier hs-var">Tuesday</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Wednesday"><span class="annot"><a href="Infrastructure.BackupManager.html#Wednesday"><span class="hs-identifier hs-var">Wednesday</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Thursday"><span class="annot"><a href="Infrastructure.BackupManager.html#Thursday"><span class="hs-identifier hs-var">Thursday</span></a></span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Friday"><span class="annot"><a href="Infrastructure.BackupManager.html#Friday"><span class="hs-identifier hs-var">Friday</span></a></span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Saturday"><span class="annot"><a href="Infrastructure.BackupManager.html#Saturday"><span class="hs-identifier hs-var">Saturday</span></a></span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Sunday"><span class="annot"><a href="Infrastructure.BackupManager.html#Sunday"><span class="hs-identifier hs-var">Sunday</span></a></span></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680264775"><span id="local-6989586621680264777"><span id="local-6989586621680264780"><span class="annot"><span class="annottext">Int -&gt; DayOfWeek -&gt; ShowS
+[DayOfWeek] -&gt; ShowS
+DayOfWeek -&gt; FilePath
+(Int -&gt; DayOfWeek -&gt; ShowS)
+-&gt; (DayOfWeek -&gt; FilePath)
+-&gt; ([DayOfWeek] -&gt; ShowS)
+-&gt; Show DayOfWeek
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; FilePath) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DayOfWeek -&gt; ShowS
+showsPrec :: Int -&gt; DayOfWeek -&gt; ShowS
+$cshow :: DayOfWeek -&gt; FilePath
+show :: DayOfWeek -&gt; FilePath
+$cshowList :: [DayOfWeek] -&gt; ShowS
+showList :: [DayOfWeek] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264783"><span id="local-6989586621680264787"><span class="annot"><span class="annottext">DayOfWeek -&gt; DayOfWeek -&gt; Bool
+(DayOfWeek -&gt; DayOfWeek -&gt; Bool)
+-&gt; (DayOfWeek -&gt; DayOfWeek -&gt; Bool) -&gt; Eq DayOfWeek
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: DayOfWeek -&gt; DayOfWeek -&gt; Bool
+== :: DayOfWeek -&gt; DayOfWeek -&gt; Bool
+$c/= :: DayOfWeek -&gt; DayOfWeek -&gt; Bool
+/= :: DayOfWeek -&gt; DayOfWeek -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264792"><span id="local-6989586621680264796"><span id="local-6989586621680264800"><span id="local-6989586621680264804"><span id="local-6989586621680264807"><span id="local-6989586621680264810"><span id="local-6989586621680264813"><span class="annot"><span class="annottext">Eq DayOfWeek
+Eq DayOfWeek =&gt;
+(DayOfWeek -&gt; DayOfWeek -&gt; Ordering)
+-&gt; (DayOfWeek -&gt; DayOfWeek -&gt; Bool)
+-&gt; (DayOfWeek -&gt; DayOfWeek -&gt; Bool)
+-&gt; (DayOfWeek -&gt; DayOfWeek -&gt; Bool)
+-&gt; (DayOfWeek -&gt; DayOfWeek -&gt; Bool)
+-&gt; (DayOfWeek -&gt; DayOfWeek -&gt; DayOfWeek)
+-&gt; (DayOfWeek -&gt; DayOfWeek -&gt; DayOfWeek)
+-&gt; Ord DayOfWeek
+DayOfWeek -&gt; DayOfWeek -&gt; Bool
+DayOfWeek -&gt; DayOfWeek -&gt; Ordering
+DayOfWeek -&gt; DayOfWeek -&gt; DayOfWeek
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: DayOfWeek -&gt; DayOfWeek -&gt; Ordering
+compare :: DayOfWeek -&gt; DayOfWeek -&gt; Ordering
+$c&lt; :: DayOfWeek -&gt; DayOfWeek -&gt; Bool
+&lt; :: DayOfWeek -&gt; DayOfWeek -&gt; Bool
+$c&lt;= :: DayOfWeek -&gt; DayOfWeek -&gt; Bool
+&lt;= :: DayOfWeek -&gt; DayOfWeek -&gt; Bool
+$c&gt; :: DayOfWeek -&gt; DayOfWeek -&gt; Bool
+&gt; :: DayOfWeek -&gt; DayOfWeek -&gt; Bool
+$c&gt;= :: DayOfWeek -&gt; DayOfWeek -&gt; Bool
+&gt;= :: DayOfWeek -&gt; DayOfWeek -&gt; Bool
+$cmax :: DayOfWeek -&gt; DayOfWeek -&gt; DayOfWeek
+max :: DayOfWeek -&gt; DayOfWeek -&gt; DayOfWeek
+$cmin :: DayOfWeek -&gt; DayOfWeek -&gt; DayOfWeek
+min :: DayOfWeek -&gt; DayOfWeek -&gt; DayOfWeek
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="annot"><span class="hs-comment">-- | Time of day</span></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">data</span><span> </span><span id="TimeOfDay"><span class="annot"><a href="Infrastructure.BackupManager.html#TimeOfDay"><span class="hs-identifier hs-var">TimeOfDay</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TimeOfDay"><span class="annot"><a href="Infrastructure.BackupManager.html#TimeOfDay"><span class="hs-identifier hs-var">TimeOfDay</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680264822"><span id="local-6989586621680264828"><span id="local-6989586621680264831"><span class="annot"><span class="annottext">Int -&gt; TimeOfDay -&gt; ShowS
+[TimeOfDay] -&gt; ShowS
+TimeOfDay -&gt; FilePath
+(Int -&gt; TimeOfDay -&gt; ShowS)
+-&gt; (TimeOfDay -&gt; FilePath)
+-&gt; ([TimeOfDay] -&gt; ShowS)
+-&gt; Show TimeOfDay
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; FilePath) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TimeOfDay -&gt; ShowS
+showsPrec :: Int -&gt; TimeOfDay -&gt; ShowS
+$cshow :: TimeOfDay -&gt; FilePath
+show :: TimeOfDay -&gt; FilePath
+$cshowList :: [TimeOfDay] -&gt; ShowS
+showList :: [TimeOfDay] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264834"><span id="local-6989586621680264839"><span class="annot"><span class="annottext">TimeOfDay -&gt; TimeOfDay -&gt; Bool
+(TimeOfDay -&gt; TimeOfDay -&gt; Bool)
+-&gt; (TimeOfDay -&gt; TimeOfDay -&gt; Bool) -&gt; Eq TimeOfDay
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TimeOfDay -&gt; TimeOfDay -&gt; Bool
+== :: TimeOfDay -&gt; TimeOfDay -&gt; Bool
+$c/= :: TimeOfDay -&gt; TimeOfDay -&gt; Bool
+/= :: TimeOfDay -&gt; TimeOfDay -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264844"><span id="local-6989586621680264849"><span id="local-6989586621680264854"><span id="local-6989586621680264858"><span id="local-6989586621680264861"><span id="local-6989586621680264864"><span id="local-6989586621680264867"><span class="annot"><span class="annottext">Eq TimeOfDay
+Eq TimeOfDay =&gt;
+(TimeOfDay -&gt; TimeOfDay -&gt; Ordering)
+-&gt; (TimeOfDay -&gt; TimeOfDay -&gt; Bool)
+-&gt; (TimeOfDay -&gt; TimeOfDay -&gt; Bool)
+-&gt; (TimeOfDay -&gt; TimeOfDay -&gt; Bool)
+-&gt; (TimeOfDay -&gt; TimeOfDay -&gt; Bool)
+-&gt; (TimeOfDay -&gt; TimeOfDay -&gt; TimeOfDay)
+-&gt; (TimeOfDay -&gt; TimeOfDay -&gt; TimeOfDay)
+-&gt; Ord TimeOfDay
+TimeOfDay -&gt; TimeOfDay -&gt; Bool
+TimeOfDay -&gt; TimeOfDay -&gt; Ordering
+TimeOfDay -&gt; TimeOfDay -&gt; TimeOfDay
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: TimeOfDay -&gt; TimeOfDay -&gt; Ordering
+compare :: TimeOfDay -&gt; TimeOfDay -&gt; Ordering
+$c&lt; :: TimeOfDay -&gt; TimeOfDay -&gt; Bool
+&lt; :: TimeOfDay -&gt; TimeOfDay -&gt; Bool
+$c&lt;= :: TimeOfDay -&gt; TimeOfDay -&gt; Bool
+&lt;= :: TimeOfDay -&gt; TimeOfDay -&gt; Bool
+$c&gt; :: TimeOfDay -&gt; TimeOfDay -&gt; Bool
+&gt; :: TimeOfDay -&gt; TimeOfDay -&gt; Bool
+$c&gt;= :: TimeOfDay -&gt; TimeOfDay -&gt; Bool
+&gt;= :: TimeOfDay -&gt; TimeOfDay -&gt; Bool
+$cmax :: TimeOfDay -&gt; TimeOfDay -&gt; TimeOfDay
+max :: TimeOfDay -&gt; TimeOfDay -&gt; TimeOfDay
+$cmin :: TimeOfDay -&gt; TimeOfDay -&gt; TimeOfDay
+min :: TimeOfDay -&gt; TimeOfDay -&gt; TimeOfDay
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><span class="hs-comment">-- | Backup state</span></span><span>
+</span><span id="line-44"></span><span class="hs-keyword">data</span><span> </span><span id="BackupState"><span class="annot"><a href="Infrastructure.BackupManager.html#BackupState"><span class="hs-identifier hs-var">BackupState</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BackupState"><span class="annot"><a href="Infrastructure.BackupManager.html#BackupState"><span class="hs-identifier hs-var">BackupState</span></a></span></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="backupConfig"><span class="annot"><span class="annottext">BackupState -&gt; BackupConfig
+</span><a href="Infrastructure.BackupManager.html#backupConfig"><span class="hs-identifier hs-var hs-var">backupConfig</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#BackupConfig"><span class="hs-identifier hs-type">BackupConfig</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-46"></span><span>    </span><span id="backupHistory"><span class="annot"><span class="annottext">BackupState -&gt; TVar [(UTCTime, FilePath, BackupStatus)]
+</span><a href="Infrastructure.BackupManager.html#backupHistory"><span class="hs-identifier hs-var hs-var">backupHistory</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">TVar</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#BackupStatus"><span class="hs-identifier hs-type">BackupStatus</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span class="hs-special">,</span><span>
+</span><span id="line-47"></span><span>    </span><span id="backupLock"><span class="annot"><span class="annottext">BackupState -&gt; TVar Bool
+</span><a href="Infrastructure.BackupManager.html#backupLock"><span class="hs-identifier hs-var hs-var">backupLock</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">TVar</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="annot"><span class="hs-comment">-- | Backup status</span></span><span>
+</span><span id="line-51"></span><span class="hs-keyword">data</span><span> </span><span id="BackupStatus"><span class="annot"><a href="Infrastructure.BackupManager.html#BackupStatus"><span class="hs-identifier hs-var">BackupStatus</span></a></span></span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Success"><span class="annot"><a href="Infrastructure.BackupManager.html#Success"><span class="hs-identifier hs-var">Success</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Failed"><span class="annot"><a href="Infrastructure.BackupManager.html#Failed"><span class="hs-identifier hs-var">Failed</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="InProgress"><span class="annot"><a href="Infrastructure.BackupManager.html#InProgress"><span class="hs-identifier hs-var">InProgress</span></a></span></span><span>
+</span><span id="line-55"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680264877"><span id="local-6989586621680264891"><span id="local-6989586621680264895"><span class="annot"><span class="annottext">Int -&gt; BackupStatus -&gt; ShowS
+[BackupStatus] -&gt; ShowS
+BackupStatus -&gt; FilePath
+(Int -&gt; BackupStatus -&gt; ShowS)
+-&gt; (BackupStatus -&gt; FilePath)
+-&gt; ([BackupStatus] -&gt; ShowS)
+-&gt; Show BackupStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; FilePath) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BackupStatus -&gt; ShowS
+showsPrec :: Int -&gt; BackupStatus -&gt; ShowS
+$cshow :: BackupStatus -&gt; FilePath
+show :: BackupStatus -&gt; FilePath
+$cshowList :: [BackupStatus] -&gt; ShowS
+showList :: [BackupStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264899"><span id="local-6989586621680264913"><span class="annot"><span class="annottext">BackupStatus -&gt; BackupStatus -&gt; Bool
+(BackupStatus -&gt; BackupStatus -&gt; Bool)
+-&gt; (BackupStatus -&gt; BackupStatus -&gt; Bool) -&gt; Eq BackupStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BackupStatus -&gt; BackupStatus -&gt; Bool
+== :: BackupStatus -&gt; BackupStatus -&gt; Bool
+$c/= :: BackupStatus -&gt; BackupStatus -&gt; Bool
+/= :: BackupStatus -&gt; BackupStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span>
+</span><span id="line-57"></span><span class="annot"><span class="hs-comment">-- | Initialize backup manager</span></span><span>
+</span><span id="line-58"></span><span class="annot"><a href="Infrastructure.BackupManager.html#initBackupManager"><span class="hs-identifier hs-type">initBackupManager</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#BackupConfig"><span class="hs-identifier hs-type">BackupConfig</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#BackupState"><span class="hs-identifier hs-type">BackupState</span></a></span><span>
+</span><span id="line-59"></span><span id="initBackupManager"><span class="annot"><span class="annottext">initBackupManager :: BackupConfig -&gt; IO BackupState
+</span><a href="Infrastructure.BackupManager.html#initBackupManager"><span class="hs-identifier hs-var hs-var">initBackupManager</span></a></span></span><span> </span><span id="local-6989586621680264918"><span class="annot"><span class="annottext">BackupConfig
+</span><a href="#local-6989586621680264918"><span class="hs-identifier hs-var">config</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-60"></span><span>  </span><span id="local-6989586621680264919"><span class="annot"><a href="#local-6989586621680264919"><span class="hs-identifier hs-var">lockVar</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; IO (TVar Bool)
+forall a. a -&gt; IO (TVar a)
+</span><span class="hs-identifier hs-var">newTVarIO</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-61"></span><span>  </span><span id="local-6989586621680264920"><span class="annot"><a href="#local-6989586621680264920"><span class="hs-identifier hs-var">historyVar</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">newTVarIO</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-62"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#BackupState"><span class="hs-identifier hs-type">BackupState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680264918"><span class="hs-identifier hs-type">config</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680264920"><span class="hs-identifier hs-type">historyVar</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680264919"><span class="hs-identifier hs-type">lockVar</span></a></span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="annot"><span class="hs-comment">-- | Create backup</span></span><span>
+</span><span id="line-65"></span><span class="annot"><a href="Infrastructure.BackupManager.html#createBackup"><span class="hs-identifier hs-type">createBackup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#BackupState"><span class="hs-identifier hs-type">BackupState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span class="hs-special">)</span><span>
+</span><span id="line-66"></span><span id="createBackup"><span class="annot"><span class="annottext">createBackup :: BackupState -&gt; IO (Either Text FilePath)
+</span><a href="Infrastructure.BackupManager.html#createBackup"><span class="hs-identifier hs-var hs-var">createBackup</span></a></span></span><span> </span><span id="local-6989586621680264922"><span class="annot"><span class="annottext">BackupState
+</span><a href="#local-6989586621680264922"><span class="hs-identifier hs-var">state</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-67"></span><span>  </span><span id="local-6989586621680264923"><span class="annot"><a href="#local-6989586621680264923"><span class="hs-identifier hs-var">locked</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">STM Bool -&gt; IO Bool
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="annot"><span class="annottext">(STM Bool -&gt; IO Bool) -&gt; STM Bool -&gt; IO Bool
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-68"></span><span>    </span><span id="local-6989586621680264924"><span class="annot"><a href="#local-6989586621680264924"><span class="hs-identifier hs-var">isLocked</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar Bool -&gt; STM Bool
+forall a. TVar a -&gt; STM a
+</span><span class="hs-identifier hs-var">readTVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BackupState -&gt; TVar Bool
+</span><a href="Infrastructure.BackupManager.html#backupLock"><span class="hs-identifier hs-var">backupLock</span></a></span><span> </span><span class="annot"><span class="annottext">BackupState
+</span><a href="#local-6989586621680264922"><span class="hs-identifier hs-var">state</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span>    </span><span class="hs-keyword">if</span><span> </span><span class="annot"><a href="#local-6989586621680264924"><span class="hs-identifier hs-type">isLocked</span></a></span><span>
+</span><span id="line-70"></span><span>      </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">False</span></span><span>
+</span><span id="line-71"></span><span>      </span><span class="hs-keyword">else</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-72"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">writeTVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Infrastructure.BackupManager.html#backupLock"><span class="hs-identifier hs-var">backupLock</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680264922"><span class="hs-identifier hs-type">state</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-identifier hs-type">True</span></span><span>
+</span><span id="line-73"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">True</span></span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="hs-identifier hs-type">not</span></span><span> </span><span class="annot"><a href="#local-6989586621680264923"><span class="hs-identifier hs-type">locked</span></a></span><span>
+</span><span id="line-76"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">T.pack</span></span><span> </span><span class="annot"><span class="hs-string">&quot;Backup already in progress&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-78"></span><span>      </span><span id="local-6989586621680264927"><span class="annot"><a href="#local-6989586621680264927"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">getCurrentTime</span></span><span>
+</span><span id="line-79"></span><span>      </span><span id="local-6989586621680264928"><span class="annot"><a href="#local-6989586621680264928"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#performBackup"><span class="hs-identifier hs-type">performBackup</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Infrastructure.BackupManager.html#backupConfig"><span class="hs-identifier hs-var">backupConfig</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680264922"><span class="hs-identifier hs-type">state</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621680264927"><span class="hs-identifier hs-type">now</span></a></span><span>
+</span><span id="line-80"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">atomically</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">writeTVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Infrastructure.BackupManager.html#backupLock"><span class="hs-identifier hs-var">backupLock</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680264922"><span class="hs-identifier hs-type">state</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-identifier hs-type">False</span></span><span>
+</span><span id="line-81"></span><span>      </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680264928"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-82"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621680264930"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680264930"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text FilePath -&gt; IO (Either Text FilePath)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Either Text FilePath -&gt; IO (Either Text FilePath))
+-&gt; Either Text FilePath -&gt; IO (Either Text FilePath)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text FilePath
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680264930"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-83"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621680264931"><span class="annot"><span class="annottext">FilePath
+</span><a href="#local-6989586621680264931"><span class="hs-identifier hs-var">path</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-84"></span><span>          </span><span class="hs-comment">-- Update history</span><span>
+</span><span id="line-85"></span><span>          </span><span class="annot"><span class="annottext">STM () -&gt; IO ()
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="annot"><span class="annottext">(STM () -&gt; IO ()) -&gt; STM () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-86"></span><span>            </span><span id="local-6989586621680264932"><span class="annot"><a href="#local-6989586621680264932"><span class="hs-identifier hs-var">hist</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar [(UTCTime, FilePath, BackupStatus)]
+-&gt; STM [(UTCTime, FilePath, BackupStatus)]
+forall a. TVar a -&gt; STM a
+</span><span class="hs-identifier hs-var">readTVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BackupState -&gt; TVar [(UTCTime, FilePath, BackupStatus)]
+</span><a href="Infrastructure.BackupManager.html#backupHistory"><span class="hs-identifier hs-var">backupHistory</span></a></span><span> </span><span class="annot"><span class="annottext">BackupState
+</span><a href="#local-6989586621680264922"><span class="hs-identifier hs-var">state</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-87"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680264933"><span class="annot"><a href="#local-6989586621680264933"><span class="hs-identifier hs-var hs-var">newHist</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680264927"><span class="hs-identifier hs-var">now</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">FilePath
+</span><a href="#local-6989586621680264931"><span class="hs-identifier hs-var">path</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">UTCTime -&gt; FilePath -&gt; Integer -&gt; BackupStatus
+</span><a href="Infrastructure.BackupManager.html#Success"><span class="hs-identifier hs-var">Success</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680264927"><span class="hs-identifier hs-var">now</span></a></span><span> </span><span class="annot"><span class="annottext">FilePath
+</span><a href="#local-6989586621680264931"><span class="hs-identifier hs-var">path</span></a></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">0</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(UTCTime, FilePath, BackupStatus)
+-&gt; [(UTCTime, FilePath, BackupStatus)]
+-&gt; [(UTCTime, FilePath, BackupStatus)]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="annot"><span class="annottext">[(UTCTime, FilePath, BackupStatus)]
+</span><a href="#local-6989586621680264932"><span class="hs-identifier hs-var">hist</span></a></span><span>
+</span><span id="line-88"></span><span>            </span><span class="annot"><span class="hs-identifier hs-type">writeTVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Infrastructure.BackupManager.html#backupHistory"><span class="hs-identifier hs-var">backupHistory</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680264922"><span class="hs-identifier hs-type">state</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">take</span></span><span> </span><span class="annot"><span class="hs-number">100</span></span><span> </span><span class="annot"><a href="#local-6989586621680264933"><span class="hs-identifier hs-type">newHist</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-89"></span><span>          </span><span class="annot"><span class="annottext">Either Text FilePath -&gt; IO (Either Text FilePath)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Either Text FilePath -&gt; IO (Either Text FilePath))
+-&gt; Either Text FilePath -&gt; IO (Either Text FilePath)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">FilePath -&gt; Either Text FilePath
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">FilePath
+</span><a href="#local-6989586621680264931"><span class="hs-identifier hs-var">path</span></a></span><span>
+</span><span id="line-90"></span><span>
+</span><span id="line-91"></span><span class="annot"><span class="hs-comment">-- | Perform backup operation</span></span><span>
+</span><span id="line-92"></span><span class="annot"><a href="Infrastructure.BackupManager.html#performBackup"><span class="hs-identifier hs-type">performBackup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#BackupConfig"><span class="hs-identifier hs-type">BackupConfig</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span class="hs-special">)</span><span>
+</span><span id="line-93"></span><span id="performBackup"><span class="annot"><span class="annottext">performBackup :: BackupConfig -&gt; UTCTime -&gt; IO (Either Text FilePath)
+</span><a href="Infrastructure.BackupManager.html#performBackup"><span class="hs-identifier hs-var hs-var">performBackup</span></a></span></span><span> </span><span id="local-6989586621680264935"><span class="annot"><span class="annottext">BackupConfig
+</span><a href="#local-6989586621680264935"><span class="hs-identifier hs-var">config</span></a></span></span><span> </span><span id="local-6989586621680264936"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680264936"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-94"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680264937"><span class="annot"><span class="annottext">src :: FilePath
+</span><a href="#local-6989586621680264937"><span class="hs-identifier hs-var hs-var hs-var">src</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BackupConfig -&gt; FilePath
+</span><a href="Infrastructure.BackupManager.html#backupSource"><span class="hs-identifier hs-var">backupSource</span></a></span><span> </span><span class="annot"><span class="annottext">BackupConfig
+</span><a href="#local-6989586621680264935"><span class="hs-identifier hs-var">config</span></a></span><span>
+</span><span id="line-95"></span><span>      </span><span id="local-6989586621680264941"><span class="annot"><span class="annottext">dst :: Text
+</span><a href="#local-6989586621680264941"><span class="hs-identifier hs-var hs-var hs-var">dst</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">FilePath -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BackupConfig -&gt; FilePath
+</span><a href="Infrastructure.BackupManager.html#backupDestination"><span class="hs-identifier hs-var">backupDestination</span></a></span><span> </span><span class="annot"><span class="annottext">BackupConfig
+</span><a href="#local-6989586621680264935"><span class="hs-identifier hs-var">config</span></a></span><span> </span><span class="annot"><span class="annottext">FilePath -&gt; ShowS
+</span><span class="hs-operator hs-var">&lt;/&gt;</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; FilePath
+forall a. Show a =&gt; a -&gt; FilePath
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">UTCTime -&gt; Integer
+forall {a} {p}. Num a =&gt; p -&gt; a
+</span><a href="#local-6989586621680264943"><span class="hs-identifier hs-var">hash</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680264936"><span class="hs-identifier hs-var">now</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-96"></span><span>  </span><span class="hs-comment">-- Create destination directory</span><span>
+</span><span id="line-97"></span><span>  </span><span class="annot"><span class="annottext">Bool -&gt; FilePath -&gt; IO ()
+</span><span class="hs-identifier hs-var">createDirectoryIfMissing</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; FilePath
+</span><span class="hs-identifier hs-var">T.unpack</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680264941"><span class="hs-identifier hs-var">dst</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-98"></span><span>  </span><span class="hs-comment">-- Copy files (simplified)</span><span>
+</span><span id="line-99"></span><span>  </span><span class="annot"><span class="annottext">Either Text FilePath -&gt; IO (Either Text FilePath)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Either Text FilePath -&gt; IO (Either Text FilePath))
+-&gt; Either Text FilePath -&gt; IO (Either Text FilePath)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">FilePath -&gt; Either Text FilePath
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; FilePath
+</span><span class="hs-identifier hs-var">T.unpack</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680264941"><span class="hs-identifier hs-var">dst</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-100"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-101"></span><span>    </span><span id="local-6989586621680264943"><span class="annot"><span class="annottext">hash :: p -&gt; a
+</span><a href="#local-6989586621680264943"><span class="hs-identifier hs-var hs-var">hash</span></a></span></span><span> </span><span id="local-6989586621680264947"><span class="annot"><span class="annottext">p
+</span><a href="#local-6989586621680264947"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-number">12345</span></span><span>  </span><span class="hs-comment">-- Stubbed hash</span><span>
+</span><span id="line-102"></span><span>
+</span><span id="line-103"></span><span class="annot"><span class="hs-comment">-- | Schedule backups</span></span><span>
+</span><span id="line-104"></span><span class="annot"><a href="Infrastructure.BackupManager.html#scheduleBackups"><span class="hs-identifier hs-type">scheduleBackups</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#BackupState"><span class="hs-identifier hs-type">BackupState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-105"></span><span id="scheduleBackups"><span class="annot"><span class="annottext">scheduleBackups :: BackupState -&gt; IO ()
+</span><a href="Infrastructure.BackupManager.html#scheduleBackups"><span class="hs-identifier hs-var hs-var">scheduleBackups</span></a></span></span><span> </span><span id="local-6989586621680264949"><span class="annot"><span class="annottext">BackupState
+</span><a href="#local-6989586621680264949"><span class="hs-identifier hs-var">state</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-106"></span><span>  </span><span class="hs-comment">-- Start background scheduler</span><span>
+</span><span id="line-107"></span><span>  </span><span class="annot"><span class="annottext">() -&gt; IO ()
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-108"></span><span>
+</span><span id="line-109"></span><span class="annot"><span class="hs-comment">-- | Cleanup old backups</span></span><span>
+</span><span id="line-110"></span><span class="annot"><a href="Infrastructure.BackupManager.html#cleanupOldBackups"><span class="hs-identifier hs-type">cleanupOldBackups</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#BackupState"><span class="hs-identifier hs-type">BackupState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-111"></span><span id="cleanupOldBackups"><span class="annot"><span class="annottext">cleanupOldBackups :: BackupState -&gt; IO ()
+</span><a href="Infrastructure.BackupManager.html#cleanupOldBackups"><span class="hs-identifier hs-var hs-var">cleanupOldBackups</span></a></span></span><span> </span><span id="local-6989586621680264951"><span class="annot"><span class="annottext">BackupState
+</span><a href="#local-6989586621680264951"><span class="hs-identifier hs-var">state</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-112"></span><span>  </span><span id="local-6989586621680264952"><span class="annot"><a href="#local-6989586621680264952"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO UTCTime
+</span><span class="hs-identifier hs-var">getCurrentTime</span></span><span>
+</span><span id="line-113"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680264953"><span class="annot"><a href="#local-6989586621680264953"><span class="hs-identifier hs-var hs-var">retentionDays</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BackupConfig -&gt; Int
+</span><a href="Infrastructure.BackupManager.html#backupRetentionDays"><span class="hs-identifier hs-var">backupRetentionDays</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BackupState -&gt; BackupConfig
+</span><a href="Infrastructure.BackupManager.html#backupConfig"><span class="hs-identifier hs-var">backupConfig</span></a></span><span> </span><span class="annot"><span class="annottext">BackupState
+</span><a href="#local-6989586621680264951"><span class="hs-identifier hs-var">state</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-114"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680264964"><span class="annot"><a href="#local-6989586621680264964"><span class="hs-identifier hs-var hs-var">cutoff</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">NominalDiffTime -&gt; UTCTime -&gt; UTCTime
+</span><span class="hs-identifier hs-var">addUTCTime</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NominalDiffTime -&gt; NominalDiffTime
+forall a. Num a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">negate</span></span><span> </span><span class="annot"><span class="annottext">(NominalDiffTime -&gt; NominalDiffTime)
+-&gt; NominalDiffTime -&gt; NominalDiffTime
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; NominalDiffTime
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680264953"><span class="hs-identifier hs-var">retentionDays</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">24</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">3600</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680264952"><span class="hs-identifier hs-var">now</span></a></span><span>
+</span><span id="line-115"></span><span>  </span><span class="hs-comment">-- Remove old backups</span><span>
+</span><span id="line-116"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-117"></span><span>
+</span><span id="line-118"></span><span class="annot"><span class="hs-comment">-- | List backup history</span></span><span>
+</span><span id="line-119"></span><span class="annot"><a href="Infrastructure.BackupManager.html#listBackups"><span class="hs-identifier hs-type">listBackups</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#BackupState"><span class="hs-identifier hs-type">BackupState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#BackupStatus"><span class="hs-identifier hs-type">BackupStatus</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-120"></span><span id="listBackups"><span class="annot"><span class="annottext">listBackups :: BackupState -&gt; IO [(UTCTime, FilePath, BackupStatus)]
+</span><a href="Infrastructure.BackupManager.html#listBackups"><span class="hs-identifier hs-var hs-var">listBackups</span></a></span></span><span> </span><span id="local-6989586621680264967"><span class="annot"><span class="annottext">BackupState
+</span><a href="#local-6989586621680264967"><span class="hs-identifier hs-var">state</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TVar [(UTCTime, FilePath, BackupStatus)]
+-&gt; IO [(UTCTime, FilePath, BackupStatus)]
+forall a. TVar a -&gt; IO a
+</span><span class="hs-identifier hs-var">readTVarIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BackupState -&gt; TVar [(UTCTime, FilePath, BackupStatus)]
+</span><a href="Infrastructure.BackupManager.html#backupHistory"><span class="hs-identifier hs-var">backupHistory</span></a></span><span> </span><span class="annot"><span class="annottext">BackupState
+</span><a href="#local-6989586621680264967"><span class="hs-identifier hs-var">state</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-121"></span><span>
+</span><span id="line-122"></span><span class="annot"><span class="hs-comment">-- | Restore from backup</span></span><span>
+</span><span id="line-123"></span><span class="annot"><a href="Infrastructure.BackupManager.html#restoreBackup"><span class="hs-identifier hs-type">restoreBackup</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.BackupManager.html#BackupState"><span class="hs-identifier hs-type">BackupState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FilePath</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-124"></span><span id="restoreBackup"><span class="annot"><span class="annottext">restoreBackup :: BackupState -&gt; FilePath -&gt; IO (Either Text ())
+</span><a href="Infrastructure.BackupManager.html#restoreBackup"><span class="hs-identifier hs-var hs-var">restoreBackup</span></a></span></span><span> </span><span id="local-6989586621680264969"><span class="annot"><span class="annottext">BackupState
+</span><a href="#local-6989586621680264969"><span class="hs-identifier hs-var">state</span></a></span></span><span> </span><span id="local-6989586621680264970"><span class="annot"><span class="annottext">FilePath
+</span><a href="#local-6989586621680264970"><span class="hs-identifier hs-var">backupPath</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-125"></span><span>  </span><span class="hs-comment">-- Perform restore operation</span><span>
+</span><span id="line-126"></span><span>  </span><span class="annot"><span class="annottext">Either Text () -&gt; IO (Either Text ())
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Either Text () -&gt; IO (Either Text ()))
+-&gt; Either Text () -&gt; IO (Either Text ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">() -&gt; Either Text ()
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-127"></span></pre></body></html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://surypus.github.io/surypus/engineering/document-module/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Document-модуль - Surypus ERP</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Document-\u043c\u043e\u0434\u0443\u043b\u044c";
+        var mkdocs_page_input_path = "engineering/document-module.md";
+        var mkdocs_page_url = "/surypus/engineering/document-module/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Surypus ERP
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Главная</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../ARCHITECTURE/">Архитектура</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../TYPES/">Система типов</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../API/">API</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DATABASE/">Хранилище данных</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DEPLOYMENT/">Развёртывание</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../GUIDE/">Руководство</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Руководства</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/accounting/">Как работает бухгалтерия</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/inventory/">Как работает инвентарь</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/rbac/">Как работает RBAC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/jwt/">Как работает JWT-аутентификация</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/persistence/">Как работает персистентность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/event-store/">Как работает Event Store</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">ADR</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0001-haskell-primary-language/">ADR-001: Haskell как основной язык</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0002-mkdocs-site/">ADR-002: MkDocs для сайта документации</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../architecture/EVENT_SOURCING/">Архитектура событий</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Инженерные модули</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../api-conventions/">API-конвенции</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../bill-module/">Bill-модуль</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Document-модуль</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#1">1. Что делает оригинальная реализация</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-surypus">2. Как это отражено в Surypus</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-surypus">3. Потоки данных, сохранённые в Surypus</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4">4. Следующие шаги, чтобы завершить портирование</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../hr-payroll-module/">HR/Payroll-модуль</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../job-server-etl/">Job Server ETL</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../person-module/">Person-модуль</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../production-module/">Production-модуль</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reports-portal/">Reports Portal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../schema-uniqueness/">Schema уникальность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../testing-guide/">Руководство по тестированию</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/EXAMPLES/">Примеры</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../REFINEMENT/">Рефиниции</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../SUMMARY/">Сводка</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Задачи</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Home/">Обзор</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Plans/">Планы</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Backlog/">Бэклог</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Сгенерировано</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/health/">Состояние документации</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/inventory/coverage/">Покрытие</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/inventory/modules/">Каталог модулей</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/inventory/functions/">Функции</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/graphs/">Граф зависимостей</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/haddock/Surypus/">Haddock API</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Surypus ERP</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Инженерные модули</li>
+      <li class="breadcrumb-item active">Document-модуль</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/surypus/surypus/edit/master/docs/engineering/document-module.md">Edit on surypus/surypus</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="surypus">Документальный модуль Surypus</h1>
+<h2 id="1">1. Что делает оригинальная реализация</h2>
+<ul>
+<li><code>PPObjRegister</code> и <code>PPObjRegisterType</code> описывают регистры документов, их типы и флаги <code>REGTF_*</code> (<code>UNIQUE</code>, <code>DUPNUMBER</code>, <code>ONLYNUMBER</code>, <code>LOCATION</code>, <code>WARNEXPIRY</code> и др.).<br />
+  Регистры называются по номеру <code>Num</code>, привязаны к объектам (<code>PPOBJ_PERSON</code> / <code>PPOBJ_LOCATION</code>) и, при необходимости, требуют уникальности номера (<code>CheckUniqueNumber</code>), учитывают тип объекта и предупреждают об истечении срока (<code>REGTF_WARNEXPIRY</code>).  </li>
+<li>При создании регистра (<code>PPObjRegister::HandleMsg</code>, <code>Helper_EditDialog</code>) система подбирает <code>RegType</code>, автоматически вычисляет даты (<code>ExpiryPeriod</code>), переводит пользователя на ввод только номера (<code>REGTF_ONLYNUMBER</code>) и запрещает дублирование номеров по типу, если у типа нет <code>REGTF_DUPNUMBER</code>.  </li>
+<li>Номера регистров получают из хранимой процедуры <code>document_get_next_register_number</code> (<code>config/schema_Core_Document_Register.sql</code>), а проверки концентрации выполняются функцией <code>document_register_number_exists</code>.  </li>
+<li>Отдельно существует счётчик документов (<code>document_op_counter</code> / <code>document_get_next_doc_number</code>) для операций (<code>objregt.cpp</code> и <code>config/schema_Core_Document_OpCounter.sql</code>), которые формируют номера документов через префикс и флаг <code>REGTF_DUPNUMBER</code>.</li>
+</ul>
+<h2 id="2-surypus">2. Как это отражено в Surypus</h2>
+<ul>
+<li><code>Core.Document.Types</code> теперь экспортирует <code>DocumentRegisterFlag</code> и вспомогательные предикаты (<code>documentRegisterTypeAllowsDuplicateNumbers</code>, <code>documentRegisterTypeOnlyNumber</code>, <code>documentRegisterTypeForLocation</code> и др.), которые соответствуют <code>REGTF_*</code> и позволяют верифицировать бизнес-инварианты на уровне LiquidHaskell.  </li>
+<li><code>DB.Document.Register</code> загружает тип (<code>DB.Document.RegisterType.getRegisterType</code>) и запускает <code>checkDuplicate</code>, который использует новые предикаты, чтобы повторно применять условие <code>REGTF_DUPNUMBER</code> из C++.  </li>
+<li><code>DB.Document.RegisterType</code> и <code>DB.Document.Counter</code> продолжают хранить размеры (код, флаги, префиксы), а API в <code>APIServer.documentRoutes</code> предоставляет CRUD + генерацию следующего номера, как в интерфейсах <code>PPObjRegisterType</code>.  </li>
+<li>SQL-модули (<code>config/schema_Core_Document_*</code>) отделяют <code>Core.Document</code> и <code>PPObjRegister</code>, и <code>docs/engineering/schema-uniqueness.md</code> содержит описание, почему коллизии <code>AccSheet</code>/<code>OpCounter</code> разобраны.</li>
+</ul>
+<h2 id="3-surypus">3. Потоки данных, сохранённые в Surypus</h2>
+<ol>
+<li><strong>Создание регистра:</strong> контролируется <code>validateDocumentRegister</code>, <code>resolveNumber</code>, <code>documentRegisterTypeAllowsDuplicateNumbers</code>.  </li>
+<li><strong>Номер документа:</strong> при <code>drAutoNumber</code> вызывается <code>document_get_next_register_number</code>, потом <code>checkDuplicate</code> проверяет, не нарушает ли флаг <code>REGTF_DUPNUMBER</code>.  </li>
+<li><strong>Тип документа:</strong> <code>documentOpCounter</code> сгенерирует номер через <code>document_get_next_doc_number</code>, в <code>APIServer</code> уже есть endpoint <code>/documents/counters/:id/next-number</code>.</li>
+</ol>
+<h2 id="4">4. Следующие шаги, чтобы завершить портирование</h2>
+<ul>
+<li>Подключить флаги <code>REGTF_WARNEXPIRY</code> / <code>REGTF_WARNABSENCE</code> к API и Domain, чтобы при запросе регистра фронтенд мог подсветить статус (например в QML показать “истекает/нет” по <code>documentRegisterStatusAsOf</code>).  </li>
+<li>Расширить job-сервер <code>Surypus/Surypus/JobRunner.hs</code>, чтобы асинхронно запускать <code>document_register_audit</code> (новая задача), которая проверяет немедленно истекающие регистры и повторяющиеся номера на стороне PostgreSQL (<code>DB.Document.Audit</code>).  </li>
+<li>Добавить новый REST-некрон <code>/api/v1/documents/audit</code>, который создает джоб <code>document_register_audit</code> с любым <code>lookaheadDays</code> (по умолчанию 30), чтобы UI/ETL могли запускать аудит по расписанию или при импорте данных.</li>
+<li>Перенести CrystalReports (структуры <code>document_register</code>, <code>document_op_counter</code>) в Jasper/Pentaho/Helical, чтобы отчёты ссылались на те же SQL-функции (например, <code>document_get_next_register_number</code> будет источником <code>document_number</code>).</li>
+</ul>
+<p>Документальный модуль Surypus теперь опирается на новую формализацию флагов и сохранённые SQL-функции. Следующий тикет — завершить UI/ETL/отчёты, оперируя этими invariants.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../bill-module/" class="btn btn-neutral float-left" title="Bill-модуль"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../hr-payroll-module/" class="btn btn-neutral float-right" title="HR/Payroll-модуль">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/surypus/surypus" class="fa fa-code-fork" style="color: #fcfcfc"> surypus/surypus</a>
+        </span>
+    
+    
+      <span><a href="../bill-module/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../hr-payroll-module/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

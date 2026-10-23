@@ -1,0 +1,244 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Surypus core types</span></span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE GeneralizedNewtypeDeriving #-}</span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.CoreTypes.html"><span class="hs-identifier">Surypus.CoreTypes</span></a></span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Surypus.CoreTypes.html#Decimal"><span class="hs-identifier">Decimal</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>    </span><span class="annot"><a href="Surypus.CoreTypes.html#unDecimal"><span class="hs-identifier">unDecimal</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Surypus.CoreTypes.html#NonNeg"><span class="hs-identifier">NonNeg</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Surypus.CoreTypes.html#mkNonNeg"><span class="hs-identifier">mkNonNeg</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Surypus.CoreTypes.html#unNonNeg"><span class="hs-identifier">unNonNeg</span></a></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier">ToJSON</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier">FromJSON</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/scanner-0.3.2-de0fbfc6b5902d9b3a2b986766b72ae2b09aeba1d292da64513fe9c829253714/share/doc/html/src/Prelude.html"><span class="hs-identifier">Prelude</span></a></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">div</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">newtype</span><span> </span><span id="Decimal"><span class="annot"><a href="Surypus.CoreTypes.html#Decimal"><span class="hs-identifier hs-var">Decimal</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Decimal"><span class="annot"><a href="Surypus.CoreTypes.html#Decimal"><span class="hs-identifier hs-var">Decimal</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680313870"><span id="local-6989586621680313876"><span id="local-6989586621680313880"><span class="annot"><span class="annottext">Int -&gt; Decimal -&gt; ShowS
+[Decimal] -&gt; ShowS
+Decimal -&gt; String
+(Int -&gt; Decimal -&gt; ShowS)
+-&gt; (Decimal -&gt; String) -&gt; ([Decimal] -&gt; ShowS) -&gt; Show Decimal
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Decimal -&gt; ShowS
+showsPrec :: Int -&gt; Decimal -&gt; ShowS
+$cshow :: Decimal -&gt; String
+show :: Decimal -&gt; String
+$cshowList :: [Decimal] -&gt; ShowS
+showList :: [Decimal] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680313885"><span id="local-6989586621680313890"><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Bool
+(Decimal -&gt; Decimal -&gt; Bool)
+-&gt; (Decimal -&gt; Decimal -&gt; Bool) -&gt; Eq Decimal
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Decimal -&gt; Decimal -&gt; Bool
+== :: Decimal -&gt; Decimal -&gt; Bool
+$c/= :: Decimal -&gt; Decimal -&gt; Bool
+/= :: Decimal -&gt; Decimal -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680313897"><span id="local-6989586621680313902"><span id="local-6989586621680313906"><span id="local-6989586621680313910"><span id="local-6989586621680313914"><span id="local-6989586621680313918"><span id="local-6989586621680313922"><span class="annot"><span class="annottext">Integer -&gt; Decimal
+Decimal -&gt; Decimal
+Decimal -&gt; Decimal -&gt; Decimal
+(Decimal -&gt; Decimal -&gt; Decimal)
+-&gt; (Decimal -&gt; Decimal -&gt; Decimal)
+-&gt; (Decimal -&gt; Decimal -&gt; Decimal)
+-&gt; (Decimal -&gt; Decimal)
+-&gt; (Decimal -&gt; Decimal)
+-&gt; (Decimal -&gt; Decimal)
+-&gt; (Integer -&gt; Decimal)
+-&gt; Num Decimal
+forall a.
+(a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Integer -&gt; a)
+-&gt; Num a
+$c+ :: Decimal -&gt; Decimal -&gt; Decimal
++ :: Decimal -&gt; Decimal -&gt; Decimal
+$c- :: Decimal -&gt; Decimal -&gt; Decimal
+- :: Decimal -&gt; Decimal -&gt; Decimal
+$c* :: Decimal -&gt; Decimal -&gt; Decimal
+* :: Decimal -&gt; Decimal -&gt; Decimal
+$cnegate :: Decimal -&gt; Decimal
+negate :: Decimal -&gt; Decimal
+$cabs :: Decimal -&gt; Decimal
+abs :: Decimal -&gt; Decimal
+$csignum :: Decimal -&gt; Decimal
+signum :: Decimal -&gt; Decimal
+$cfromInteger :: Integer -&gt; Decimal
+fromInteger :: Integer -&gt; Decimal
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Num</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680313933"><span id="local-6989586621680313938"><span id="local-6989586621680313942"><span id="local-6989586621680313946"><span id="local-6989586621680313950"><span id="local-6989586621680313954"><span id="local-6989586621680313958"><span class="annot"><span class="annottext">Eq Decimal
+Eq Decimal =&gt;
+(Decimal -&gt; Decimal -&gt; Ordering)
+-&gt; (Decimal -&gt; Decimal -&gt; Bool)
+-&gt; (Decimal -&gt; Decimal -&gt; Bool)
+-&gt; (Decimal -&gt; Decimal -&gt; Bool)
+-&gt; (Decimal -&gt; Decimal -&gt; Bool)
+-&gt; (Decimal -&gt; Decimal -&gt; Decimal)
+-&gt; (Decimal -&gt; Decimal -&gt; Decimal)
+-&gt; Ord Decimal
+Decimal -&gt; Decimal -&gt; Bool
+Decimal -&gt; Decimal -&gt; Ordering
+Decimal -&gt; Decimal -&gt; Decimal
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: Decimal -&gt; Decimal -&gt; Ordering
+compare :: Decimal -&gt; Decimal -&gt; Ordering
+$c&lt; :: Decimal -&gt; Decimal -&gt; Bool
+&lt; :: Decimal -&gt; Decimal -&gt; Bool
+$c&lt;= :: Decimal -&gt; Decimal -&gt; Bool
+&lt;= :: Decimal -&gt; Decimal -&gt; Bool
+$c&gt; :: Decimal -&gt; Decimal -&gt; Bool
+&gt; :: Decimal -&gt; Decimal -&gt; Bool
+$c&gt;= :: Decimal -&gt; Decimal -&gt; Bool
+&gt;= :: Decimal -&gt; Decimal -&gt; Bool
+$cmax :: Decimal -&gt; Decimal -&gt; Decimal
+max :: Decimal -&gt; Decimal -&gt; Decimal
+$cmin :: Decimal -&gt; Decimal -&gt; Decimal
+min :: Decimal -&gt; Decimal -&gt; Decimal
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680313971"><span id="local-6989586621680313975"><span id="local-6989586621680313979"><span class="annot"><span class="annottext">Num Decimal
+Num Decimal =&gt;
+(Decimal -&gt; Decimal -&gt; Decimal)
+-&gt; (Decimal -&gt; Decimal)
+-&gt; (Rational -&gt; Decimal)
+-&gt; Fractional Decimal
+Rational -&gt; Decimal
+Decimal -&gt; Decimal
+Decimal -&gt; Decimal -&gt; Decimal
+forall a.
+Num a =&gt;
+(a -&gt; a -&gt; a) -&gt; (a -&gt; a) -&gt; (Rational -&gt; a) -&gt; Fractional a
+$c/ :: Decimal -&gt; Decimal -&gt; Decimal
+/ :: Decimal -&gt; Decimal -&gt; Decimal
+$crecip :: Decimal -&gt; Decimal
+recip :: Decimal -&gt; Decimal
+$cfromRational :: Rational -&gt; Decimal
+fromRational :: Rational -&gt; Decimal
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Fractional</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="annot"><a href="Surypus.CoreTypes.html#unDecimal"><span class="hs-identifier hs-type">unDecimal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.CoreTypes.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-18"></span><span id="unDecimal"><span class="annot"><span class="annottext">unDecimal :: Decimal -&gt; Double
+</span><a href="Surypus.CoreTypes.html#unDecimal"><span class="hs-identifier hs-var hs-var">unDecimal</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Surypus.CoreTypes.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span id="local-6989586621680313986"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680313986"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680313986"><span class="hs-identifier hs-var">d</span></a></span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="annot"><a href="Surypus.CoreTypes.html#div"><span class="hs-identifier hs-type">div</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-21"></span><span id="div"><span class="annot"><span class="annottext">div :: Double -&gt; Double -&gt; Double
+</span><a href="Surypus.CoreTypes.html#div"><span class="hs-identifier hs-var hs-var">div</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">(/)</span></span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680313990"><span id="local-6989586621680313994"><span id="local-6989586621680313997"><span id="local-6989586621680314000"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.CoreTypes.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-24"></span><span>  </span><span id="local-6989586621680314005"><span class="annot"><span class="annottext">toJSON :: Decimal -&gt; Value
+</span><a href="#local-6989586621680314005"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Surypus.CoreTypes.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span id="local-6989586621680314007"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680314007"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Value
+forall a. ToJSON a =&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680314007"><span class="hs-identifier hs-var">d</span></a></span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680314010"><span id="local-6989586621680314014"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.CoreTypes.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-27"></span><span>  </span><span id="local-6989586621680314021"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser Decimal
+</span><a href="#local-6989586621680314021"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span id="local-6989586621680314023"><span class="annot"><span class="annottext">Value
+</span><a href="#local-6989586621680314023"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Decimal
+</span><a href="Surypus.CoreTypes.html#Decimal"><span class="hs-identifier hs-var">Decimal</span></a></span><span> </span><span class="annot"><span class="annottext">(Double -&gt; Decimal) -&gt; Parser Double -&gt; Parser Decimal
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Value -&gt; Parser Double
+forall a. FromJSON a =&gt; Value -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#parseJSON"><span class="hs-identifier hs-var">parseJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Value
+</span><a href="#local-6989586621680314023"><span class="hs-identifier hs-var">v</span></a></span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="annot"><span class="hs-comment">-- | Non-negative decimal wrapper for validation</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">newtype</span><span> </span><span id="NonNeg"><span class="annot"><a href="Surypus.CoreTypes.html#NonNeg"><span class="hs-identifier hs-var">NonNeg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="NonNeg"><span class="annot"><a href="Surypus.CoreTypes.html#NonNeg"><span class="hs-identifier hs-var">NonNeg</span></a></span></span><span> </span><span class="annot"><a href="Surypus.CoreTypes.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680314027"><span id="local-6989586621680314031"><span id="local-6989586621680314035"><span class="annot"><span class="annottext">Int -&gt; NonNeg -&gt; ShowS
+[NonNeg] -&gt; ShowS
+NonNeg -&gt; String
+(Int -&gt; NonNeg -&gt; ShowS)
+-&gt; (NonNeg -&gt; String) -&gt; ([NonNeg] -&gt; ShowS) -&gt; Show NonNeg
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; NonNeg -&gt; ShowS
+showsPrec :: Int -&gt; NonNeg -&gt; ShowS
+$cshow :: NonNeg -&gt; String
+show :: NonNeg -&gt; String
+$cshowList :: [NonNeg] -&gt; ShowS
+showList :: [NonNeg] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680314038"><span id="local-6989586621680314042"><span class="annot"><span class="annottext">NonNeg -&gt; NonNeg -&gt; Bool
+(NonNeg -&gt; NonNeg -&gt; Bool)
+-&gt; (NonNeg -&gt; NonNeg -&gt; Bool) -&gt; Eq NonNeg
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: NonNeg -&gt; NonNeg -&gt; Bool
+== :: NonNeg -&gt; NonNeg -&gt; Bool
+$c/= :: NonNeg -&gt; NonNeg -&gt; Bool
+/= :: NonNeg -&gt; NonNeg -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680314049"><span id="local-6989586621680314053"><span id="local-6989586621680314057"><span id="local-6989586621680314061"><span id="local-6989586621680314065"><span id="local-6989586621680314069"><span id="local-6989586621680314073"><span class="annot"><span class="annottext">Eq NonNeg
+Eq NonNeg =&gt;
+(NonNeg -&gt; NonNeg -&gt; Ordering)
+-&gt; (NonNeg -&gt; NonNeg -&gt; Bool)
+-&gt; (NonNeg -&gt; NonNeg -&gt; Bool)
+-&gt; (NonNeg -&gt; NonNeg -&gt; Bool)
+-&gt; (NonNeg -&gt; NonNeg -&gt; Bool)
+-&gt; (NonNeg -&gt; NonNeg -&gt; NonNeg)
+-&gt; (NonNeg -&gt; NonNeg -&gt; NonNeg)
+-&gt; Ord NonNeg
+NonNeg -&gt; NonNeg -&gt; Bool
+NonNeg -&gt; NonNeg -&gt; Ordering
+NonNeg -&gt; NonNeg -&gt; NonNeg
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: NonNeg -&gt; NonNeg -&gt; Ordering
+compare :: NonNeg -&gt; NonNeg -&gt; Ordering
+$c&lt; :: NonNeg -&gt; NonNeg -&gt; Bool
+&lt; :: NonNeg -&gt; NonNeg -&gt; Bool
+$c&lt;= :: NonNeg -&gt; NonNeg -&gt; Bool
+&lt;= :: NonNeg -&gt; NonNeg -&gt; Bool
+$c&gt; :: NonNeg -&gt; NonNeg -&gt; Bool
+&gt; :: NonNeg -&gt; NonNeg -&gt; Bool
+$c&gt;= :: NonNeg -&gt; NonNeg -&gt; Bool
+&gt;= :: NonNeg -&gt; NonNeg -&gt; Bool
+$cmax :: NonNeg -&gt; NonNeg -&gt; NonNeg
+max :: NonNeg -&gt; NonNeg -&gt; NonNeg
+$cmin :: NonNeg -&gt; NonNeg -&gt; NonNeg
+min :: NonNeg -&gt; NonNeg -&gt; NonNeg
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="annot"><span class="hs-comment">-- | Smart constructor that ensures non-negative values</span></span><span>
+</span><span id="line-34"></span><span class="annot"><a href="Surypus.CoreTypes.html#mkNonNeg"><span class="hs-identifier hs-type">mkNonNeg</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.CoreTypes.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Surypus.CoreTypes.html#NonNeg"><span class="hs-identifier hs-type">NonNeg</span></a></span><span>
+</span><span id="line-35"></span><span id="mkNonNeg"><span class="annot"><span class="annottext">mkNonNeg :: Decimal -&gt; Maybe NonNeg
+</span><a href="Surypus.CoreTypes.html#mkNonNeg"><span class="hs-identifier hs-var hs-var">mkNonNeg</span></a></span></span><span> </span><span id="local-6989586621680314077"><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680314077"><span class="hs-identifier hs-var">d</span></a></span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680314077"><span class="hs-identifier hs-var">d</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">NonNeg -&gt; Maybe NonNeg
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Decimal -&gt; NonNeg
+</span><a href="Surypus.CoreTypes.html#NonNeg"><span class="hs-identifier hs-var">NonNeg</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680314077"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe NonNeg
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="annot"><span class="hs-comment">-- | Extract the underlying Decimal value</span></span><span>
+</span><span id="line-40"></span><span class="annot"><a href="Surypus.CoreTypes.html#unNonNeg"><span class="hs-identifier hs-type">unNonNeg</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.CoreTypes.html#NonNeg"><span class="hs-identifier hs-type">NonNeg</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.CoreTypes.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span>
+</span><span id="line-41"></span><span id="unNonNeg"><span class="annot"><span class="annottext">unNonNeg :: NonNeg -&gt; Decimal
+</span><a href="Surypus.CoreTypes.html#unNonNeg"><span class="hs-identifier hs-var hs-var">unNonNeg</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Surypus.CoreTypes.html#NonNeg"><span class="hs-identifier hs-type">NonNeg</span></a></span><span> </span><span id="local-6989586621680314078"><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680314078"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680314078"><span class="hs-identifier hs-var">d</span></a></span></pre></body></html>

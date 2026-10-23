@@ -1,0 +1,418 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680256767"><span id="local-6989586621680256768"><span id="local-6989586621680256769"><span id="local-6989586621680256770"></span></span></span></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="HR.Person.html"><span class="hs-identifier">HR.Person</span></a></span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="HR.Person.html#Person"><span class="hs-identifier">Person</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>    </span><span class="annot"><a href="HR.Person.html#PersonFlags"><span class="hs-identifier">PersonFlags</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="HR.Person.html#PersonKind"><span class="hs-identifier">PersonKind</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="HR.Person.html#PersonStatus"><span class="hs-identifier">PersonStatus</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="HR.Person.html#validateINN"><span class="hs-identifier">validateINN</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="HR.Person.html#validateKPP"><span class="hs-identifier">validateKPP</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="HR.Person.html#validatePhone"><span class="hs-identifier">validatePhone</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="HR.Person.html#validateEmail"><span class="hs-identifier">validateEmail</span></a></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier">FromJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier">ToJSON</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="Person"><span class="annot"><a href="HR.Person.html#Person"><span class="hs-identifier hs-var">Person</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Person"><span class="annot"><a href="HR.Person.html#Person"><span class="hs-identifier hs-var">Person</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="pId"><span class="annot"><span class="annottext">Person -&gt; Int64
+</span><a href="HR.Person.html#pId"><span class="hs-identifier hs-var hs-var">pId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="pCode"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="HR.Person.html#pCode"><span class="hs-identifier hs-var hs-var">pCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="pName"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="HR.Person.html#pName"><span class="hs-identifier hs-var hs-var">pName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="pFullName"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="HR.Person.html#pFullName"><span class="hs-identifier hs-var hs-var">pFullName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="pShortName"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="HR.Person.html#pShortName"><span class="hs-identifier hs-var hs-var">pShortName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="pINN"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="HR.Person.html#pINN"><span class="hs-identifier hs-var hs-var">pINN</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="pKPP"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="HR.Person.html#pKPP"><span class="hs-identifier hs-var hs-var">pKPP</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span id="pOKPO"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="HR.Person.html#pOKPO"><span class="hs-identifier hs-var hs-var">pOKPO</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-30"></span><span>    </span><span id="pOKVED"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="HR.Person.html#pOKVED"><span class="hs-identifier hs-var hs-var">pOKVED</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-31"></span><span>    </span><span id="pLegalAddress"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="HR.Person.html#pLegalAddress"><span class="hs-identifier hs-var hs-var">pLegalAddress</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-32"></span><span>    </span><span id="pAddress"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="HR.Person.html#pAddress"><span class="hs-identifier hs-var hs-var">pAddress</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-33"></span><span>    </span><span id="pPhone"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="HR.Person.html#pPhone"><span class="hs-identifier hs-var hs-var">pPhone</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-34"></span><span>    </span><span id="pFax"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="HR.Person.html#pFax"><span class="hs-identifier hs-var hs-var">pFax</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>    </span><span id="pEmail"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="HR.Person.html#pEmail"><span class="hs-identifier hs-var hs-var">pEmail</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-36"></span><span>    </span><span id="pWWW"><span class="annot"><span class="annottext">Person -&gt; Text
+</span><a href="HR.Person.html#pWWW"><span class="hs-identifier hs-var hs-var">pWWW</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-37"></span><span>    </span><span id="pPersonKindId"><span class="annot"><span class="annottext">Person -&gt; Int64
+</span><a href="HR.Person.html#pPersonKindId"><span class="hs-identifier hs-var hs-var">pPersonKindId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-38"></span><span>    </span><span id="pCategoryId"><span class="annot"><span class="annottext">Person -&gt; Int64
+</span><a href="HR.Person.html#pCategoryId"><span class="hs-identifier hs-var hs-var">pCategoryId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-39"></span><span>    </span><span id="pStatusId"><span class="annot"><span class="annottext">Person -&gt; Int64
+</span><a href="HR.Person.html#pStatusId"><span class="hs-identifier hs-var hs-var">pStatusId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-40"></span><span>    </span><span id="pParentId"><span class="annot"><span class="annottext">Person -&gt; Int64
+</span><a href="HR.Person.html#pParentId"><span class="hs-identifier hs-var hs-var">pParentId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-41"></span><span>    </span><span id="pOwnerId"><span class="annot"><span class="annottext">Person -&gt; Int64
+</span><a href="HR.Person.html#pOwnerId"><span class="hs-identifier hs-var hs-var">pOwnerId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-42"></span><span>    </span><span id="pRegisterDate"><span class="annot"><span class="annottext">Person -&gt; Day
+</span><a href="HR.Person.html#pRegisterDate"><span class="hs-identifier hs-var hs-var">pRegisterDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-43"></span><span>    </span><span id="pFlags"><span class="annot"><span class="annottext">Person -&gt; PersonFlags
+</span><a href="HR.Person.html#pFlags"><span class="hs-identifier hs-var hs-var">pFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="HR.Person.html#PersonFlags"><span class="hs-identifier hs-type">PersonFlags</span></a></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680256816"><span id="local-6989586621680256845"><span id="local-6989586621680256849"><span class="annot"><span class="annottext">Int -&gt; Person -&gt; ShowS
+[Person] -&gt; ShowS
+Person -&gt; String
+(Int -&gt; Person -&gt; ShowS)
+-&gt; (Person -&gt; String) -&gt; ([Person] -&gt; ShowS) -&gt; Show Person
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Person -&gt; ShowS
+showsPrec :: Int -&gt; Person -&gt; ShowS
+$cshow :: Person -&gt; String
+show :: Person -&gt; String
+$cshowList :: [Person] -&gt; ShowS
+showList :: [Person] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680256854"><span id="local-6989586621680256882"><span class="annot"><span class="annottext">Person -&gt; Person -&gt; Bool
+(Person -&gt; Person -&gt; Bool)
+-&gt; (Person -&gt; Person -&gt; Bool) -&gt; Eq Person
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Person -&gt; Person -&gt; Bool
+== :: Person -&gt; Person -&gt; Bool
+$c/= :: Person -&gt; Person -&gt; Bool
+/= :: Person -&gt; Person -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680256887"><span id="local-6989586621680256889"><span class="annot"><span class="annottext">(forall x. Person -&gt; Rep Person x)
+-&gt; (forall x. Rep Person x -&gt; Person) -&gt; Generic Person
+forall x. Rep Person x -&gt; Person
+forall x. Person -&gt; Rep Person x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Person -&gt; Rep Person x
+from :: forall x. Person -&gt; Rep Person x
+$cto :: forall x. Rep Person x -&gt; Person
+to :: forall x. Rep Person x -&gt; Person
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span class="hs-keyword">data</span><span> </span><span id="PersonFlags"><span class="annot"><a href="HR.Person.html#PersonFlags"><span class="hs-identifier hs-var">PersonFlags</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PersonFlags"><span class="annot"><a href="HR.Person.html#PersonFlags"><span class="hs-identifier hs-var">PersonFlags</span></a></span></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="pfRegistered"><span class="annot"><span class="annottext">PersonFlags -&gt; Bool
+</span><a href="HR.Person.html#pfRegistered"><span class="hs-identifier hs-var hs-var">pfRegistered</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span>
+</span><span id="line-49"></span><span>    </span><span id="pfLocked"><span class="annot"><span class="annottext">PersonFlags -&gt; Bool
+</span><a href="HR.Person.html#pfLocked"><span class="hs-identifier hs-var hs-var">pfLocked</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span>
+</span><span id="line-50"></span><span>    </span><span id="pfIntrust"><span class="annot"><span class="annottext">PersonFlags -&gt; Bool
+</span><a href="HR.Person.html#pfIntrust"><span class="hs-identifier hs-var hs-var">pfIntrust</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span>
+</span><span id="line-51"></span><span>    </span><span id="pfVeryLocked"><span class="annot"><span class="annottext">PersonFlags -&gt; Bool
+</span><a href="HR.Person.html#pfVeryLocked"><span class="hs-identifier hs-var hs-var">pfVeryLocked</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680256900"><span id="local-6989586621680256908"><span id="local-6989586621680256911"><span class="annot"><span class="annottext">Int -&gt; PersonFlags -&gt; ShowS
+[PersonFlags] -&gt; ShowS
+PersonFlags -&gt; String
+(Int -&gt; PersonFlags -&gt; ShowS)
+-&gt; (PersonFlags -&gt; String)
+-&gt; ([PersonFlags] -&gt; ShowS)
+-&gt; Show PersonFlags
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PersonFlags -&gt; ShowS
+showsPrec :: Int -&gt; PersonFlags -&gt; ShowS
+$cshow :: PersonFlags -&gt; String
+show :: PersonFlags -&gt; String
+$cshowList :: [PersonFlags] -&gt; ShowS
+showList :: [PersonFlags] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680256914"><span id="local-6989586621680256921"><span class="annot"><span class="annottext">PersonFlags -&gt; PersonFlags -&gt; Bool
+(PersonFlags -&gt; PersonFlags -&gt; Bool)
+-&gt; (PersonFlags -&gt; PersonFlags -&gt; Bool) -&gt; Eq PersonFlags
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PersonFlags -&gt; PersonFlags -&gt; Bool
+== :: PersonFlags -&gt; PersonFlags -&gt; Bool
+$c/= :: PersonFlags -&gt; PersonFlags -&gt; Bool
+/= :: PersonFlags -&gt; PersonFlags -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680256924"><span id="local-6989586621680256926"><span class="annot"><span class="annottext">(forall x. PersonFlags -&gt; Rep PersonFlags x)
+-&gt; (forall x. Rep PersonFlags x -&gt; PersonFlags)
+-&gt; Generic PersonFlags
+forall x. Rep PersonFlags x -&gt; PersonFlags
+forall x. PersonFlags -&gt; Rep PersonFlags x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PersonFlags -&gt; Rep PersonFlags x
+from :: forall x. PersonFlags -&gt; Rep PersonFlags x
+$cto :: forall x. Rep PersonFlags x -&gt; PersonFlags
+to :: forall x. Rep PersonFlags x -&gt; PersonFlags
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="hs-keyword">data</span><span> </span><span id="PersonKind"><span class="annot"><a href="HR.Person.html#PersonKind"><span class="hs-identifier hs-var">PersonKind</span></a></span></span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="PKCompany"><span class="annot"><a href="HR.Person.html#PKCompany"><span class="hs-identifier hs-var">PKCompany</span></a></span></span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PKIndividual"><span class="annot"><a href="HR.Person.html#PKIndividual"><span class="hs-identifier hs-var">PKIndividual</span></a></span></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PKEntrepreneur"><span class="annot"><a href="HR.Person.html#PKEntrepreneur"><span class="hs-identifier hs-var">PKEntrepreneur</span></a></span></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PKBank"><span class="annot"><a href="HR.Person.html#PKBank"><span class="hs-identifier hs-var">PKBank</span></a></span></span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PKSupplier"><span class="annot"><a href="HR.Person.html#PKSupplier"><span class="hs-identifier hs-var">PKSupplier</span></a></span></span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PKCustomer"><span class="annot"><a href="HR.Person.html#PKCustomer"><span class="hs-identifier hs-var">PKCustomer</span></a></span></span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PKEmployee"><span class="annot"><a href="HR.Person.html#PKEmployee"><span class="hs-identifier hs-var">PKEmployee</span></a></span></span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680256936"><span id="local-6989586621680256938"><span id="local-6989586621680256942"><span class="annot"><span class="annottext">Int -&gt; PersonKind -&gt; ShowS
+[PersonKind] -&gt; ShowS
+PersonKind -&gt; String
+(Int -&gt; PersonKind -&gt; ShowS)
+-&gt; (PersonKind -&gt; String)
+-&gt; ([PersonKind] -&gt; ShowS)
+-&gt; Show PersonKind
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PersonKind -&gt; ShowS
+showsPrec :: Int -&gt; PersonKind -&gt; ShowS
+$cshow :: PersonKind -&gt; String
+show :: PersonKind -&gt; String
+$cshowList :: [PersonKind] -&gt; ShowS
+showList :: [PersonKind] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680256945"><span id="local-6989586621680256950"><span class="annot"><span class="annottext">PersonKind -&gt; PersonKind -&gt; Bool
+(PersonKind -&gt; PersonKind -&gt; Bool)
+-&gt; (PersonKind -&gt; PersonKind -&gt; Bool) -&gt; Eq PersonKind
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PersonKind -&gt; PersonKind -&gt; Bool
+== :: PersonKind -&gt; PersonKind -&gt; Bool
+$c/= :: PersonKind -&gt; PersonKind -&gt; Bool
+/= :: PersonKind -&gt; PersonKind -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680256954"><span id="local-6989586621680256961"><span id="local-6989586621680256968"><span id="local-6989586621680256981"><span id="local-6989586621680256984"><span id="local-6989586621680256989"><span id="local-6989586621680256995"><span id="local-6989586621680256999"><span class="annot"><span class="annottext">Int -&gt; PersonKind
+PersonKind -&gt; Int
+PersonKind -&gt; [PersonKind]
+PersonKind -&gt; PersonKind
+PersonKind -&gt; PersonKind -&gt; [PersonKind]
+PersonKind -&gt; PersonKind -&gt; PersonKind -&gt; [PersonKind]
+(PersonKind -&gt; PersonKind)
+-&gt; (PersonKind -&gt; PersonKind)
+-&gt; (Int -&gt; PersonKind)
+-&gt; (PersonKind -&gt; Int)
+-&gt; (PersonKind -&gt; [PersonKind])
+-&gt; (PersonKind -&gt; PersonKind -&gt; [PersonKind])
+-&gt; (PersonKind -&gt; PersonKind -&gt; [PersonKind])
+-&gt; (PersonKind -&gt; PersonKind -&gt; PersonKind -&gt; [PersonKind])
+-&gt; Enum PersonKind
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: PersonKind -&gt; PersonKind
+succ :: PersonKind -&gt; PersonKind
+$cpred :: PersonKind -&gt; PersonKind
+pred :: PersonKind -&gt; PersonKind
+$ctoEnum :: Int -&gt; PersonKind
+toEnum :: Int -&gt; PersonKind
+$cfromEnum :: PersonKind -&gt; Int
+fromEnum :: PersonKind -&gt; Int
+$cenumFrom :: PersonKind -&gt; [PersonKind]
+enumFrom :: PersonKind -&gt; [PersonKind]
+$cenumFromThen :: PersonKind -&gt; PersonKind -&gt; [PersonKind]
+enumFromThen :: PersonKind -&gt; PersonKind -&gt; [PersonKind]
+$cenumFromTo :: PersonKind -&gt; PersonKind -&gt; [PersonKind]
+enumFromTo :: PersonKind -&gt; PersonKind -&gt; [PersonKind]
+$cenumFromThenTo :: PersonKind -&gt; PersonKind -&gt; PersonKind -&gt; [PersonKind]
+enumFromThenTo :: PersonKind -&gt; PersonKind -&gt; PersonKind -&gt; [PersonKind]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680257007"><span id="local-6989586621680257009"><span class="annot"><span class="annottext">(forall x. PersonKind -&gt; Rep PersonKind x)
+-&gt; (forall x. Rep PersonKind x -&gt; PersonKind) -&gt; Generic PersonKind
+forall x. Rep PersonKind x -&gt; PersonKind
+forall x. PersonKind -&gt; Rep PersonKind x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PersonKind -&gt; Rep PersonKind x
+from :: forall x. PersonKind -&gt; Rep PersonKind x
+$cto :: forall x. Rep PersonKind x -&gt; PersonKind
+to :: forall x. Rep PersonKind x -&gt; PersonKind
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span class="hs-keyword">data</span><span> </span><span id="PersonStatus"><span class="annot"><a href="HR.Person.html#PersonStatus"><span class="hs-identifier hs-var">PersonStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PSActive"><span class="annot"><a href="HR.Person.html#PSActive"><span class="hs-identifier hs-var">PSActive</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PSInactive"><span class="annot"><a href="HR.Person.html#PSInactive"><span class="hs-identifier hs-var">PSInactive</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PSBlocked"><span class="annot"><a href="HR.Person.html#PSBlocked"><span class="hs-identifier hs-var">PSBlocked</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PSDeleted"><span class="annot"><a href="HR.Person.html#PSDeleted"><span class="hs-identifier hs-var">PSDeleted</span></a></span></span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680257016"><span id="local-6989586621680257018"><span id="local-6989586621680257022"><span class="annot"><span class="annottext">Int -&gt; PersonStatus -&gt; ShowS
+[PersonStatus] -&gt; ShowS
+PersonStatus -&gt; String
+(Int -&gt; PersonStatus -&gt; ShowS)
+-&gt; (PersonStatus -&gt; String)
+-&gt; ([PersonStatus] -&gt; ShowS)
+-&gt; Show PersonStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PersonStatus -&gt; ShowS
+showsPrec :: Int -&gt; PersonStatus -&gt; ShowS
+$cshow :: PersonStatus -&gt; String
+show :: PersonStatus -&gt; String
+$cshowList :: [PersonStatus] -&gt; ShowS
+showList :: [PersonStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680257025"><span id="local-6989586621680257029"><span class="annot"><span class="annottext">PersonStatus -&gt; PersonStatus -&gt; Bool
+(PersonStatus -&gt; PersonStatus -&gt; Bool)
+-&gt; (PersonStatus -&gt; PersonStatus -&gt; Bool) -&gt; Eq PersonStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PersonStatus -&gt; PersonStatus -&gt; Bool
+== :: PersonStatus -&gt; PersonStatus -&gt; Bool
+$c/= :: PersonStatus -&gt; PersonStatus -&gt; Bool
+/= :: PersonStatus -&gt; PersonStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680257033"><span id="local-6989586621680257040"><span id="local-6989586621680257047"><span id="local-6989586621680257058"><span id="local-6989586621680257061"><span id="local-6989586621680257065"><span id="local-6989586621680257071"><span id="local-6989586621680257075"><span class="annot"><span class="annottext">Int -&gt; PersonStatus
+PersonStatus -&gt; Int
+PersonStatus -&gt; [PersonStatus]
+PersonStatus -&gt; PersonStatus
+PersonStatus -&gt; PersonStatus -&gt; [PersonStatus]
+PersonStatus -&gt; PersonStatus -&gt; PersonStatus -&gt; [PersonStatus]
+(PersonStatus -&gt; PersonStatus)
+-&gt; (PersonStatus -&gt; PersonStatus)
+-&gt; (Int -&gt; PersonStatus)
+-&gt; (PersonStatus -&gt; Int)
+-&gt; (PersonStatus -&gt; [PersonStatus])
+-&gt; (PersonStatus -&gt; PersonStatus -&gt; [PersonStatus])
+-&gt; (PersonStatus -&gt; PersonStatus -&gt; [PersonStatus])
+-&gt; (PersonStatus -&gt; PersonStatus -&gt; PersonStatus -&gt; [PersonStatus])
+-&gt; Enum PersonStatus
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: PersonStatus -&gt; PersonStatus
+succ :: PersonStatus -&gt; PersonStatus
+$cpred :: PersonStatus -&gt; PersonStatus
+pred :: PersonStatus -&gt; PersonStatus
+$ctoEnum :: Int -&gt; PersonStatus
+toEnum :: Int -&gt; PersonStatus
+$cfromEnum :: PersonStatus -&gt; Int
+fromEnum :: PersonStatus -&gt; Int
+$cenumFrom :: PersonStatus -&gt; [PersonStatus]
+enumFrom :: PersonStatus -&gt; [PersonStatus]
+$cenumFromThen :: PersonStatus -&gt; PersonStatus -&gt; [PersonStatus]
+enumFromThen :: PersonStatus -&gt; PersonStatus -&gt; [PersonStatus]
+$cenumFromTo :: PersonStatus -&gt; PersonStatus -&gt; [PersonStatus]
+enumFromTo :: PersonStatus -&gt; PersonStatus -&gt; [PersonStatus]
+$cenumFromThenTo :: PersonStatus -&gt; PersonStatus -&gt; PersonStatus -&gt; [PersonStatus]
+enumFromThenTo :: PersonStatus -&gt; PersonStatus -&gt; PersonStatus -&gt; [PersonStatus]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680257078"><span id="local-6989586621680257080"><span class="annot"><span class="annottext">(forall x. PersonStatus -&gt; Rep PersonStatus x)
+-&gt; (forall x. Rep PersonStatus x -&gt; PersonStatus)
+-&gt; Generic PersonStatus
+forall x. Rep PersonStatus x -&gt; PersonStatus
+forall x. PersonStatus -&gt; Rep PersonStatus x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PersonStatus -&gt; Rep PersonStatus x
+from :: forall x. PersonStatus -&gt; Rep PersonStatus x
+$cto :: forall x. Rep PersonStatus x -&gt; PersonStatus
+to :: forall x. Rep PersonStatus x -&gt; PersonStatus
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-67"></span><span>
+</span><span id="line-68"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680257083"><span id="local-6989586621680257090"><span id="local-6989586621680257093"><span id="local-6989586621680257096"><span id="local-6989586621680257099"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="HR.Person.html#Person"><span class="hs-identifier hs-type">Person</span></a></span></span></span></span></span></span><span>
+</span><span id="line-69"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680257476"><span id="local-6989586621680257483"><span id="local-6989586621680257486"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="HR.Person.html#Person"><span class="hs-identifier hs-type">Person</span></a></span></span></span></span><span>
+</span><span id="line-70"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680257725"><span id="local-6989586621680257731"><span id="local-6989586621680257734"><span id="local-6989586621680257737"><span id="local-6989586621680257740"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="HR.Person.html#PersonFlags"><span class="hs-identifier hs-type">PersonFlags</span></a></span></span></span></span></span></span><span>
+</span><span id="line-71"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680257830"><span id="local-6989586621680257836"><span id="local-6989586621680257839"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="HR.Person.html#PersonFlags"><span class="hs-identifier hs-type">PersonFlags</span></a></span></span></span></span><span>
+</span><span id="line-72"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680257906"><span id="local-6989586621680257913"><span id="local-6989586621680257916"><span id="local-6989586621680257919"><span id="local-6989586621680257922"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="HR.Person.html#PersonKind"><span class="hs-identifier hs-type">PersonKind</span></a></span></span></span></span></span></span><span>
+</span><span id="line-73"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680258103"><span id="local-6989586621680258110"><span id="local-6989586621680258113"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="HR.Person.html#PersonKind"><span class="hs-identifier hs-type">PersonKind</span></a></span></span></span></span><span>
+</span><span id="line-74"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680258257"><span id="local-6989586621680258264"><span id="local-6989586621680258267"><span id="local-6989586621680258270"><span id="local-6989586621680258273"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="HR.Person.html#PersonStatus"><span class="hs-identifier hs-type">PersonStatus</span></a></span></span></span></span></span></span><span>
+</span><span id="line-75"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680258371"><span id="local-6989586621680258378"><span id="local-6989586621680258381"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="HR.Person.html#PersonStatus"><span class="hs-identifier hs-type">PersonStatus</span></a></span></span></span></span><span>
+</span><span id="line-76"></span><span>
+</span><span id="line-77"></span><span class="annot"><a href="HR.Person.html#validateINN"><span class="hs-identifier hs-type">validateINN</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-78"></span><span id="validateINN"><span class="annot"><span class="annottext">validateINN :: Text -&gt; Bool
+</span><a href="HR.Person.html#validateINN"><span class="hs-identifier hs-var hs-var">validateINN</span></a></span></span><span> </span><span id="local-6989586621680258459"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680258459"><span class="hs-identifier hs-var">inn</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><span class="hs-identifier hs-var">T.length</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680258459"><span class="hs-identifier hs-var">inn</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; [Int] -&gt; Bool
+forall a. Eq a =&gt; a -&gt; [a] -&gt; Bool
+forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
+</span><span class="hs-operator hs-var">`elem`</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">10</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">12</span></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; Bool
+</span><span class="hs-identifier hs-var">T.all</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
+</span><a href="#local-6989586621680258464"><span class="hs-identifier hs-var">isDigit</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680258459"><span class="hs-identifier hs-var">inn</span></a></span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-80"></span><span>    </span><span id="local-6989586621680258464"><span class="annot"><span class="annottext">isDigit :: Char -&gt; Bool
+</span><a href="#local-6989586621680258464"><span class="hs-identifier hs-var hs-var">isDigit</span></a></span></span><span> </span><span id="local-6989586621680258468"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621680258468"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621680258468"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'0'</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621680258468"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'9'</span></span><span>
+</span><span id="line-81"></span><span>
+</span><span id="line-82"></span><span class="annot"><a href="HR.Person.html#validateKPP"><span class="hs-identifier hs-type">validateKPP</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-83"></span><span id="validateKPP"><span class="annot"><span class="annottext">validateKPP :: Text -&gt; Bool
+</span><a href="HR.Person.html#validateKPP"><span class="hs-identifier hs-var hs-var">validateKPP</span></a></span></span><span> </span><span id="local-6989586621680258470"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680258470"><span class="hs-identifier hs-var">kpp</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><span class="hs-identifier hs-var">T.length</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680258470"><span class="hs-identifier hs-var">kpp</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">9</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; Bool
+</span><span class="hs-identifier hs-var">T.all</span></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Bool
+</span><a href="#local-6989586621680258471"><span class="hs-identifier hs-var">isDigit</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680258470"><span class="hs-identifier hs-var">kpp</span></a></span><span>
+</span><span id="line-84"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-85"></span><span>    </span><span id="local-6989586621680258471"><span class="annot"><span class="annottext">isDigit :: Char -&gt; Bool
+</span><a href="#local-6989586621680258471"><span class="hs-identifier hs-var hs-var">isDigit</span></a></span></span><span> </span><span id="local-6989586621680258474"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621680258474"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621680258474"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'0'</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621680258474"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'9'</span></span><span>
+</span><span id="line-86"></span><span>
+</span><span id="line-87"></span><span class="annot"><a href="HR.Person.html#validatePhone"><span class="hs-identifier hs-type">validatePhone</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-88"></span><span id="validatePhone"><span class="annot"><span class="annottext">validatePhone :: Text -&gt; Bool
+</span><a href="HR.Person.html#validatePhone"><span class="hs-identifier hs-var hs-var">validatePhone</span></a></span></span><span> </span><span id="local-6989586621680258475"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680258475"><span class="hs-identifier hs-var">phone</span></a></span></span><span>
+</span><span id="line-89"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><span class="hs-identifier hs-var">T.null</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680258477"><span class="hs-identifier hs-var">cleaned</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-90"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><span class="hs-identifier hs-var">T.length</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680258477"><span class="hs-identifier hs-var">cleaned</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">10</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-91"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><span class="hs-identifier hs-var">T.length</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680258477"><span class="hs-identifier hs-var">cleaned</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">12</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-92"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-93"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-94"></span><span>    </span><span id="local-6989586621680258477"><span class="annot"><span class="annottext">cleaned :: Text
+</span><a href="#local-6989586621680258477"><span class="hs-identifier hs-var hs-var">cleaned</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; Text
+</span><span class="hs-identifier hs-var">T.filter</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; String -&gt; Bool
+forall a. Eq a =&gt; a -&gt; [a] -&gt; Bool
+forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
+</span><span class="hs-operator hs-var">`elem`</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;0123456789+&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680258475"><span class="hs-identifier hs-var">phone</span></a></span><span>
+</span><span id="line-95"></span><span>
+</span><span id="line-96"></span><span class="annot"><a href="HR.Person.html#validateEmail"><span class="hs-identifier hs-type">validateEmail</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-97"></span><span id="validateEmail"><span class="annot"><span class="annottext">validateEmail :: Text -&gt; Bool
+</span><a href="HR.Person.html#validateEmail"><span class="hs-identifier hs-var hs-var">validateEmail</span></a></span></span><span> </span><span id="local-6989586621680258484"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680258484"><span class="hs-identifier hs-var">email</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Bool
+</span><span class="hs-identifier hs-var">T.isInfixOf</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;@&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680258484"><span class="hs-identifier hs-var">email</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Bool
+</span><span class="hs-identifier hs-var">T.isInfixOf</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;.&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680258484"><span class="hs-identifier hs-var">email</span></a></span></pre></body></html>

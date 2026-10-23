@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Lot types - Stock lots/batches</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Inventory.Lot.html"><span class="hs-identifier">Inventory.Lot</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Inventory.Lot.html#Lot"><span class="hs-identifier">Lot</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-4"></span><span>    </span><span class="annot"><a href="Inventory.Lot.html#LotStatus"><span class="hs-identifier">LotStatus</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>    </span><span class="annot"><a href="Inventory.Lot.html#LotFlags"><span class="hs-identifier">LotFlags</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">fromGregorian</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="annot"><span class="hs-comment">-- | Lot - Stock lot (&#1087;&#1072;&#1088;&#1090;&#1080;&#1103; &#1090;&#1086;&#1074;&#1072;&#1088;&#1072;)</span></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">data</span><span> </span><span id="Lot"><span class="annot"><a href="Inventory.Lot.html#Lot"><span class="hs-identifier hs-var">Lot</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Lot"><span class="annot"><a href="Inventory.Lot.html#Lot"><span class="hs-identifier hs-var">Lot</span></a></span></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="lotId"><span class="annot"><span class="annottext">Lot -&gt; Int64
+</span><a href="Inventory.Lot.html#lotId"><span class="hs-identifier hs-var hs-var">lotId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="lotGoodsId"><span class="annot"><span class="annottext">Lot -&gt; Int64
+</span><a href="Inventory.Lot.html#lotGoodsId"><span class="hs-identifier hs-var hs-var">lotGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span id="lotLocationId"><span class="annot"><span class="annottext">Lot -&gt; Int64
+</span><a href="Inventory.Lot.html#lotLocationId"><span class="hs-identifier hs-var hs-var">lotLocationId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>    </span><span id="lotQtty"><span class="annot"><span class="annottext">Lot -&gt; Double
+</span><a href="Inventory.Lot.html#lotQtty"><span class="hs-identifier hs-var hs-var">lotQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>    </span><span id="lotCost"><span class="annot"><span class="annottext">Lot -&gt; Double
+</span><a href="Inventory.Lot.html#lotCost"><span class="hs-identifier hs-var hs-var">lotCost</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span id="lotPrice"><span class="annot"><span class="annottext">Lot -&gt; Double
+</span><a href="Inventory.Lot.html#lotPrice"><span class="hs-identifier hs-var hs-var">lotPrice</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span id="lotDate"><span class="annot"><span class="annottext">Lot -&gt; Day
+</span><a href="Inventory.Lot.html#lotDate"><span class="hs-identifier hs-var hs-var">lotDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="lotExpiry"><span class="annot"><span class="annottext">Lot -&gt; Maybe Day
+</span><a href="Inventory.Lot.html#lotExpiry"><span class="hs-identifier hs-var hs-var">lotExpiry</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="lotFlags"><span class="annot"><span class="annottext">Lot -&gt; Int
+</span><a href="Inventory.Lot.html#lotFlags"><span class="hs-identifier hs-var hs-var">lotFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="lotSerialNumber"><span class="annot"><span class="annottext">Lot -&gt; Maybe Text
+</span><a href="Inventory.Lot.html#lotSerialNumber"><span class="hs-identifier hs-var hs-var">lotSerialNumber</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="lotSupplierId"><span class="annot"><span class="annottext">Lot -&gt; Maybe Int64
+</span><a href="Inventory.Lot.html#lotSupplierId"><span class="hs-identifier hs-var hs-var">lotSupplierId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="lotBillId"><span class="annot"><span class="annottext">Lot -&gt; Maybe Int64
+</span><a href="Inventory.Lot.html#lotBillId"><span class="hs-identifier hs-var hs-var">lotBillId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680278537"><span id="local-6989586621680278559"><span id="local-6989586621680278563"><span class="annot"><span class="annottext">Int -&gt; Lot -&gt; ShowS
+[Lot] -&gt; ShowS
+Lot -&gt; String
+(Int -&gt; Lot -&gt; ShowS)
+-&gt; (Lot -&gt; String) -&gt; ([Lot] -&gt; ShowS) -&gt; Show Lot
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Lot -&gt; ShowS
+showsPrec :: Int -&gt; Lot -&gt; ShowS
+$cshow :: Lot -&gt; String
+show :: Lot -&gt; String
+$cshowList :: [Lot] -&gt; ShowS
+showList :: [Lot] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680278569"><span id="local-6989586621680278589"><span class="annot"><span class="annottext">Lot -&gt; Lot -&gt; Bool
+(Lot -&gt; Lot -&gt; Bool) -&gt; (Lot -&gt; Lot -&gt; Bool) -&gt; Eq Lot
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Lot -&gt; Lot -&gt; Bool
+== :: Lot -&gt; Lot -&gt; Bool
+$c/= :: Lot -&gt; Lot -&gt; Bool
+/= :: Lot -&gt; Lot -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="annot"><span class="hs-comment">-- | Lot status</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="LotStatus"><span class="annot"><a href="Inventory.Lot.html#LotStatus"><span class="hs-identifier hs-var">LotStatus</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="LSActive"><span class="annot"><a href="Inventory.Lot.html#LSActive"><span class="hs-identifier hs-var">LSActive</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="LSClosed"><span class="annot"><a href="Inventory.Lot.html#LSClosed"><span class="hs-identifier hs-var">LSClosed</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="LSExpired"><span class="annot"><a href="Inventory.Lot.html#LSExpired"><span class="hs-identifier hs-var">LSExpired</span></a></span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="LSReserved"><span class="annot"><a href="Inventory.Lot.html#LSReserved"><span class="hs-identifier hs-var">LSReserved</span></a></span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680278599"><span id="local-6989586621680278601"><span id="local-6989586621680278605"><span class="annot"><span class="annottext">Int -&gt; LotStatus -&gt; ShowS
+[LotStatus] -&gt; ShowS
+LotStatus -&gt; String
+(Int -&gt; LotStatus -&gt; ShowS)
+-&gt; (LotStatus -&gt; String)
+-&gt; ([LotStatus] -&gt; ShowS)
+-&gt; Show LotStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LotStatus -&gt; ShowS
+showsPrec :: Int -&gt; LotStatus -&gt; ShowS
+$cshow :: LotStatus -&gt; String
+show :: LotStatus -&gt; String
+$cshowList :: [LotStatus] -&gt; ShowS
+showList :: [LotStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680278608"><span id="local-6989586621680278613"><span class="annot"><span class="annottext">LotStatus -&gt; LotStatus -&gt; Bool
+(LotStatus -&gt; LotStatus -&gt; Bool)
+-&gt; (LotStatus -&gt; LotStatus -&gt; Bool) -&gt; Eq LotStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LotStatus -&gt; LotStatus -&gt; Bool
+== :: LotStatus -&gt; LotStatus -&gt; Bool
+$c/= :: LotStatus -&gt; LotStatus -&gt; Bool
+/= :: LotStatus -&gt; LotStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="annot"><span class="hs-comment">-- | Lot flags</span></span><span>
+</span><span id="line-38"></span><span class="hs-keyword">data</span><span> </span><span id="LotFlags"><span class="annot"><a href="Inventory.Lot.html#LotFlags"><span class="hs-identifier hs-var">LotFlags</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LotFlags"><span class="annot"><a href="Inventory.Lot.html#LotFlags"><span class="hs-identifier hs-var">LotFlags</span></a></span></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="lfStrictSerial"><span class="annot"><span class="annottext">LotFlags -&gt; Bool
+</span><a href="Inventory.Lot.html#lfStrictSerial"><span class="hs-identifier hs-var hs-var">lfStrictSerial</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span>
+</span><span id="line-40"></span><span>    </span><span id="lfNegativeOk"><span class="annot"><span class="annottext">LotFlags -&gt; Bool
+</span><a href="Inventory.Lot.html#lfNegativeOk"><span class="hs-identifier hs-var hs-var">lfNegativeOk</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span>
+</span><span id="line-41"></span><span>    </span><span id="lfFifo"><span class="annot"><span class="annottext">LotFlags -&gt; Bool
+</span><a href="Inventory.Lot.html#lfFifo"><span class="hs-identifier hs-var hs-var">lfFifo</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680278621"><span id="local-6989586621680278628"><span id="local-6989586621680278632"><span class="annot"><span class="annottext">Int -&gt; LotFlags -&gt; ShowS
+[LotFlags] -&gt; ShowS
+LotFlags -&gt; String
+(Int -&gt; LotFlags -&gt; ShowS)
+-&gt; (LotFlags -&gt; String) -&gt; ([LotFlags] -&gt; ShowS) -&gt; Show LotFlags
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LotFlags -&gt; ShowS
+showsPrec :: Int -&gt; LotFlags -&gt; ShowS
+$cshow :: LotFlags -&gt; String
+show :: LotFlags -&gt; String
+$cshowList :: [LotFlags] -&gt; ShowS
+showList :: [LotFlags] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680278635"><span id="local-6989586621680278641"><span class="annot"><span class="annottext">LotFlags -&gt; LotFlags -&gt; Bool
+(LotFlags -&gt; LotFlags -&gt; Bool)
+-&gt; (LotFlags -&gt; LotFlags -&gt; Bool) -&gt; Eq LotFlags
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LotFlags -&gt; LotFlags -&gt; Bool
+== :: LotFlags -&gt; LotFlags -&gt; Bool
+$c/= :: LotFlags -&gt; LotFlags -&gt; Bool
+/= :: LotFlags -&gt; LotFlags -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span></pre></body></html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- | AI Infrastructure Module - LLM integration and document parsing</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- Phase 22 of v3.0 roadmap (issue #9)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.AI.html"><span class="hs-identifier">Surypus.AI</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Surypus.AI.html#AIConfig"><span class="hs-identifier">AIConfig</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.AI.html#AIProvider"><span class="hs-identifier">AIProvider</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.AI.html#LLMRequest"><span class="hs-identifier">LLMRequest</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.AI.html#LLMResponse"><span class="hs-identifier">LLMResponse</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.AI.html#parseDocument"><span class="hs-identifier">parseDocument</span></a></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.AI.html#getRecommendations"><span class="hs-identifier">getRecommendations</span></a></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.AI.html#extractKeyInsights"><span class="hs-identifier">extractKeyInsights</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier">ToJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier">FromJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier">Value</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#object"><span class="hs-identifier">object</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#.%3D"><span class="hs-operator">(.=)</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#parseJSON"><span class="hs-identifier">parseJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#withObject"><span class="hs-identifier">withObject</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#.%3A"><span class="hs-operator">(.:)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time.Clock</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">getCurrentTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="annot"><span class="hs-comment">-- | AI Provider configuration</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">data</span><span> </span><span id="AIProvider"><span class="annot"><a href="Surypus.AI.html#AIProvider"><span class="hs-identifier hs-var">AIProvider</span></a></span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="OpenAI"><span class="annot"><a href="Surypus.AI.html#OpenAI"><span class="hs-identifier hs-var">OpenAI</span></a></span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Anthropic"><span class="annot"><a href="Surypus.AI.html#Anthropic"><span class="hs-identifier hs-var">Anthropic</span></a></span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="LocalLLM"><span class="annot"><a href="Surypus.AI.html#LocalLLM"><span class="hs-identifier hs-var">LocalLLM</span></a></span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680296568"><span id="local-6989586621680296570"><span id="local-6989586621680296574"><span class="annot"><span class="annottext">Int -&gt; AIProvider -&gt; ShowS
+[AIProvider] -&gt; ShowS
+AIProvider -&gt; String
+(Int -&gt; AIProvider -&gt; ShowS)
+-&gt; (AIProvider -&gt; String)
+-&gt; ([AIProvider] -&gt; ShowS)
+-&gt; Show AIProvider
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AIProvider -&gt; ShowS
+showsPrec :: Int -&gt; AIProvider -&gt; ShowS
+$cshow :: AIProvider -&gt; String
+show :: AIProvider -&gt; String
+$cshowList :: [AIProvider] -&gt; ShowS
+showList :: [AIProvider] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680296579"><span id="local-6989586621680296584"><span class="annot"><span class="annottext">AIProvider -&gt; AIProvider -&gt; Bool
+(AIProvider -&gt; AIProvider -&gt; Bool)
+-&gt; (AIProvider -&gt; AIProvider -&gt; Bool) -&gt; Eq AIProvider
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AIProvider -&gt; AIProvider -&gt; Bool
+== :: AIProvider -&gt; AIProvider -&gt; Bool
+$c/= :: AIProvider -&gt; AIProvider -&gt; Bool
+/= :: AIProvider -&gt; AIProvider -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680296589"><span id="local-6989586621680296591"><span class="annot"><span class="annottext">(forall x. AIProvider -&gt; Rep AIProvider x)
+-&gt; (forall x. Rep AIProvider x -&gt; AIProvider) -&gt; Generic AIProvider
+forall x. Rep AIProvider x -&gt; AIProvider
+forall x. AIProvider -&gt; Rep AIProvider x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. AIProvider -&gt; Rep AIProvider x
+from :: forall x. AIProvider -&gt; Rep AIProvider x
+$cto :: forall x. Rep AIProvider x -&gt; AIProvider
+to :: forall x. Rep AIProvider x -&gt; AIProvider
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680296597"><span id="local-6989586621680296604"><span id="local-6989586621680296607"><span id="local-6989586621680296610"><span id="local-6989586621680296613"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.AI.html#AIProvider"><span class="hs-identifier hs-type">AIProvider</span></a></span></span></span></span></span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680296716"><span id="local-6989586621680296723"><span id="local-6989586621680296726"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.AI.html#AIProvider"><span class="hs-identifier hs-type">AIProvider</span></a></span></span></span></span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="annot"><span class="hs-comment">-- | AI Configuration</span></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">data</span><span> </span><span id="AIConfig"><span class="annot"><a href="Surypus.AI.html#AIConfig"><span class="hs-identifier hs-var">AIConfig</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AIConfig"><span class="annot"><a href="Surypus.AI.html#AIConfig"><span class="hs-identifier hs-var">AIConfig</span></a></span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="aiProvider"><span class="annot"><span class="annottext">AIConfig -&gt; AIProvider
+</span><a href="Surypus.AI.html#aiProvider"><span class="hs-identifier hs-var hs-var">aiProvider</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.AI.html#AIProvider"><span class="hs-identifier hs-type">AIProvider</span></a></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="aiModel"><span class="annot"><span class="annottext">AIConfig -&gt; Text
+</span><a href="Surypus.AI.html#aiModel"><span class="hs-identifier hs-var hs-var">aiModel</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="aiApiKey"><span class="annot"><span class="annottext">AIConfig -&gt; Text
+</span><a href="Surypus.AI.html#aiApiKey"><span class="hs-identifier hs-var hs-var">aiApiKey</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="aiEndpoint"><span class="annot"><span class="annottext">AIConfig -&gt; Text
+</span><a href="Surypus.AI.html#aiEndpoint"><span class="hs-identifier hs-var hs-var">aiEndpoint</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680296810"><span id="local-6989586621680296819"><span id="local-6989586621680296823"><span class="annot"><span class="annottext">Int -&gt; AIConfig -&gt; ShowS
+[AIConfig] -&gt; ShowS
+AIConfig -&gt; String
+(Int -&gt; AIConfig -&gt; ShowS)
+-&gt; (AIConfig -&gt; String) -&gt; ([AIConfig] -&gt; ShowS) -&gt; Show AIConfig
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AIConfig -&gt; ShowS
+showsPrec :: Int -&gt; AIConfig -&gt; ShowS
+$cshow :: AIConfig -&gt; String
+show :: AIConfig -&gt; String
+$cshowList :: [AIConfig] -&gt; ShowS
+showList :: [AIConfig] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680296826"><span id="local-6989586621680296833"><span class="annot"><span class="annottext">AIConfig -&gt; AIConfig -&gt; Bool
+(AIConfig -&gt; AIConfig -&gt; Bool)
+-&gt; (AIConfig -&gt; AIConfig -&gt; Bool) -&gt; Eq AIConfig
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AIConfig -&gt; AIConfig -&gt; Bool
+== :: AIConfig -&gt; AIConfig -&gt; Bool
+$c/= :: AIConfig -&gt; AIConfig -&gt; Bool
+/= :: AIConfig -&gt; AIConfig -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680296837"><span id="local-6989586621680296839"><span class="annot"><span class="annottext">(forall x. AIConfig -&gt; Rep AIConfig x)
+-&gt; (forall x. Rep AIConfig x -&gt; AIConfig) -&gt; Generic AIConfig
+forall x. Rep AIConfig x -&gt; AIConfig
+forall x. AIConfig -&gt; Rep AIConfig x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. AIConfig -&gt; Rep AIConfig x
+from :: forall x. AIConfig -&gt; Rep AIConfig x
+$cto :: forall x. Rep AIConfig x -&gt; AIConfig
+to :: forall x. Rep AIConfig x -&gt; AIConfig
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680296842"><span id="local-6989586621680296849"><span id="local-6989586621680296852"><span id="local-6989586621680296855"><span id="local-6989586621680296858"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.AI.html#AIConfig"><span class="hs-identifier hs-type">AIConfig</span></a></span></span></span></span></span></span><span>
+</span><span id="line-41"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680296975"><span id="local-6989586621680296982"><span id="local-6989586621680296985"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.AI.html#AIConfig"><span class="hs-identifier hs-type">AIConfig</span></a></span></span></span></span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><span class="hs-comment">-- | LLM Request</span></span><span>
+</span><span id="line-44"></span><span class="hs-keyword">data</span><span> </span><span id="LLMRequest"><span class="annot"><a href="Surypus.AI.html#LLMRequest"><span class="hs-identifier hs-var">LLMRequest</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LLMRequest"><span class="annot"><a href="Surypus.AI.html#LLMRequest"><span class="hs-identifier hs-var">LLMRequest</span></a></span></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="reqModel"><span class="annot"><span class="annottext">LLMRequest -&gt; Text
+</span><a href="Surypus.AI.html#reqModel"><span class="hs-identifier hs-var hs-var">reqModel</span></a></span></span><span>        </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="reqMessages"><span class="annot"><span class="annottext">LLMRequest -&gt; [Value]
+</span><a href="Surypus.AI.html#reqMessages"><span class="hs-identifier hs-var hs-var">reqMessages</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier hs-type">Value</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="reqMaxTokens"><span class="annot"><span class="annottext">LLMRequest -&gt; Int
+</span><a href="Surypus.AI.html#reqMaxTokens"><span class="hs-identifier hs-var hs-var">reqMaxTokens</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="reqTemperature"><span class="annot"><span class="annottext">LLMRequest -&gt; Double
+</span><a href="Surypus.AI.html#reqTemperature"><span class="hs-identifier hs-var hs-var">reqTemperature</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680297068"><span id="local-6989586621680297079"><span id="local-6989586621680297083"><span class="annot"><span class="annottext">Int -&gt; LLMRequest -&gt; ShowS
+[LLMRequest] -&gt; ShowS
+LLMRequest -&gt; String
+(Int -&gt; LLMRequest -&gt; ShowS)
+-&gt; (LLMRequest -&gt; String)
+-&gt; ([LLMRequest] -&gt; ShowS)
+-&gt; Show LLMRequest
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LLMRequest -&gt; ShowS
+showsPrec :: Int -&gt; LLMRequest -&gt; ShowS
+$cshow :: LLMRequest -&gt; String
+show :: LLMRequest -&gt; String
+$cshowList :: [LLMRequest] -&gt; ShowS
+showList :: [LLMRequest] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680297087"><span id="local-6989586621680297097"><span class="annot"><span class="annottext">LLMRequest -&gt; LLMRequest -&gt; Bool
+(LLMRequest -&gt; LLMRequest -&gt; Bool)
+-&gt; (LLMRequest -&gt; LLMRequest -&gt; Bool) -&gt; Eq LLMRequest
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LLMRequest -&gt; LLMRequest -&gt; Bool
+== :: LLMRequest -&gt; LLMRequest -&gt; Bool
+$c/= :: LLMRequest -&gt; LLMRequest -&gt; Bool
+/= :: LLMRequest -&gt; LLMRequest -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680297102"><span id="local-6989586621680297104"><span class="annot"><span class="annottext">(forall x. LLMRequest -&gt; Rep LLMRequest x)
+-&gt; (forall x. Rep LLMRequest x -&gt; LLMRequest) -&gt; Generic LLMRequest
+forall x. Rep LLMRequest x -&gt; LLMRequest
+forall x. LLMRequest -&gt; Rep LLMRequest x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. LLMRequest -&gt; Rep LLMRequest x
+from :: forall x. LLMRequest -&gt; Rep LLMRequest x
+$cto :: forall x. Rep LLMRequest x -&gt; LLMRequest
+to :: forall x. Rep LLMRequest x -&gt; LLMRequest
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680297107"><span id="local-6989586621680297114"><span id="local-6989586621680297117"><span id="local-6989586621680297120"><span id="local-6989586621680297123"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.AI.html#LLMRequest"><span class="hs-identifier hs-type">LLMRequest</span></a></span></span></span></span></span></span><span>
+</span><span id="line-52"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680297226"><span id="local-6989586621680297233"><span id="local-6989586621680297236"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.AI.html#LLMRequest"><span class="hs-identifier hs-type">LLMRequest</span></a></span></span></span></span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span class="annot"><span class="hs-comment">-- | LLM Response</span></span><span>
+</span><span id="line-55"></span><span class="hs-keyword">data</span><span> </span><span id="LLMResponse"><span class="annot"><a href="Surypus.AI.html#LLMResponse"><span class="hs-identifier hs-var">LLMResponse</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LLMResponse"><span class="annot"><a href="Surypus.AI.html#LLMResponse"><span class="hs-identifier hs-var">LLMResponse</span></a></span></span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="respId"><span class="annot"><span class="annottext">LLMResponse -&gt; Text
+</span><a href="Surypus.AI.html#respId"><span class="hs-identifier hs-var hs-var">respId</span></a></span></span><span>        </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="respContent"><span class="annot"><span class="annottext">LLMResponse -&gt; Text
+</span><a href="Surypus.AI.html#respContent"><span class="hs-identifier hs-var hs-var">respContent</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="respModel"><span class="annot"><span class="annottext">LLMResponse -&gt; Text
+</span><a href="Surypus.AI.html#respModel"><span class="hs-identifier hs-var hs-var">respModel</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="respCreatedAt"><span class="annot"><span class="annottext">LLMResponse -&gt; UTCTime
+</span><a href="Surypus.AI.html#respCreatedAt"><span class="hs-identifier hs-var hs-var">respCreatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680297315"><span id="local-6989586621680297323"><span id="local-6989586621680297327"><span class="annot"><span class="annottext">Int -&gt; LLMResponse -&gt; ShowS
+[LLMResponse] -&gt; ShowS
+LLMResponse -&gt; String
+(Int -&gt; LLMResponse -&gt; ShowS)
+-&gt; (LLMResponse -&gt; String)
+-&gt; ([LLMResponse] -&gt; ShowS)
+-&gt; Show LLMResponse
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LLMResponse -&gt; ShowS
+showsPrec :: Int -&gt; LLMResponse -&gt; ShowS
+$cshow :: LLMResponse -&gt; String
+show :: LLMResponse -&gt; String
+$cshowList :: [LLMResponse] -&gt; ShowS
+showList :: [LLMResponse] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680297330"><span id="local-6989586621680297337"><span class="annot"><span class="annottext">LLMResponse -&gt; LLMResponse -&gt; Bool
+(LLMResponse -&gt; LLMResponse -&gt; Bool)
+-&gt; (LLMResponse -&gt; LLMResponse -&gt; Bool) -&gt; Eq LLMResponse
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LLMResponse -&gt; LLMResponse -&gt; Bool
+== :: LLMResponse -&gt; LLMResponse -&gt; Bool
+$c/= :: LLMResponse -&gt; LLMResponse -&gt; Bool
+/= :: LLMResponse -&gt; LLMResponse -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680297341"><span id="local-6989586621680297343"><span class="annot"><span class="annottext">(forall x. LLMResponse -&gt; Rep LLMResponse x)
+-&gt; (forall x. Rep LLMResponse x -&gt; LLMResponse)
+-&gt; Generic LLMResponse
+forall x. Rep LLMResponse x -&gt; LLMResponse
+forall x. LLMResponse -&gt; Rep LLMResponse x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. LLMResponse -&gt; Rep LLMResponse x
+from :: forall x. LLMResponse -&gt; Rep LLMResponse x
+$cto :: forall x. Rep LLMResponse x -&gt; LLMResponse
+to :: forall x. Rep LLMResponse x -&gt; LLMResponse
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680297346"><span id="local-6989586621680297353"><span id="local-6989586621680297356"><span id="local-6989586621680297359"><span id="local-6989586621680297362"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.AI.html#LLMResponse"><span class="hs-identifier hs-type">LLMResponse</span></a></span></span></span></span></span></span><span>
+</span><span id="line-63"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680297456"><span id="local-6989586621680297460"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.AI.html#LLMResponse"><span class="hs-identifier hs-type">LLMResponse</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-64"></span><span>  </span><span id="local-6989586621680297478"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser LLMResponse
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#parseJSON"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String
+-&gt; (Object -&gt; Parser LLMResponse) -&gt; Value -&gt; Parser LLMResponse
+forall a. String -&gt; (Object -&gt; Parser a) -&gt; Value -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#withObject"><span class="hs-identifier hs-var">withObject</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;LLMResponse&quot;</span></span><span> </span><span class="annot"><span class="annottext">((Object -&gt; Parser LLMResponse) -&gt; Value -&gt; Parser LLMResponse)
+-&gt; (Object -&gt; Parser LLMResponse) -&gt; Value -&gt; Parser LLMResponse
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-glyph">\</span><span id="local-6989586621680297479"><span class="annot"><span class="annottext">Object
+</span><a href="#local-6989586621680297479"><span class="hs-identifier hs-var">o</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text -&gt; UTCTime -&gt; LLMResponse
+</span><a href="Surypus.AI.html#LLMResponse"><span class="hs-identifier hs-var">LLMResponse</span></a></span><span>
+</span><span id="line-65"></span><span>    </span><span class="annot"><span class="annottext">(Text -&gt; Text -&gt; Text -&gt; UTCTime -&gt; LLMResponse)
+-&gt; Parser Text -&gt; Parser (Text -&gt; Text -&gt; UTCTime -&gt; LLMResponse)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Object
+</span><a href="#local-6989586621680297479"><span class="hs-identifier hs-var">o</span></a></span><span> </span><span class="annot"><span class="annottext">Object -&gt; Key -&gt; Parser Text
+forall a. FromJSON a =&gt; Object -&gt; Key -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#.%3A"><span class="hs-operator hs-var">.:</span></a></span><span> </span><span class="annot"><span class="annottext">Key
+</span><span class="hs-string">&quot;id&quot;</span></span><span>
+</span><span id="line-66"></span><span>    </span><span class="annot"><span class="annottext">Parser (Text -&gt; Text -&gt; UTCTime -&gt; LLMResponse)
+-&gt; Parser Text -&gt; Parser (Text -&gt; UTCTime -&gt; LLMResponse)
+forall a b. Parser (a -&gt; b) -&gt; Parser a -&gt; Parser b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Object
+</span><a href="#local-6989586621680297479"><span class="hs-identifier hs-var">o</span></a></span><span> </span><span class="annot"><span class="annottext">Object -&gt; Key -&gt; Parser Text
+forall a. FromJSON a =&gt; Object -&gt; Key -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#.%3A"><span class="hs-operator hs-var">.:</span></a></span><span> </span><span class="annot"><span class="annottext">Key
+</span><span class="hs-string">&quot;content&quot;</span></span><span>
+</span><span id="line-67"></span><span>    </span><span class="annot"><span class="annottext">Parser (Text -&gt; UTCTime -&gt; LLMResponse)
+-&gt; Parser Text -&gt; Parser (UTCTime -&gt; LLMResponse)
+forall a b. Parser (a -&gt; b) -&gt; Parser a -&gt; Parser b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Object
+</span><a href="#local-6989586621680297479"><span class="hs-identifier hs-var">o</span></a></span><span> </span><span class="annot"><span class="annottext">Object -&gt; Key -&gt; Parser Text
+forall a. FromJSON a =&gt; Object -&gt; Key -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#.%3A"><span class="hs-operator hs-var">.:</span></a></span><span> </span><span class="annot"><span class="annottext">Key
+</span><span class="hs-string">&quot;model&quot;</span></span><span>
+</span><span id="line-68"></span><span>    </span><span class="annot"><span class="annottext">Parser (UTCTime -&gt; LLMResponse)
+-&gt; Parser UTCTime -&gt; Parser LLMResponse
+forall a b. Parser (a -&gt; b) -&gt; Parser a -&gt; Parser b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Object
+</span><a href="#local-6989586621680297479"><span class="hs-identifier hs-var">o</span></a></span><span> </span><span class="annot"><span class="annottext">Object -&gt; Key -&gt; Parser UTCTime
+forall a. FromJSON a =&gt; Object -&gt; Key -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#.%3A"><span class="hs-operator hs-var">.:</span></a></span><span> </span><span class="annot"><span class="annottext">Key
+</span><span class="hs-string">&quot;created_at&quot;</span></span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="annot"><span class="hs-comment">-- | Parse a document using AI</span></span><span>
+</span><span id="line-71"></span><span class="annot"><a href="Surypus.AI.html#parseDocument"><span class="hs-identifier hs-type">parseDocument</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><a href="Surypus.AI.html#LLMResponse"><span class="hs-identifier hs-type">LLMResponse</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span id="parseDocument"><span class="annot"><span class="annottext">parseDocument :: Text -&gt; IO (Either Text LLMResponse)
+</span><a href="Surypus.AI.html#parseDocument"><span class="hs-identifier hs-var hs-var">parseDocument</span></a></span></span><span> </span><span id="local-6989586621680297481"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680297481"><span class="hs-identifier hs-var">docContent</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-73"></span><span>  </span><span id="local-6989586621680297482"><span class="annot"><a href="#local-6989586621680297482"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO UTCTime
+</span><span class="hs-identifier hs-var">getCurrentTime</span></span><span>
+</span><span id="line-74"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="Surypus.AI.html#LLMResponse"><span class="hs-identifier hs-type">LLMResponse</span></a></span><span>
+</span><span id="line-75"></span><span>    </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Surypus.AI.html#respId"><span class="hs-identifier hs-var">respId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-string">&quot;stub&quot;</span></span><span>
+</span><span id="line-76"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.AI.html#respContent"><span class="hs-identifier hs-var">respContent</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">T.take</span></span><span> </span><span class="annot"><span class="hs-number">100</span></span><span> </span><span class="annot"><a href="#local-6989586621680297481"><span class="hs-identifier hs-type">docContent</span></a></span><span>
+</span><span id="line-77"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.AI.html#respModel"><span class="hs-identifier hs-var">respModel</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-string">&quot;stub&quot;</span></span><span>
+</span><span id="line-78"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.AI.html#respCreatedAt"><span class="hs-identifier hs-var">respCreatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621680297482"><span class="hs-identifier hs-type">now</span></a></span><span>
+</span><span id="line-79"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-80"></span><span>
+</span><span id="line-81"></span><span class="annot"><span class="hs-comment">-- | Get recommendations using AI</span></span><span>
+</span><span id="line-82"></span><span class="annot"><a href="Surypus.AI.html#getRecommendations"><span class="hs-identifier hs-type">getRecommendations</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-83"></span><span id="getRecommendations"><span class="annot"><span class="annottext">getRecommendations :: Text -&gt; IO (Either Text [Text])
+</span><a href="Surypus.AI.html#getRecommendations"><span class="hs-identifier hs-var hs-var">getRecommendations</span></a></span></span><span> </span><span id="local-6989586621680297484"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680297484"><span class="hs-identifier hs-var">_query</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-84"></span><span>  </span><span class="annot"><span class="annottext">Either Text [Text] -&gt; IO (Either Text [Text])
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text [Text] -&gt; IO (Either Text [Text]))
+-&gt; Either Text [Text] -&gt; IO (Either Text [Text])
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; Either Text [Text]
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span>
+</span><span id="line-85"></span><span>    </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Analyze the current quarter's financial data&quot;</span></span><span>
+</span><span id="line-86"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Generate a budget variance analysis&quot;</span></span><span>
+</span><span id="line-87"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Create an inventory optimization plan&quot;</span></span><span>
+</span><span id="line-88"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Develop sales forecast projections&quot;</span></span><span>
+</span><span id="line-89"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Identify high-margin product opportunities&quot;</span></span><span>
+</span><span id="line-90"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Recommend pricing adjustments for competitors&quot;</span></span><span>
+</span><span id="line-91"></span><span>    </span><span class="hs-special">]</span><span>
+</span><span id="line-92"></span><span>
+</span><span id="line-93"></span><span class="annot"><span class="hs-comment">-- | Extract key insights from business documents</span></span><span>
+</span><span id="line-94"></span><span class="annot"><a href="Surypus.AI.html#extractKeyInsights"><span class="hs-identifier hs-type">extractKeyInsights</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-95"></span><span id="extractKeyInsights"><span class="annot"><span class="annottext">extractKeyInsights :: Text -&gt; IO (Either Text [Text])
+</span><a href="Surypus.AI.html#extractKeyInsights"><span class="hs-identifier hs-var hs-var">extractKeyInsights</span></a></span></span><span> </span><span id="local-6989586621680297485"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680297485"><span class="hs-identifier hs-var">docContent</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-96"></span><span>  </span><span class="annot"><span class="annottext">Either Text [Text] -&gt; IO (Either Text [Text])
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text [Text] -&gt; IO (Either Text [Text]))
+-&gt; Either Text [Text] -&gt; IO (Either Text [Text])
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; Either Text [Text]
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span>
+</span><span id="line-97"></span><span>    </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Total sales revenue: $1.2M&quot;</span></span><span>
+</span><span id="line-98"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;YoY growth: 15%&quot;</span></span><span>
+</span><span id="line-99"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Gross margin: 42%&quot;</span></span><span>
+</span><span id="line-100"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Operating expenses: $350K&quot;</span></span><span>
+</span><span id="line-101"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Net profit: $280K&quot;</span></span><span>
+</span><span id="line-102"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Cash flow positive&quot;</span></span><span>
+</span><span id="line-103"></span><span>    </span><span class="hs-special">]</span><span>
+</span><span id="line-104"></span></pre></body></html>

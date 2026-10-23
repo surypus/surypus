@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE TypeApplications #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.API.BillTemplates.html"><span class="hs-identifier">Surypus.API.BillTemplates</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Surypus.API.BillTemplates.html#listTemplates"><span class="hs-identifier">listTemplates</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.BillTemplates.html#saveTemplate"><span class="hs-identifier">saveTemplate</span></a></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.BillTemplates.html#deleteTemplate"><span class="hs-identifier">deleteTemplate</span></a></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.BillTemplates.html#BillTemplateInfo"><span class="hs-identifier">BillTemplateInfo</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.IO.Class</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">liftIO</span></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.ORMPool.html"><span class="hs-identifier">DAL.ORMPool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier">ConnectionPool</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.Types.html"><span class="hs-identifier">DAL.Types</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#MutationResult"><span class="hs-identifier">MutationResult</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier">QueryResult</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier">ToJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier">FromJSON</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.html"><span class="hs-identifier">Database.Persist.Sql</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier">runSqlPool</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Orphan.PersistStore.html#toSqlKey"><span class="hs-identifier">toSqlKey</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Class.PersistEntity.html#Key"><span class="hs-identifier">Key</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.html"><span class="hs-identifier">Database.Persist</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">P</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/esqueleto-3.6.0.3-82a4494d3637cb18febccc91e9121041b033788ef192e8377a0294b5f2b43e39/share/doc/html/src/Database.Esqueleto.Experimental.html"><span class="hs-identifier">Database.Esqueleto.Experimental</span></a></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Surypus.DB.Schema.html"><span class="hs-identifier">Surypus.DB.Schema</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Surypus.DB.Schema.html#ReportTemplateEntity"><span class="hs-identifier">ReportTemplateEntity</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Surypus.DB.Schema.html"><span class="hs-identifier">Surypus.DB.Schema</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">R</span></span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">data</span><span> </span><span id="BillTemplateInfo"><span class="annot"><a href="Surypus.API.BillTemplates.html#BillTemplateInfo"><span class="hs-identifier hs-var">BillTemplateInfo</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BillTemplateInfo"><span class="annot"><a href="Surypus.API.BillTemplates.html#BillTemplateInfo"><span class="hs-identifier hs-var">BillTemplateInfo</span></a></span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="btiId"><span class="annot"><span class="annottext">BillTemplateInfo -&gt; Int64
+</span><a href="Surypus.API.BillTemplates.html#btiId"><span class="hs-identifier hs-var hs-var">btiId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="btiName"><span class="annot"><span class="annottext">BillTemplateInfo -&gt; Text
+</span><a href="Surypus.API.BillTemplates.html#btiName"><span class="hs-identifier hs-var hs-var">btiName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="btiContent"><span class="annot"><span class="annottext">BillTemplateInfo -&gt; Text
+</span><a href="Surypus.API.BillTemplates.html#btiContent"><span class="hs-identifier hs-var hs-var">btiContent</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680320221"><span id="local-6989586621680320230"><span id="local-6989586621680320234"><span class="annot"><span class="annottext">Int -&gt; BillTemplateInfo -&gt; ShowS
+[BillTemplateInfo] -&gt; ShowS
+BillTemplateInfo -&gt; String
+(Int -&gt; BillTemplateInfo -&gt; ShowS)
+-&gt; (BillTemplateInfo -&gt; String)
+-&gt; ([BillTemplateInfo] -&gt; ShowS)
+-&gt; Show BillTemplateInfo
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BillTemplateInfo -&gt; ShowS
+showsPrec :: Int -&gt; BillTemplateInfo -&gt; ShowS
+$cshow :: BillTemplateInfo -&gt; String
+show :: BillTemplateInfo -&gt; String
+$cshowList :: [BillTemplateInfo] -&gt; ShowS
+showList :: [BillTemplateInfo] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680320239"><span id="local-6989586621680320246"><span class="annot"><span class="annottext">BillTemplateInfo -&gt; BillTemplateInfo -&gt; Bool
+(BillTemplateInfo -&gt; BillTemplateInfo -&gt; Bool)
+-&gt; (BillTemplateInfo -&gt; BillTemplateInfo -&gt; Bool)
+-&gt; Eq BillTemplateInfo
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BillTemplateInfo -&gt; BillTemplateInfo -&gt; Bool
+== :: BillTemplateInfo -&gt; BillTemplateInfo -&gt; Bool
+$c/= :: BillTemplateInfo -&gt; BillTemplateInfo -&gt; Bool
+/= :: BillTemplateInfo -&gt; BillTemplateInfo -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680320251"><span id="local-6989586621680320253"><span class="annot"><span class="annottext">(forall x. BillTemplateInfo -&gt; Rep BillTemplateInfo x)
+-&gt; (forall x. Rep BillTemplateInfo x -&gt; BillTemplateInfo)
+-&gt; Generic BillTemplateInfo
+forall x. Rep BillTemplateInfo x -&gt; BillTemplateInfo
+forall x. BillTemplateInfo -&gt; Rep BillTemplateInfo x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. BillTemplateInfo -&gt; Rep BillTemplateInfo x
+from :: forall x. BillTemplateInfo -&gt; Rep BillTemplateInfo x
+$cto :: forall x. Rep BillTemplateInfo x -&gt; BillTemplateInfo
+to :: forall x. Rep BillTemplateInfo x -&gt; BillTemplateInfo
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680320259"><span id="local-6989586621680320266"><span id="local-6989586621680320269"><span id="local-6989586621680320272"><span id="local-6989586621680320275"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.API.BillTemplates.html#BillTemplateInfo"><span class="hs-identifier hs-type">BillTemplateInfo</span></a></span></span></span></span></span></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680320391"><span id="local-6989586621680320398"><span id="local-6989586621680320401"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.API.BillTemplates.html#BillTemplateInfo"><span class="hs-identifier hs-type">BillTemplateInfo</span></a></span></span></span></span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="annot"><a href="Surypus.API.BillTemplates.html#listTemplates"><span class="hs-identifier hs-type">listTemplates</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Surypus.API.BillTemplates.html#BillTemplateInfo"><span class="hs-identifier hs-type">BillTemplateInfo</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span id="listTemplates"><span class="annot"><span class="annottext">listTemplates :: ConnectionPool -&gt; IO (QueryResult [BillTemplateInfo])
+</span><a href="Surypus.API.BillTemplates.html#listTemplates"><span class="hs-identifier hs-var hs-var">listTemplates</span></a></span></span><span> </span><span id="local-6989586621680320477"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680320477"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-38"></span><span>  </span><span id="local-6989586621680320478"><span class="annot"><a href="#local-6989586621680320478"><span class="hs-identifier hs-var">entities</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO [Entity ReportTemplateEntity]
+-&gt; IO [Entity ReportTemplateEntity]
+forall a. IO a -&gt; IO a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO [Entity ReportTemplateEntity]
+ -&gt; IO [Entity ReportTemplateEntity])
+-&gt; IO [Entity ReportTemplateEntity]
+-&gt; IO [Entity ReportTemplateEntity]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ReaderT SqlBackend IO [Entity ReportTemplateEntity]
+-&gt; ConnectionPool -&gt; IO [Entity ReportTemplateEntity]
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">SqlQuery (SqlExpr (Entity ReportTemplateEntity))
+-&gt; ReaderT SqlBackend IO [Entity ReportTemplateEntity]
+forall a r (m :: * -&gt; *) backend.
+(SqlSelect a r, MonadIO m, SqlBackendCanRead backend) =&gt;
+SqlQuery a -&gt; ReaderT backend m [r]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/esqueleto-3.6.0.3-82a4494d3637cb18febccc91e9121041b033788ef192e8377a0294b5f2b43e39/share/doc/html/src/Database.Esqueleto.Internal.Internal.html#select"><span class="hs-identifier hs-var">select</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlQuery (SqlExpr (Entity ReportTemplateEntity))
+ -&gt; ReaderT SqlBackend IO [Entity ReportTemplateEntity])
+-&gt; SqlQuery (SqlExpr (Entity ReportTemplateEntity))
+-&gt; ReaderT SqlBackend IO [Entity ReportTemplateEntity]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-40"></span><span>        </span><span id="local-6989586621680320480"><span class="annot"><a href="#local-6989586621680320480"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">From (SqlExpr (Entity ReportTemplateEntity))
+-&gt; SqlQuery (SqlExpr (Entity ReportTemplateEntity))
+forall a a'. ToFrom a a' =&gt; a -&gt; SqlQuery a'
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/esqueleto-3.6.0.3-82a4494d3637cb18febccc91e9121041b033788ef192e8377a0294b5f2b43e39/share/doc/html/src/Database.Esqueleto.Experimental.From.html#from"><span class="hs-identifier hs-var">from</span></a></span><span> </span><span class="annot"><span class="annottext">(From (SqlExpr (Entity ReportTemplateEntity))
+ -&gt; SqlQuery (SqlExpr (Entity ReportTemplateEntity)))
+-&gt; From (SqlExpr (Entity ReportTemplateEntity))
+-&gt; SqlQuery (SqlExpr (Entity ReportTemplateEntity))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">forall ent. PersistEntity ent =&gt; From (SqlExpr (Entity ent))
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/esqueleto-3.6.0.3-82a4494d3637cb18febccc91e9121041b033788ef192e8377a0294b5f2b43e39/share/doc/html/src/Database.Esqueleto.Experimental.From.html#table"><span class="hs-identifier hs-var">table</span></a></span><span> </span><span class="hs-glyph">@</span><span class="annot"><a href="Surypus.DB.Schema.html#ReportTemplateEntity"><span class="hs-identifier hs-type">ReportTemplateEntity</span></a></span><span>
+</span><span id="line-41"></span><span>        </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/esqueleto-3.6.0.3-82a4494d3637cb18febccc91e9121041b033788ef192e8377a0294b5f2b43e39/share/doc/html/src/Database.Esqueleto.Internal.Internal.html#where_"><span class="hs-identifier hs-type">where_</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="#local-6989586621680320480"><span class="hs-identifier hs-type">r</span></a></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/esqueleto-3.6.0.3-82a4494d3637cb18febccc91e9121041b033788ef192e8377a0294b5f2b43e39/share/doc/html/src/Database.Esqueleto.Internal.Internal.html#%5E."><span class="hs-operator hs-type">^.</span></a></span><span> </span><span class="annot"><a href="Surypus.DB.Schema.html#ReportTemplateEntityReportType"><span class="hs-identifier hs-type">R.ReportTemplateEntityReportType</span></a></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/esqueleto-3.6.0.3-82a4494d3637cb18febccc91e9121041b033788ef192e8377a0294b5f2b43e39/share/doc/html/src/Database.Esqueleto.Internal.Internal.html#%3D%3D."><span class="hs-operator hs-type">==.</span></a></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/esqueleto-3.6.0.3-82a4494d3637cb18febccc91e9121041b033788ef192e8377a0294b5f2b43e39/share/doc/html/src/Database.Esqueleto.Internal.Internal.html#val"><span class="hs-identifier hs-type">val</span></a></span><span> </span><span class="annot"><span class="hs-number">10</span></span><span>
+</span><span id="line-42"></span><span>        </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/esqueleto-3.6.0.3-82a4494d3637cb18febccc91e9121041b033788ef192e8377a0294b5f2b43e39/share/doc/html/src/Database.Esqueleto.Internal.Internal.html#orderBy"><span class="hs-identifier hs-type">orderBy</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/esqueleto-3.6.0.3-82a4494d3637cb18febccc91e9121041b033788ef192e8377a0294b5f2b43e39/share/doc/html/src/Database.Esqueleto.Internal.Internal.html#asc"><span class="hs-identifier hs-type">asc</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="#local-6989586621680320480"><span class="hs-identifier hs-type">r</span></a></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/esqueleto-3.6.0.3-82a4494d3637cb18febccc91e9121041b033788ef192e8377a0294b5f2b43e39/share/doc/html/src/Database.Esqueleto.Internal.Internal.html#%5E."><span class="hs-operator hs-type">^.</span></a></span><span> </span><span class="annot"><a href="Surypus.DB.Schema.html#ReportTemplateEntityCode"><span class="hs-identifier hs-type">R.ReportTemplateEntityCode</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-43"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><a href="#local-6989586621680320480"><span class="hs-identifier hs-type">r</span></a></span><span>
+</span><span id="line-44"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680320477"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-45"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">map</span></span><span> </span><span class="annot"><a href="#local-6989586621680320492"><span class="hs-identifier hs-type">templateFromEntity</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680320478"><span class="hs-identifier hs-type">entities</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-47"></span><span>    </span><span id="local-6989586621680320492"><span class="annot"><span class="annottext">templateFromEntity :: Entity ReportTemplateEntity -&gt; BillTemplateInfo
+</span><a href="#local-6989586621680320492"><span class="hs-identifier hs-var hs-var">templateFromEntity</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Class.PersistEntity.html#Entity"><span class="hs-identifier hs-type">P.Entity</span></a></span><span> </span><span id="local-6989586621680320495"><span class="annot"><span class="annottext">Key ReportTemplateEntity
+</span><a href="#local-6989586621680320495"><span class="hs-identifier hs-var">rid</span></a></span></span><span> </span><span id="local-6989586621680320496"><span class="annot"><span class="annottext">ReportTemplateEntity
+</span><a href="#local-6989586621680320496"><span class="hs-identifier hs-var">e</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Text -&gt; Text -&gt; BillTemplateInfo
+</span><a href="Surypus.API.BillTemplates.html#BillTemplateInfo"><span class="hs-identifier hs-var">BillTemplateInfo</span></a></span><span>
+</span><span id="line-48"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Key ReportTemplateEntity -&gt; Int64
+forall record.
+ToBackendKey SqlBackend record =&gt;
+Key record -&gt; Int64
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Orphan.PersistStore.html#fromSqlKey"><span class="hs-identifier hs-var">fromSqlKey</span></a></span><span> </span><span class="annot"><span class="annottext">Key ReportTemplateEntity
+</span><a href="#local-6989586621680320495"><span class="hs-identifier hs-var">rid</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ReportTemplateEntity -&gt; Text
+</span><a href="Surypus.DB.Schema.html#reportTemplateEntityName"><span class="hs-identifier hs-var">reportTemplateEntityName</span></a></span><span> </span><span class="annot"><span class="annottext">ReportTemplateEntity
+</span><a href="#local-6989586621680320496"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>      </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ReportTemplateEntity -&gt; Text
+</span><a href="Surypus.DB.Schema.html#reportTemplateEntityContent"><span class="hs-identifier hs-var">reportTemplateEntityContent</span></a></span><span> </span><span class="annot"><span class="annottext">ReportTemplateEntity
+</span><a href="#local-6989586621680320496"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="annot"><a href="Surypus.API.BillTemplates.html#saveTemplate"><span class="hs-identifier hs-type">saveTemplate</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="annot"><a href="DAL.Types.html#MutationResult"><span class="hs-identifier hs-type">MutationResult</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span id="saveTemplate"><span class="annot"><span class="annottext">saveTemplate :: ConnectionPool -&gt; Text -&gt; Text -&gt; IO (QueryResult MutationResult)
+</span><a href="Surypus.API.BillTemplates.html#saveTemplate"><span class="hs-identifier hs-var hs-var">saveTemplate</span></a></span></span><span> </span><span id="local-6989586621680320500"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680320500"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680320501"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680320501"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621680320502"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680320502"><span class="hs-identifier hs-var">content</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680320508"><span class="annot"><span class="annottext">code :: Text
+</span><a href="#local-6989586621680320508"><span class="hs-identifier hs-var hs-var hs-var">code</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;BT_&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Text -&gt; Text
+</span><span class="hs-identifier hs-var">T.take</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">50</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; Text -&gt; Text
+</span><span class="hs-identifier hs-var">T.filter</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">' '</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680320501"><span class="hs-identifier hs-var">name</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>  </span><span id="local-6989586621680320512"><span class="annot"><a href="#local-6989586621680320512"><span class="hs-identifier hs-var">key</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO (Key ReportTemplateEntity) -&gt; IO (Key ReportTemplateEntity)
+forall a. IO a -&gt; IO a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO (Key ReportTemplateEntity) -&gt; IO (Key ReportTemplateEntity))
+-&gt; IO (Key ReportTemplateEntity) -&gt; IO (Key ReportTemplateEntity)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ReaderT SqlBackend IO (Key ReportTemplateEntity)
+-&gt; ConnectionPool -&gt; IO (Key ReportTemplateEntity)
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ReportTemplateEntity
+-&gt; ReaderT SqlBackend IO (Key ReportTemplateEntity)
+forall backend record (m :: * -&gt; *).
+(PersistStoreWrite backend, MonadIO m,
+ PersistRecordBackend record backend, SafeToInsert record) =&gt;
+record -&gt; ReaderT backend m (Key record)
+forall record (m :: * -&gt; *).
+(MonadIO m, PersistRecordBackend record SqlBackend,
+ SafeToInsert record) =&gt;
+record -&gt; ReaderT SqlBackend m (Key record)
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Class.PersistStore.html#insert"><span class="hs-identifier hs-var">P.insert</span></a></span><span> </span><span class="annot"><span class="annottext">(ReportTemplateEntity
+ -&gt; ReaderT SqlBackend IO (Key ReportTemplateEntity))
+-&gt; ReportTemplateEntity
+-&gt; ReaderT SqlBackend IO (Key ReportTemplateEntity)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><a href="Surypus.DB.Schema.html#ReportTemplateEntity"><span class="hs-identifier hs-type">ReportTemplateEntity</span></a></span><span>
+</span><span id="line-56"></span><span>    </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">reportTemplateEntityCode :: Text
+</span><a href="#local-6989586621680320515"><span class="hs-identifier hs-var">reportTemplateEntityCode</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680320508"><span class="hs-identifier hs-var">code</span></a></span><span>
+</span><span id="line-57"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">reportTemplateEntityName :: Text
+</span><a href="Surypus.DB.Schema.html#reportTemplateEntityName"><span class="hs-identifier hs-var">reportTemplateEntityName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680320501"><span class="hs-identifier hs-var">name</span></a></span><span>
+</span><span id="line-58"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">reportTemplateEntityReportType :: Int
+</span><a href="#local-6989586621680320516"><span class="hs-identifier hs-var">reportTemplateEntityReportType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">10</span></span><span>
+</span><span id="line-59"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">reportTemplateEntityContent :: Text
+</span><a href="Surypus.DB.Schema.html#reportTemplateEntityContent"><span class="hs-identifier hs-var">reportTemplateEntityContent</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680320502"><span class="hs-identifier hs-var">content</span></a></span><span>
+</span><span id="line-60"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">reportTemplateEntityFormat :: Text
+</span><a href="#local-6989586621680320517"><span class="hs-identifier hs-var">reportTemplateEntityFormat</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;json&quot;</span></span><span>
+</span><span id="line-61"></span><span>    </span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680320500"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-62"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#MutationResult"><span class="hs-identifier hs-type">MutationResult</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">True</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Orphan.PersistStore.html#fromSqlKey"><span class="hs-identifier hs-type">fromSqlKey</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680320512"><span class="hs-identifier hs-type">key</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-string">&quot;Template saved&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="annot"><a href="Surypus.API.BillTemplates.html#deleteTemplate"><span class="hs-identifier hs-type">deleteTemplate</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-65"></span><span id="deleteTemplate"><span class="annot"><span class="annottext">deleteTemplate :: ConnectionPool -&gt; Int64 -&gt; IO (QueryResult ())
+</span><a href="Surypus.API.BillTemplates.html#deleteTemplate"><span class="hs-identifier hs-var hs-var">deleteTemplate</span></a></span></span><span> </span><span id="local-6989586621680320519"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680320519"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680320520"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680320520"><span class="hs-identifier hs-var">tid</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-66"></span><span>  </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO () -&gt; IO ()
+forall a. IO a -&gt; IO a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; IO ()) -&gt; IO () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ReaderT SqlBackend IO () -&gt; ConnectionPool -&gt; IO ()
+forall backend (m :: * -&gt; *) a.
+(MonadUnliftIO m, BackendCompatible SqlBackend backend) =&gt;
+ReaderT backend m a -&gt; Pool backend -&gt; m a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier hs-var">runSqlPool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Key ReportTemplateEntity -&gt; ReaderT SqlBackend IO ()
+forall backend record (m :: * -&gt; *).
+(PersistStoreWrite backend, MonadIO m,
+ PersistRecordBackend record backend) =&gt;
+Key record -&gt; ReaderT backend m ()
+forall record (m :: * -&gt; *).
+(MonadIO m, PersistRecordBackend record SqlBackend) =&gt;
+Key record -&gt; ReaderT SqlBackend m ()
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Class.PersistStore.html#delete"><span class="hs-identifier hs-var">P.delete</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int64 -&gt; Key ReportTemplateEntity
+forall record.
+ToBackendKey SqlBackend record =&gt;
+Int64 -&gt; Key record
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Orphan.PersistStore.html#toSqlKey"><span class="hs-identifier hs-var">toSqlKey</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680320520"><span class="hs-identifier hs-var">tid</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Class.PersistEntity.html#Key"><span class="hs-identifier hs-type">P.Key</span></a></span><span> </span><span class="annot"><a href="Surypus.DB.Schema.html#ReportTemplateEntity"><span class="hs-identifier hs-type">ReportTemplateEntity</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680320519"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-67"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-68"></span></pre></body></html>

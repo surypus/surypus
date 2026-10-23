@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Currency Module - Currencies and exchange rates</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Finance.Currency.html"><span class="hs-identifier">Finance.Currency</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Ratio</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-operator">(%)</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="annot"><span class="hs-comment">-- | Non-negative amount</span></span><span>
+</span><span id="line-10"></span><span class="hs-comment">{-@ type NonNeg = {v:Double | v &gt;= 0} @-}</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="annot"><span class="hs-comment">-- | Positive precision</span></span><span>
+</span><span id="line-13"></span><span class="hs-comment">{-@ type Precision = {v:Int | v &gt;= 0 &amp;&amp; v &lt;= 6} @-}</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="annot"><span class="hs-comment">-- | Exchange rate must be positive</span></span><span>
+</span><span id="line-16"></span><span class="hs-comment">{-@ type Rate = {v:Double | v &gt; 0} @-}</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="annot"><span class="hs-comment">-- | Currency</span></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">data</span><span> </span><span id="Currency"><span class="annot"><a href="Finance.Currency.html#Currency"><span class="hs-identifier hs-var">Currency</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Currency"><span class="annot"><a href="Finance.Currency.html#Currency"><span class="hs-identifier hs-var">Currency</span></a></span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="curId"><span class="annot"><span class="annottext">Currency -&gt; Int64
+</span><a href="Finance.Currency.html#curId"><span class="hs-identifier hs-var hs-var">curId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="curCode"><span class="annot"><span class="annottext">Currency -&gt; Text
+</span><a href="Finance.Currency.html#curCode"><span class="hs-identifier hs-var hs-var">curCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- ISO code (RUB, USD, EUR)</span><span>
+</span><span id="line-22"></span><span>    </span><span id="curName"><span class="annot"><span class="annottext">Currency -&gt; Text
+</span><a href="Finance.Currency.html#curName"><span class="hs-identifier hs-var hs-var">curName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="curSymbol"><span class="annot"><span class="annottext">Currency -&gt; Text
+</span><a href="Finance.Currency.html#curSymbol"><span class="hs-identifier hs-var hs-var">curSymbol</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="curRate"><span class="annot"><span class="annottext">Currency -&gt; Double
+</span><a href="Finance.Currency.html#curRate"><span class="hs-identifier hs-var hs-var">curRate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Rate to base currency</span><span>
+</span><span id="line-25"></span><span>    </span><span id="curPrecision"><span class="annot"><span class="annottext">Currency -&gt; Int
+</span><a href="Finance.Currency.html#curPrecision"><span class="hs-identifier hs-var hs-var">curPrecision</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Decimal places</span><span>
+</span><span id="line-26"></span><span>    </span><span id="curFlags"><span class="annot"><span class="annottext">Currency -&gt; CurrencyFlags
+</span><a href="Finance.Currency.html#curFlags"><span class="hs-identifier hs-var hs-var">curFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Currency.html#CurrencyFlags"><span class="hs-identifier hs-type">CurrencyFlags</span></a></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680251198"><span id="local-6989586621680251213"><span id="local-6989586621680251217"><span class="annot"><span class="annottext">Int -&gt; Currency -&gt; ShowS
+[Currency] -&gt; ShowS
+Currency -&gt; String
+(Int -&gt; Currency -&gt; ShowS)
+-&gt; (Currency -&gt; String) -&gt; ([Currency] -&gt; ShowS) -&gt; Show Currency
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Currency -&gt; ShowS
+showsPrec :: Int -&gt; Currency -&gt; ShowS
+$cshow :: Currency -&gt; String
+show :: Currency -&gt; String
+$cshowList :: [Currency] -&gt; ShowS
+showList :: [Currency] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680251222"><span id="local-6989586621680251234"><span class="annot"><span class="annottext">Currency -&gt; Currency -&gt; Bool
+(Currency -&gt; Currency -&gt; Bool)
+-&gt; (Currency -&gt; Currency -&gt; Bool) -&gt; Eq Currency
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Currency -&gt; Currency -&gt; Bool
+== :: Currency -&gt; Currency -&gt; Bool
+$c/= :: Currency -&gt; Currency -&gt; Bool
+/= :: Currency -&gt; Currency -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="annot"><span class="hs-comment">-- | Currency flags</span></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">data</span><span> </span><span id="CurrencyFlags"><span class="annot"><a href="Finance.Currency.html#CurrencyFlags"><span class="hs-identifier hs-var">CurrencyFlags</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CurrencyFlags"><span class="annot"><a href="Finance.Currency.html#CurrencyFlags"><span class="hs-identifier hs-var">CurrencyFlags</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="cfBase"><span class="annot"><span class="annottext">CurrencyFlags -&gt; Bool
+</span><a href="Finance.Currency.html#cfBase"><span class="hs-identifier hs-var hs-var">cfBase</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Base currency</span><span>
+</span><span id="line-33"></span><span>    </span><span id="cfCrypto"><span class="annot"><span class="annottext">CurrencyFlags -&gt; Bool
+</span><a href="Finance.Currency.html#cfCrypto"><span class="hs-identifier hs-var hs-var">cfCrypto</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Cryptocurrency</span><span>
+</span><span id="line-34"></span><span>    </span><span id="cfInactive"><span class="annot"><span class="annottext">CurrencyFlags -&gt; Bool
+</span><a href="Finance.Currency.html#cfInactive"><span class="hs-identifier hs-var hs-var">cfInactive</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-comment">-- Not in use</span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680251243"><span id="local-6989586621680251250"><span id="local-6989586621680251253"><span class="annot"><span class="annottext">Int -&gt; CurrencyFlags -&gt; ShowS
+[CurrencyFlags] -&gt; ShowS
+CurrencyFlags -&gt; String
+(Int -&gt; CurrencyFlags -&gt; ShowS)
+-&gt; (CurrencyFlags -&gt; String)
+-&gt; ([CurrencyFlags] -&gt; ShowS)
+-&gt; Show CurrencyFlags
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CurrencyFlags -&gt; ShowS
+showsPrec :: Int -&gt; CurrencyFlags -&gt; ShowS
+$cshow :: CurrencyFlags -&gt; String
+show :: CurrencyFlags -&gt; String
+$cshowList :: [CurrencyFlags] -&gt; ShowS
+showList :: [CurrencyFlags] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680251256"><span id="local-6989586621680251262"><span class="annot"><span class="annottext">CurrencyFlags -&gt; CurrencyFlags -&gt; Bool
+(CurrencyFlags -&gt; CurrencyFlags -&gt; Bool)
+-&gt; (CurrencyFlags -&gt; CurrencyFlags -&gt; Bool) -&gt; Eq CurrencyFlags
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CurrencyFlags -&gt; CurrencyFlags -&gt; Bool
+== :: CurrencyFlags -&gt; CurrencyFlags -&gt; Bool
+$c/= :: CurrencyFlags -&gt; CurrencyFlags -&gt; Bool
+/= :: CurrencyFlags -&gt; CurrencyFlags -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="annot"><span class="hs-comment">-- | Exchange rate</span></span><span>
+</span><span id="line-39"></span><span class="hs-keyword">data</span><span> </span><span id="ExchangeRate"><span class="annot"><a href="Finance.Currency.html#ExchangeRate"><span class="hs-identifier hs-var">ExchangeRate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ExchangeRate"><span class="annot"><a href="Finance.Currency.html#ExchangeRate"><span class="hs-identifier hs-var">ExchangeRate</span></a></span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="erFromCurrency"><span class="annot"><span class="annottext">ExchangeRate -&gt; Int64
+</span><a href="Finance.Currency.html#erFromCurrency"><span class="hs-identifier hs-var hs-var">erFromCurrency</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-41"></span><span>    </span><span id="erToCurrency"><span class="annot"><span class="annottext">ExchangeRate -&gt; Int64
+</span><a href="Finance.Currency.html#erToCurrency"><span class="hs-identifier hs-var hs-var">erToCurrency</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-42"></span><span>    </span><span id="erRate"><span class="annot"><span class="annottext">ExchangeRate -&gt; Double
+</span><a href="Finance.Currency.html#erRate"><span class="hs-identifier hs-var hs-var">erRate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-43"></span><span>    </span><span id="erDate"><span class="annot"><span class="annottext">ExchangeRate -&gt; Int
+</span><a href="Finance.Currency.html#erDate"><span class="hs-identifier hs-var hs-var">erDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-comment">-- Days since epoch</span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680251270"><span id="local-6989586621680251277"><span id="local-6989586621680251281"><span class="annot"><span class="annottext">Int -&gt; ExchangeRate -&gt; ShowS
+[ExchangeRate] -&gt; ShowS
+ExchangeRate -&gt; String
+(Int -&gt; ExchangeRate -&gt; ShowS)
+-&gt; (ExchangeRate -&gt; String)
+-&gt; ([ExchangeRate] -&gt; ShowS)
+-&gt; Show ExchangeRate
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ExchangeRate -&gt; ShowS
+showsPrec :: Int -&gt; ExchangeRate -&gt; ShowS
+$cshow :: ExchangeRate -&gt; String
+show :: ExchangeRate -&gt; String
+$cshowList :: [ExchangeRate] -&gt; ShowS
+showList :: [ExchangeRate] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680251284"><span id="local-6989586621680251290"><span class="annot"><span class="annottext">ExchangeRate -&gt; ExchangeRate -&gt; Bool
+(ExchangeRate -&gt; ExchangeRate -&gt; Bool)
+-&gt; (ExchangeRate -&gt; ExchangeRate -&gt; Bool) -&gt; Eq ExchangeRate
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ExchangeRate -&gt; ExchangeRate -&gt; Bool
+== :: ExchangeRate -&gt; ExchangeRate -&gt; Bool
+$c/= :: ExchangeRate -&gt; ExchangeRate -&gt; Bool
+/= :: ExchangeRate -&gt; ExchangeRate -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span><span>
+</span><span id="line-47"></span><span class="hs-comment">-- | Convert amount between currencies</span><span>
+</span><span id="line-48"></span><span class="hs-comment">-- = Invariant: result &gt;= 0 if input &gt;= 0</span><span>
+</span><span id="line-49"></span><span class="hs-comment">{-@ convertAmount :: Currency -&gt; Currency -&gt; NonNeg -&gt; NonNeg @-}</span><span>
+</span><span id="line-50"></span><span class="annot"><a href="Finance.Currency.html#convertAmount"><span class="hs-identifier hs-type">convertAmount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Currency.html#Currency"><span class="hs-identifier hs-type">Currency</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Currency.html#Currency"><span class="hs-identifier hs-type">Currency</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-51"></span><span id="convertAmount"><span class="annot"><span class="annottext">convertAmount :: Currency -&gt; Currency -&gt; Double -&gt; Double
+</span><a href="Finance.Currency.html#convertAmount"><span class="hs-identifier hs-var hs-var">convertAmount</span></a></span></span><span> </span><span id="local-6989586621680251294"><span class="annot"><span class="annottext">Currency
+</span><a href="#local-6989586621680251294"><span class="hs-identifier hs-var">from</span></a></span></span><span> </span><span id="local-6989586621680251295"><span class="annot"><span class="annottext">Currency
+</span><a href="#local-6989586621680251295"><span class="hs-identifier hs-var">to</span></a></span></span><span> </span><span id="local-6989586621680251296"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680251296"><span class="hs-identifier hs-var">amount</span></a></span></span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Currency -&gt; Int64
+</span><a href="Finance.Currency.html#curId"><span class="hs-identifier hs-var">curId</span></a></span><span> </span><span class="annot"><span class="annottext">Currency
+</span><a href="#local-6989586621680251294"><span class="hs-identifier hs-var">from</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Currency -&gt; Int64
+</span><a href="Finance.Currency.html#curId"><span class="hs-identifier hs-var">curId</span></a></span><span> </span><span class="annot"><span class="annottext">Currency
+</span><a href="#local-6989586621680251295"><span class="hs-identifier hs-var">to</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680251296"><span class="hs-identifier hs-var">amount</span></a></span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Currency -&gt; Double
+</span><a href="Finance.Currency.html#curRate"><span class="hs-identifier hs-var">curRate</span></a></span><span> </span><span class="annot"><span class="annottext">Currency
+</span><a href="#local-6989586621680251295"><span class="hs-identifier hs-var">to</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680251296"><span class="hs-identifier hs-var">amount</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Currency -&gt; Double
+</span><a href="Finance.Currency.html#curRate"><span class="hs-identifier hs-var">curRate</span></a></span><span> </span><span class="annot"><span class="annottext">Currency
+</span><a href="#local-6989586621680251294"><span class="hs-identifier hs-var">from</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="annottext">Currency -&gt; Double
+</span><a href="Finance.Currency.html#curRate"><span class="hs-identifier hs-var">curRate</span></a></span><span> </span><span class="annot"><span class="annottext">Currency
+</span><a href="#local-6989586621680251295"><span class="hs-identifier hs-var">to</span></a></span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="hs-comment">--- | Round to currency precision</span><span>
+</span><span id="line-57"></span><span class="hs-comment">--- = Invariant: result is bounded by input &#177; 0.5 * 10^(-precision)</span><span>
+</span><span id="line-58"></span><span class="hs-comment">{-@ roundToCurrency :: Currency -&gt; NonNeg -&gt; NonNeg @-}</span><span>
+</span><span id="line-59"></span><span class="annot"><a href="Finance.Currency.html#roundToCurrency"><span class="hs-identifier hs-type">roundToCurrency</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Currency.html#Currency"><span class="hs-identifier hs-type">Currency</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-60"></span><span id="roundToCurrency"><span class="annot"><span class="annottext">roundToCurrency :: Currency -&gt; Double -&gt; Double
+</span><a href="Finance.Currency.html#roundToCurrency"><span class="hs-identifier hs-var hs-var">roundToCurrency</span></a></span></span><span> </span><span id="local-6989586621680251300"><span class="annot"><span class="annottext">Currency
+</span><a href="#local-6989586621680251300"><span class="hs-identifier hs-var">cur</span></a></span></span><span> </span><span id="local-6989586621680251301"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680251301"><span class="hs-identifier hs-var">amount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span class="annot"><a href="#local-6989586621680251302"><span class="hs-identifier hs-type">factor</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
+</span><span id="line-62"></span><span>      </span><span id="local-6989586621680251302"><span class="annot"><span class="annottext">factor :: Integer
+</span><a href="#local-6989586621680251302"><span class="hs-identifier hs-var hs-var">factor</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">10</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Int -&gt; Integer
+forall a b. (Num a, Integral b) =&gt; a -&gt; b -&gt; a
+</span><span class="hs-operator hs-var">^</span></span><span> </span><span class="annot"><span class="annottext">Currency -&gt; Int
+</span><a href="Finance.Currency.html#curPrecision"><span class="hs-identifier hs-var">curPrecision</span></a></span><span> </span><span class="annot"><span class="annottext">Currency
+</span><a href="#local-6989586621680251300"><span class="hs-identifier hs-var">cur</span></a></span><span>
+</span><span id="line-63"></span><span>      </span><span id="local-6989586621680251306"><span class="annot"><span class="annottext">amountR :: Rational
+</span><a href="#local-6989586621680251306"><span class="hs-identifier hs-var hs-var">amountR</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Rational
+forall a. Real a =&gt; a -&gt; Rational
+</span><span class="hs-identifier hs-var">toRational</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680251301"><span class="hs-identifier hs-var">amount</span></a></span><span>
+</span><span id="line-64"></span><span>      </span><span id="local-6989586621680251313"><span class="annot"><span class="annottext">scaled :: Rational
+</span><a href="#local-6989586621680251313"><span class="hs-identifier hs-var hs-var">scaled</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Rational
+</span><a href="#local-6989586621680251306"><span class="hs-identifier hs-var">amountR</span></a></span><span> </span><span class="annot"><span class="annottext">Rational -&gt; Rational -&gt; Rational
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Rational
+forall a. Real a =&gt; a -&gt; Rational
+</span><span class="hs-identifier hs-var">toRational</span></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621680251302"><span class="hs-identifier hs-var">factor</span></a></span><span>
+</span><span id="line-65"></span><span>      </span><span id="local-6989586621680251318"><span class="annot"><span class="annottext">roundedInt :: Integer
+</span><a href="#local-6989586621680251318"><span class="hs-identifier hs-var hs-var">roundedInt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Rational -&gt; Integer
+forall b. Integral b =&gt; Rational -&gt; b
+forall a b. (RealFrac a, Integral b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">round</span></span><span> </span><span class="annot"><span class="annottext">Rational
+</span><a href="#local-6989586621680251313"><span class="hs-identifier hs-var">scaled</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
+</span><span id="line-66"></span><span>      </span><span id="local-6989586621680251323"><span class="annot"><span class="annottext">out :: Double
+</span><a href="#local-6989586621680251323"><span class="hs-identifier hs-var hs-var">out</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Rational -&gt; Double
+forall a. Fractional a =&gt; Rational -&gt; a
+</span><span class="hs-identifier hs-var">fromRational</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621680251318"><span class="hs-identifier hs-var">roundedInt</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Rational
+forall a. Integral a =&gt; a -&gt; a -&gt; Ratio a
+</span><span class="hs-operator hs-var">%</span></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621680251302"><span class="hs-identifier hs-var">factor</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-67"></span><span>   </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680251323"><span class="hs-identifier hs-var">out</span></a></span><span>
+</span><span id="line-68"></span><span>
+</span><span id="line-69"></span><span class="hs-comment">-- | Format amount with currency symbol</span><span>
+</span><span id="line-70"></span><span class="hs-comment">-- = Invariant: result is non-empty</span><span>
+</span><span id="line-71"></span><span class="hs-comment">{-@ formatAmount :: Currency -&gt; NonNeg -&gt; {v:Text | len v &gt; 0} @-}</span><span>
+</span><span id="line-72"></span><span class="annot"><a href="Finance.Currency.html#formatAmount"><span class="hs-identifier hs-type">formatAmount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Currency.html#Currency"><span class="hs-identifier hs-type">Currency</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-73"></span><span id="formatAmount"><span class="annot"><span class="annottext">formatAmount :: Currency -&gt; Double -&gt; Text
+</span><a href="Finance.Currency.html#formatAmount"><span class="hs-identifier hs-var hs-var">formatAmount</span></a></span></span><span> </span><span id="local-6989586621680251325"><span class="annot"><span class="annottext">Currency
+</span><a href="#local-6989586621680251325"><span class="hs-identifier hs-var">cur</span></a></span></span><span> </span><span id="local-6989586621680251326"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680251326"><span class="hs-identifier hs-var">amount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680251327"><span class="annot"><span class="annottext">rounded :: Double
+</span><a href="#local-6989586621680251327"><span class="hs-identifier hs-var hs-var">rounded</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Currency -&gt; Double -&gt; Double
+</span><a href="Finance.Currency.html#roundToCurrency"><span class="hs-identifier hs-var">roundToCurrency</span></a></span><span> </span><span class="annot"><span class="annottext">Currency
+</span><a href="#local-6989586621680251325"><span class="hs-identifier hs-var">cur</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680251326"><span class="hs-identifier hs-var">amount</span></a></span><span>
+</span><span id="line-75"></span><span>   </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Text -&gt; Text
+</span><span class="hs-identifier hs-var">T.cons</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">HasCallStack =&gt; Text -&gt; Char
+Text -&gt; Char
+</span><span class="hs-identifier hs-var">T.head</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Currency -&gt; Text
+</span><a href="Finance.Currency.html#curSymbol"><span class="hs-identifier hs-var">curSymbol</span></a></span><span> </span><span class="annot"><span class="annottext">Currency
+</span><a href="#local-6989586621680251325"><span class="hs-identifier hs-var">cur</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680251327"><span class="hs-identifier hs-var">rounded</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span></pre></body></html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Session module - User sessions</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="System.Session.html"><span class="hs-identifier">System.Session</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="annot"><span class="hs-comment">-- | Session - User session</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">data</span><span> </span><span id="Session"><span class="annot"><a href="System.Session.html#Session"><span class="hs-identifier hs-var">Session</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Session"><span class="annot"><a href="System.Session.html#Session"><span class="hs-identifier hs-var">Session</span></a></span></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="sessId"><span class="annot"><span class="annottext">Session -&gt; Int64
+</span><a href="System.Session.html#sessId"><span class="hs-identifier hs-var hs-var">sessId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="sessUserId"><span class="annot"><span class="annottext">Session -&gt; Int64
+</span><a href="System.Session.html#sessUserId"><span class="hs-identifier hs-var hs-var">sessUserId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="sessToken"><span class="annot"><span class="annottext">Session -&gt; Text
+</span><a href="System.Session.html#sessToken"><span class="hs-identifier hs-var hs-var">sessToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="sessIP"><span class="annot"><span class="annottext">Session -&gt; Text
+</span><a href="System.Session.html#sessIP"><span class="hs-identifier hs-var hs-var">sessIP</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="sessStart"><span class="annot"><span class="annottext">Session -&gt; UTCTime
+</span><a href="System.Session.html#sessStart"><span class="hs-identifier hs-var hs-var">sessStart</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="sessExpires"><span class="annot"><span class="annottext">Session -&gt; UTCTime
+</span><a href="System.Session.html#sessExpires"><span class="hs-identifier hs-var hs-var">sessExpires</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span id="sessFlags"><span class="annot"><span class="annottext">Session -&gt; Int
+</span><a href="System.Session.html#sessFlags"><span class="hs-identifier hs-var hs-var">sessFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680363220"><span id="local-6989586621680363235"><span id="local-6989586621680363239"><span class="annot"><span class="annottext">Int -&gt; Session -&gt; ShowS
+[Session] -&gt; ShowS
+Session -&gt; String
+(Int -&gt; Session -&gt; ShowS)
+-&gt; (Session -&gt; String) -&gt; ([Session] -&gt; ShowS) -&gt; Show Session
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Session -&gt; ShowS
+showsPrec :: Int -&gt; Session -&gt; ShowS
+$cshow :: Session -&gt; String
+show :: Session -&gt; String
+$cshowList :: [Session] -&gt; ShowS
+showList :: [Session] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680363244"><span id="local-6989586621680363257"><span class="annot"><span class="annottext">Session -&gt; Session -&gt; Bool
+(Session -&gt; Session -&gt; Bool)
+-&gt; (Session -&gt; Session -&gt; Bool) -&gt; Eq Session
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Session -&gt; Session -&gt; Bool
+== :: Session -&gt; Session -&gt; Bool
+$c/= :: Session -&gt; Session -&gt; Bool
+/= :: Session -&gt; Session -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="annot"><span class="hs-comment">-- | SessionLog - Session history</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="SessionLog"><span class="annot"><a href="System.Session.html#SessionLog"><span class="hs-identifier hs-var">SessionLog</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SessionLog"><span class="annot"><a href="System.Session.html#SessionLog"><span class="hs-identifier hs-var">SessionLog</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="slId"><span class="annot"><span class="annottext">SessionLog -&gt; Int64
+</span><a href="System.Session.html#slId"><span class="hs-identifier hs-var hs-var">slId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="slUserId"><span class="annot"><span class="annottext">SessionLog -&gt; Int64
+</span><a href="System.Session.html#slUserId"><span class="hs-identifier hs-var hs-var">slUserId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="slAction"><span class="annot"><span class="annottext">SessionLog -&gt; SessionAction
+</span><a href="System.Session.html#slAction"><span class="hs-identifier hs-var hs-var">slAction</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Session.html#SessionAction"><span class="hs-identifier hs-type">SessionAction</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="slTimestamp"><span class="annot"><span class="annottext">SessionLog -&gt; UTCTime
+</span><a href="System.Session.html#slTimestamp"><span class="hs-identifier hs-var hs-var">slTimestamp</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="slIP"><span class="annot"><span class="annottext">SessionLog -&gt; Text
+</span><a href="System.Session.html#slIP"><span class="hs-identifier hs-var hs-var">slIP</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680363268"><span id="local-6989586621680363277"><span id="local-6989586621680363281"><span class="annot"><span class="annottext">Int -&gt; SessionLog -&gt; ShowS
+[SessionLog] -&gt; ShowS
+SessionLog -&gt; String
+(Int -&gt; SessionLog -&gt; ShowS)
+-&gt; (SessionLog -&gt; String)
+-&gt; ([SessionLog] -&gt; ShowS)
+-&gt; Show SessionLog
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; SessionLog -&gt; ShowS
+showsPrec :: Int -&gt; SessionLog -&gt; ShowS
+$cshow :: SessionLog -&gt; String
+show :: SessionLog -&gt; String
+$cshowList :: [SessionLog] -&gt; ShowS
+showList :: [SessionLog] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680363284"><span id="local-6989586621680363292"><span class="annot"><span class="annottext">SessionLog -&gt; SessionLog -&gt; Bool
+(SessionLog -&gt; SessionLog -&gt; Bool)
+-&gt; (SessionLog -&gt; SessionLog -&gt; Bool) -&gt; Eq SessionLog
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: SessionLog -&gt; SessionLog -&gt; Bool
+== :: SessionLog -&gt; SessionLog -&gt; Bool
+$c/= :: SessionLog -&gt; SessionLog -&gt; Bool
+/= :: SessionLog -&gt; SessionLog -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="SessionAction"><span class="annot"><a href="System.Session.html#SessionAction"><span class="hs-identifier hs-var">SessionAction</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SALogin"><span class="annot"><a href="System.Session.html#SALogin"><span class="hs-identifier hs-var">SALogin</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SALogout"><span class="annot"><a href="System.Session.html#SALogout"><span class="hs-identifier hs-var">SALogout</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SAFailed"><span class="annot"><a href="System.Session.html#SAFailed"><span class="hs-identifier hs-var">SAFailed</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SAPasswordChange"><span class="annot"><a href="System.Session.html#SAPasswordChange"><span class="hs-identifier hs-var">SAPasswordChange</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680363300"><span id="local-6989586621680363302"><span id="local-6989586621680363305"><span class="annot"><span class="annottext">Int -&gt; SessionAction -&gt; ShowS
+[SessionAction] -&gt; ShowS
+SessionAction -&gt; String
+(Int -&gt; SessionAction -&gt; ShowS)
+-&gt; (SessionAction -&gt; String)
+-&gt; ([SessionAction] -&gt; ShowS)
+-&gt; Show SessionAction
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; SessionAction -&gt; ShowS
+showsPrec :: Int -&gt; SessionAction -&gt; ShowS
+$cshow :: SessionAction -&gt; String
+show :: SessionAction -&gt; String
+$cshowList :: [SessionAction] -&gt; ShowS
+showList :: [SessionAction] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680363308"><span id="local-6989586621680363313"><span class="annot"><span class="annottext">SessionAction -&gt; SessionAction -&gt; Bool
+(SessionAction -&gt; SessionAction -&gt; Bool)
+-&gt; (SessionAction -&gt; SessionAction -&gt; Bool) -&gt; Eq SessionAction
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: SessionAction -&gt; SessionAction -&gt; Bool
+== :: SessionAction -&gt; SessionAction -&gt; Bool
+$c/= :: SessionAction -&gt; SessionAction -&gt; Bool
+/= :: SessionAction -&gt; SessionAction -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span></pre></body></html>

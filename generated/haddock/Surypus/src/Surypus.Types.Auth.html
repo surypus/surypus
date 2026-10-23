@@ -1,0 +1,713 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680339112"><span id="local-6989586621680339113"></span></span><span class="hs-pragma">{-# LANGUAGE DeriveAnyClass #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DerivingStrategies #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE DuplicateRecordFields #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html"><span class="hs-identifier">Surypus.Types.Auth</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#LoginRequest"><span class="hs-identifier">LoginRequest</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#LoginResponse"><span class="hs-identifier">LoginResponse</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#RefreshRequest"><span class="hs-identifier">RefreshRequest</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#RefreshResponse"><span class="hs-identifier">RefreshResponse</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#UserInfo"><span class="hs-identifier">UserInfo</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#UserRole"><span class="hs-identifier">UserRole</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#TokenPair"><span class="hs-identifier">TokenPair</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#JwtClaims"><span class="hs-identifier">JwtClaims</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#Permission"><span class="hs-identifier">Permission</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span class="annot"><a href="Surypus.Types.Auth.html#ResourceAccess"><span class="hs-identifier">ResourceAccess</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier">FromJSON</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Options"><span class="hs-identifier">Options</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier">ToJSON</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier">defaultOptions</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#genericParseJSON"><span class="hs-identifier">genericParseJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#genericToJSON"><span class="hs-identifier">genericToJSON</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time.Clock</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html"><span class="hs-identifier">Surypus.Types.Common</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier">camelTo2</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-comment">-- &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- AUTHENTICATION TYPES</span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- &#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;&#9552;</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">data</span><span> </span><span id="LoginRequest"><span class="annot"><a href="Surypus.Types.Auth.html#LoginRequest"><span class="hs-identifier hs-var">LoginRequest</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LoginRequest"><span class="annot"><a href="Surypus.Types.Auth.html#LoginRequest"><span class="hs-identifier hs-var">LoginRequest</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="reqUsername"><span class="annot"><span class="annottext">LoginRequest -&gt; Text
+</span><a href="Surypus.Types.Auth.html#reqUsername"><span class="hs-identifier hs-var hs-var">reqUsername</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-33"></span><span>    </span><span id="reqPassword"><span class="annot"><span class="annottext">LoginRequest -&gt; Text
+</span><a href="Surypus.Types.Auth.html#reqPassword"><span class="hs-identifier hs-var hs-var">reqPassword</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680339122"><span id="local-6989586621680339129"><span id="local-6989586621680339133"><span class="annot"><span class="annottext">Int -&gt; LoginRequest -&gt; ShowS
+[LoginRequest] -&gt; ShowS
+LoginRequest -&gt; String
+(Int -&gt; LoginRequest -&gt; ShowS)
+-&gt; (LoginRequest -&gt; String)
+-&gt; ([LoginRequest] -&gt; ShowS)
+-&gt; Show LoginRequest
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LoginRequest -&gt; ShowS
+showsPrec :: Int -&gt; LoginRequest -&gt; ShowS
+$cshow :: LoginRequest -&gt; String
+show :: LoginRequest -&gt; String
+$cshowList :: [LoginRequest] -&gt; ShowS
+showList :: [LoginRequest] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680339138"><span id="local-6989586621680339143"><span class="annot"><span class="annottext">LoginRequest -&gt; LoginRequest -&gt; Bool
+(LoginRequest -&gt; LoginRequest -&gt; Bool)
+-&gt; (LoginRequest -&gt; LoginRequest -&gt; Bool) -&gt; Eq LoginRequest
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LoginRequest -&gt; LoginRequest -&gt; Bool
+== :: LoginRequest -&gt; LoginRequest -&gt; Bool
+$c/= :: LoginRequest -&gt; LoginRequest -&gt; Bool
+/= :: LoginRequest -&gt; LoginRequest -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680339148"><span id="local-6989586621680339150"><span class="annot"><span class="annottext">(forall x. LoginRequest -&gt; Rep LoginRequest x)
+-&gt; (forall x. Rep LoginRequest x -&gt; LoginRequest)
+-&gt; Generic LoginRequest
+forall x. Rep LoginRequest x -&gt; LoginRequest
+forall x. LoginRequest -&gt; Rep LoginRequest x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. LoginRequest -&gt; Rep LoginRequest x
+from :: forall x. LoginRequest -&gt; Rep LoginRequest x
+$cto :: forall x. Rep LoginRequest x -&gt; LoginRequest
+to :: forall x. Rep LoginRequest x -&gt; LoginRequest
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680339157"><span id="local-6989586621680339161"><span id="local-6989586621680339164"><span id="local-6989586621680339167"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#LoginRequest"><span class="hs-identifier hs-type">LoginRequest</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-38"></span><span>  </span><span id="local-6989586621680339266"><span class="annot"><span class="annottext">toJSON :: LoginRequest -&gt; Value
+</span><a href="#local-6989586621680339266"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; LoginRequest -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#genericToJSON"><span class="hs-identifier hs-var">genericToJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680339273"><span id="local-6989586621680339277"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#LoginRequest"><span class="hs-identifier hs-type">LoginRequest</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-41"></span><span>  </span><span id="local-6989586621680339346"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser LoginRequest
+</span><a href="#local-6989586621680339346"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser LoginRequest
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#genericParseJSON"><span class="hs-identifier hs-var">genericParseJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">data</span><span> </span><span id="LoginResponse"><span class="annot"><a href="Surypus.Types.Auth.html#LoginResponse"><span class="hs-identifier hs-var">LoginResponse</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LoginResponse"><span class="annot"><a href="Surypus.Types.Auth.html#LoginResponse"><span class="hs-identifier hs-var">LoginResponse</span></a></span></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="respAccessToken"><span class="annot"><span class="annottext">LoginResponse -&gt; Text
+</span><a href="Surypus.Types.Auth.html#respAccessToken"><span class="hs-identifier hs-var hs-var">respAccessToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-45"></span><span>    </span><span id="respRefreshToken"><span class="annot"><span class="annottext">LoginResponse -&gt; Text
+</span><a href="Surypus.Types.Auth.html#respRefreshToken"><span class="hs-identifier hs-var hs-var">respRefreshToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-46"></span><span>    </span><span id="respUserId"><span class="annot"><span class="annottext">LoginResponse -&gt; Int64
+</span><a href="Surypus.Types.Auth.html#respUserId"><span class="hs-identifier hs-var hs-var">respUserId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-47"></span><span>    </span><span id="respUserName"><span class="annot"><span class="annottext">LoginResponse -&gt; Text
+</span><a href="Surypus.Types.Auth.html#respUserName"><span class="hs-identifier hs-var hs-var">respUserName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-48"></span><span>    </span><span id="respRole"><span class="annot"><span class="annottext">LoginResponse -&gt; Text
+</span><a href="Surypus.Types.Auth.html#respRole"><span class="hs-identifier hs-var hs-var">respRole</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-49"></span><span>    </span><span id="respExpiresIn"><span class="annot"><span class="annottext">LoginResponse -&gt; Maybe Int
+</span><a href="Surypus.Types.Auth.html#respExpiresIn"><span class="hs-identifier hs-var hs-var">respExpiresIn</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680339356"><span id="local-6989586621680339368"><span id="local-6989586621680339372"><span class="annot"><span class="annottext">Int -&gt; LoginResponse -&gt; ShowS
+[LoginResponse] -&gt; ShowS
+LoginResponse -&gt; String
+(Int -&gt; LoginResponse -&gt; ShowS)
+-&gt; (LoginResponse -&gt; String)
+-&gt; ([LoginResponse] -&gt; ShowS)
+-&gt; Show LoginResponse
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LoginResponse -&gt; ShowS
+showsPrec :: Int -&gt; LoginResponse -&gt; ShowS
+$cshow :: LoginResponse -&gt; String
+show :: LoginResponse -&gt; String
+$cshowList :: [LoginResponse] -&gt; ShowS
+showList :: [LoginResponse] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680339376"><span id="local-6989586621680339387"><span class="annot"><span class="annottext">LoginResponse -&gt; LoginResponse -&gt; Bool
+(LoginResponse -&gt; LoginResponse -&gt; Bool)
+-&gt; (LoginResponse -&gt; LoginResponse -&gt; Bool) -&gt; Eq LoginResponse
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LoginResponse -&gt; LoginResponse -&gt; Bool
+== :: LoginResponse -&gt; LoginResponse -&gt; Bool
+$c/= :: LoginResponse -&gt; LoginResponse -&gt; Bool
+/= :: LoginResponse -&gt; LoginResponse -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680339392"><span id="local-6989586621680339394"><span class="annot"><span class="annottext">(forall x. LoginResponse -&gt; Rep LoginResponse x)
+-&gt; (forall x. Rep LoginResponse x -&gt; LoginResponse)
+-&gt; Generic LoginResponse
+forall x. Rep LoginResponse x -&gt; LoginResponse
+forall x. LoginResponse -&gt; Rep LoginResponse x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. LoginResponse -&gt; Rep LoginResponse x
+from :: forall x. LoginResponse -&gt; Rep LoginResponse x
+$cto :: forall x. Rep LoginResponse x -&gt; LoginResponse
+to :: forall x. Rep LoginResponse x -&gt; LoginResponse
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680339398"><span id="local-6989586621680339402"><span id="local-6989586621680339405"><span id="local-6989586621680339408"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#LoginResponse"><span class="hs-identifier hs-type">LoginResponse</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-54"></span><span>  </span><span id="local-6989586621680339537"><span class="annot"><span class="annottext">toJSON :: LoginResponse -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; LoginResponse -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#genericToJSON"><span class="hs-identifier hs-var">genericToJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680339540"><span id="local-6989586621680339544"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#LoginResponse"><span class="hs-identifier hs-type">LoginResponse</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-57"></span><span>  </span><span id="local-6989586621680339634"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser LoginResponse
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#parseJSON"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser LoginResponse
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#genericParseJSON"><span class="hs-identifier hs-var">genericParseJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="hs-keyword">data</span><span> </span><span id="RefreshRequest"><span class="annot"><a href="Surypus.Types.Auth.html#RefreshRequest"><span class="hs-identifier hs-var">RefreshRequest</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RefreshRequest"><span class="annot"><a href="Surypus.Types.Auth.html#RefreshRequest"><span class="hs-identifier hs-var">RefreshRequest</span></a></span></span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="refreshToken"><span class="annot"><span class="annottext">RefreshRequest -&gt; Text
+</span><a href="Surypus.Types.Auth.html#refreshToken"><span class="hs-identifier hs-var hs-var">refreshToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680339638"><span id="local-6989586621680339642"><span id="local-6989586621680339646"><span class="annot"><span class="annottext">Int -&gt; RefreshRequest -&gt; ShowS
+[RefreshRequest] -&gt; ShowS
+RefreshRequest -&gt; String
+(Int -&gt; RefreshRequest -&gt; ShowS)
+-&gt; (RefreshRequest -&gt; String)
+-&gt; ([RefreshRequest] -&gt; ShowS)
+-&gt; Show RefreshRequest
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; RefreshRequest -&gt; ShowS
+showsPrec :: Int -&gt; RefreshRequest -&gt; ShowS
+$cshow :: RefreshRequest -&gt; String
+show :: RefreshRequest -&gt; String
+$cshowList :: [RefreshRequest] -&gt; ShowS
+showList :: [RefreshRequest] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680339649"><span id="local-6989586621680339652"><span class="annot"><span class="annottext">RefreshRequest -&gt; RefreshRequest -&gt; Bool
+(RefreshRequest -&gt; RefreshRequest -&gt; Bool)
+-&gt; (RefreshRequest -&gt; RefreshRequest -&gt; Bool) -&gt; Eq RefreshRequest
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: RefreshRequest -&gt; RefreshRequest -&gt; Bool
+== :: RefreshRequest -&gt; RefreshRequest -&gt; Bool
+$c/= :: RefreshRequest -&gt; RefreshRequest -&gt; Bool
+/= :: RefreshRequest -&gt; RefreshRequest -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680339656"><span id="local-6989586621680339658"><span class="annot"><span class="annottext">(forall x. RefreshRequest -&gt; Rep RefreshRequest x)
+-&gt; (forall x. Rep RefreshRequest x -&gt; RefreshRequest)
+-&gt; Generic RefreshRequest
+forall x. Rep RefreshRequest x -&gt; RefreshRequest
+forall x. RefreshRequest -&gt; Rep RefreshRequest x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. RefreshRequest -&gt; Rep RefreshRequest x
+from :: forall x. RefreshRequest -&gt; Rep RefreshRequest x
+$cto :: forall x. Rep RefreshRequest x -&gt; RefreshRequest
+to :: forall x. Rep RefreshRequest x -&gt; RefreshRequest
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">anyclass</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680339661"><span id="local-6989586621680339668"><span id="local-6989586621680339671"><span id="local-6989586621680339674"><span id="local-6989586621680339677"><span class="annot"><span class="annottext">[RefreshRequest] -&gt; Value
+[RefreshRequest] -&gt; Encoding
+RefreshRequest -&gt; Bool
+RefreshRequest -&gt; Value
+RefreshRequest -&gt; Encoding
+(RefreshRequest -&gt; Value)
+-&gt; (RefreshRequest -&gt; Encoding)
+-&gt; ([RefreshRequest] -&gt; Value)
+-&gt; ([RefreshRequest] -&gt; Encoding)
+-&gt; (RefreshRequest -&gt; Bool)
+-&gt; ToJSON RefreshRequest
+forall a.
+(a -&gt; Value)
+-&gt; (a -&gt; Encoding)
+-&gt; ([a] -&gt; Value)
+-&gt; ([a] -&gt; Encoding)
+-&gt; (a -&gt; Bool)
+-&gt; ToJSON a
+$ctoJSON :: RefreshRequest -&gt; Value
+toJSON :: RefreshRequest -&gt; Value
+$ctoEncoding :: RefreshRequest -&gt; Encoding
+toEncoding :: RefreshRequest -&gt; Encoding
+$ctoJSONList :: [RefreshRequest] -&gt; Value
+toJSONList :: [RefreshRequest] -&gt; Value
+$ctoEncodingList :: [RefreshRequest] -&gt; Encoding
+toEncodingList :: [RefreshRequest] -&gt; Encoding
+$comitField :: RefreshRequest -&gt; Bool
+omitField :: RefreshRequest -&gt; Bool
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></a></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680339724"><span id="local-6989586621680339731"><span id="local-6989586621680339734"><span class="annot"><span class="annottext">Maybe RefreshRequest
+Value -&gt; Parser [RefreshRequest]
+Value -&gt; Parser RefreshRequest
+(Value -&gt; Parser RefreshRequest)
+-&gt; (Value -&gt; Parser [RefreshRequest])
+-&gt; Maybe RefreshRequest
+-&gt; FromJSON RefreshRequest
+forall a.
+(Value -&gt; Parser a)
+-&gt; (Value -&gt; Parser [a]) -&gt; Maybe a -&gt; FromJSON a
+$cparseJSON :: Value -&gt; Parser RefreshRequest
+parseJSON :: Value -&gt; Parser RefreshRequest
+$cparseJSONList :: Value -&gt; Parser [RefreshRequest]
+parseJSONList :: Value -&gt; Parser [RefreshRequest]
+$comittedField :: Maybe RefreshRequest
+omittedField :: Maybe RefreshRequest
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">FromJSON</span></a></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span class="hs-keyword">data</span><span> </span><span id="RefreshResponse"><span class="annot"><a href="Surypus.Types.Auth.html#RefreshResponse"><span class="hs-identifier hs-var">RefreshResponse</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RefreshResponse"><span class="annot"><a href="Surypus.Types.Auth.html#RefreshResponse"><span class="hs-identifier hs-var">RefreshResponse</span></a></span></span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="newAccessToken"><span class="annot"><span class="annottext">RefreshResponse -&gt; Text
+</span><a href="Surypus.Types.Auth.html#newAccessToken"><span class="hs-identifier hs-var hs-var">newAccessToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-67"></span><span>    </span><span id="newRefreshToken"><span class="annot"><span class="annottext">RefreshResponse -&gt; Text
+</span><a href="Surypus.Types.Auth.html#newRefreshToken"><span class="hs-identifier hs-var hs-var">newRefreshToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-68"></span><span>    </span><span id="newExpiresIn"><span class="annot"><span class="annottext">RefreshResponse -&gt; Maybe Int
+</span><a href="Surypus.Types.Auth.html#newExpiresIn"><span class="hs-identifier hs-var hs-var">newExpiresIn</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680339780"><span id="local-6989586621680339787"><span id="local-6989586621680339791"><span class="annot"><span class="annottext">Int -&gt; RefreshResponse -&gt; ShowS
+[RefreshResponse] -&gt; ShowS
+RefreshResponse -&gt; String
+(Int -&gt; RefreshResponse -&gt; ShowS)
+-&gt; (RefreshResponse -&gt; String)
+-&gt; ([RefreshResponse] -&gt; ShowS)
+-&gt; Show RefreshResponse
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; RefreshResponse -&gt; ShowS
+showsPrec :: Int -&gt; RefreshResponse -&gt; ShowS
+$cshow :: RefreshResponse -&gt; String
+show :: RefreshResponse -&gt; String
+$cshowList :: [RefreshResponse] -&gt; ShowS
+showList :: [RefreshResponse] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680339794"><span id="local-6989586621680339800"><span class="annot"><span class="annottext">RefreshResponse -&gt; RefreshResponse -&gt; Bool
+(RefreshResponse -&gt; RefreshResponse -&gt; Bool)
+-&gt; (RefreshResponse -&gt; RefreshResponse -&gt; Bool)
+-&gt; Eq RefreshResponse
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: RefreshResponse -&gt; RefreshResponse -&gt; Bool
+== :: RefreshResponse -&gt; RefreshResponse -&gt; Bool
+$c/= :: RefreshResponse -&gt; RefreshResponse -&gt; Bool
+/= :: RefreshResponse -&gt; RefreshResponse -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680339804"><span id="local-6989586621680339806"><span class="annot"><span class="annottext">(forall x. RefreshResponse -&gt; Rep RefreshResponse x)
+-&gt; (forall x. Rep RefreshResponse x -&gt; RefreshResponse)
+-&gt; Generic RefreshResponse
+forall x. Rep RefreshResponse x -&gt; RefreshResponse
+forall x. RefreshResponse -&gt; Rep RefreshResponse x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. RefreshResponse -&gt; Rep RefreshResponse x
+from :: forall x. RefreshResponse -&gt; Rep RefreshResponse x
+$cto :: forall x. Rep RefreshResponse x -&gt; RefreshResponse
+to :: forall x. Rep RefreshResponse x -&gt; RefreshResponse
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span>
+</span><span id="line-72"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680339810"><span id="local-6989586621680339814"><span id="local-6989586621680339817"><span id="local-6989586621680339820"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#RefreshResponse"><span class="hs-identifier hs-type">RefreshResponse</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-73"></span><span>  </span><span id="local-6989586621680339900"><span class="annot"><span class="annottext">toJSON :: RefreshResponse -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; RefreshResponse -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#genericToJSON"><span class="hs-identifier hs-var">genericToJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-74"></span><span>
+</span><span id="line-75"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680339903"><span id="local-6989586621680339907"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#RefreshResponse"><span class="hs-identifier hs-type">RefreshResponse</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-76"></span><span>  </span><span id="local-6989586621680339967"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser RefreshResponse
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#parseJSON"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser RefreshResponse
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#genericParseJSON"><span class="hs-identifier hs-var">genericParseJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-77"></span><span>
+</span><span id="line-78"></span><span class="hs-keyword">data</span><span> </span><span id="UserInfo"><span class="annot"><a href="Surypus.Types.Auth.html#UserInfo"><span class="hs-identifier hs-var">UserInfo</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="UserInfo"><span class="annot"><a href="Surypus.Types.Auth.html#UserInfo"><span class="hs-identifier hs-var">UserInfo</span></a></span></span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="userId"><span class="annot"><span class="annottext">UserInfo -&gt; Int64
+</span><a href="Surypus.Types.Auth.html#userId"><span class="hs-identifier hs-var hs-var">userId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-80"></span><span>    </span><span id="userUsername"><span class="annot"><span class="annottext">UserInfo -&gt; Text
+</span><a href="Surypus.Types.Auth.html#userUsername"><span class="hs-identifier hs-var hs-var">userUsername</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-81"></span><span>    </span><span id="userEmail"><span class="annot"><span class="annottext">UserInfo -&gt; Maybe Text
+</span><a href="Surypus.Types.Auth.html#userEmail"><span class="hs-identifier hs-var hs-var">userEmail</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-82"></span><span>    </span><span id="userFullName"><span class="annot"><span class="annottext">UserInfo -&gt; Maybe Text
+</span><a href="Surypus.Types.Auth.html#userFullName"><span class="hs-identifier hs-var hs-var">userFullName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-83"></span><span>    </span><span id="userRoles"><span class="annot"><span class="annottext">UserInfo -&gt; [UserRole]
+</span><a href="Surypus.Types.Auth.html#userRoles"><span class="hs-identifier hs-var hs-var">userRoles</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="Surypus.Types.Auth.html#UserRole"><span class="hs-identifier hs-type">UserRole</span></a></span><span class="hs-special">]</span><span class="hs-special">,</span><span>
+</span><span id="line-84"></span><span>    </span><span id="userPermissions"><span class="annot"><span class="annottext">UserInfo -&gt; [Permission]
+</span><a href="Surypus.Types.Auth.html#userPermissions"><span class="hs-identifier hs-var hs-var">userPermissions</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="Surypus.Types.Auth.html#Permission"><span class="hs-identifier hs-type">Permission</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-86"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680339976"><span id="local-6989586621680339988"><span id="local-6989586621680339992"><span class="annot"><span class="annottext">Int -&gt; UserInfo -&gt; ShowS
+[UserInfo] -&gt; ShowS
+UserInfo -&gt; String
+(Int -&gt; UserInfo -&gt; ShowS)
+-&gt; (UserInfo -&gt; String) -&gt; ([UserInfo] -&gt; ShowS) -&gt; Show UserInfo
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; UserInfo -&gt; ShowS
+showsPrec :: Int -&gt; UserInfo -&gt; ShowS
+$cshow :: UserInfo -&gt; String
+show :: UserInfo -&gt; String
+$cshowList :: [UserInfo] -&gt; ShowS
+showList :: [UserInfo] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680339997"><span id="local-6989586621680340008"><span class="annot"><span class="annottext">UserInfo -&gt; UserInfo -&gt; Bool
+(UserInfo -&gt; UserInfo -&gt; Bool)
+-&gt; (UserInfo -&gt; UserInfo -&gt; Bool) -&gt; Eq UserInfo
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: UserInfo -&gt; UserInfo -&gt; Bool
+== :: UserInfo -&gt; UserInfo -&gt; Bool
+$c/= :: UserInfo -&gt; UserInfo -&gt; Bool
+/= :: UserInfo -&gt; UserInfo -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680340014"><span id="local-6989586621680340016"><span class="annot"><span class="annottext">(forall x. UserInfo -&gt; Rep UserInfo x)
+-&gt; (forall x. Rep UserInfo x -&gt; UserInfo) -&gt; Generic UserInfo
+forall x. Rep UserInfo x -&gt; UserInfo
+forall x. UserInfo -&gt; Rep UserInfo x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. UserInfo -&gt; Rep UserInfo x
+from :: forall x. UserInfo -&gt; Rep UserInfo x
+$cto :: forall x. Rep UserInfo x -&gt; UserInfo
+to :: forall x. Rep UserInfo x -&gt; UserInfo
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680340020"><span id="local-6989586621680340024"><span id="local-6989586621680340027"><span id="local-6989586621680340030"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#UserInfo"><span class="hs-identifier hs-type">UserInfo</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-89"></span><span>  </span><span id="local-6989586621680340164"><span class="annot"><span class="annottext">toJSON :: UserInfo -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; UserInfo -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#genericToJSON"><span class="hs-identifier hs-var">genericToJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-90"></span><span>
+</span><span id="line-91"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680340167"><span id="local-6989586621680340171"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#UserInfo"><span class="hs-identifier hs-type">UserInfo</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-92"></span><span>  </span><span id="local-6989586621680340264"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser UserInfo
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#parseJSON"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser UserInfo
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#genericParseJSON"><span class="hs-identifier hs-var">genericParseJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-93"></span><span>
+</span><span id="line-94"></span><span class="hs-keyword">data</span><span> </span><span id="UserRole"><span class="annot"><a href="Surypus.Types.Auth.html#UserRole"><span class="hs-identifier hs-var">UserRole</span></a></span></span><span>
+</span><span id="line-95"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="RoleAdmin"><span class="annot"><a href="Surypus.Types.Auth.html#RoleAdmin"><span class="hs-identifier hs-var">RoleAdmin</span></a></span></span><span>
+</span><span id="line-96"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="RoleManager"><span class="annot"><a href="Surypus.Types.Auth.html#RoleManager"><span class="hs-identifier hs-var">RoleManager</span></a></span></span><span>
+</span><span id="line-97"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="RoleAccountant"><span class="annot"><a href="Surypus.Types.Auth.html#RoleAccountant"><span class="hs-identifier hs-var">RoleAccountant</span></a></span></span><span>
+</span><span id="line-98"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="RoleSales"><span class="annot"><a href="Surypus.Types.Auth.html#RoleSales"><span class="hs-identifier hs-var">RoleSales</span></a></span></span><span>
+</span><span id="line-99"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="RoleViewer"><span class="annot"><a href="Surypus.Types.Auth.html#RoleViewer"><span class="hs-identifier hs-var">RoleViewer</span></a></span></span><span>
+</span><span id="line-100"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680340271"><span id="local-6989586621680340273"><span id="local-6989586621680340276"><span class="annot"><span class="annottext">Int -&gt; UserRole -&gt; ShowS
+[UserRole] -&gt; ShowS
+UserRole -&gt; String
+(Int -&gt; UserRole -&gt; ShowS)
+-&gt; (UserRole -&gt; String) -&gt; ([UserRole] -&gt; ShowS) -&gt; Show UserRole
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; UserRole -&gt; ShowS
+showsPrec :: Int -&gt; UserRole -&gt; ShowS
+$cshow :: UserRole -&gt; String
+show :: UserRole -&gt; String
+$cshowList :: [UserRole] -&gt; ShowS
+showList :: [UserRole] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680340279"><span id="local-6989586621680340284"><span class="annot"><span class="annottext">UserRole -&gt; UserRole -&gt; Bool
+(UserRole -&gt; UserRole -&gt; Bool)
+-&gt; (UserRole -&gt; UserRole -&gt; Bool) -&gt; Eq UserRole
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: UserRole -&gt; UserRole -&gt; Bool
+== :: UserRole -&gt; UserRole -&gt; Bool
+$c/= :: UserRole -&gt; UserRole -&gt; Bool
+/= :: UserRole -&gt; UserRole -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680340287"><span id="local-6989586621680340289"><span class="annot"><span class="annottext">(forall x. UserRole -&gt; Rep UserRole x)
+-&gt; (forall x. Rep UserRole x -&gt; UserRole) -&gt; Generic UserRole
+forall x. Rep UserRole x -&gt; UserRole
+forall x. UserRole -&gt; Rep UserRole x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. UserRole -&gt; Rep UserRole x
+from :: forall x. UserRole -&gt; Rep UserRole x
+$cto :: forall x. Rep UserRole x -&gt; UserRole
+to :: forall x. Rep UserRole x -&gt; UserRole
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680340292"><span id="local-6989586621680340300"><span id="local-6989586621680340307"><span id="local-6989586621680340315"><span id="local-6989586621680340318"><span id="local-6989586621680340323"><span id="local-6989586621680340329"><span id="local-6989586621680340333"><span class="annot"><span class="annottext">Int -&gt; UserRole
+UserRole -&gt; Int
+UserRole -&gt; [UserRole]
+UserRole -&gt; UserRole
+UserRole -&gt; UserRole -&gt; [UserRole]
+UserRole -&gt; UserRole -&gt; UserRole -&gt; [UserRole]
+(UserRole -&gt; UserRole)
+-&gt; (UserRole -&gt; UserRole)
+-&gt; (Int -&gt; UserRole)
+-&gt; (UserRole -&gt; Int)
+-&gt; (UserRole -&gt; [UserRole])
+-&gt; (UserRole -&gt; UserRole -&gt; [UserRole])
+-&gt; (UserRole -&gt; UserRole -&gt; [UserRole])
+-&gt; (UserRole -&gt; UserRole -&gt; UserRole -&gt; [UserRole])
+-&gt; Enum UserRole
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: UserRole -&gt; UserRole
+succ :: UserRole -&gt; UserRole
+$cpred :: UserRole -&gt; UserRole
+pred :: UserRole -&gt; UserRole
+$ctoEnum :: Int -&gt; UserRole
+toEnum :: Int -&gt; UserRole
+$cfromEnum :: UserRole -&gt; Int
+fromEnum :: UserRole -&gt; Int
+$cenumFrom :: UserRole -&gt; [UserRole]
+enumFrom :: UserRole -&gt; [UserRole]
+$cenumFromThen :: UserRole -&gt; UserRole -&gt; [UserRole]
+enumFromThen :: UserRole -&gt; UserRole -&gt; [UserRole]
+$cenumFromTo :: UserRole -&gt; UserRole -&gt; [UserRole]
+enumFromTo :: UserRole -&gt; UserRole -&gt; [UserRole]
+$cenumFromThenTo :: UserRole -&gt; UserRole -&gt; UserRole -&gt; [UserRole]
+enumFromThenTo :: UserRole -&gt; UserRole -&gt; UserRole -&gt; [UserRole]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680340341"><span id="local-6989586621680340343"><span class="annot"><span class="annottext">UserRole
+UserRole -&gt; UserRole -&gt; Bounded UserRole
+forall a. a -&gt; a -&gt; Bounded a
+$cminBound :: UserRole
+minBound :: UserRole
+$cmaxBound :: UserRole
+maxBound :: UserRole
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-101"></span><span>
+</span><span id="line-102"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680340349"><span id="local-6989586621680340355"><span id="local-6989586621680340358"><span id="local-6989586621680340361"><span id="local-6989586621680340364"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#UserRole"><span class="hs-identifier hs-type">UserRole</span></a></span></span></span></span></span></span><span>
+</span><span id="line-103"></span><span>
+</span><span id="line-104"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680340499"><span id="local-6989586621680340505"><span id="local-6989586621680340508"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#UserRole"><span class="hs-identifier hs-type">UserRole</span></a></span></span></span></span><span>
+</span><span id="line-105"></span><span>
+</span><span id="line-106"></span><span class="hs-keyword">data</span><span> </span><span id="TokenPair"><span class="annot"><a href="Surypus.Types.Auth.html#TokenPair"><span class="hs-identifier hs-var">TokenPair</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TokenPair"><span class="annot"><a href="Surypus.Types.Auth.html#TokenPair"><span class="hs-identifier hs-var">TokenPair</span></a></span></span><span>
+</span><span id="line-107"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tpAccessToken"><span class="annot"><span class="annottext">TokenPair -&gt; Text
+</span><a href="Surypus.Types.Auth.html#tpAccessToken"><span class="hs-identifier hs-var hs-var">tpAccessToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-108"></span><span>    </span><span id="tpRefreshToken"><span class="annot"><span class="annottext">TokenPair -&gt; Text
+</span><a href="Surypus.Types.Auth.html#tpRefreshToken"><span class="hs-identifier hs-var hs-var">tpRefreshToken</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-109"></span><span>    </span><span id="tpExpiresAt"><span class="annot"><span class="annottext">TokenPair -&gt; UTCTime
+</span><a href="Surypus.Types.Auth.html#tpExpiresAt"><span class="hs-identifier hs-var hs-var">tpExpiresAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span>
+</span><span id="line-110"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-111"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680340620"><span id="local-6989586621680340627"><span id="local-6989586621680340631"><span class="annot"><span class="annottext">Int -&gt; TokenPair -&gt; ShowS
+[TokenPair] -&gt; ShowS
+TokenPair -&gt; String
+(Int -&gt; TokenPair -&gt; ShowS)
+-&gt; (TokenPair -&gt; String)
+-&gt; ([TokenPair] -&gt; ShowS)
+-&gt; Show TokenPair
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TokenPair -&gt; ShowS
+showsPrec :: Int -&gt; TokenPair -&gt; ShowS
+$cshow :: TokenPair -&gt; String
+show :: TokenPair -&gt; String
+$cshowList :: [TokenPair] -&gt; ShowS
+showList :: [TokenPair] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680340634"><span id="local-6989586621680340640"><span class="annot"><span class="annottext">TokenPair -&gt; TokenPair -&gt; Bool
+(TokenPair -&gt; TokenPair -&gt; Bool)
+-&gt; (TokenPair -&gt; TokenPair -&gt; Bool) -&gt; Eq TokenPair
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TokenPair -&gt; TokenPair -&gt; Bool
+== :: TokenPair -&gt; TokenPair -&gt; Bool
+$c/= :: TokenPair -&gt; TokenPair -&gt; Bool
+/= :: TokenPair -&gt; TokenPair -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680340644"><span id="local-6989586621680340646"><span class="annot"><span class="annottext">(forall x. TokenPair -&gt; Rep TokenPair x)
+-&gt; (forall x. Rep TokenPair x -&gt; TokenPair) -&gt; Generic TokenPair
+forall x. Rep TokenPair x -&gt; TokenPair
+forall x. TokenPair -&gt; Rep TokenPair x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. TokenPair -&gt; Rep TokenPair x
+from :: forall x. TokenPair -&gt; Rep TokenPair x
+$cto :: forall x. Rep TokenPair x -&gt; TokenPair
+to :: forall x. Rep TokenPair x -&gt; TokenPair
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-112"></span><span>
+</span><span id="line-113"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680340650"><span id="local-6989586621680340654"><span id="local-6989586621680340657"><span id="local-6989586621680340660"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#TokenPair"><span class="hs-identifier hs-type">TokenPair</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-114"></span><span>  </span><span id="local-6989586621680340740"><span class="annot"><span class="annottext">toJSON :: TokenPair -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; TokenPair -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#genericToJSON"><span class="hs-identifier hs-var">genericToJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">}</span><span>
+</span><span id="line-115"></span><span>
+</span><span id="line-116"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680340743"><span id="local-6989586621680340747"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#TokenPair"><span class="hs-identifier hs-type">TokenPair</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-117"></span><span>  </span><span id="local-6989586621680340807"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser TokenPair
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#parseJSON"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser TokenPair
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#genericParseJSON"><span class="hs-identifier hs-var">genericParseJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">2</span></span><span class="hs-special">}</span><span>
+</span><span id="line-118"></span><span>
+</span><span id="line-119"></span><span class="hs-keyword">data</span><span> </span><span id="JwtClaims"><span class="annot"><a href="Surypus.Types.Auth.html#JwtClaims"><span class="hs-identifier hs-var">JwtClaims</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="JwtClaims"><span class="annot"><a href="Surypus.Types.Auth.html#JwtClaims"><span class="hs-identifier hs-var">JwtClaims</span></a></span></span><span>
+</span><span id="line-120"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="jwtUserId"><span class="annot"><span class="annottext">JwtClaims -&gt; Int64
+</span><a href="Surypus.Types.Auth.html#jwtUserId"><span class="hs-identifier hs-var hs-var">jwtUserId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-121"></span><span>    </span><span id="jwtUsername"><span class="annot"><span class="annottext">JwtClaims -&gt; Text
+</span><a href="Surypus.Types.Auth.html#jwtUsername"><span class="hs-identifier hs-var hs-var">jwtUsername</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-122"></span><span>    </span><span id="jwtRole"><span class="annot"><span class="annottext">JwtClaims -&gt; Text
+</span><a href="Surypus.Types.Auth.html#jwtRole"><span class="hs-identifier hs-var hs-var">jwtRole</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-123"></span><span>    </span><span id="jwtExp"><span class="annot"><span class="annottext">JwtClaims -&gt; Int64
+</span><a href="Surypus.Types.Auth.html#jwtExp"><span class="hs-identifier hs-var hs-var">jwtExp</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-124"></span><span>    </span><span id="jwtIat"><span class="annot"><span class="annottext">JwtClaims -&gt; Int64
+</span><a href="Surypus.Types.Auth.html#jwtIat"><span class="hs-identifier hs-var hs-var">jwtIat</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-125"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-126"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680340815"><span id="local-6989586621680340823"><span id="local-6989586621680340827"><span class="annot"><span class="annottext">Int -&gt; JwtClaims -&gt; ShowS
+[JwtClaims] -&gt; ShowS
+JwtClaims -&gt; String
+(Int -&gt; JwtClaims -&gt; ShowS)
+-&gt; (JwtClaims -&gt; String)
+-&gt; ([JwtClaims] -&gt; ShowS)
+-&gt; Show JwtClaims
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; JwtClaims -&gt; ShowS
+showsPrec :: Int -&gt; JwtClaims -&gt; ShowS
+$cshow :: JwtClaims -&gt; String
+show :: JwtClaims -&gt; String
+$cshowList :: [JwtClaims] -&gt; ShowS
+showList :: [JwtClaims] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680340830"><span id="local-6989586621680340837"><span class="annot"><span class="annottext">JwtClaims -&gt; JwtClaims -&gt; Bool
+(JwtClaims -&gt; JwtClaims -&gt; Bool)
+-&gt; (JwtClaims -&gt; JwtClaims -&gt; Bool) -&gt; Eq JwtClaims
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: JwtClaims -&gt; JwtClaims -&gt; Bool
+== :: JwtClaims -&gt; JwtClaims -&gt; Bool
+$c/= :: JwtClaims -&gt; JwtClaims -&gt; Bool
+/= :: JwtClaims -&gt; JwtClaims -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680340841"><span id="local-6989586621680340843"><span class="annot"><span class="annottext">(forall x. JwtClaims -&gt; Rep JwtClaims x)
+-&gt; (forall x. Rep JwtClaims x -&gt; JwtClaims) -&gt; Generic JwtClaims
+forall x. Rep JwtClaims x -&gt; JwtClaims
+forall x. JwtClaims -&gt; Rep JwtClaims x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. JwtClaims -&gt; Rep JwtClaims x
+from :: forall x. JwtClaims -&gt; Rep JwtClaims x
+$cto :: forall x. Rep JwtClaims x -&gt; JwtClaims
+to :: forall x. Rep JwtClaims x -&gt; JwtClaims
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-127"></span><span>
+</span><span id="line-128"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680340847"><span id="local-6989586621680340851"><span id="local-6989586621680340854"><span id="local-6989586621680340857"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#JwtClaims"><span class="hs-identifier hs-type">JwtClaims</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-129"></span><span>  </span><span id="local-6989586621680340964"><span class="annot"><span class="annottext">toJSON :: JwtClaims -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; JwtClaims -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#genericToJSON"><span class="hs-identifier hs-var">genericToJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-130"></span><span>
+</span><span id="line-131"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680340967"><span id="local-6989586621680340971"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#JwtClaims"><span class="hs-identifier hs-type">JwtClaims</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-132"></span><span>  </span><span id="local-6989586621680341048"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser JwtClaims
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#parseJSON"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser JwtClaims
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#genericParseJSON"><span class="hs-identifier hs-var">genericParseJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-133"></span><span>
+</span><span id="line-134"></span><span class="hs-keyword">data</span><span> </span><span id="Permission"><span class="annot"><a href="Surypus.Types.Auth.html#Permission"><span class="hs-identifier hs-var">Permission</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Permission"><span class="annot"><a href="Surypus.Types.Auth.html#Permission"><span class="hs-identifier hs-var">Permission</span></a></span></span><span>
+</span><span id="line-135"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="permResource"><span class="annot"><span class="annottext">Permission -&gt; Text
+</span><a href="Surypus.Types.Auth.html#permResource"><span class="hs-identifier hs-var hs-var">permResource</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-136"></span><span>    </span><span id="permAction"><span class="annot"><span class="annottext">Permission -&gt; Text
+</span><a href="Surypus.Types.Auth.html#permAction"><span class="hs-identifier hs-var hs-var">permAction</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-137"></span><span>    </span><span id="permScope"><span class="annot"><span class="annottext">Permission -&gt; Maybe Text
+</span><a href="Surypus.Types.Auth.html#permScope"><span class="hs-identifier hs-var hs-var">permScope</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-138"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-139"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680341054"><span id="local-6989586621680341060"><span id="local-6989586621680341063"><span class="annot"><span class="annottext">Int -&gt; Permission -&gt; ShowS
+[Permission] -&gt; ShowS
+Permission -&gt; String
+(Int -&gt; Permission -&gt; ShowS)
+-&gt; (Permission -&gt; String)
+-&gt; ([Permission] -&gt; ShowS)
+-&gt; Show Permission
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Permission -&gt; ShowS
+showsPrec :: Int -&gt; Permission -&gt; ShowS
+$cshow :: Permission -&gt; String
+show :: Permission -&gt; String
+$cshowList :: [Permission] -&gt; ShowS
+showList :: [Permission] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680341066"><span id="local-6989586621680341071"><span class="annot"><span class="annottext">Permission -&gt; Permission -&gt; Bool
+(Permission -&gt; Permission -&gt; Bool)
+-&gt; (Permission -&gt; Permission -&gt; Bool) -&gt; Eq Permission
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Permission -&gt; Permission -&gt; Bool
+== :: Permission -&gt; Permission -&gt; Bool
+$c/= :: Permission -&gt; Permission -&gt; Bool
+/= :: Permission -&gt; Permission -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680341074"><span id="local-6989586621680341076"><span class="annot"><span class="annottext">(forall x. Permission -&gt; Rep Permission x)
+-&gt; (forall x. Rep Permission x -&gt; Permission) -&gt; Generic Permission
+forall x. Rep Permission x -&gt; Permission
+forall x. Permission -&gt; Rep Permission x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Permission -&gt; Rep Permission x
+from :: forall x. Permission -&gt; Rep Permission x
+$cto :: forall x. Rep Permission x -&gt; Permission
+to :: forall x. Rep Permission x -&gt; Permission
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-140"></span><span>
+</span><span id="line-141"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680341080"><span id="local-6989586621680341083"><span id="local-6989586621680341086"><span id="local-6989586621680341089"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#Permission"><span class="hs-identifier hs-type">Permission</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-142"></span><span>  </span><span id="local-6989586621680341168"><span class="annot"><span class="annottext">toJSON :: Permission -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Permission -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#genericToJSON"><span class="hs-identifier hs-var">genericToJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-143"></span><span>
+</span><span id="line-144"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680341171"><span id="local-6989586621680341174"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#Permission"><span class="hs-identifier hs-type">Permission</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-145"></span><span>  </span><span id="local-6989586621680341233"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser Permission
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#parseJSON"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser Permission
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#genericParseJSON"><span class="hs-identifier hs-var">genericParseJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-146"></span><span>
+</span><span id="line-147"></span><span class="hs-keyword">data</span><span> </span><span id="ResourceAccess"><span class="annot"><a href="Surypus.Types.Auth.html#ResourceAccess"><span class="hs-identifier hs-var">ResourceAccess</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ResourceAccess"><span class="annot"><a href="Surypus.Types.Auth.html#ResourceAccess"><span class="hs-identifier hs-var">ResourceAccess</span></a></span></span><span>
+</span><span id="line-148"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="resResource"><span class="annot"><span class="annottext">ResourceAccess -&gt; Text
+</span><a href="Surypus.Types.Auth.html#resResource"><span class="hs-identifier hs-var hs-var">resResource</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-149"></span><span>    </span><span id="resCanRead"><span class="annot"><span class="annottext">ResourceAccess -&gt; Bool
+</span><a href="Surypus.Types.Auth.html#resCanRead"><span class="hs-identifier hs-var hs-var">resCanRead</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span>
+</span><span id="line-150"></span><span>    </span><span id="resCanWrite"><span class="annot"><span class="annottext">ResourceAccess -&gt; Bool
+</span><a href="Surypus.Types.Auth.html#resCanWrite"><span class="hs-identifier hs-var hs-var">resCanWrite</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span>
+</span><span id="line-151"></span><span>    </span><span id="resCanDelete"><span class="annot"><span class="annottext">ResourceAccess -&gt; Bool
+</span><a href="Surypus.Types.Auth.html#resCanDelete"><span class="hs-identifier hs-var hs-var">resCanDelete</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-152"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-153"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680341240"><span id="local-6989586621680341248"><span id="local-6989586621680341252"><span class="annot"><span class="annottext">Int -&gt; ResourceAccess -&gt; ShowS
+[ResourceAccess] -&gt; ShowS
+ResourceAccess -&gt; String
+(Int -&gt; ResourceAccess -&gt; ShowS)
+-&gt; (ResourceAccess -&gt; String)
+-&gt; ([ResourceAccess] -&gt; ShowS)
+-&gt; Show ResourceAccess
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ResourceAccess -&gt; ShowS
+showsPrec :: Int -&gt; ResourceAccess -&gt; ShowS
+$cshow :: ResourceAccess -&gt; String
+show :: ResourceAccess -&gt; String
+$cshowList :: [ResourceAccess] -&gt; ShowS
+showList :: [ResourceAccess] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680341255"><span id="local-6989586621680341262"><span class="annot"><span class="annottext">ResourceAccess -&gt; ResourceAccess -&gt; Bool
+(ResourceAccess -&gt; ResourceAccess -&gt; Bool)
+-&gt; (ResourceAccess -&gt; ResourceAccess -&gt; Bool) -&gt; Eq ResourceAccess
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ResourceAccess -&gt; ResourceAccess -&gt; Bool
+== :: ResourceAccess -&gt; ResourceAccess -&gt; Bool
+$c/= :: ResourceAccess -&gt; ResourceAccess -&gt; Bool
+/= :: ResourceAccess -&gt; ResourceAccess -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680341266"><span id="local-6989586621680341268"><span class="annot"><span class="annottext">(forall x. ResourceAccess -&gt; Rep ResourceAccess x)
+-&gt; (forall x. Rep ResourceAccess x -&gt; ResourceAccess)
+-&gt; Generic ResourceAccess
+forall x. Rep ResourceAccess x -&gt; ResourceAccess
+forall x. ResourceAccess -&gt; Rep ResourceAccess x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. ResourceAccess -&gt; Rep ResourceAccess x
+from :: forall x. ResourceAccess -&gt; Rep ResourceAccess x
+$cto :: forall x. Rep ResourceAccess x -&gt; ResourceAccess
+to :: forall x. Rep ResourceAccess x -&gt; ResourceAccess
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-154"></span><span>
+</span><span id="line-155"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680341272"><span id="local-6989586621680341276"><span id="local-6989586621680341279"><span id="local-6989586621680341282"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#ResourceAccess"><span class="hs-identifier hs-type">ResourceAccess</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-156"></span><span>  </span><span id="local-6989586621680341377"><span class="annot"><span class="annottext">toJSON :: ResourceAccess -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; ResourceAccess -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#genericToJSON"><span class="hs-identifier hs-var">genericToJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-157"></span><span>
+</span><span id="line-158"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680341380"><span id="local-6989586621680341384"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Auth.html#ResourceAccess"><span class="hs-identifier hs-type">ResourceAccess</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-159"></span><span>  </span><span id="local-6989586621680341454"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser ResourceAccess
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#parseJSON"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser ResourceAccess
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#genericParseJSON"><span class="hs-identifier hs-var">genericParseJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">3</span></span><span class="hs-special">}</span><span>
+</span><span id="line-160"></span></pre></body></html>

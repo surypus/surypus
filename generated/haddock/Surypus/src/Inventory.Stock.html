@@ -1,0 +1,292 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Stock types - Current stock balances</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Inventory.Stock.html"><span class="hs-identifier">Inventory.Stock</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Inventory.Stock.html#Stock"><span class="hs-identifier">Stock</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Stock.html#StockFlags"><span class="hs-identifier">StockFlags</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Stock.html#StockMotionType"><span class="hs-identifier">StockMotionType</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Stock.html#mkStock"><span class="hs-identifier">mkStock</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Inventory.Stock.html#validateStock"><span class="hs-identifier">validateStock</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="annot"><span class="hs-comment">-- | Non-negative quantity</span></span><span>
+</span><span id="line-13"></span><span class="hs-comment">{-@ type NonNeg = {v:Double | v &gt;= 0} @-}</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="hs-comment">-- | Stock - Current stock balance</span><span>
+</span><span id="line-16"></span><span class="hs-comment">-- Invariant: quantity cannot be negative unless negativeAllowed flag is set</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">data</span><span> </span><span id="Stock"><span class="annot"><a href="Inventory.Stock.html#Stock"><span class="hs-identifier hs-var">Stock</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Stock"><span class="annot"><a href="Inventory.Stock.html#Stock"><span class="hs-identifier hs-var">Stock</span></a></span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="sGoodsId"><span class="annot"><span class="annottext">Stock -&gt; Int64
+</span><a href="Inventory.Stock.html#sGoodsId"><span class="hs-identifier hs-var hs-var">sGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span id="sLocationId"><span class="annot"><span class="annottext">Stock -&gt; Int64
+</span><a href="Inventory.Stock.html#sLocationId"><span class="hs-identifier hs-var hs-var">sLocationId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span id="sQtty"><span class="annot"><span class="annottext">Stock -&gt; Double
+</span><a href="Inventory.Stock.html#sQtty"><span class="hs-identifier hs-var hs-var">sQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="sResrvQtty"><span class="annot"><span class="annottext">Stock -&gt; Double
+</span><a href="Inventory.Stock.html#sResrvQtty"><span class="hs-identifier hs-var hs-var">sResrvQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="sOrderedQtty"><span class="annot"><span class="annottext">Stock -&gt; Double
+</span><a href="Inventory.Stock.html#sOrderedQtty"><span class="hs-identifier hs-var hs-var">sOrderedQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="sCost"><span class="annot"><span class="annottext">Stock -&gt; Double
+</span><a href="Inventory.Stock.html#sCost"><span class="hs-identifier hs-var hs-var">sCost</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="sPrice"><span class="annot"><span class="annottext">Stock -&gt; Double
+</span><a href="Inventory.Stock.html#sPrice"><span class="hs-identifier hs-var hs-var">sPrice</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680279081"><span id="local-6989586621680279094"><span id="local-6989586621680279098"><span class="annot"><span class="annottext">Int -&gt; Stock -&gt; ShowS
+[Stock] -&gt; ShowS
+Stock -&gt; String
+(Int -&gt; Stock -&gt; ShowS)
+-&gt; (Stock -&gt; String) -&gt; ([Stock] -&gt; ShowS) -&gt; Show Stock
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Stock -&gt; ShowS
+showsPrec :: Int -&gt; Stock -&gt; ShowS
+$cshow :: Stock -&gt; String
+show :: Stock -&gt; String
+$cshowList :: [Stock] -&gt; ShowS
+showList :: [Stock] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680279103"><span id="local-6989586621680279114"><span class="annot"><span class="annottext">Stock -&gt; Stock -&gt; Bool
+(Stock -&gt; Stock -&gt; Bool) -&gt; (Stock -&gt; Stock -&gt; Bool) -&gt; Eq Stock
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Stock -&gt; Stock -&gt; Bool
+== :: Stock -&gt; Stock -&gt; Bool
+$c/= :: Stock -&gt; Stock -&gt; Bool
+/= :: Stock -&gt; Stock -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- | Smart constructor for Stock that validates invariants</span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- Returns Nothing if quantity is negative and negativeAllowed is false</span><span>
+</span><span id="line-30"></span><span class="hs-comment">{-@ mkStock ::
+      Int64 -&gt; Int64
+   -&gt; q:Double -&gt; r:Double -&gt; o:Double -&gt; c:Double -&gt; p:Double
+   -&gt; StockFlags
+   -&gt; Maybe {v:Stock | sQtty v &gt;= 0 &amp;&amp; sResrvQtty v &gt;= 0 &amp;&amp; sOrderedQtty v &gt;= 0
+                     &amp;&amp; sCost v &gt;= 0 &amp;&amp; sPrice v &gt;= 0} @-}</span><span>
+</span><span id="line-36"></span><span class="annot"><a href="Inventory.Stock.html#mkStock"><span class="hs-identifier hs-type">mkStock</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Inventory.Stock.html#StockFlags"><span class="hs-identifier hs-type">StockFlags</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Inventory.Stock.html#Stock"><span class="hs-identifier hs-type">Stock</span></a></span><span>
+</span><span id="line-37"></span><span id="mkStock"><span class="annot"><span class="annottext">mkStock :: Int64
+-&gt; Int64
+-&gt; Double
+-&gt; Double
+-&gt; Double
+-&gt; Double
+-&gt; Double
+-&gt; StockFlags
+-&gt; Maybe Stock
+</span><a href="Inventory.Stock.html#mkStock"><span class="hs-identifier hs-var hs-var">mkStock</span></a></span></span><span> </span><span id="local-6989586621680279118"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680279118"><span class="hs-identifier hs-var">goodsId</span></a></span></span><span> </span><span id="local-6989586621680279119"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680279119"><span class="hs-identifier hs-var">locId</span></a></span></span><span> </span><span id="local-6989586621680279120"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680279120"><span class="hs-identifier hs-var">qtty</span></a></span></span><span> </span><span id="local-6989586621680279121"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680279121"><span class="hs-identifier hs-var">resrv</span></a></span></span><span> </span><span id="local-6989586621680279122"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680279122"><span class="hs-identifier hs-var">ordered</span></a></span></span><span> </span><span id="local-6989586621680279123"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680279123"><span class="hs-identifier hs-var">cost</span></a></span></span><span> </span><span id="local-6989586621680279124"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680279124"><span class="hs-identifier hs-var">price</span></a></span></span><span> </span><span id="local-6989586621680279125"><span class="annot"><span class="annottext">StockFlags
+</span><a href="#local-6989586621680279125"><span class="hs-identifier hs-var">flags</span></a></span></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680279120"><span class="hs-identifier hs-var">qtty</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">StockFlags -&gt; Bool
+</span><a href="Inventory.Stock.html#sfNegativeAllowed"><span class="hs-identifier hs-var">sfNegativeAllowed</span></a></span><span> </span><span class="annot"><span class="annottext">StockFlags
+</span><a href="#local-6989586621680279125"><span class="hs-identifier hs-var">flags</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Stock
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680279121"><span class="hs-identifier hs-var">resrv</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Stock
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680279122"><span class="hs-identifier hs-var">ordered</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Stock
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680279123"><span class="hs-identifier hs-var">cost</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Stock
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680279124"><span class="hs-identifier hs-var">price</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Stock
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Stock -&gt; Maybe Stock
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(Stock -&gt; Maybe Stock) -&gt; Stock -&gt; Maybe Stock
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int64
+-&gt; Int64 -&gt; Double -&gt; Double -&gt; Double -&gt; Double -&gt; Double -&gt; Stock
+</span><a href="Inventory.Stock.html#Stock"><span class="hs-identifier hs-var">Stock</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680279118"><span class="hs-identifier hs-var">goodsId</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680279119"><span class="hs-identifier hs-var">locId</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680279120"><span class="hs-identifier hs-var">qtty</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680279121"><span class="hs-identifier hs-var">resrv</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680279122"><span class="hs-identifier hs-var">ordered</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680279123"><span class="hs-identifier hs-var">cost</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680279124"><span class="hs-identifier hs-var">price</span></a></span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="annot"><span class="hs-comment">-- | Validate stock invariants</span></span><span>
+</span><span id="line-46"></span><span class="hs-comment">{-@ validateStock :: s:Stock -&gt; StockFlags -&gt; {v:Bool | v =&gt; (sQtty s &gt;= 0 || sfNegativeAllowed sflags)} @-}</span><span>
+</span><span id="line-47"></span><span class="annot"><a href="Inventory.Stock.html#validateStock"><span class="hs-identifier hs-type">validateStock</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Inventory.Stock.html#Stock"><span class="hs-identifier hs-type">Stock</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Inventory.Stock.html#StockFlags"><span class="hs-identifier hs-type">StockFlags</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-48"></span><span id="validateStock"><span class="annot"><span class="annottext">validateStock :: Stock -&gt; StockFlags -&gt; Bool
+</span><a href="Inventory.Stock.html#validateStock"><span class="hs-identifier hs-var hs-var">validateStock</span></a></span></span><span> </span><span id="local-6989586621680279130"><span class="annot"><span class="annottext">Stock
+</span><a href="#local-6989586621680279130"><span class="hs-keyword hs-var">stock</span></a></span></span><span> </span><span id="local-6989586621680279131"><span class="annot"><span class="annottext">StockFlags
+</span><a href="#local-6989586621680279131"><span class="hs-identifier hs-var">flags</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Stock -&gt; Double
+</span><a href="Inventory.Stock.html#sQtty"><span class="hs-identifier hs-var">sQtty</span></a></span><span> </span><span class="annot"><span class="annottext">Stock
+</span><a href="#local-6989586621680279130"><span class="hs-keyword hs-var">stock</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">StockFlags -&gt; Bool
+</span><a href="Inventory.Stock.html#sfNegativeAllowed"><span class="hs-identifier hs-var">sfNegativeAllowed</span></a></span><span> </span><span class="annot"><span class="annottext">StockFlags
+</span><a href="#local-6989586621680279131"><span class="hs-identifier hs-var">flags</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span>
+</span><span id="line-50"></span><span>  </span><span class="annot"><span class="annottext">Stock -&gt; Double
+</span><a href="Inventory.Stock.html#sResrvQtty"><span class="hs-identifier hs-var">sResrvQtty</span></a></span><span> </span><span class="annot"><span class="annottext">Stock
+</span><a href="#local-6989586621680279130"><span class="hs-keyword hs-var">stock</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span>
+</span><span id="line-51"></span><span>  </span><span class="annot"><span class="annottext">Stock -&gt; Double
+</span><a href="Inventory.Stock.html#sOrderedQtty"><span class="hs-identifier hs-var">sOrderedQtty</span></a></span><span> </span><span class="annot"><span class="annottext">Stock
+</span><a href="#local-6989586621680279130"><span class="hs-keyword hs-var">stock</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span>
+</span><span id="line-52"></span><span>  </span><span class="annot"><span class="annottext">Stock -&gt; Double
+</span><a href="Inventory.Stock.html#sCost"><span class="hs-identifier hs-var">sCost</span></a></span><span> </span><span class="annot"><span class="annottext">Stock
+</span><a href="#local-6989586621680279130"><span class="hs-keyword hs-var">stock</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span>
+</span><span id="line-53"></span><span>  </span><span class="annot"><span class="annottext">Stock -&gt; Double
+</span><a href="Inventory.Stock.html#sPrice"><span class="hs-identifier hs-var">sPrice</span></a></span><span> </span><span class="annot"><span class="annottext">Stock
+</span><a href="#local-6989586621680279130"><span class="hs-keyword hs-var">stock</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="annot"><span class="hs-comment">-- | Stock flags</span></span><span>
+</span><span id="line-56"></span><span class="hs-keyword">data</span><span> </span><span id="StockFlags"><span class="annot"><a href="Inventory.Stock.html#StockFlags"><span class="hs-identifier hs-var">StockFlags</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="StockFlags"><span class="annot"><a href="Inventory.Stock.html#StockFlags"><span class="hs-identifier hs-var">StockFlags</span></a></span></span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="sfNegativeAllowed"><span class="annot"><span class="annottext">StockFlags -&gt; Bool
+</span><a href="Inventory.Stock.html#sfNegativeAllowed"><span class="hs-identifier hs-var hs-var">sfNegativeAllowed</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span>
+</span><span id="line-58"></span><span>    </span><span id="sfAutoReserve"><span class="annot"><span class="annottext">StockFlags -&gt; Bool
+</span><a href="Inventory.Stock.html#sfAutoReserve"><span class="hs-identifier hs-var hs-var">sfAutoReserve</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680279136"><span id="local-6989586621680279142"><span id="local-6989586621680279146"><span class="annot"><span class="annottext">Int -&gt; StockFlags -&gt; ShowS
+[StockFlags] -&gt; ShowS
+StockFlags -&gt; String
+(Int -&gt; StockFlags -&gt; ShowS)
+-&gt; (StockFlags -&gt; String)
+-&gt; ([StockFlags] -&gt; ShowS)
+-&gt; Show StockFlags
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; StockFlags -&gt; ShowS
+showsPrec :: Int -&gt; StockFlags -&gt; ShowS
+$cshow :: StockFlags -&gt; String
+show :: StockFlags -&gt; String
+$cshowList :: [StockFlags] -&gt; ShowS
+showList :: [StockFlags] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680279149"><span id="local-6989586621680279154"><span class="annot"><span class="annottext">StockFlags -&gt; StockFlags -&gt; Bool
+(StockFlags -&gt; StockFlags -&gt; Bool)
+-&gt; (StockFlags -&gt; StockFlags -&gt; Bool) -&gt; Eq StockFlags
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: StockFlags -&gt; StockFlags -&gt; Bool
+== :: StockFlags -&gt; StockFlags -&gt; Bool
+$c/= :: StockFlags -&gt; StockFlags -&gt; Bool
+/= :: StockFlags -&gt; StockFlags -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span class="annot"><span class="hs-comment">-- | Stock movement type</span></span><span>
+</span><span id="line-63"></span><span class="hs-keyword">data</span><span> </span><span id="StockMotionType"><span class="annot"><a href="Inventory.Stock.html#StockMotionType"><span class="hs-identifier hs-var">StockMotionType</span></a></span></span><span>
+</span><span id="line-64"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="SMTReceipt"><span class="annot"><a href="Inventory.Stock.html#SMTReceipt"><span class="hs-identifier hs-var">SMTReceipt</span></a></span></span><span>
+</span><span id="line-65"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="SMTShipment"><span class="annot"><a href="Inventory.Stock.html#SMTShipment"><span class="hs-identifier hs-var">SMTShipment</span></a></span></span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="SMTTransferIn"><span class="annot"><a href="Inventory.Stock.html#SMTTransferIn"><span class="hs-identifier hs-var">SMTTransferIn</span></a></span></span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="SMTTransferOut"><span class="annot"><a href="Inventory.Stock.html#SMTTransferOut"><span class="hs-identifier hs-var">SMTTransferOut</span></a></span></span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="SMTWriteOff"><span class="annot"><a href="Inventory.Stock.html#SMTWriteOff"><span class="hs-identifier hs-var">SMTWriteOff</span></a></span></span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="SMTAdjustment"><span class="annot"><a href="Inventory.Stock.html#SMTAdjustment"><span class="hs-identifier hs-var">SMTAdjustment</span></a></span></span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680279164"><span id="local-6989586621680279166"><span id="local-6989586621680279170"><span class="annot"><span class="annottext">Int -&gt; StockMotionType -&gt; ShowS
+[StockMotionType] -&gt; ShowS
+StockMotionType -&gt; String
+(Int -&gt; StockMotionType -&gt; ShowS)
+-&gt; (StockMotionType -&gt; String)
+-&gt; ([StockMotionType] -&gt; ShowS)
+-&gt; Show StockMotionType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; StockMotionType -&gt; ShowS
+showsPrec :: Int -&gt; StockMotionType -&gt; ShowS
+$cshow :: StockMotionType -&gt; String
+show :: StockMotionType -&gt; String
+$cshowList :: [StockMotionType] -&gt; ShowS
+showList :: [StockMotionType] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680279173"><span id="local-6989586621680279178"><span class="annot"><span class="annottext">StockMotionType -&gt; StockMotionType -&gt; Bool
+(StockMotionType -&gt; StockMotionType -&gt; Bool)
+-&gt; (StockMotionType -&gt; StockMotionType -&gt; Bool)
+-&gt; Eq StockMotionType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: StockMotionType -&gt; StockMotionType -&gt; Bool
+== :: StockMotionType -&gt; StockMotionType -&gt; Bool
+$c/= :: StockMotionType -&gt; StockMotionType -&gt; Bool
+/= :: StockMotionType -&gt; StockMotionType -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680279182"><span id="local-6989586621680279191"><span id="local-6989586621680279198"><span id="local-6989586621680279207"><span id="local-6989586621680279210"><span id="local-6989586621680279215"><span id="local-6989586621680279221"><span id="local-6989586621680279225"><span class="annot"><span class="annottext">Int -&gt; StockMotionType
+StockMotionType -&gt; Int
+StockMotionType -&gt; [StockMotionType]
+StockMotionType -&gt; StockMotionType
+StockMotionType -&gt; StockMotionType -&gt; [StockMotionType]
+StockMotionType
+-&gt; StockMotionType -&gt; StockMotionType -&gt; [StockMotionType]
+(StockMotionType -&gt; StockMotionType)
+-&gt; (StockMotionType -&gt; StockMotionType)
+-&gt; (Int -&gt; StockMotionType)
+-&gt; (StockMotionType -&gt; Int)
+-&gt; (StockMotionType -&gt; [StockMotionType])
+-&gt; (StockMotionType -&gt; StockMotionType -&gt; [StockMotionType])
+-&gt; (StockMotionType -&gt; StockMotionType -&gt; [StockMotionType])
+-&gt; (StockMotionType
+    -&gt; StockMotionType -&gt; StockMotionType -&gt; [StockMotionType])
+-&gt; Enum StockMotionType
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: StockMotionType -&gt; StockMotionType
+succ :: StockMotionType -&gt; StockMotionType
+$cpred :: StockMotionType -&gt; StockMotionType
+pred :: StockMotionType -&gt; StockMotionType
+$ctoEnum :: Int -&gt; StockMotionType
+toEnum :: Int -&gt; StockMotionType
+$cfromEnum :: StockMotionType -&gt; Int
+fromEnum :: StockMotionType -&gt; Int
+$cenumFrom :: StockMotionType -&gt; [StockMotionType]
+enumFrom :: StockMotionType -&gt; [StockMotionType]
+$cenumFromThen :: StockMotionType -&gt; StockMotionType -&gt; [StockMotionType]
+enumFromThen :: StockMotionType -&gt; StockMotionType -&gt; [StockMotionType]
+$cenumFromTo :: StockMotionType -&gt; StockMotionType -&gt; [StockMotionType]
+enumFromTo :: StockMotionType -&gt; StockMotionType -&gt; [StockMotionType]
+$cenumFromThenTo :: StockMotionType
+-&gt; StockMotionType -&gt; StockMotionType -&gt; [StockMotionType]
+enumFromThenTo :: StockMotionType
+-&gt; StockMotionType -&gt; StockMotionType -&gt; [StockMotionType]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span></pre></body></html>

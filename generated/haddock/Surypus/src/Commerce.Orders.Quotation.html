@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Quotation module - Commercial offers</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Commerce.Orders.Quotation.html"><span class="hs-identifier">Commerce.Orders.Quotation</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Commerce.Orders.Quotation.html#Quotation"><span class="hs-identifier">Quotation</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-4"></span><span>    </span><span class="annot"><a href="Commerce.Orders.Quotation.html#QuotationStatus"><span class="hs-identifier">QuotationStatus</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>    </span><span class="annot"><a href="Commerce.Orders.Quotation.html#QuotationLine"><span class="hs-identifier">QuotationLine</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Commerce.Orders.Quotation.html#calcQuotationTotal"><span class="hs-identifier">calcQuotationTotal</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-comment">{-@ type NonNeg = {v:Double | v &gt;= 0} @-}</span><span>
+</span><span id="line-14"></span><span class="hs-comment">{-@ type Discount = {v:Double | v &gt;= 0 &amp;&amp; v &lt;= 100} @-}</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="annot"><span class="hs-comment">-- | Quotation - Commercial offer</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">data</span><span> </span><span id="Quotation"><span class="annot"><a href="Commerce.Orders.Quotation.html#Quotation"><span class="hs-identifier hs-var">Quotation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Quotation"><span class="annot"><a href="Commerce.Orders.Quotation.html#Quotation"><span class="hs-identifier hs-var">Quotation</span></a></span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="qotId"><span class="annot"><span class="annottext">Quotation -&gt; Int64
+</span><a href="Commerce.Orders.Quotation.html#qotId"><span class="hs-identifier hs-var hs-var">qotId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span id="qotCode"><span class="annot"><span class="annottext">Quotation -&gt; Text
+</span><a href="Commerce.Orders.Quotation.html#qotCode"><span class="hs-identifier hs-var hs-var">qotCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span id="qotClientId"><span class="annot"><span class="annottext">Quotation -&gt; Int64
+</span><a href="Commerce.Orders.Quotation.html#qotClientId"><span class="hs-identifier hs-var hs-var">qotClientId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="qotDate"><span class="annot"><span class="annottext">Quotation -&gt; Day
+</span><a href="Commerce.Orders.Quotation.html#qotDate"><span class="hs-identifier hs-var hs-var">qotDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="qotValidTill"><span class="annot"><span class="annottext">Quotation -&gt; Maybe Day
+</span><a href="Commerce.Orders.Quotation.html#qotValidTill"><span class="hs-identifier hs-var hs-var">qotValidTill</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="qotStatus"><span class="annot"><span class="annottext">Quotation -&gt; QuotationStatus
+</span><a href="Commerce.Orders.Quotation.html#qotStatus"><span class="hs-identifier hs-var hs-var">qotStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Orders.Quotation.html#QuotationStatus"><span class="hs-identifier hs-type">QuotationStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="qotFlags"><span class="annot"><span class="annottext">Quotation -&gt; Int
+</span><a href="Commerce.Orders.Quotation.html#qotFlags"><span class="hs-identifier hs-var hs-var">qotFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680209683"><span id="local-6989586621680209700"><span id="local-6989586621680209704"><span class="annot"><span class="annottext">Int -&gt; Quotation -&gt; ShowS
+[Quotation] -&gt; ShowS
+Quotation -&gt; String
+(Int -&gt; Quotation -&gt; ShowS)
+-&gt; (Quotation -&gt; String)
+-&gt; ([Quotation] -&gt; ShowS)
+-&gt; Show Quotation
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Quotation -&gt; ShowS
+showsPrec :: Int -&gt; Quotation -&gt; ShowS
+$cshow :: Quotation -&gt; String
+show :: Quotation -&gt; String
+$cshowList :: [Quotation] -&gt; ShowS
+showList :: [Quotation] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680209709"><span id="local-6989586621680209724"><span class="annot"><span class="annottext">Quotation -&gt; Quotation -&gt; Bool
+(Quotation -&gt; Quotation -&gt; Bool)
+-&gt; (Quotation -&gt; Quotation -&gt; Bool) -&gt; Eq Quotation
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Quotation -&gt; Quotation -&gt; Bool
+== :: Quotation -&gt; Quotation -&gt; Bool
+$c/= :: Quotation -&gt; Quotation -&gt; Bool
+/= :: Quotation -&gt; Quotation -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">data</span><span> </span><span id="QuotationStatus"><span class="annot"><a href="Commerce.Orders.Quotation.html#QuotationStatus"><span class="hs-identifier hs-var">QuotationStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="QSDraft"><span class="annot"><a href="Commerce.Orders.Quotation.html#QSDraft"><span class="hs-identifier hs-var">QSDraft</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="QSSent"><span class="annot"><a href="Commerce.Orders.Quotation.html#QSSent"><span class="hs-identifier hs-var">QSSent</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="QSAccepted"><span class="annot"><a href="Commerce.Orders.Quotation.html#QSAccepted"><span class="hs-identifier hs-var">QSAccepted</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="QSRejected"><span class="annot"><a href="Commerce.Orders.Quotation.html#QSRejected"><span class="hs-identifier hs-var">QSRejected</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="QSExpired"><span class="annot"><a href="Commerce.Orders.Quotation.html#QSExpired"><span class="hs-identifier hs-var">QSExpired</span></a></span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680209734"><span id="local-6989586621680209736"><span id="local-6989586621680209739"><span class="annot"><span class="annottext">Int -&gt; QuotationStatus -&gt; ShowS
+[QuotationStatus] -&gt; ShowS
+QuotationStatus -&gt; String
+(Int -&gt; QuotationStatus -&gt; ShowS)
+-&gt; (QuotationStatus -&gt; String)
+-&gt; ([QuotationStatus] -&gt; ShowS)
+-&gt; Show QuotationStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; QuotationStatus -&gt; ShowS
+showsPrec :: Int -&gt; QuotationStatus -&gt; ShowS
+$cshow :: QuotationStatus -&gt; String
+show :: QuotationStatus -&gt; String
+$cshowList :: [QuotationStatus] -&gt; ShowS
+showList :: [QuotationStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680209742"><span id="local-6989586621680209747"><span class="annot"><span class="annottext">QuotationStatus -&gt; QuotationStatus -&gt; Bool
+(QuotationStatus -&gt; QuotationStatus -&gt; Bool)
+-&gt; (QuotationStatus -&gt; QuotationStatus -&gt; Bool)
+-&gt; Eq QuotationStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: QuotationStatus -&gt; QuotationStatus -&gt; Bool
+== :: QuotationStatus -&gt; QuotationStatus -&gt; Bool
+$c/= :: QuotationStatus -&gt; QuotationStatus -&gt; Bool
+/= :: QuotationStatus -&gt; QuotationStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="annot"><span class="hs-comment">-- | Quotation line</span></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">data</span><span> </span><span id="QuotationLine"><span class="annot"><a href="Commerce.Orders.Quotation.html#QuotationLine"><span class="hs-identifier hs-var">QuotationLine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="QuotationLine"><span class="annot"><a href="Commerce.Orders.Quotation.html#QuotationLine"><span class="hs-identifier hs-var">QuotationLine</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="qlId"><span class="annot"><span class="annottext">QuotationLine -&gt; Int64
+</span><a href="Commerce.Orders.Quotation.html#qlId"><span class="hs-identifier hs-var hs-var">qlId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-34"></span><span>    </span><span id="qlQuotationId"><span class="annot"><span class="annottext">QuotationLine -&gt; Int64
+</span><a href="Commerce.Orders.Quotation.html#qlQuotationId"><span class="hs-identifier hs-var hs-var">qlQuotationId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>    </span><span id="qlGoodsId"><span class="annot"><span class="annottext">QuotationLine -&gt; Int64
+</span><a href="Commerce.Orders.Quotation.html#qlGoodsId"><span class="hs-identifier hs-var hs-var">qlGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-36"></span><span>    </span><span id="qlQtty"><span class="annot"><span class="annottext">QuotationLine -&gt; Double
+</span><a href="Commerce.Orders.Quotation.html#qlQtty"><span class="hs-identifier hs-var hs-var">qlQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-37"></span><span>    </span><span id="qlPrice"><span class="annot"><span class="annottext">QuotationLine -&gt; Double
+</span><a href="Commerce.Orders.Quotation.html#qlPrice"><span class="hs-identifier hs-var hs-var">qlPrice</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-38"></span><span>    </span><span id="qlDiscount"><span class="annot"><span class="annottext">QuotationLine -&gt; Double
+</span><a href="Commerce.Orders.Quotation.html#qlDiscount"><span class="hs-identifier hs-var hs-var">qlDiscount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680209757"><span id="local-6989586621680209767"><span id="local-6989586621680209771"><span class="annot"><span class="annottext">Int -&gt; QuotationLine -&gt; ShowS
+[QuotationLine] -&gt; ShowS
+QuotationLine -&gt; String
+(Int -&gt; QuotationLine -&gt; ShowS)
+-&gt; (QuotationLine -&gt; String)
+-&gt; ([QuotationLine] -&gt; ShowS)
+-&gt; Show QuotationLine
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; QuotationLine -&gt; ShowS
+showsPrec :: Int -&gt; QuotationLine -&gt; ShowS
+$cshow :: QuotationLine -&gt; String
+show :: QuotationLine -&gt; String
+$cshowList :: [QuotationLine] -&gt; ShowS
+showList :: [QuotationLine] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680209774"><span id="local-6989586621680209783"><span class="annot"><span class="annottext">QuotationLine -&gt; QuotationLine -&gt; Bool
+(QuotationLine -&gt; QuotationLine -&gt; Bool)
+-&gt; (QuotationLine -&gt; QuotationLine -&gt; Bool) -&gt; Eq QuotationLine
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: QuotationLine -&gt; QuotationLine -&gt; Bool
+== :: QuotationLine -&gt; QuotationLine -&gt; Bool
+$c/= :: QuotationLine -&gt; QuotationLine -&gt; Bool
+/= :: QuotationLine -&gt; QuotationLine -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="annot"><span class="hs-comment">-- | Calculate total</span></span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="hs-comment">{-@ calcQuotationTotal :: QuotationLine -&gt; NonNeg @-}</span><span>
+</span><span id="line-45"></span><span class="annot"><a href="Commerce.Orders.Quotation.html#calcQuotationTotal"><span class="hs-identifier hs-type">calcQuotationTotal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Orders.Quotation.html#QuotationLine"><span class="hs-identifier hs-type">QuotationLine</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-46"></span><span id="calcQuotationTotal"><span class="annot"><span class="annottext">calcQuotationTotal :: QuotationLine -&gt; Double
+</span><a href="Commerce.Orders.Quotation.html#calcQuotationTotal"><span class="hs-identifier hs-var hs-var">calcQuotationTotal</span></a></span></span><span> </span><span id="local-6989586621680209786"><span class="annot"><span class="annottext">QuotationLine
+</span><a href="#local-6989586621680209786"><span class="hs-identifier hs-var">ql</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">QuotationLine -&gt; Double
+</span><a href="Commerce.Orders.Quotation.html#qlQtty"><span class="hs-identifier hs-var">qlQtty</span></a></span><span> </span><span class="annot"><span class="annottext">QuotationLine
+</span><a href="#local-6989586621680209786"><span class="hs-identifier hs-var">ql</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">QuotationLine -&gt; Double
+</span><a href="Commerce.Orders.Quotation.html#qlPrice"><span class="hs-identifier hs-var">qlPrice</span></a></span><span> </span><span class="annot"><span class="annottext">QuotationLine
+</span><a href="#local-6989586621680209786"><span class="hs-identifier hs-var">ql</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">QuotationLine -&gt; Double
+</span><a href="Commerce.Orders.Quotation.html#qlDiscount"><span class="hs-identifier hs-var">qlDiscount</span></a></span><span> </span><span class="annot"><span class="annottext">QuotationLine
+</span><a href="#local-6989586621680209786"><span class="hs-identifier hs-var">ql</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">100</span></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span></pre></body></html>

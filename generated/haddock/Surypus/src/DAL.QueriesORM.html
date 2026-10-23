@@ -1,0 +1,1003 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="annot"><span class="hs-comment">-- | DAL QueriesORM - raw SQL queries for Surypus</span></span><span>
+</span><span id="line-5"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html"><span class="hs-identifier">DAL.QueriesORM</span></a></span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#personKey"><span class="hs-identifier">personKey</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#goodsKey"><span class="hs-identifier">goodsKey</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#billKey"><span class="hs-identifier">billKey</span></a></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#locationKey"><span class="hs-identifier">locationKey</span></a></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#lotKey"><span class="hs-identifier">lotKey</span></a></span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#tenantKey"><span class="hs-identifier">tenantKey</span></a></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#taxKey"><span class="hs-identifier">taxKey</span></a></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#currencyKey"><span class="hs-identifier">currencyKey</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#billLineFromEntity"><span class="hs-identifier">billLineFromEntity</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#employeeToDummyUser"><span class="hs-identifier">employeeToDummyUser</span></a></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#documentTypeFromEntity"><span class="hs-identifier">documentTypeFromEntity</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#orderFromEntity"><span class="hs-identifier">orderFromEntity</span></a></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#goodsPriceFromEntity"><span class="hs-identifier">goodsPriceFromEntity</span></a></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#currencyFromEntity"><span class="hs-identifier">currencyFromEntity</span></a></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#keyToInt"><span class="hs-identifier">keyToInt</span></a></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#ilike"><span class="hs-identifier">ilike</span></a></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#getStockAll"><span class="hs-identifier">getStockAll</span></a></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#getStockMovements"><span class="hs-identifier">getStockMovements</span></a></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#getStockMovementsByGoods"><span class="hs-identifier">getStockMovementsByGoods</span></a></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#getLots"><span class="hs-identifier">getLots</span></a></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#getLotById"><span class="hs-identifier">getLotById</span></a></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#getLotsByGoods"><span class="hs-identifier">getLotsByGoods</span></a></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#getLotsByLocation"><span class="hs-identifier">getLotsByLocation</span></a></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#getTenants"><span class="hs-identifier">getTenants</span></a></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#getTenantById"><span class="hs-identifier">getTenantById</span></a></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#getLocations"><span class="hs-identifier">getLocations</span></a></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#getEmployees"><span class="hs-identifier">getEmployees</span></a></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#getSalaries"><span class="hs-identifier">getSalaries</span></a></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#getTimesheets"><span class="hs-identifier">getTimesheets</span></a></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="DAL.Types.html"><span class="hs-identifier">DAL.Types</span></a></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.html"><span class="hs-identifier">Database.Persist.Sql</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">P</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Class.PersistEntity.html#Entity"><span class="hs-identifier">Entity</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Orphan.PersistStore.html#toSqlKey"><span class="hs-identifier">toSqlKey</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier">Single</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistValue"><span class="hs-identifier">PersistValue</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Class.PersistEntity.html#Key"><span class="hs-identifier">Key</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.html"><span class="hs-identifier">Database.Persist.Sql</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier">rawSql</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistValue"><span class="hs-identifier">PersistValue</span></a></span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistInt64"><span class="hs-identifier">PersistInt64</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-postgresql-2.14.3.0-c75b10320c6f8f59cbd6644ed24c4440802693869114296703324544f324ffff/share/doc/html/src/Database.Persist.Postgresql.html"><span class="hs-identifier">Database.Persist.Postgresql</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier">ConnectionPool</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.html"><span class="hs-identifier">Database.Persist.Sql</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Run.html#runSqlPool"><span class="hs-identifier">runSqlPool</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-45"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.Database.html"><span class="hs-identifier">DAL.Database</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Database.html#runDb"><span class="hs-identifier">runDb</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.Schema.html"><span class="hs-identifier">DAL.Schema</span></a></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Schema.html#Entity"><span class="hs-identifier">Entity</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Schema.html#BillLineEntity"><span class="hs-identifier">BillLineEntity</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Schema.html#DocumentTypeEntity"><span class="hs-identifier">DocumentTypeEntity</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Schema.html#OrderHeadEntity"><span class="hs-identifier">OrderHeadEntity</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Schema.html#GoodsPriceEntity"><span class="hs-identifier">GoodsPriceEntity</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Schema.html#CurrencyEntity"><span class="hs-identifier">CurrencyEntity</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="DAL.Schema.html"><span class="hs-identifier">DAL.Schema</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">S</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Schema.html#BillLineEntity"><span class="hs-identifier">BillLineEntity</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Schema.html#DocumentTypeEntity"><span class="hs-identifier">DocumentTypeEntity</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Schema.html#OrderHeadEntity"><span class="hs-identifier">OrderHeadEntity</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Schema.html#GoodsPriceEntity"><span class="hs-identifier">GoodsPriceEntity</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Schema.html#CurrencyEntity"><span class="hs-identifier">CurrencyEntity</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Schema.html#EmployeeEntity"><span class="hs-identifier">EmployeeEntity</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.Types.html"><span class="hs-identifier">DAL.Types</span></a></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#PersonEntity"><span class="hs-identifier">PersonEntity</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Types.html#BillEntity"><span class="hs-identifier">BillEntity</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Types.html#TaxEntity"><span class="hs-identifier">TaxEntity</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.Conversion.html"><span class="hs-identifier">DAL.Conversion</span></a></span><span> </span><span class="hs-keyword">hiding</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Conversion.html#keyToInt"><span class="hs-identifier">keyToInt</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="annot"><span class="hs-comment">-- | Key helpers</span></span><span>
+</span><span id="line-52"></span><span class="annot"><a href="DAL.QueriesORM.html#personKey"><span class="hs-identifier hs-type">personKey</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-53"></span><span id="personKey"><span class="annot"><span class="annottext">personKey :: Int64 -&gt; Int64
+</span><a href="DAL.QueriesORM.html#personKey"><span class="hs-identifier hs-var hs-var">personKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="annot"><a href="DAL.QueriesORM.html#goodsKey"><span class="hs-identifier hs-type">goodsKey</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-56"></span><span id="goodsKey"><span class="annot"><span class="annottext">goodsKey :: Int64 -&gt; Int64
+</span><a href="DAL.QueriesORM.html#goodsKey"><span class="hs-identifier hs-var hs-var">goodsKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="annot"><a href="DAL.QueriesORM.html#billKey"><span class="hs-identifier hs-type">billKey</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-59"></span><span id="billKey"><span class="annot"><span class="annottext">billKey :: Int64 -&gt; Int64
+</span><a href="DAL.QueriesORM.html#billKey"><span class="hs-identifier hs-var hs-var">billKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span>
+</span><span id="line-60"></span><span>
+</span><span id="line-61"></span><span class="annot"><a href="DAL.QueriesORM.html#locationKey"><span class="hs-identifier hs-type">locationKey</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-62"></span><span id="locationKey"><span class="annot"><span class="annottext">locationKey :: Int64 -&gt; Int64
+</span><a href="DAL.QueriesORM.html#locationKey"><span class="hs-identifier hs-var hs-var">locationKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="annot"><a href="DAL.QueriesORM.html#lotKey"><span class="hs-identifier hs-type">lotKey</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-65"></span><span id="lotKey"><span class="annot"><span class="annottext">lotKey :: Int64 -&gt; Int64
+</span><a href="DAL.QueriesORM.html#lotKey"><span class="hs-identifier hs-var hs-var">lotKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span class="annot"><a href="DAL.QueriesORM.html#tenantKey"><span class="hs-identifier hs-type">tenantKey</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-68"></span><span id="tenantKey"><span class="annot"><span class="annottext">tenantKey :: Int64 -&gt; Int64
+</span><a href="DAL.QueriesORM.html#tenantKey"><span class="hs-identifier hs-var hs-var">tenantKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="annot"><a href="DAL.QueriesORM.html#taxKey"><span class="hs-identifier hs-type">taxKey</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-71"></span><span id="taxKey"><span class="annot"><span class="annottext">taxKey :: Int64 -&gt; Int64
+</span><a href="DAL.QueriesORM.html#taxKey"><span class="hs-identifier hs-var hs-var">taxKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="annot"><a href="DAL.QueriesORM.html#currencyKey"><span class="hs-identifier hs-type">currencyKey</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-74"></span><span id="currencyKey"><span class="annot"><span class="annottext">currencyKey :: Int64 -&gt; Int64
+</span><a href="DAL.QueriesORM.html#currencyKey"><span class="hs-identifier hs-var hs-var">currencyKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span>
+</span><span id="line-75"></span><span>
+</span><span id="line-76"></span><span class="annot"><span class="hs-comment">-- | Convert key to Int64</span></span><span>
+</span><span id="line-77"></span><span class="annot"><a href="DAL.QueriesORM.html#keyToInt"><span class="hs-identifier hs-type">keyToInt</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-78"></span><span id="keyToInt"><span class="annot"><span class="annottext">keyToInt :: Int64 -&gt; Int64
+</span><a href="DAL.QueriesORM.html#keyToInt"><span class="hs-identifier hs-var hs-var">keyToInt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span>
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span class="annot"><span class="hs-comment">-- | ILIKE helper for raw SQL</span></span><span>
+</span><span id="line-81"></span><span class="annot"><a href="DAL.QueriesORM.html#ilike"><span class="hs-identifier hs-type">ilike</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-82"></span><span id="ilike"><span class="annot"><span class="annottext">ilike :: Text -&gt; Text -&gt; Text
+</span><a href="DAL.QueriesORM.html#ilike"><span class="hs-identifier hs-var hs-var">ilike</span></a></span></span><span> </span><span id="local-6989586621680322220"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322220"><span class="hs-identifier hs-var">field</span></a></span></span><span> </span><span id="local-6989586621680322221"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322221"><span class="hs-identifier hs-var">val</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322220"><span class="hs-identifier hs-var">field</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; ILIKE &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322221"><span class="hs-identifier hs-var">val</span></a></span><span>
+</span><span id="line-83"></span><span>
+</span><span id="line-84"></span><span class="annot"><span class="hs-comment">-- | Additional conversion functions needed</span></span><span>
+</span><span id="line-85"></span><span class="annot"><a href="DAL.QueriesORM.html#billLineFromEntity"><span class="hs-identifier hs-type">billLineFromEntity</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Schema.html#BillLineEntity"><span class="hs-identifier hs-type">S.BillLineEntity</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Types.html#BillLine"><span class="hs-identifier hs-type">BillLine</span></a></span><span>
+</span><span id="line-86"></span><span id="billLineFromEntity"><span class="annot"><span class="annottext">billLineFromEntity :: Int64 -&gt; BillLineEntity -&gt; BillLine
+</span><a href="DAL.QueriesORM.html#billLineFromEntity"><span class="hs-identifier hs-var hs-var">billLineFromEntity</span></a></span></span><span> </span><span id="local-6989586621680322222"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322222"><span class="hs-identifier hs-var">lid</span></a></span></span><span> </span><span id="local-6989586621680322223"><span class="annot"><span class="annottext">BillLineEntity
+</span><a href="#local-6989586621680322223"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="DAL.Types.html#BillLine"><span class="hs-identifier hs-type">BillLine</span></a></span><span>
+</span><span id="line-87"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">lineId :: Int64
+</span><a href="DAL.Types.html#lineId"><span class="hs-identifier hs-var">lineId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322222"><span class="hs-identifier hs-var">lid</span></a></span><span>
+</span><span id="line-88"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">lineBillId :: Int64
+</span><a href="DAL.Types.html#lineBillId"><span class="hs-identifier hs-var">lineBillId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BillLineEntity -&gt; Int64
+</span><a href="DAL.Schema.html#billLineEntityBillId"><span class="hs-identifier hs-var">S.billLineEntityBillId</span></a></span><span> </span><span class="annot"><span class="annottext">BillLineEntity
+</span><a href="#local-6989586621680322223"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-89"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">lineGoodId :: Int64
+</span><a href="DAL.Types.html#lineGoodId"><span class="hs-identifier hs-var">lineGoodId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BillLineEntity -&gt; Int64
+</span><a href="DAL.Schema.html#billLineEntityGoodsId"><span class="hs-identifier hs-var">S.billLineEntityGoodsId</span></a></span><span> </span><span class="annot"><span class="annottext">BillLineEntity
+</span><a href="#local-6989586621680322223"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-90"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">lineQtty :: Double
+</span><a href="DAL.Types.html#lineQtty"><span class="hs-identifier hs-var">lineQtty</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BillLineEntity -&gt; Double
+</span><a href="DAL.Schema.html#billLineEntityQtty"><span class="hs-identifier hs-var">S.billLineEntityQtty</span></a></span><span> </span><span class="annot"><span class="annottext">BillLineEntity
+</span><a href="#local-6989586621680322223"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-91"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">linePrice :: Double
+</span><a href="DAL.Types.html#linePrice"><span class="hs-identifier hs-var">linePrice</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BillLineEntity -&gt; Double
+</span><a href="DAL.Schema.html#billLineEntityPrice"><span class="hs-identifier hs-var">S.billLineEntityPrice</span></a></span><span> </span><span class="annot"><span class="annottext">BillLineEntity
+</span><a href="#local-6989586621680322223"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-92"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">lineDiscount :: Double
+</span><a href="DAL.Types.html#lineDiscount"><span class="hs-identifier hs-var">lineDiscount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BillLineEntity -&gt; Double
+</span><a href="DAL.Schema.html#billLineEntityDiscountAmount"><span class="hs-identifier hs-var">S.billLineEntityDiscountAmount</span></a></span><span> </span><span class="annot"><span class="annottext">BillLineEntity
+</span><a href="#local-6989586621680322223"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-93"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">lineAmount :: Double
+</span><a href="DAL.Types.html#lineAmount"><span class="hs-identifier hs-var">lineAmount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BillLineEntity -&gt; Double
+</span><a href="DAL.Schema.html#billLineEntityAmount"><span class="hs-identifier hs-var">S.billLineEntityAmount</span></a></span><span> </span><span class="annot"><span class="annottext">BillLineEntity
+</span><a href="#local-6989586621680322223"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-94"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-95"></span><span>
+</span><span id="line-96"></span><span class="annot"><a href="DAL.QueriesORM.html#employeeToDummyUser"><span class="hs-identifier hs-type">employeeToDummyUser</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="DAL.Schema.html#EmployeeEntity"><span class="hs-identifier hs-type">S.EmployeeEntity</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Types.html#User"><span class="hs-identifier hs-type">User</span></a></span><span>
+</span><span id="line-97"></span><span id="employeeToDummyUser"><span class="annot"><span class="annottext">employeeToDummyUser :: EmployeeEntity -&gt; User
+</span><a href="DAL.QueriesORM.html#employeeToDummyUser"><span class="hs-identifier hs-var hs-var">employeeToDummyUser</span></a></span></span><span> </span><span id="local-6989586621680322238"><span class="annot"><span class="annottext">EmployeeEntity
+</span><a href="#local-6989586621680322238"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="DAL.Types.html#User"><span class="hs-identifier hs-type">User</span></a></span><span>
+</span><span id="line-98"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">userId :: Int64
+</span><a href="DAL.Types.html#userId"><span class="hs-identifier hs-var">userId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-99"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">userName :: Text
+</span><a href="DAL.Types.html#userName"><span class="hs-identifier hs-var">userName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">EmployeeEntity -&gt; Text
+</span><a href="DAL.Schema.html#employeeEntityFirstName"><span class="hs-identifier hs-var">S.employeeEntityFirstName</span></a></span><span> </span><span class="annot"><span class="annottext">EmployeeEntity
+</span><a href="#local-6989586621680322238"><span class="hs-identifier hs-var">e</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; (Text -&gt; Text) -&gt; Maybe Text -&gt; Text
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">EmployeeEntity -&gt; Maybe Text
+</span><a href="DAL.Schema.html#employeeEntityLastName"><span class="hs-identifier hs-var">S.employeeEntityLastName</span></a></span><span> </span><span class="annot"><span class="annottext">EmployeeEntity
+</span><a href="#local-6989586621680322238"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-100"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">userPassword :: Maybe Text
+</span><a href="DAL.Types.html#userPassword"><span class="hs-identifier hs-var">userPassword</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-101"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">userEmail :: Maybe Text
+</span><a href="DAL.Types.html#userEmail"><span class="hs-identifier hs-var">userEmail</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-102"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">userPersonId :: Maybe Int64
+</span><a href="DAL.Types.html#userPersonId"><span class="hs-identifier hs-var">userPersonId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Int64
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-103"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">userStatus :: Text
+</span><a href="DAL.Types.html#userStatus"><span class="hs-identifier hs-var">userStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;active&quot;</span></span><span>
+</span><span id="line-104"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">userTenantId :: Int64
+</span><a href="DAL.Types.html#userTenantId"><span class="hs-identifier hs-var">userTenantId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-105"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-106"></span><span>
+</span><span id="line-107"></span><span class="annot"><a href="DAL.QueriesORM.html#documentTypeFromEntity"><span class="hs-identifier hs-type">documentTypeFromEntity</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Schema.html#DocumentTypeEntity"><span class="hs-identifier hs-type">S.DocumentTypeEntity</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Types.html#DocumentRegisterType"><span class="hs-identifier hs-type">DocumentRegisterType</span></a></span><span>
+</span><span id="line-108"></span><span id="documentTypeFromEntity"><span class="annot"><span class="annottext">documentTypeFromEntity :: Int64 -&gt; DocumentTypeEntity -&gt; DocumentRegisterType
+</span><a href="DAL.QueriesORM.html#documentTypeFromEntity"><span class="hs-identifier hs-var hs-var">documentTypeFromEntity</span></a></span></span><span> </span><span id="local-6989586621680322250"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322250"><span class="hs-identifier hs-var">tid</span></a></span></span><span> </span><span id="local-6989586621680322251"><span class="annot"><span class="annottext">DocumentTypeEntity
+</span><a href="#local-6989586621680322251"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="DAL.Types.html#DocumentRegisterType"><span class="hs-identifier hs-type">DocumentRegisterType</span></a></span><span>
+</span><span id="line-109"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">drtId :: Int64
+</span><a href="DAL.Types.html#drtId"><span class="hs-identifier hs-var">drtId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322250"><span class="hs-identifier hs-var">tid</span></a></span><span>
+</span><span id="line-110"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">drtCode :: Text
+</span><a href="DAL.Types.html#drtCode"><span class="hs-identifier hs-var">drtCode</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DocumentTypeEntity -&gt; Text
+</span><a href="DAL.Schema.html#documentTypeEntityCode"><span class="hs-identifier hs-var">S.documentTypeEntityCode</span></a></span><span> </span><span class="annot"><span class="annottext">DocumentTypeEntity
+</span><a href="#local-6989586621680322251"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-111"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">drtName :: Text
+</span><a href="DAL.Types.html#drtName"><span class="hs-identifier hs-var">drtName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DocumentTypeEntity -&gt; Text
+</span><a href="DAL.Schema.html#documentTypeEntityName"><span class="hs-identifier hs-var">S.documentTypeEntityName</span></a></span><span> </span><span class="annot"><span class="annottext">DocumentTypeEntity
+</span><a href="#local-6989586621680322251"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-112"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">drtDescription :: Maybe Text
+</span><a href="DAL.Types.html#drtDescription"><span class="hs-identifier hs-var">drtDescription</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DocumentTypeEntity -&gt; Maybe Text
+</span><a href="DAL.Schema.html#documentTypeEntityDescription"><span class="hs-identifier hs-var">S.documentTypeEntityDescription</span></a></span><span> </span><span class="annot"><span class="annottext">DocumentTypeEntity
+</span><a href="#local-6989586621680322251"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-113"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-114"></span><span>
+</span><span id="line-115"></span><span class="annot"><a href="DAL.QueriesORM.html#orderFromEntity"><span class="hs-identifier hs-type">orderFromEntity</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Schema.html#OrderHeadEntity"><span class="hs-identifier hs-type">S.OrderHeadEntity</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Types.html#Order"><span class="hs-identifier hs-type">Order</span></a></span><span>
+</span><span id="line-116"></span><span id="orderFromEntity"><span class="annot"><span class="annottext">orderFromEntity :: Int64 -&gt; OrderHeadEntity -&gt; Order
+</span><a href="DAL.QueriesORM.html#orderFromEntity"><span class="hs-identifier hs-var hs-var">orderFromEntity</span></a></span></span><span> </span><span id="local-6989586621680322260"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322260"><span class="hs-identifier hs-var">oid</span></a></span></span><span> </span><span id="local-6989586621680322261"><span class="annot"><span class="annottext">OrderHeadEntity
+</span><a href="#local-6989586621680322261"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="DAL.Types.html#Order"><span class="hs-identifier hs-type">Order</span></a></span><span>
+</span><span id="line-117"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">orderId :: Int64
+</span><a href="DAL.Types.html#orderId"><span class="hs-identifier hs-var">orderId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322260"><span class="hs-identifier hs-var">oid</span></a></span><span>
+</span><span id="line-118"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">orderCode :: Text
+</span><a href="DAL.Types.html#orderCode"><span class="hs-identifier hs-var">orderCode</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity -&gt; Text
+</span><a href="DAL.Schema.html#orderHeadEntityCode"><span class="hs-identifier hs-var">S.orderHeadEntityCode</span></a></span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity
+</span><a href="#local-6989586621680322261"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-119"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">orderName :: Text
+</span><a href="DAL.Types.html#orderName"><span class="hs-identifier hs-var">orderName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity -&gt; Text
+</span><a href="DAL.Schema.html#orderHeadEntityName"><span class="hs-identifier hs-var">S.orderHeadEntityName</span></a></span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity
+</span><a href="#local-6989586621680322261"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-120"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">orderDate :: UTCTime
+</span><a href="DAL.Types.html#orderDate"><span class="hs-identifier hs-var">orderDate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity -&gt; UTCTime
+</span><a href="DAL.Schema.html#orderHeadEntityDocDate"><span class="hs-identifier hs-var">S.orderHeadEntityDocDate</span></a></span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity
+</span><a href="#local-6989586621680322261"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-121"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">orderPersonId :: Maybe Int64
+</span><a href="DAL.Types.html#orderPersonId"><span class="hs-identifier hs-var">orderPersonId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity -&gt; Maybe Int64
+</span><a href="DAL.Schema.html#orderHeadEntityPersonId"><span class="hs-identifier hs-var">S.orderHeadEntityPersonId</span></a></span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity
+</span><a href="#local-6989586621680322261"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-122"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">orderLocationId :: Maybe Int64
+</span><a href="DAL.Types.html#orderLocationId"><span class="hs-identifier hs-var">orderLocationId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity -&gt; Maybe Int64
+</span><a href="DAL.Schema.html#orderHeadEntityLocationId"><span class="hs-identifier hs-var">S.orderHeadEntityLocationId</span></a></span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity
+</span><a href="#local-6989586621680322261"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-123"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">orderType :: Maybe Text
+</span><a href="DAL.Types.html#orderType"><span class="hs-identifier hs-var">orderType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity -&gt; Maybe Text
+</span><a href="DAL.Schema.html#orderHeadEntityDocType"><span class="hs-identifier hs-var">S.orderHeadEntityDocType</span></a></span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity
+</span><a href="#local-6989586621680322261"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-124"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">orderTotal :: Maybe Double
+</span><a href="DAL.Types.html#orderTotal"><span class="hs-identifier hs-var">orderTotal</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity -&gt; Maybe Double
+</span><a href="DAL.Schema.html#orderHeadEntityTotal"><span class="hs-identifier hs-var">S.orderHeadEntityTotal</span></a></span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity
+</span><a href="#local-6989586621680322261"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-125"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">orderDiscount :: Maybe Double
+</span><a href="DAL.Types.html#orderDiscount"><span class="hs-identifier hs-var">orderDiscount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity -&gt; Maybe Double
+</span><a href="DAL.Schema.html#orderHeadEntityDiscountAmount"><span class="hs-identifier hs-var">S.orderHeadEntityDiscountAmount</span></a></span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity
+</span><a href="#local-6989586621680322261"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-126"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">orderTax :: Maybe Double
+</span><a href="DAL.Types.html#orderTax"><span class="hs-identifier hs-var">orderTax</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity -&gt; Maybe Double
+</span><a href="DAL.Schema.html#orderHeadEntityTaxAmount"><span class="hs-identifier hs-var">S.orderHeadEntityTaxAmount</span></a></span><span> </span><span class="annot"><span class="annottext">OrderHeadEntity
+</span><a href="#local-6989586621680322261"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-127"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-128"></span><span>
+</span><span id="line-129"></span><span class="annot"><a href="DAL.QueriesORM.html#goodsPriceFromEntity"><span class="hs-identifier hs-type">goodsPriceFromEntity</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Schema.html#GoodsPriceEntity"><span class="hs-identifier hs-type">S.GoodsPriceEntity</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Types.html#GoodsPrice"><span class="hs-identifier hs-type">GoodsPrice</span></a></span><span>
+</span><span id="line-130"></span><span id="goodsPriceFromEntity"><span class="annot"><span class="annottext">goodsPriceFromEntity :: Int64 -&gt; GoodsPriceEntity -&gt; GoodsPrice
+</span><a href="DAL.QueriesORM.html#goodsPriceFromEntity"><span class="hs-identifier hs-var hs-var">goodsPriceFromEntity</span></a></span></span><span> </span><span id="local-6989586621680322282"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322282"><span class="hs-identifier hs-var">gid</span></a></span></span><span> </span><span id="local-6989586621680322283"><span class="annot"><span class="annottext">GoodsPriceEntity
+</span><a href="#local-6989586621680322283"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="DAL.Types.html#GoodsPrice"><span class="hs-identifier hs-type">GoodsPrice</span></a></span><span>
+</span><span id="line-131"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">goodsPriceId :: Int64
+</span><a href="DAL.Types.html#goodsPriceId"><span class="hs-identifier hs-var">goodsPriceId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322282"><span class="hs-identifier hs-var">gid</span></a></span><span>
+</span><span id="line-132"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">goodsPriceGoodsId :: Int64
+</span><a href="DAL.Types.html#goodsPriceGoodsId"><span class="hs-identifier hs-var">goodsPriceGoodsId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">GoodsPriceEntity -&gt; Int64
+</span><a href="DAL.Schema.html#goodsPriceEntityGoodsId"><span class="hs-identifier hs-var">S.goodsPriceEntityGoodsId</span></a></span><span> </span><span class="annot"><span class="annottext">GoodsPriceEntity
+</span><a href="#local-6989586621680322283"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-133"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">goodsPriceType :: Maybe Text
+</span><a href="DAL.Types.html#goodsPriceType"><span class="hs-identifier hs-var">goodsPriceType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">GoodsPriceEntity -&gt; Maybe Text
+</span><a href="DAL.Schema.html#goodsPriceEntityPriceType"><span class="hs-identifier hs-var">S.goodsPriceEntityPriceType</span></a></span><span> </span><span class="annot"><span class="annottext">GoodsPriceEntity
+</span><a href="#local-6989586621680322283"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-134"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">goodsPricePrice :: Double
+</span><a href="DAL.Types.html#goodsPricePrice"><span class="hs-identifier hs-var">goodsPricePrice</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">GoodsPriceEntity -&gt; Double
+</span><a href="DAL.Schema.html#goodsPriceEntityPrice"><span class="hs-identifier hs-var">S.goodsPriceEntityPrice</span></a></span><span> </span><span class="annot"><span class="annottext">GoodsPriceEntity
+</span><a href="#local-6989586621680322283"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-135"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">goodsPriceMinPrice :: Maybe Double
+</span><a href="DAL.Types.html#goodsPriceMinPrice"><span class="hs-identifier hs-var">goodsPriceMinPrice</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">GoodsPriceEntity -&gt; Maybe Double
+</span><a href="DAL.Schema.html#goodsPriceEntityMinPrice"><span class="hs-identifier hs-var">S.goodsPriceEntityMinPrice</span></a></span><span> </span><span class="annot"><span class="annottext">GoodsPriceEntity
+</span><a href="#local-6989586621680322283"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-136"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">goodsPriceStartDate :: Maybe UTCTime
+</span><a href="DAL.Types.html#goodsPriceStartDate"><span class="hs-identifier hs-var">goodsPriceStartDate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">GoodsPriceEntity -&gt; Maybe UTCTime
+</span><a href="DAL.Schema.html#goodsPriceEntityStartDate"><span class="hs-identifier hs-var">S.goodsPriceEntityStartDate</span></a></span><span> </span><span class="annot"><span class="annottext">GoodsPriceEntity
+</span><a href="#local-6989586621680322283"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-137"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">goodsPriceEndDate :: Maybe UTCTime
+</span><a href="DAL.Types.html#goodsPriceEndDate"><span class="hs-identifier hs-var">goodsPriceEndDate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">GoodsPriceEntity -&gt; Maybe UTCTime
+</span><a href="DAL.Schema.html#goodsPriceEntityEndDate"><span class="hs-identifier hs-var">S.goodsPriceEntityEndDate</span></a></span><span> </span><span class="annot"><span class="annottext">GoodsPriceEntity
+</span><a href="#local-6989586621680322283"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-138"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-139"></span><span>
+</span><span id="line-140"></span><span class="annot"><a href="DAL.QueriesORM.html#currencyFromEntity"><span class="hs-identifier hs-type">currencyFromEntity</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Schema.html#CurrencyEntity"><span class="hs-identifier hs-type">S.CurrencyEntity</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Types.html#Currency"><span class="hs-identifier hs-type">Currency</span></a></span><span>
+</span><span id="line-141"></span><span id="currencyFromEntity"><span class="annot"><span class="annottext">currencyFromEntity :: Int64 -&gt; CurrencyEntity -&gt; Currency
+</span><a href="DAL.QueriesORM.html#currencyFromEntity"><span class="hs-identifier hs-var hs-var">currencyFromEntity</span></a></span></span><span> </span><span id="local-6989586621680322298"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322298"><span class="hs-identifier hs-var">cid</span></a></span></span><span> </span><span id="local-6989586621680322299"><span class="annot"><span class="annottext">CurrencyEntity
+</span><a href="#local-6989586621680322299"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="DAL.Types.html#Currency"><span class="hs-identifier hs-type">Currency</span></a></span><span>
+</span><span id="line-142"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">currencyId :: Int64
+</span><a href="DAL.Types.html#currencyId"><span class="hs-identifier hs-var">currencyId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322298"><span class="hs-identifier hs-var">cid</span></a></span><span>
+</span><span id="line-143"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">currencyCode :: Text
+</span><a href="DAL.Types.html#currencyCode"><span class="hs-identifier hs-var">currencyCode</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CurrencyEntity -&gt; Text
+</span><a href="DAL.Schema.html#currencyEntityCode"><span class="hs-identifier hs-var">S.currencyEntityCode</span></a></span><span> </span><span class="annot"><span class="annottext">CurrencyEntity
+</span><a href="#local-6989586621680322299"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-144"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">currencyName :: Text
+</span><a href="DAL.Types.html#currencyName"><span class="hs-identifier hs-var">currencyName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CurrencyEntity -&gt; Text
+</span><a href="DAL.Schema.html#currencyEntityName"><span class="hs-identifier hs-var">S.currencyEntityName</span></a></span><span> </span><span class="annot"><span class="annottext">CurrencyEntity
+</span><a href="#local-6989586621680322299"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-145"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-146"></span><span>
+</span><span id="line-147"></span><span class="annot"><span class="hs-comment">-- | Stock ----------------------------------------------------------------------</span></span><span>
+</span><span id="line-148"></span><span>
+</span><span id="line-149"></span><span class="annot"><span class="hs-comment">-- | All stock balances</span></span><span>
+</span><span id="line-150"></span><span class="annot"><a href="DAL.QueriesORM.html#getStockAll"><span class="hs-identifier hs-type">getStockAll</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="DAL.Types.html#Stock"><span class="hs-identifier hs-type">Stock</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-151"></span><span id="getStockAll"><span class="annot"><span class="annottext">getStockAll :: ConnectionPool -&gt; IO (QueryResult [Stock])
+</span><a href="DAL.QueriesORM.html#getStockAll"><span class="hs-identifier hs-var hs-var">getStockAll</span></a></span></span><span> </span><span id="local-6989586621680322306"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322306"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-152"></span><span>  </span><span id="local-6989586621680322307"><span class="annot"><a href="#local-6989586621680322307"><span class="hs-identifier hs-var">rows</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Int64, Single Double)]
+-&gt; IO [(Single Int64, Single Int64, Single Int64, Single Double)]
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322306"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT
+   IO [(Single Int64, Single Int64, Single Int64, Single Double)]
+ -&gt; IO [(Single Int64, Single Int64, Single Int64, Single Double)])
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Int64, Single Double)]
+-&gt; IO [(Single Int64, Single Int64, Single Int64, Single Double)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Int64, Single Double)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-153"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id, goods_id, location_id, qtty FROM stock ORDER BY id&quot;</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-154"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">map</span></span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#stockFromRow"><span class="hs-identifier hs-type">stockFromRow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680322307"><span class="hs-identifier hs-type">rows</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-155"></span><span>
+</span><span id="line-156"></span><span class="annot"><a href="DAL.QueriesORM.html#stockFromRow"><span class="hs-identifier hs-type">stockFromRow</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Types.html#Stock"><span class="hs-identifier hs-type">Stock</span></a></span><span>
+</span><span id="line-157"></span><span id="stockFromRow"><span class="annot"><span class="annottext">stockFromRow :: (Single Int64, Single Int64, Single Int64, Single Double) -&gt; Stock
+</span><a href="DAL.QueriesORM.html#stockFromRow"><span class="hs-identifier hs-var hs-var">stockFromRow</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322311"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322311"><span class="hs-identifier hs-var">sid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322312"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322312"><span class="hs-identifier hs-var">sgid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322313"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322313"><span class="hs-identifier hs-var">slid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322314"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680322314"><span class="hs-identifier hs-var">sqtty</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="DAL.Types.html#Stock"><span class="hs-identifier hs-type">Stock</span></a></span><span>
+</span><span id="line-158"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">stockId :: Int64
+</span><a href="DAL.Types.html#stockId"><span class="hs-identifier hs-var">stockId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322311"><span class="hs-identifier hs-var">sid</span></a></span><span>
+</span><span id="line-159"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">stockGoodsId :: Int64
+</span><a href="DAL.Types.html#stockGoodsId"><span class="hs-identifier hs-var">stockGoodsId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322312"><span class="hs-identifier hs-var">sgid</span></a></span><span>
+</span><span id="line-160"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">stockLocationId :: Int64
+</span><a href="DAL.Types.html#stockLocationId"><span class="hs-identifier hs-var">stockLocationId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322313"><span class="hs-identifier hs-var">slid</span></a></span><span>
+</span><span id="line-161"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">stockQtty :: Double
+</span><a href="DAL.Types.html#stockQtty"><span class="hs-identifier hs-var">stockQtty</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680322314"><span class="hs-identifier hs-var">sqtty</span></a></span><span>
+</span><span id="line-162"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-163"></span><span>
+</span><span id="line-164"></span><span class="annot"><span class="hs-comment">-- | All stock movements</span></span><span>
+</span><span id="line-165"></span><span class="annot"><a href="DAL.QueriesORM.html#getStockMovements"><span class="hs-identifier hs-type">getStockMovements</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="DAL.Types.html#StockMovement"><span class="hs-identifier hs-type">StockMovement</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-166"></span><span id="getStockMovements"><span class="annot"><span class="annottext">getStockMovements :: ConnectionPool -&gt; IO (QueryResult [StockMovement])
+</span><a href="DAL.QueriesORM.html#getStockMovements"><span class="hs-identifier hs-var hs-var">getStockMovements</span></a></span></span><span> </span><span id="local-6989586621680322320"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322320"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-167"></span><span>  </span><span id="local-6989586621680322321"><span class="annot"><a href="#local-6989586621680322321"><span class="hs-identifier hs-var">rows</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT
+     IO
+     [(Single Int64, Single Int64, Single Int64, Single Text,
+       Single Double, Single UTCTime)]
+-&gt; IO
+     [(Single Int64, Single Int64, Single Int64, Single Text,
+       Single Double, Single UTCTime)]
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322320"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT
+   IO
+   [(Single Int64, Single Int64, Single Int64, Single Text,
+     Single Double, Single UTCTime)]
+ -&gt; IO
+      [(Single Int64, Single Int64, Single Int64, Single Text,
+        Single Double, Single UTCTime)])
+-&gt; SqlPersistT
+     IO
+     [(Single Int64, Single Int64, Single Int64, Single Text,
+       Single Double, Single UTCTime)]
+-&gt; IO
+     [(Single Int64, Single Int64, Single Int64, Single Text,
+       Single Double, Single UTCTime)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; SqlPersistT
+     IO
+     [(Single Int64, Single Int64, Single Int64, Single Text,
+       Single Double, Single UTCTime)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-168"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id, goods_id, warehouse_id, movement_type, quantity, created_at \
+    \FROM stock_movements ORDER BY id&quot;</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-170"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">map</span></span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#stockMovementFromRow"><span class="hs-identifier hs-type">stockMovementFromRow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680322321"><span class="hs-identifier hs-type">rows</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-171"></span><span>
+</span><span id="line-172"></span><span class="annot"><span class="hs-comment">-- | Stock movements for one goods item</span></span><span>
+</span><span id="line-173"></span><span class="annot"><a href="DAL.QueriesORM.html#getStockMovementsByGoods"><span class="hs-identifier hs-type">getStockMovementsByGoods</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="DAL.Types.html#StockMovement"><span class="hs-identifier hs-type">StockMovement</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-174"></span><span id="getStockMovementsByGoods"><span class="annot"><span class="annottext">getStockMovementsByGoods :: ConnectionPool -&gt; Int64 -&gt; IO (QueryResult [StockMovement])
+</span><a href="DAL.QueriesORM.html#getStockMovementsByGoods"><span class="hs-identifier hs-var hs-var">getStockMovementsByGoods</span></a></span></span><span> </span><span id="local-6989586621680322323"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322323"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680322324"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322324"><span class="hs-identifier hs-var">goodsId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-175"></span><span>  </span><span id="local-6989586621680322325"><span class="annot"><a href="#local-6989586621680322325"><span class="hs-identifier hs-var">rows</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT
+     IO
+     [(Single Int64, Single Int64, Single Int64, Single Text,
+       Single Double, Single UTCTime)]
+-&gt; IO
+     [(Single Int64, Single Int64, Single Int64, Single Text,
+       Single Double, Single UTCTime)]
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322323"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT
+   IO
+   [(Single Int64, Single Int64, Single Int64, Single Text,
+     Single Double, Single UTCTime)]
+ -&gt; IO
+      [(Single Int64, Single Int64, Single Int64, Single Text,
+        Single Double, Single UTCTime)])
+-&gt; SqlPersistT
+     IO
+     [(Single Int64, Single Int64, Single Int64, Single Text,
+       Single Double, Single UTCTime)]
+-&gt; IO
+     [(Single Int64, Single Int64, Single Int64, Single Text,
+       Single Double, Single UTCTime)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; SqlPersistT
+     IO
+     [(Single Int64, Single Int64, Single Int64, Single Text,
+       Single Double, Single UTCTime)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-176"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id, goods_id, warehouse_id, movement_type, quantity, created_at \
+    \FROM stock_movements WHERE goods_id = ? ORDER BY id&quot;</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int64 -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistInt64"><span class="hs-identifier hs-var">PersistInt64</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322324"><span class="hs-identifier hs-var">goodsId</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-178"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">map</span></span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#stockMovementFromRow"><span class="hs-identifier hs-type">stockMovementFromRow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680322325"><span class="hs-identifier hs-type">rows</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-179"></span><span>
+</span><span id="line-180"></span><span class="annot"><a href="DAL.QueriesORM.html#stockMovementFromRow"><span class="hs-identifier hs-type">stockMovementFromRow</span></a></span><span>
+</span><span id="line-181"></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-182"></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Types.html#StockMovement"><span class="hs-identifier hs-type">StockMovement</span></a></span><span>
+</span><span id="line-183"></span><span id="stockMovementFromRow"><span class="annot"><span class="annottext">stockMovementFromRow :: (Single Int64, Single Int64, Single Int64, Single Text,
+ Single Double, Single UTCTime)
+-&gt; StockMovement
+</span><a href="DAL.QueriesORM.html#stockMovementFromRow"><span class="hs-identifier hs-var hs-var">stockMovementFromRow</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322326"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322326"><span class="hs-identifier hs-var">mid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322327"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322327"><span class="hs-identifier hs-var">mgid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322328"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322328"><span class="hs-identifier hs-var">mwid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322329"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322329"><span class="hs-identifier hs-var">mtype</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322330"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680322330"><span class="hs-identifier hs-var">mqty</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322331"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680322331"><span class="hs-identifier hs-var">mcreated</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-184"></span><span>  </span><span class="annot"><a href="DAL.Types.html#StockMovement"><span class="hs-identifier hs-type">StockMovement</span></a></span><span>
+</span><span id="line-185"></span><span>    </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">stockMovementId :: Int64
+</span><a href="DAL.Types.html#stockMovementId"><span class="hs-identifier hs-var">stockMovementId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322326"><span class="hs-identifier hs-var">mid</span></a></span><span>
+</span><span id="line-186"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">stockMovementGoodsId :: Int64
+</span><a href="DAL.Types.html#stockMovementGoodsId"><span class="hs-identifier hs-var">stockMovementGoodsId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322327"><span class="hs-identifier hs-var">mgid</span></a></span><span>
+</span><span id="line-187"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">stockMovementWarehouseId :: Int64
+</span><a href="DAL.Types.html#stockMovementWarehouseId"><span class="hs-identifier hs-var">stockMovementWarehouseId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322328"><span class="hs-identifier hs-var">mwid</span></a></span><span>
+</span><span id="line-188"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">stockMovementType :: Text
+</span><a href="DAL.Types.html#stockMovementType"><span class="hs-identifier hs-var">stockMovementType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322329"><span class="hs-identifier hs-var">mtype</span></a></span><span>
+</span><span id="line-189"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">stockMovementQty :: Double
+</span><a href="DAL.Types.html#stockMovementQty"><span class="hs-identifier hs-var">stockMovementQty</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680322330"><span class="hs-identifier hs-var">mqty</span></a></span><span>
+</span><span id="line-190"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">stockMovementCreatedAt :: UTCTime
+</span><a href="DAL.Types.html#stockMovementCreatedAt"><span class="hs-identifier hs-var">stockMovementCreatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680322331"><span class="hs-identifier hs-var">mcreated</span></a></span><span>
+</span><span id="line-191"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-192"></span><span>
+</span><span id="line-193"></span><span class="annot"><span class="hs-comment">-- | Lots -----------------------------------------------------------------------</span></span><span>
+</span><span id="line-194"></span><span>
+</span><span id="line-195"></span><span class="annot"><span class="hs-comment">-- | All stock lots</span></span><span>
+</span><span id="line-196"></span><span class="annot"><a href="DAL.QueriesORM.html#getLots"><span class="hs-identifier hs-type">getLots</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="DAL.Types.html#Lot"><span class="hs-identifier hs-type">Lot</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-197"></span><span id="getLots"><span class="annot"><span class="annottext">getLots :: ConnectionPool -&gt; IO (QueryResult [Lot])
+</span><a href="DAL.QueriesORM.html#getLots"><span class="hs-identifier hs-var hs-var">getLots</span></a></span></span><span> </span><span id="local-6989586621680322339"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322339"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-198"></span><span>  </span><span id="local-6989586621680322340"><span class="annot"><a href="#local-6989586621680322340"><span class="hs-identifier hs-var">rows</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Double, Single Double)]
+-&gt; IO [(Single Int64, Single Int64, Single Double, Single Double)]
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322339"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT
+   IO [(Single Int64, Single Int64, Single Double, Single Double)]
+ -&gt; IO [(Single Int64, Single Int64, Single Double, Single Double)])
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Double, Single Double)]
+-&gt; IO [(Single Int64, Single Int64, Single Double, Single Double)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Double, Single Double)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-199"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id, goods_id, rest, cost FROM lot ORDER BY id&quot;</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-200"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">map</span></span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#lotFromRow"><span class="hs-identifier hs-type">lotFromRow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680322340"><span class="hs-identifier hs-type">rows</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-201"></span><span>
+</span><span id="line-202"></span><span class="annot"><span class="hs-comment">-- | One lot by id</span></span><span>
+</span><span id="line-203"></span><span class="annot"><a href="DAL.QueriesORM.html#getLotById"><span class="hs-identifier hs-type">getLotById</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="annot"><a href="DAL.Types.html#Lot"><span class="hs-identifier hs-type">Lot</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-204"></span><span id="getLotById"><span class="annot"><span class="annottext">getLotById :: ConnectionPool -&gt; Int64 -&gt; IO (QueryResult Lot)
+</span><a href="DAL.QueriesORM.html#getLotById"><span class="hs-identifier hs-var hs-var">getLotById</span></a></span></span><span> </span><span id="local-6989586621680322342"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322342"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680322343"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322343"><span class="hs-identifier hs-var">lid</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-205"></span><span>  </span><span id="local-6989586621680322344"><span class="annot"><a href="#local-6989586621680322344"><span class="hs-identifier hs-var">rows</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Double, Single Double)]
+-&gt; IO [(Single Int64, Single Int64, Single Double, Single Double)]
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322342"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT
+   IO [(Single Int64, Single Int64, Single Double, Single Double)]
+ -&gt; IO [(Single Int64, Single Int64, Single Double, Single Double)])
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Double, Single Double)]
+-&gt; IO [(Single Int64, Single Int64, Single Double, Single Double)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Double, Single Double)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-206"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id, goods_id, rest, cost FROM lot WHERE id = ?&quot;</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int64 -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistInt64"><span class="hs-identifier hs-var">PersistInt64</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322343"><span class="hs-identifier hs-var">lid</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-207"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680322344"><span class="hs-identifier hs-type">rows</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-208"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621680322345"><span class="annot"><span class="annottext">(Single Int64, Single Int64, Single Double, Single Double)
+</span><a href="#local-6989586621680322345"><span class="hs-identifier hs-var">row</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span class="annot"><span class="annottext">[(Single Int64, Single Int64, Single Double, Single Double)]
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Lot -&gt; QueryResult Lot
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Single Int64, Single Int64, Single Double, Single Double) -&gt; Lot
+</span><a href="DAL.QueriesORM.html#lotFromRow"><span class="hs-identifier hs-var">lotFromRow</span></a></span><span> </span><span class="annot"><span class="annottext">(Single Int64, Single Int64, Single Double, Single Double)
+</span><a href="#local-6989586621680322345"><span class="hs-identifier hs-var">row</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-209"></span><span>    </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text -&gt; QueryResult Lot
+forall a. Text -&gt; QueryResult a
+</span><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-var">QueryError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Lot not found&quot;</span></span><span>
+</span><span id="line-210"></span><span>
+</span><span id="line-211"></span><span class="annot"><span class="hs-comment">-- | Lots for one goods item</span></span><span>
+</span><span id="line-212"></span><span class="annot"><a href="DAL.QueriesORM.html#getLotsByGoods"><span class="hs-identifier hs-type">getLotsByGoods</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="DAL.Types.html#Lot"><span class="hs-identifier hs-type">Lot</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-213"></span><span id="getLotsByGoods"><span class="annot"><span class="annottext">getLotsByGoods :: ConnectionPool -&gt; Int64 -&gt; IO (QueryResult [Lot])
+</span><a href="DAL.QueriesORM.html#getLotsByGoods"><span class="hs-identifier hs-var hs-var">getLotsByGoods</span></a></span></span><span> </span><span id="local-6989586621680322347"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322347"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680322348"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322348"><span class="hs-identifier hs-var">goodsId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-214"></span><span>  </span><span id="local-6989586621680322349"><span class="annot"><a href="#local-6989586621680322349"><span class="hs-identifier hs-var">rows</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Double, Single Double)]
+-&gt; IO [(Single Int64, Single Int64, Single Double, Single Double)]
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322347"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT
+   IO [(Single Int64, Single Int64, Single Double, Single Double)]
+ -&gt; IO [(Single Int64, Single Int64, Single Double, Single Double)])
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Double, Single Double)]
+-&gt; IO [(Single Int64, Single Int64, Single Double, Single Double)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Double, Single Double)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-215"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id, goods_id, rest, cost FROM lot WHERE goods_id = ? ORDER BY id&quot;</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int64 -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistInt64"><span class="hs-identifier hs-var">PersistInt64</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322348"><span class="hs-identifier hs-var">goodsId</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-216"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">map</span></span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#lotFromRow"><span class="hs-identifier hs-type">lotFromRow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680322349"><span class="hs-identifier hs-type">rows</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-217"></span><span>
+</span><span id="line-218"></span><span class="annot"><span class="hs-comment">-- | Lots stored at one location</span></span><span>
+</span><span id="line-219"></span><span class="annot"><a href="DAL.QueriesORM.html#getLotsByLocation"><span class="hs-identifier hs-type">getLotsByLocation</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="DAL.Types.html#Lot"><span class="hs-identifier hs-type">Lot</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-220"></span><span id="getLotsByLocation"><span class="annot"><span class="annottext">getLotsByLocation :: ConnectionPool -&gt; Int64 -&gt; IO (QueryResult [Lot])
+</span><a href="DAL.QueriesORM.html#getLotsByLocation"><span class="hs-identifier hs-var hs-var">getLotsByLocation</span></a></span></span><span> </span><span id="local-6989586621680322350"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322350"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680322351"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322351"><span class="hs-identifier hs-var">locationId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-221"></span><span>  </span><span id="local-6989586621680322352"><span class="annot"><a href="#local-6989586621680322352"><span class="hs-identifier hs-var">rows</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Double, Single Double)]
+-&gt; IO [(Single Int64, Single Int64, Single Double, Single Double)]
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322350"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT
+   IO [(Single Int64, Single Int64, Single Double, Single Double)]
+ -&gt; IO [(Single Int64, Single Int64, Single Double, Single Double)])
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Double, Single Double)]
+-&gt; IO [(Single Int64, Single Int64, Single Double, Single Double)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Double, Single Double)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-222"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id, goods_id, rest, cost FROM lot WHERE location_id = ? ORDER BY id&quot;</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int64 -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistInt64"><span class="hs-identifier hs-var">PersistInt64</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322351"><span class="hs-identifier hs-var">locationId</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-223"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">map</span></span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#lotFromRow"><span class="hs-identifier hs-type">lotFromRow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680322352"><span class="hs-identifier hs-type">rows</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-224"></span><span>
+</span><span id="line-225"></span><span class="annot"><a href="DAL.QueriesORM.html#lotFromRow"><span class="hs-identifier hs-type">lotFromRow</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Types.html#Lot"><span class="hs-identifier hs-type">Lot</span></a></span><span>
+</span><span id="line-226"></span><span id="lotFromRow"><span class="annot"><span class="annottext">lotFromRow :: (Single Int64, Single Int64, Single Double, Single Double) -&gt; Lot
+</span><a href="DAL.QueriesORM.html#lotFromRow"><span class="hs-identifier hs-var hs-var">lotFromRow</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322353"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322353"><span class="hs-identifier hs-var">lid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322354"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322354"><span class="hs-identifier hs-var">lgid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322355"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680322355"><span class="hs-identifier hs-var">lrest</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322356"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680322356"><span class="hs-identifier hs-var">lcost</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="DAL.Types.html#Lot"><span class="hs-identifier hs-type">Lot</span></a></span><span>
+</span><span id="line-227"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">lotId :: Int64
+</span><a href="DAL.Types.html#lotId"><span class="hs-identifier hs-var">lotId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322353"><span class="hs-identifier hs-var">lid</span></a></span><span>
+</span><span id="line-228"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">lotGoodsId :: Int64
+</span><a href="DAL.Types.html#lotGoodsId"><span class="hs-identifier hs-var">lotGoodsId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322354"><span class="hs-identifier hs-var">lgid</span></a></span><span>
+</span><span id="line-229"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">lotRest :: Double
+</span><a href="DAL.Types.html#lotRest"><span class="hs-identifier hs-var">lotRest</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680322355"><span class="hs-identifier hs-var">lrest</span></a></span><span>
+</span><span id="line-230"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">lotCost :: Double
+</span><a href="DAL.Types.html#lotCost"><span class="hs-identifier hs-var">lotCost</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680322356"><span class="hs-identifier hs-var">lcost</span></a></span><span>
+</span><span id="line-231"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-232"></span><span>
+</span><span id="line-233"></span><span class="annot"><span class="hs-comment">-- | Tenants --------------------------------------------------------------------</span></span><span>
+</span><span id="line-234"></span><span>
+</span><span id="line-235"></span><span class="annot"><span class="hs-comment">-- | All tenants</span></span><span>
+</span><span id="line-236"></span><span class="annot"><a href="DAL.QueriesORM.html#getTenants"><span class="hs-identifier hs-type">getTenants</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="DAL.Types.html#Tenant"><span class="hs-identifier hs-type">Tenant</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-237"></span><span id="getTenants"><span class="annot"><span class="annottext">getTenants :: ConnectionPool -&gt; IO (QueryResult [Tenant])
+</span><a href="DAL.QueriesORM.html#getTenants"><span class="hs-identifier hs-var hs-var">getTenants</span></a></span></span><span> </span><span id="local-6989586621680322362"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322362"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-238"></span><span>  </span><span id="local-6989586621680322363"><span class="annot"><a href="#local-6989586621680322363"><span class="hs-identifier hs-var">rows</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT
+     IO
+     [(Single Int64, Single Text, Single Text, Single Text,
+       Single Bool)]
+-&gt; IO
+     [(Single Int64, Single Text, Single Text, Single Text,
+       Single Bool)]
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322362"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT
+   IO
+   [(Single Int64, Single Text, Single Text, Single Text,
+     Single Bool)]
+ -&gt; IO
+      [(Single Int64, Single Text, Single Text, Single Text,
+        Single Bool)])
+-&gt; SqlPersistT
+     IO
+     [(Single Int64, Single Text, Single Text, Single Text,
+       Single Bool)]
+-&gt; IO
+     [(Single Int64, Single Text, Single Text, Single Text,
+       Single Bool)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; SqlPersistT
+     IO
+     [(Single Int64, Single Text, Single Text, Single Text,
+       Single Bool)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-239"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id, name, slug, schema_name, is_active FROM tenants ORDER BY id&quot;</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-240"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">map</span></span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#tenantFromRow"><span class="hs-identifier hs-type">tenantFromRow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680322363"><span class="hs-identifier hs-type">rows</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-241"></span><span>
+</span><span id="line-242"></span><span class="annot"><span class="hs-comment">-- | One tenant by id</span></span><span>
+</span><span id="line-243"></span><span class="annot"><a href="DAL.QueriesORM.html#getTenantById"><span class="hs-identifier hs-type">getTenantById</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="annot"><a href="DAL.Types.html#Tenant"><span class="hs-identifier hs-type">Tenant</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-244"></span><span id="getTenantById"><span class="annot"><span class="annottext">getTenantById :: ConnectionPool -&gt; Int64 -&gt; IO (QueryResult Tenant)
+</span><a href="DAL.QueriesORM.html#getTenantById"><span class="hs-identifier hs-var hs-var">getTenantById</span></a></span></span><span> </span><span id="local-6989586621680322365"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322365"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680322366"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322366"><span class="hs-identifier hs-var">tid</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-245"></span><span>  </span><span id="local-6989586621680322367"><span class="annot"><a href="#local-6989586621680322367"><span class="hs-identifier hs-var">rows</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT
+     IO
+     [(Single Int64, Single Text, Single Text, Single Text,
+       Single Bool)]
+-&gt; IO
+     [(Single Int64, Single Text, Single Text, Single Text,
+       Single Bool)]
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322365"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT
+   IO
+   [(Single Int64, Single Text, Single Text, Single Text,
+     Single Bool)]
+ -&gt; IO
+      [(Single Int64, Single Text, Single Text, Single Text,
+        Single Bool)])
+-&gt; SqlPersistT
+     IO
+     [(Single Int64, Single Text, Single Text, Single Text,
+       Single Bool)]
+-&gt; IO
+     [(Single Int64, Single Text, Single Text, Single Text,
+       Single Bool)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; SqlPersistT
+     IO
+     [(Single Int64, Single Text, Single Text, Single Text,
+       Single Bool)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-246"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id, name, slug, schema_name, is_active FROM tenants WHERE id = ?&quot;</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int64 -&gt; PersistValue
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.PersistValue.html#PersistInt64"><span class="hs-identifier hs-var">PersistInt64</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322366"><span class="hs-identifier hs-var">tid</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-247"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680322367"><span class="hs-identifier hs-type">rows</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-248"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621680322368"><span class="annot"><span class="annottext">(Single Int64, Single Text, Single Text, Single Text, Single Bool)
+</span><a href="#local-6989586621680322368"><span class="hs-identifier hs-var">row</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span class="annot"><span class="annottext">[(Single Int64, Single Text, Single Text, Single Text,
+  Single Bool)]
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Tenant -&gt; QueryResult Tenant
+forall a. a -&gt; QueryResult a
+</span><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-var">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Single Int64, Single Text, Single Text, Single Text, Single Bool)
+-&gt; Tenant
+</span><a href="DAL.QueriesORM.html#tenantFromRow"><span class="hs-identifier hs-var">tenantFromRow</span></a></span><span> </span><span class="annot"><span class="annottext">(Single Int64, Single Text, Single Text, Single Text, Single Bool)
+</span><a href="#local-6989586621680322368"><span class="hs-identifier hs-var">row</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-249"></span><span>    </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text -&gt; QueryResult Tenant
+forall a. Text -&gt; QueryResult a
+</span><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-var">QueryError</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Tenant not found&quot;</span></span><span>
+</span><span id="line-250"></span><span>
+</span><span id="line-251"></span><span class="annot"><a href="DAL.QueriesORM.html#tenantFromRow"><span class="hs-identifier hs-type">tenantFromRow</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Types.html#Tenant"><span class="hs-identifier hs-type">Tenant</span></a></span><span>
+</span><span id="line-252"></span><span id="tenantFromRow"><span class="annot"><span class="annottext">tenantFromRow :: (Single Int64, Single Text, Single Text, Single Text, Single Bool)
+-&gt; Tenant
+</span><a href="DAL.QueriesORM.html#tenantFromRow"><span class="hs-identifier hs-var hs-var">tenantFromRow</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322369"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322369"><span class="hs-identifier hs-var">tid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322370"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322370"><span class="hs-identifier hs-var">tname</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322371"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322371"><span class="hs-identifier hs-var">tslug</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322372"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322372"><span class="hs-identifier hs-var">tschema</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322373"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621680322373"><span class="hs-identifier hs-var">tactive</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="DAL.Types.html#Tenant"><span class="hs-identifier hs-type">Tenant</span></a></span><span>
+</span><span id="line-253"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">tenantId :: Int64
+</span><a href="DAL.Types.html#tenantId"><span class="hs-identifier hs-var">tenantId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322369"><span class="hs-identifier hs-var">tid</span></a></span><span>
+</span><span id="line-254"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tenantName :: Text
+</span><a href="DAL.Types.html#tenantName"><span class="hs-identifier hs-var">tenantName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322370"><span class="hs-identifier hs-var">tname</span></a></span><span>
+</span><span id="line-255"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tenantSlug :: Text
+</span><a href="DAL.Types.html#tenantSlug"><span class="hs-identifier hs-var">tenantSlug</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322371"><span class="hs-identifier hs-var">tslug</span></a></span><span>
+</span><span id="line-256"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tenantSchemaName :: Text
+</span><a href="DAL.Types.html#tenantSchemaName"><span class="hs-identifier hs-var">tenantSchemaName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322372"><span class="hs-identifier hs-var">tschema</span></a></span><span>
+</span><span id="line-257"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tenantIsActive :: Bool
+</span><a href="DAL.Types.html#tenantIsActive"><span class="hs-identifier hs-var">tenantIsActive</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621680322373"><span class="hs-identifier hs-var">tactive</span></a></span><span>
+</span><span id="line-258"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-259"></span><span>
+</span><span id="line-260"></span><span class="annot"><span class="hs-comment">-- | Locations ------------------------------------------------------------------</span></span><span>
+</span><span id="line-261"></span><span>
+</span><span id="line-262"></span><span class="annot"><span class="hs-comment">-- | All warehouse locations</span></span><span>
+</span><span id="line-263"></span><span class="annot"><a href="DAL.QueriesORM.html#getLocations"><span class="hs-identifier hs-type">getLocations</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="DAL.Types.html#Location"><span class="hs-identifier hs-type">Location</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-264"></span><span id="getLocations"><span class="annot"><span class="annottext">getLocations :: ConnectionPool -&gt; IO (QueryResult [Location])
+</span><a href="DAL.QueriesORM.html#getLocations"><span class="hs-identifier hs-var hs-var">getLocations</span></a></span></span><span> </span><span id="local-6989586621680322380"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322380"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-265"></span><span>  </span><span id="local-6989586621680322381"><span class="annot"><a href="#local-6989586621680322381"><span class="hs-identifier hs-var">rows</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT IO [(Single Int64, Single Text, Single Text)]
+-&gt; IO [(Single Int64, Single Text, Single Text)]
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322380"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT IO [(Single Int64, Single Text, Single Text)]
+ -&gt; IO [(Single Int64, Single Text, Single Text)])
+-&gt; SqlPersistT IO [(Single Int64, Single Text, Single Text)]
+-&gt; IO [(Single Int64, Single Text, Single Text)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; SqlPersistT IO [(Single Int64, Single Text, Single Text)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-266"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id, code, name FROM locations ORDER BY id&quot;</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-267"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">map</span></span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#locationFromRow"><span class="hs-identifier hs-type">locationFromRow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680322381"><span class="hs-identifier hs-type">rows</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-268"></span><span>
+</span><span id="line-269"></span><span class="annot"><a href="DAL.QueriesORM.html#locationFromRow"><span class="hs-identifier hs-type">locationFromRow</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Types.html#Location"><span class="hs-identifier hs-type">Location</span></a></span><span>
+</span><span id="line-270"></span><span id="locationFromRow"><span class="annot"><span class="annottext">locationFromRow :: (Single Int64, Single Text, Single Text) -&gt; Location
+</span><a href="DAL.QueriesORM.html#locationFromRow"><span class="hs-identifier hs-var hs-var">locationFromRow</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322383"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322383"><span class="hs-identifier hs-var">lid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322384"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322384"><span class="hs-identifier hs-var">lcode</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322385"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322385"><span class="hs-identifier hs-var">lname</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="DAL.Types.html#Location"><span class="hs-identifier hs-type">Location</span></a></span><span>
+</span><span id="line-271"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">locationId :: Int64
+</span><a href="DAL.Types.html#locationId"><span class="hs-identifier hs-var">locationId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322383"><span class="hs-identifier hs-var">lid</span></a></span><span>
+</span><span id="line-272"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">locationCode :: Text
+</span><a href="DAL.Types.html#locationCode"><span class="hs-identifier hs-var">locationCode</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322384"><span class="hs-identifier hs-var">lcode</span></a></span><span>
+</span><span id="line-273"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">locationName :: Text
+</span><a href="DAL.Types.html#locationName"><span class="hs-identifier hs-var">locationName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322385"><span class="hs-identifier hs-var">lname</span></a></span><span>
+</span><span id="line-274"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-275"></span><span>
+</span><span id="line-276"></span><span class="annot"><span class="hs-comment">-- | Employees ------------------------------------------------------------------</span></span><span>
+</span><span id="line-277"></span><span>
+</span><span id="line-278"></span><span class="annot"><span class="hs-comment">-- | All employees</span></span><span>
+</span><span id="line-279"></span><span class="annot"><a href="DAL.QueriesORM.html#getEmployees"><span class="hs-identifier hs-type">getEmployees</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="DAL.Types.html#Employee"><span class="hs-identifier hs-type">Employee</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-280"></span><span id="getEmployees"><span class="annot"><span class="annottext">getEmployees :: ConnectionPool -&gt; IO (QueryResult [Employee])
+</span><a href="DAL.QueriesORM.html#getEmployees"><span class="hs-identifier hs-var hs-var">getEmployees</span></a></span></span><span> </span><span id="local-6989586621680322390"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322390"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-281"></span><span>  </span><span id="local-6989586621680322391"><span class="annot"><a href="#local-6989586621680322391"><span class="hs-identifier hs-var">rows</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Text, Single Text, Single (Maybe Text))]
+-&gt; IO
+     [(Single Int64, Single Text, Single Text, Single (Maybe Text))]
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322390"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT
+   IO [(Single Int64, Single Text, Single Text, Single (Maybe Text))]
+ -&gt; IO
+      [(Single Int64, Single Text, Single Text, Single (Maybe Text))])
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Text, Single Text, Single (Maybe Text))]
+-&gt; IO
+     [(Single Int64, Single Text, Single Text, Single (Maybe Text))]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Text, Single Text, Single (Maybe Text))]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-282"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id, code, first_name, last_name FROM employees ORDER BY id&quot;</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-283"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">map</span></span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#employeeFromRow"><span class="hs-identifier hs-type">employeeFromRow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680322391"><span class="hs-identifier hs-type">rows</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-284"></span><span>
+</span><span id="line-285"></span><span class="annot"><a href="DAL.QueriesORM.html#employeeFromRow"><span class="hs-identifier hs-type">employeeFromRow</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Types.html#Employee"><span class="hs-identifier hs-type">Employee</span></a></span><span>
+</span><span id="line-286"></span><span id="employeeFromRow"><span class="annot"><span class="annottext">employeeFromRow :: (Single Int64, Single Text, Single Text, Single (Maybe Text))
+-&gt; Employee
+</span><a href="DAL.QueriesORM.html#employeeFromRow"><span class="hs-identifier hs-var hs-var">employeeFromRow</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322393"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322393"><span class="hs-identifier hs-var">eid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322394"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322394"><span class="hs-identifier hs-var">ecode</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322395"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322395"><span class="hs-identifier hs-var">efirst</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322396"><span class="annot"><span class="annottext">Maybe Text
+</span><a href="#local-6989586621680322396"><span class="hs-identifier hs-var">elast</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="DAL.Types.html#Employee"><span class="hs-identifier hs-type">Employee</span></a></span><span>
+</span><span id="line-287"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">employeeId :: Int64
+</span><a href="DAL.Types.html#employeeId"><span class="hs-identifier hs-var">employeeId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322393"><span class="hs-identifier hs-var">eid</span></a></span><span>
+</span><span id="line-288"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">employeeCode :: Text
+</span><a href="DAL.Types.html#employeeCode"><span class="hs-identifier hs-var">employeeCode</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322394"><span class="hs-identifier hs-var">ecode</span></a></span><span>
+</span><span id="line-289"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">employeeFirstName :: Text
+</span><a href="DAL.Types.html#employeeFirstName"><span class="hs-identifier hs-var">employeeFirstName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680322395"><span class="hs-identifier hs-var">efirst</span></a></span><span>
+</span><span id="line-290"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">employeeLastName :: Maybe Text
+</span><a href="DAL.Types.html#employeeLastName"><span class="hs-identifier hs-var">employeeLastName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Text
+</span><a href="#local-6989586621680322396"><span class="hs-identifier hs-var">elast</span></a></span><span>
+</span><span id="line-291"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-292"></span><span>
+</span><span id="line-293"></span><span class="annot"><span class="hs-comment">-- | Salaries -------------------------------------------------------------------</span></span><span>
+</span><span id="line-294"></span><span>
+</span><span id="line-295"></span><span class="annot"><span class="hs-comment">-- | All salary records</span></span><span>
+</span><span id="line-296"></span><span class="annot"><a href="DAL.QueriesORM.html#getSalaries"><span class="hs-identifier hs-type">getSalaries</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="DAL.Types.html#Salary"><span class="hs-identifier hs-type">Salary</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-297"></span><span id="getSalaries"><span class="annot"><span class="annottext">getSalaries :: ConnectionPool -&gt; IO (QueryResult [Salary])
+</span><a href="DAL.QueriesORM.html#getSalaries"><span class="hs-identifier hs-var hs-var">getSalaries</span></a></span></span><span> </span><span id="local-6989586621680322402"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322402"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-298"></span><span>  </span><span id="local-6989586621680322403"><span class="annot"><a href="#local-6989586621680322403"><span class="hs-identifier hs-var">rows</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Double, Single Day)]
+-&gt; IO [(Single Int64, Single Int64, Single Double, Single Day)]
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322402"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT
+   IO [(Single Int64, Single Int64, Single Double, Single Day)]
+ -&gt; IO [(Single Int64, Single Int64, Single Double, Single Day)])
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Double, Single Day)]
+-&gt; IO [(Single Int64, Single Int64, Single Double, Single Day)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Double, Single Day)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-299"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id, employee_id, amount, period FROM salaries ORDER BY id&quot;</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-300"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">map</span></span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#salaryFromRow"><span class="hs-identifier hs-type">salaryFromRow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680322403"><span class="hs-identifier hs-type">rows</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-301"></span><span>
+</span><span id="line-302"></span><span class="annot"><a href="DAL.QueriesORM.html#salaryFromRow"><span class="hs-identifier hs-type">salaryFromRow</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Types.html#Salary"><span class="hs-identifier hs-type">Salary</span></a></span><span>
+</span><span id="line-303"></span><span id="salaryFromRow"><span class="annot"><span class="annottext">salaryFromRow :: (Single Int64, Single Int64, Single Double, Single Day) -&gt; Salary
+</span><a href="DAL.QueriesORM.html#salaryFromRow"><span class="hs-identifier hs-var hs-var">salaryFromRow</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322405"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322405"><span class="hs-identifier hs-var">sid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322406"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322406"><span class="hs-identifier hs-var">seid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322407"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680322407"><span class="hs-identifier hs-var">samount</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322408"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680322408"><span class="hs-identifier hs-var">speriod</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="DAL.Types.html#Salary"><span class="hs-identifier hs-type">Salary</span></a></span><span>
+</span><span id="line-304"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">salaryId :: Int64
+</span><a href="DAL.Types.html#salaryId"><span class="hs-identifier hs-var">salaryId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322405"><span class="hs-identifier hs-var">sid</span></a></span><span>
+</span><span id="line-305"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">salaryEmployeeId :: Int64
+</span><a href="DAL.Types.html#salaryEmployeeId"><span class="hs-identifier hs-var">salaryEmployeeId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322406"><span class="hs-identifier hs-var">seid</span></a></span><span>
+</span><span id="line-306"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">salaryAmount :: Double
+</span><a href="DAL.Types.html#salaryAmount"><span class="hs-identifier hs-var">salaryAmount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680322407"><span class="hs-identifier hs-var">samount</span></a></span><span>
+</span><span id="line-307"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">salaryPeriod :: Day
+</span><a href="DAL.Types.html#salaryPeriod"><span class="hs-identifier hs-var">salaryPeriod</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680322408"><span class="hs-identifier hs-var">speriod</span></a></span><span>
+</span><span id="line-308"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-309"></span><span>
+</span><span id="line-310"></span><span class="annot"><span class="hs-comment">-- | Timesheets -----------------------------------------------------------------</span></span><span>
+</span><span id="line-311"></span><span>
+</span><span id="line-312"></span><span class="annot"><span class="hs-comment">-- | All timesheets</span></span><span>
+</span><span id="line-313"></span><span class="annot"><a href="DAL.QueriesORM.html#getTimesheets"><span class="hs-identifier hs-type">getTimesheets</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="DAL.Types.html#Timesheet"><span class="hs-identifier hs-type">Timesheet</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-314"></span><span id="getTimesheets"><span class="annot"><span class="annottext">getTimesheets :: ConnectionPool -&gt; IO (QueryResult [Timesheet])
+</span><a href="DAL.QueriesORM.html#getTimesheets"><span class="hs-identifier hs-var hs-var">getTimesheets</span></a></span></span><span> </span><span id="local-6989586621680322414"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322414"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-315"></span><span>  </span><span id="local-6989586621680322415"><span class="annot"><a href="#local-6989586621680322415"><span class="hs-identifier hs-var">rows</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Day, Single Double)]
+-&gt; IO [(Single Int64, Single Int64, Single Day, Single Double)]
+forall a. ConnectionPool -&gt; SqlPersistT IO a -&gt; IO a
+</span><a href="DAL.Database.html#runDb"><span class="hs-identifier hs-var">runDb</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680322414"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">(SqlPersistT
+   IO [(Single Int64, Single Int64, Single Day, Single Double)]
+ -&gt; IO [(Single Int64, Single Int64, Single Day, Single Double)])
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Day, Single Double)]
+-&gt; IO [(Single Int64, Single Int64, Single Day, Single Double)]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+-&gt; [PersistValue]
+-&gt; SqlPersistT
+     IO [(Single Int64, Single Int64, Single Day, Single Double)]
+forall a (m :: * -&gt; *) backend.
+(RawSql a, MonadIO m, BackendCompatible SqlBackend backend) =&gt;
+Text -&gt; [PersistValue] -&gt; ReaderT backend m [a]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Raw.html#rawSql"><span class="hs-identifier hs-var">rawSql</span></a></span><span>
+</span><span id="line-316"></span><span>    </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;SELECT id, employee_id, work_date, hours FROM timesheets ORDER BY id&quot;</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-317"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">map</span></span><span> </span><span class="annot"><a href="DAL.QueriesORM.html#timesheetFromRow"><span class="hs-identifier hs-type">timesheetFromRow</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680322415"><span class="hs-identifier hs-type">rows</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-318"></span><span>
+</span><span id="line-319"></span><span class="annot"><a href="DAL.QueriesORM.html#timesheetFromRow"><span class="hs-identifier hs-type">timesheetFromRow</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="DAL.Types.html#Timesheet"><span class="hs-identifier hs-type">Timesheet</span></a></span><span>
+</span><span id="line-320"></span><span id="timesheetFromRow"><span class="annot"><span class="annottext">timesheetFromRow :: (Single Int64, Single Int64, Single Day, Single Double)
+-&gt; Timesheet
+</span><a href="DAL.QueriesORM.html#timesheetFromRow"><span class="hs-identifier hs-var hs-var">timesheetFromRow</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322417"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322417"><span class="hs-identifier hs-var">tid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322418"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322418"><span class="hs-identifier hs-var">teid</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322419"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680322419"><span class="hs-identifier hs-var">tdate</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#Single"><span class="hs-identifier hs-type">P.Single</span></a></span><span> </span><span id="local-6989586621680322420"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680322420"><span class="hs-identifier hs-var">thours</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="DAL.Types.html#Timesheet"><span class="hs-identifier hs-type">Timesheet</span></a></span><span>
+</span><span id="line-321"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">timesheetId :: Int64
+</span><a href="DAL.Types.html#timesheetId"><span class="hs-identifier hs-var">timesheetId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322417"><span class="hs-identifier hs-var">tid</span></a></span><span>
+</span><span id="line-322"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">timesheetEmployeeId :: Int64
+</span><a href="DAL.Types.html#timesheetEmployeeId"><span class="hs-identifier hs-var">timesheetEmployeeId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680322418"><span class="hs-identifier hs-var">teid</span></a></span><span>
+</span><span id="line-323"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">timesheetDate :: Day
+</span><a href="DAL.Types.html#timesheetDate"><span class="hs-identifier hs-var">timesheetDate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680322419"><span class="hs-identifier hs-var">tdate</span></a></span><span>
+</span><span id="line-324"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">timesheetHours :: Double
+</span><a href="DAL.Types.html#timesheetHours"><span class="hs-identifier hs-var">timesheetHours</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680322420"><span class="hs-identifier hs-var">thours</span></a></span><span>
+</span><span id="line-325"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">timesheetType :: Text
+</span><a href="DAL.Types.html#timesheetType"><span class="hs-identifier hs-var">timesheetType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&quot;</span></span><span>
+</span><span id="line-326"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-327"></span></pre></body></html>

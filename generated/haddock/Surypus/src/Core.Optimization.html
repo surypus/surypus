@@ -1,0 +1,345 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE StrictData #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE BangPatterns #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-comment">{-@ LIQUID &quot;--reflection&quot; @-}</span><span>
+</span><span id="line-5"></span><span class="hs-comment">{-@ LIQUID &quot;--ple&quot;        @-}</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-comment">{-@ type NonNegDouble = {v:Double | v &gt;= 0.0} @-}</span><span>
+</span><span id="line-8"></span><span class="hs-comment">{-@ type Prob = {v:Double | v &gt;= 0.0 &amp;&amp; v &lt;= 1.0} @-}</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Core.Optimization.html"><span class="hs-identifier">Core.Optimization</span></a></span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Core.Optimization.html#Direction"><span class="hs-identifier">Direction</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Optimization.html#Objective"><span class="hs-identifier">Objective</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Optimization.html#Constraint"><span class="hs-identifier">Constraint</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Optimization.html#ConstraintType"><span class="hs-identifier">ConstraintType</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Optimization.html#OptimizationState"><span class="hs-identifier">OptimizationState</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Optimization.html#evaluateObjective"><span class="hs-identifier">evaluateObjective</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Optimization.html#checkConstraint"><span class="hs-identifier">checkConstraint</span></a></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Optimization.html#optimize"><span class="hs-identifier">optimize</span></a></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Optimization.html#defOptimizationState"><span class="hs-identifier">defOptimizationState</span></a></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">M</span></span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="annot"><span class="hs-comment">-- | Objective function direction</span></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">data</span><span> </span><span id="Direction"><span class="annot"><a href="Core.Optimization.html#Direction"><span class="hs-identifier hs-var">Direction</span></a></span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Maximize"><span class="annot"><a href="Core.Optimization.html#Maximize"><span class="hs-identifier hs-var">Maximize</span></a></span></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Minimize"><span class="annot"><a href="Core.Optimization.html#Minimize"><span class="hs-identifier hs-var">Minimize</span></a></span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680214364"><span id="local-6989586621680214366"><span id="local-6989586621680214370"><span class="annot"><span class="annottext">Int -&gt; Direction -&gt; ShowS
+[Direction] -&gt; ShowS
+Direction -&gt; String
+(Int -&gt; Direction -&gt; ShowS)
+-&gt; (Direction -&gt; String)
+-&gt; ([Direction] -&gt; ShowS)
+-&gt; Show Direction
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Direction -&gt; ShowS
+showsPrec :: Int -&gt; Direction -&gt; ShowS
+$cshow :: Direction -&gt; String
+show :: Direction -&gt; String
+$cshowList :: [Direction] -&gt; ShowS
+showList :: [Direction] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680214375"><span id="local-6989586621680214380"><span class="annot"><span class="annottext">Direction -&gt; Direction -&gt; Bool
+(Direction -&gt; Direction -&gt; Bool)
+-&gt; (Direction -&gt; Direction -&gt; Bool) -&gt; Eq Direction
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Direction -&gt; Direction -&gt; Bool
+== :: Direction -&gt; Direction -&gt; Bool
+$c/= :: Direction -&gt; Direction -&gt; Bool
+/= :: Direction -&gt; Direction -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="annot"><span class="hs-comment">-- | Optimization objective with variable coefficients</span></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">data</span><span> </span><span id="Objective"><span class="annot"><a href="Core.Optimization.html#Objective"><span class="hs-identifier hs-var">Objective</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Objective"><span class="annot"><a href="Core.Optimization.html#Objective"><span class="hs-identifier hs-var">Objective</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="objName"><span class="annot"><span class="annottext">Objective -&gt; Text
+</span><a href="Core.Optimization.html#objName"><span class="hs-identifier hs-var hs-var">objName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="objDirection"><span class="annot"><span class="annottext">Objective -&gt; Direction
+</span><a href="Core.Optimization.html#objDirection"><span class="hs-identifier hs-var hs-var">objDirection</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Core.Optimization.html#Direction"><span class="hs-identifier hs-type">Direction</span></a></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="objCoefficients"><span class="annot"><span class="annottext">Objective -&gt; Map Text Double
+</span><a href="Core.Optimization.html#objCoefficients"><span class="hs-identifier hs-var hs-var">objCoefficients</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">M.Map</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680214389"><span id="local-6989586621680214399"><span id="local-6989586621680214403"><span class="annot"><span class="annottext">Int -&gt; Objective -&gt; ShowS
+[Objective] -&gt; ShowS
+Objective -&gt; String
+(Int -&gt; Objective -&gt; ShowS)
+-&gt; (Objective -&gt; String)
+-&gt; ([Objective] -&gt; ShowS)
+-&gt; Show Objective
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Objective -&gt; ShowS
+showsPrec :: Int -&gt; Objective -&gt; ShowS
+$cshow :: Objective -&gt; String
+show :: Objective -&gt; String
+$cshowList :: [Objective] -&gt; ShowS
+showList :: [Objective] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680214407"><span id="local-6989586621680214415"><span class="annot"><span class="annottext">Objective -&gt; Objective -&gt; Bool
+(Objective -&gt; Objective -&gt; Bool)
+-&gt; (Objective -&gt; Objective -&gt; Bool) -&gt; Eq Objective
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Objective -&gt; Objective -&gt; Bool
+== :: Objective -&gt; Objective -&gt; Bool
+$c/= :: Objective -&gt; Objective -&gt; Bool
+/= :: Objective -&gt; Objective -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="annot"><span class="hs-comment">-- | Linear constraint</span></span><span>
+</span><span id="line-39"></span><span class="hs-keyword">data</span><span> </span><span id="Constraint"><span class="annot"><a href="Core.Optimization.html#Constraint"><span class="hs-identifier hs-var">Constraint</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Constraint"><span class="annot"><a href="Core.Optimization.html#Constraint"><span class="hs-identifier hs-var">Constraint</span></a></span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="conName"><span class="annot"><span class="annottext">Constraint -&gt; Text
+</span><a href="Core.Optimization.html#conName"><span class="hs-identifier hs-var hs-var">conName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="conCoefficients"><span class="annot"><span class="annottext">Constraint -&gt; Map Text Double
+</span><a href="Core.Optimization.html#conCoefficients"><span class="hs-identifier hs-var hs-var">conCoefficients</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">M.Map</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="conRHS"><span class="annot"><span class="annottext">Constraint -&gt; Double
+</span><a href="Core.Optimization.html#conRHS"><span class="hs-identifier hs-var hs-var">conRHS</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="conType"><span class="annot"><span class="annottext">Constraint -&gt; ConstraintType
+</span><a href="Core.Optimization.html#conType"><span class="hs-identifier hs-var hs-var">conType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Core.Optimization.html#ConstraintType"><span class="hs-identifier hs-type">ConstraintType</span></a></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680214425"><span id="local-6989586621680214434"><span id="local-6989586621680214438"><span class="annot"><span class="annottext">Int -&gt; Constraint -&gt; ShowS
+[Constraint] -&gt; ShowS
+Constraint -&gt; String
+(Int -&gt; Constraint -&gt; ShowS)
+-&gt; (Constraint -&gt; String)
+-&gt; ([Constraint] -&gt; ShowS)
+-&gt; Show Constraint
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Constraint -&gt; ShowS
+showsPrec :: Int -&gt; Constraint -&gt; ShowS
+$cshow :: Constraint -&gt; String
+show :: Constraint -&gt; String
+$cshowList :: [Constraint] -&gt; ShowS
+showList :: [Constraint] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680214441"><span id="local-6989586621680214449"><span class="annot"><span class="annottext">Constraint -&gt; Constraint -&gt; Bool
+(Constraint -&gt; Constraint -&gt; Bool)
+-&gt; (Constraint -&gt; Constraint -&gt; Bool) -&gt; Eq Constraint
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Constraint -&gt; Constraint -&gt; Bool
+== :: Constraint -&gt; Constraint -&gt; Bool
+$c/= :: Constraint -&gt; Constraint -&gt; Bool
+/= :: Constraint -&gt; Constraint -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="hs-keyword">data</span><span> </span><span id="ConstraintType"><span class="annot"><a href="Core.Optimization.html#ConstraintType"><span class="hs-identifier hs-var">ConstraintType</span></a></span></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Leq"><span class="annot"><a href="Core.Optimization.html#Leq"><span class="hs-identifier hs-var">Leq</span></a></span></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Geq"><span class="annot"><a href="Core.Optimization.html#Geq"><span class="hs-identifier hs-var">Geq</span></a></span></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Eq"><span class="annot"><a href="Core.Optimization.html#Eq"><span class="hs-identifier hs-var">Eq</span></a></span></span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680214456"><span id="local-6989586621680214458"><span id="local-6989586621680214461"><span class="annot"><span class="annottext">Int -&gt; ConstraintType -&gt; ShowS
+[ConstraintType] -&gt; ShowS
+ConstraintType -&gt; String
+(Int -&gt; ConstraintType -&gt; ShowS)
+-&gt; (ConstraintType -&gt; String)
+-&gt; ([ConstraintType] -&gt; ShowS)
+-&gt; Show ConstraintType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ConstraintType -&gt; ShowS
+showsPrec :: Int -&gt; ConstraintType -&gt; ShowS
+$cshow :: ConstraintType -&gt; String
+show :: ConstraintType -&gt; String
+$cshowList :: [ConstraintType] -&gt; ShowS
+showList :: [ConstraintType] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680214464"><span id="local-6989586621680214468"><span class="annot"><span class="annottext">ConstraintType -&gt; ConstraintType -&gt; Bool
+(ConstraintType -&gt; ConstraintType -&gt; Bool)
+-&gt; (ConstraintType -&gt; ConstraintType -&gt; Bool) -&gt; Eq ConstraintType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ConstraintType -&gt; ConstraintType -&gt; Bool
+== :: ConstraintType -&gt; ConstraintType -&gt; Bool
+$c/= :: ConstraintType -&gt; ConstraintType -&gt; Bool
+/= :: ConstraintType -&gt; ConstraintType -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="annot"><span class="hs-comment">-- | State of the optimization solver</span></span><span>
+</span><span id="line-53"></span><span class="hs-keyword">data</span><span> </span><span id="OptimizationState"><span class="annot"><a href="Core.Optimization.html#OptimizationState"><span class="hs-identifier hs-var">OptimizationState</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="OptimizationState"><span class="annot"><a href="Core.Optimization.html#OptimizationState"><span class="hs-identifier hs-var">OptimizationState</span></a></span></span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="osVariables"><span class="annot"><span class="annottext">OptimizationState -&gt; Map Text Double
+</span><a href="Core.Optimization.html#osVariables"><span class="hs-identifier hs-var hs-var">osVariables</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">M.Map</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="osObjectiveValue"><span class="annot"><span class="annottext">OptimizationState -&gt; Double
+</span><a href="Core.Optimization.html#osObjectiveValue"><span class="hs-identifier hs-var hs-var">osObjectiveValue</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="osIterations"><span class="annot"><span class="annottext">OptimizationState -&gt; Int
+</span><a href="Core.Optimization.html#osIterations"><span class="hs-identifier hs-var hs-var">osIterations</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="osConverged"><span class="annot"><span class="annottext">OptimizationState -&gt; Bool
+</span><a href="Core.Optimization.html#osConverged"><span class="hs-identifier hs-var hs-var">osConverged</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680214476"><span id="local-6989586621680214487"><span id="local-6989586621680214491"><span class="annot"><span class="annottext">Int -&gt; OptimizationState -&gt; ShowS
+[OptimizationState] -&gt; ShowS
+OptimizationState -&gt; String
+(Int -&gt; OptimizationState -&gt; ShowS)
+-&gt; (OptimizationState -&gt; String)
+-&gt; ([OptimizationState] -&gt; ShowS)
+-&gt; Show OptimizationState
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; OptimizationState -&gt; ShowS
+showsPrec :: Int -&gt; OptimizationState -&gt; ShowS
+$cshow :: OptimizationState -&gt; String
+show :: OptimizationState -&gt; String
+$cshowList :: [OptimizationState] -&gt; ShowS
+showList :: [OptimizationState] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680214494"><span id="local-6989586621680214504"><span class="annot"><span class="annottext">OptimizationState -&gt; OptimizationState -&gt; Bool
+(OptimizationState -&gt; OptimizationState -&gt; Bool)
+-&gt; (OptimizationState -&gt; OptimizationState -&gt; Bool)
+-&gt; Eq OptimizationState
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: OptimizationState -&gt; OptimizationState -&gt; Bool
+== :: OptimizationState -&gt; OptimizationState -&gt; Bool
+$c/= :: OptimizationState -&gt; OptimizationState -&gt; Bool
+/= :: OptimizationState -&gt; OptimizationState -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="annot"><a href="Core.Optimization.html#defOptimizationState"><span class="hs-identifier hs-type">defOptimizationState</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">M.Map</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Core.Optimization.html#OptimizationState"><span class="hs-identifier hs-type">OptimizationState</span></a></span><span>
+</span><span id="line-61"></span><span id="defOptimizationState"><span class="annot"><span class="annottext">defOptimizationState :: Map Text Double -&gt; OptimizationState
+</span><a href="Core.Optimization.html#defOptimizationState"><span class="hs-identifier hs-var hs-var">defOptimizationState</span></a></span></span><span> </span><span id="local-6989586621680214507"><span class="annot"><span class="annottext">Map Text Double
+</span><a href="#local-6989586621680214507"><span class="hs-identifier hs-var">vars</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Core.Optimization.html#OptimizationState"><span class="hs-identifier hs-type">OptimizationState</span></a></span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">osVariables :: Map Text Double
+</span><a href="Core.Optimization.html#osVariables"><span class="hs-identifier hs-var">osVariables</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Map Text Double
+</span><a href="#local-6989586621680214507"><span class="hs-identifier hs-var">vars</span></a></span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">osObjectiveValue :: Double
+</span><a href="Core.Optimization.html#osObjectiveValue"><span class="hs-identifier hs-var">osObjectiveValue</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0.0</span></span><span>
+</span><span id="line-64"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">osIterations :: Int
+</span><a href="Core.Optimization.html#osIterations"><span class="hs-identifier hs-var">osIterations</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-65"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">osConverged :: Bool
+</span><a href="Core.Optimization.html#osConverged"><span class="hs-identifier hs-var">osConverged</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-67"></span><span>
+</span><span id="line-68"></span><span class="annot"><a href="Core.Optimization.html#evaluateObjective"><span class="hs-identifier hs-type">evaluateObjective</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Core.Optimization.html#Objective"><span class="hs-identifier hs-type">Objective</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">M.Map</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-69"></span><span id="evaluateObjective"><span class="annot"><span class="annottext">evaluateObjective :: Objective -&gt; Map Text Double -&gt; Double
+</span><a href="Core.Optimization.html#evaluateObjective"><span class="hs-identifier hs-var hs-var">evaluateObjective</span></a></span></span><span> </span><span class="hs-glyph">!</span><span id="local-6989586621680214508"><span class="annot"><span class="annottext">Objective
+</span><a href="#local-6989586621680214508"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span class="hs-glyph">!</span><span id="local-6989586621680214509"><span class="annot"><span class="annottext">Map Text Double
+</span><a href="#local-6989586621680214509"><span class="hs-identifier hs-var">vars</span></a></span></span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Map Text Double -&gt; Bool
+forall k a. Map k a -&gt; Bool
+</span><span class="hs-identifier hs-var">M.null</span></span><span> </span><span class="annot"><span class="annottext">Map Text Double
+</span><a href="#local-6989586621680214509"><span class="hs-identifier hs-var">vars</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0.0</span></span><span>
+</span><span id="line-71"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-72"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680214511"><span class="annot"><span class="annottext">coeffs :: Map Text Double
+</span><a href="#local-6989586621680214511"><span class="hs-identifier hs-var hs-var">coeffs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Objective -&gt; Map Text Double
+</span><a href="Core.Optimization.html#objCoefficients"><span class="hs-identifier hs-var">objCoefficients</span></a></span><span> </span><span class="annot"><span class="annottext">Objective
+</span><a href="#local-6989586621680214508"><span class="hs-identifier hs-var">obj</span></a></span><span>
+</span><span id="line-73"></span><span>        </span><span id="local-6989586621680214518"><span class="annot"><span class="annottext">total :: Double
+</span><a href="#local-6989586621680214518"><span class="hs-identifier hs-var hs-var">total</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Double -&gt; Text -&gt; Double -&gt; Double)
+-&gt; Double -&gt; Map Text Double -&gt; Double
+forall a k b. (a -&gt; k -&gt; b -&gt; a) -&gt; a -&gt; Map k b -&gt; a
+</span><span class="hs-identifier hs-var">M.foldlWithKey</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680214520"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680214520"><span class="hs-identifier hs-var">acc</span></a></span></span><span> </span><span id="local-6989586621680214521"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680214521"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span id="local-6989586621680214522"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680214522"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680214520"><span class="hs-identifier hs-var">acc</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680214522"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Text -&gt; Map Text Double -&gt; Double
+forall k a. Ord k =&gt; a -&gt; k -&gt; Map k a -&gt; a
+</span><span class="hs-identifier hs-var">M.findWithDefault</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0.0</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680214521"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">Map Text Double
+</span><a href="#local-6989586621680214509"><span class="hs-identifier hs-var">vars</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0.0</span></span><span> </span><span class="annot"><span class="annottext">Map Text Double
+</span><a href="#local-6989586621680214511"><span class="hs-identifier hs-var">coeffs</span></a></span><span>
+</span><span id="line-74"></span><span>    </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680214518"><span class="hs-identifier hs-var">total</span></a></span><span>
+</span><span id="line-75"></span><span>
+</span><span id="line-76"></span><span class="annot"><a href="Core.Optimization.html#checkConstraint"><span class="hs-identifier hs-type">checkConstraint</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Core.Optimization.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">M.Map</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-77"></span><span id="checkConstraint"><span class="annot"><span class="annottext">checkConstraint :: Constraint -&gt; Map Text Double -&gt; Bool
+</span><a href="Core.Optimization.html#checkConstraint"><span class="hs-identifier hs-var hs-var">checkConstraint</span></a></span></span><span> </span><span class="hs-glyph">!</span><span id="local-6989586621680214526"><span class="annot"><span class="annottext">Constraint
+</span><a href="#local-6989586621680214526"><span class="hs-identifier hs-var">con</span></a></span></span><span> </span><span class="hs-glyph">!</span><span id="local-6989586621680214527"><span class="annot"><span class="annottext">Map Text Double
+</span><a href="#local-6989586621680214527"><span class="hs-identifier hs-var">vars</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680214533"><span class="annot"><span class="annottext">lhs :: Double
+</span><a href="#local-6989586621680214533"><span class="hs-identifier hs-var hs-var">lhs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Double -&gt; Text -&gt; Double -&gt; Double)
+-&gt; Double -&gt; Map Text Double -&gt; Double
+forall a k b. (a -&gt; k -&gt; b -&gt; a) -&gt; a -&gt; Map k b -&gt; a
+</span><span class="hs-identifier hs-var">M.foldlWithKey</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680214534"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680214534"><span class="hs-identifier hs-var">acc</span></a></span></span><span> </span><span id="local-6989586621680214535"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680214535"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span id="local-6989586621680214536"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680214536"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680214534"><span class="hs-identifier hs-var">acc</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680214536"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Text -&gt; Map Text Double -&gt; Double
+forall k a. Ord k =&gt; a -&gt; k -&gt; Map k a -&gt; a
+</span><span class="hs-identifier hs-var">M.findWithDefault</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0.0</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680214535"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">Map Text Double
+</span><a href="#local-6989586621680214527"><span class="hs-identifier hs-var">vars</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0.0</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Constraint -&gt; Map Text Double
+</span><a href="Core.Optimization.html#conCoefficients"><span class="hs-identifier hs-var">conCoefficients</span></a></span><span> </span><span class="annot"><span class="annottext">Constraint
+</span><a href="#local-6989586621680214526"><span class="hs-identifier hs-var">con</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Constraint -&gt; ConstraintType
+</span><a href="Core.Optimization.html#conType"><span class="hs-identifier hs-var">conType</span></a></span><span> </span><span class="annot"><span class="annottext">Constraint
+</span><a href="#local-6989586621680214526"><span class="hs-identifier hs-var">con</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-80"></span><span>       </span><span class="annot"><span class="annottext">ConstraintType
+</span><a href="Core.Optimization.html#Leq"><span class="hs-identifier hs-var">Leq</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680214533"><span class="hs-identifier hs-var">lhs</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Constraint -&gt; Double
+</span><a href="Core.Optimization.html#conRHS"><span class="hs-identifier hs-var">conRHS</span></a></span><span> </span><span class="annot"><span class="annottext">Constraint
+</span><a href="#local-6989586621680214526"><span class="hs-identifier hs-var">con</span></a></span><span>
+</span><span id="line-81"></span><span>       </span><span class="annot"><span class="annottext">ConstraintType
+</span><a href="Core.Optimization.html#Geq"><span class="hs-identifier hs-var">Geq</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680214533"><span class="hs-identifier hs-var">lhs</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Constraint -&gt; Double
+</span><a href="Core.Optimization.html#conRHS"><span class="hs-identifier hs-var">conRHS</span></a></span><span> </span><span class="annot"><span class="annottext">Constraint
+</span><a href="#local-6989586621680214526"><span class="hs-identifier hs-var">con</span></a></span><span>
+</span><span id="line-82"></span><span>       </span><span class="annot"><span class="annottext">ConstraintType
+</span><a href="Core.Optimization.html#Eq"><span class="hs-identifier hs-var">Eq</span></a></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">abs</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680214533"><span class="hs-identifier hs-var">lhs</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Constraint -&gt; Double
+</span><a href="Core.Optimization.html#conRHS"><span class="hs-identifier hs-var">conRHS</span></a></span><span> </span><span class="annot"><span class="annottext">Constraint
+</span><a href="#local-6989586621680214526"><span class="hs-identifier hs-var">con</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">1e-10</span></span><span>
+</span><span id="line-83"></span><span>
+</span><span id="line-84"></span><span class="annot"><a href="Core.Optimization.html#optimize"><span class="hs-identifier hs-type">optimize</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Core.Optimization.html#Objective"><span class="hs-identifier hs-type">Objective</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Core.Optimization.html#Constraint"><span class="hs-identifier hs-type">Constraint</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">M.Map</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Core.Optimization.html#OptimizationState"><span class="hs-identifier hs-type">OptimizationState</span></a></span><span>
+</span><span id="line-85"></span><span id="optimize"><span class="annot"><span class="annottext">optimize :: Objective -&gt; [Constraint] -&gt; Map Text Double -&gt; OptimizationState
+</span><a href="Core.Optimization.html#optimize"><span class="hs-identifier hs-var hs-var">optimize</span></a></span></span><span> </span><span class="hs-glyph">!</span><span id="local-6989586621680214540"><span class="annot"><span class="annottext">Objective
+</span><a href="#local-6989586621680214540"><span class="hs-identifier hs-var">obj</span></a></span></span><span> </span><span class="hs-glyph">!</span><span id="local-6989586621680214541"><span class="annot"><span class="annottext">[Constraint]
+</span><a href="#local-6989586621680214541"><span class="hs-identifier hs-var">constraints</span></a></span></span><span> </span><span class="hs-glyph">!</span><span id="local-6989586621680214542"><span class="annot"><span class="annottext">Map Text Double
+</span><a href="#local-6989586621680214542"><span class="hs-identifier hs-var">initialVars</span></a></span></span><span>
+</span><span id="line-86"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Map Text Double -&gt; Bool
+forall k a. Map k a -&gt; Bool
+</span><span class="hs-identifier hs-var">M.null</span></span><span> </span><span class="annot"><span class="annottext">Map Text Double
+</span><a href="#local-6989586621680214542"><span class="hs-identifier hs-var">initialVars</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Map Text Double -&gt; OptimizationState
+</span><a href="Core.Optimization.html#defOptimizationState"><span class="hs-identifier hs-var">defOptimizationState</span></a></span><span> </span><span class="annot"><span class="annottext">Map Text Double
+forall k a. Map k a
+</span><span class="hs-identifier hs-var">M.empty</span></span><span>
+</span><span id="line-87"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Constraint -&gt; Bool) -&gt; [Constraint] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">all</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Constraint -&gt; Map Text Double -&gt; Bool
+</span><a href="Core.Optimization.html#checkConstraint"><span class="hs-operator hs-var">`checkConstraint`</span></a></span><span> </span><span class="annot"><span class="annottext">Map Text Double
+</span><a href="#local-6989586621680214542"><span class="hs-identifier hs-var">initialVars</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Constraint]
+</span><a href="#local-6989586621680214541"><span class="hs-identifier hs-var">constraints</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-88"></span><span>    </span><span class="annot"><span class="annottext">Map Text Double -&gt; OptimizationState
+</span><a href="Core.Optimization.html#defOptimizationState"><span class="hs-identifier hs-var">defOptimizationState</span></a></span><span> </span><span class="annot"><span class="annottext">Map Text Double
+</span><a href="#local-6989586621680214542"><span class="hs-identifier hs-var">initialVars</span></a></span><span>
+</span><span id="line-89"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-90"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680214546"><span class="annot"><span class="annottext">val :: Double
+</span><a href="#local-6989586621680214546"><span class="hs-identifier hs-var hs-var">val</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Objective -&gt; Map Text Double -&gt; Double
+</span><a href="Core.Optimization.html#evaluateObjective"><span class="hs-identifier hs-var">evaluateObjective</span></a></span><span> </span><span class="annot"><span class="annottext">Objective
+</span><a href="#local-6989586621680214540"><span class="hs-identifier hs-var">obj</span></a></span><span> </span><span class="annot"><span class="annottext">Map Text Double
+</span><a href="#local-6989586621680214542"><span class="hs-identifier hs-var">initialVars</span></a></span><span>
+</span><span id="line-91"></span><span>    </span><span class="hs-keyword">in</span><span> </span><span class="annot"><a href="Core.Optimization.html#OptimizationState"><span class="hs-identifier hs-type">OptimizationState</span></a></span><span>
+</span><span id="line-92"></span><span>         </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">osVariables :: Map Text Double
+</span><a href="Core.Optimization.html#osVariables"><span class="hs-identifier hs-var">osVariables</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Map Text Double
+</span><a href="#local-6989586621680214542"><span class="hs-identifier hs-var">initialVars</span></a></span><span>
+</span><span id="line-93"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">osObjectiveValue :: Double
+</span><a href="Core.Optimization.html#osObjectiveValue"><span class="hs-identifier hs-var">osObjectiveValue</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680214546"><span class="hs-identifier hs-var">val</span></a></span><span>
+</span><span id="line-94"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">osIterations :: Int
+</span><a href="Core.Optimization.html#osIterations"><span class="hs-identifier hs-var">osIterations</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span>
+</span><span id="line-95"></span><span>         </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">osConverged :: Bool
+</span><a href="Core.Optimization.html#osConverged"><span class="hs-identifier hs-var">osConverged</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-96"></span><span>         </span><span class="hs-special">}</span></pre></body></html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html"><span class="hs-identifier">DigitalTwin.TwinSystem</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinEntity"><span class="hs-identifier">TwinEntity</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinState"><span class="hs-identifier">TwinState</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinSimulation"><span class="hs-identifier">TwinSimulation</span></a></span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html#createTwin"><span class="hs-identifier">createTwin</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html#syncTwin"><span class="hs-identifier">syncTwin</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html#predictFuture"><span class="hs-identifier">predictFuture</span></a></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier">Value</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">getCurrentTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.IO.Class</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">liftIO</span></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map.Strict</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">M</span></span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="annot"><span class="hs-comment">-- | Digital twin state</span></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="TwinState"><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinState"><span class="hs-identifier hs-var">TwinState</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TwinState"><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinState"><span class="hs-identifier hs-var">TwinState</span></a></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tsCurrentState"><span class="annot"><span class="annottext">TwinState -&gt; Value
+</span><a href="DigitalTwin.TwinSystem.html#tsCurrentState"><span class="hs-identifier hs-var hs-var">tsCurrentState</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier hs-type">Value</span></a></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="tsPredictedState"><span class="annot"><span class="annottext">TwinState -&gt; Maybe Value
+</span><a href="DigitalTwin.TwinSystem.html#tsPredictedState"><span class="hs-identifier hs-var hs-var">tsPredictedState</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier hs-type">Value</span></a></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="tsLastSync"><span class="annot"><span class="annottext">TwinState -&gt; UTCTime
+</span><a href="DigitalTwin.TwinSystem.html#tsLastSync"><span class="hs-identifier hs-var hs-var">tsLastSync</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="tsConfidence"><span class="annot"><span class="annottext">TwinState -&gt; Double
+</span><a href="DigitalTwin.TwinSystem.html#tsConfidence"><span class="hs-identifier hs-var hs-var">tsConfidence</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680244378"><span id="local-6989586621680244388"><span class="annot"><span class="annottext">TwinState -&gt; TwinState -&gt; Bool
+(TwinState -&gt; TwinState -&gt; Bool)
+-&gt; (TwinState -&gt; TwinState -&gt; Bool) -&gt; Eq TwinState
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TwinState -&gt; TwinState -&gt; Bool
+== :: TwinState -&gt; TwinState -&gt; Bool
+$c/= :: TwinState -&gt; TwinState -&gt; Bool
+/= :: TwinState -&gt; TwinState -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680244393"><span id="local-6989586621680244405"><span id="local-6989586621680244409"><span class="annot"><span class="annottext">Int -&gt; TwinState -&gt; ShowS
+[TwinState] -&gt; ShowS
+TwinState -&gt; String
+(Int -&gt; TwinState -&gt; ShowS)
+-&gt; (TwinState -&gt; String)
+-&gt; ([TwinState] -&gt; ShowS)
+-&gt; Show TwinState
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TwinState -&gt; ShowS
+showsPrec :: Int -&gt; TwinState -&gt; ShowS
+$cshow :: TwinState -&gt; String
+show :: TwinState -&gt; String
+$cshowList :: [TwinState] -&gt; ShowS
+showList :: [TwinState] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="annot"><span class="hs-comment">-- | Digital twin entity</span></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">data</span><span> </span><span id="TwinEntity"><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinEntity"><span class="hs-identifier hs-var">TwinEntity</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TwinEntity"><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinEntity"><span class="hs-identifier hs-var">TwinEntity</span></a></span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="teId"><span class="annot"><span class="annottext">TwinEntity -&gt; Text
+</span><a href="DigitalTwin.TwinSystem.html#teId"><span class="hs-identifier hs-var hs-var">teId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="teEntityType"><span class="annot"><span class="annottext">TwinEntity -&gt; Text
+</span><a href="DigitalTwin.TwinSystem.html#teEntityType"><span class="hs-identifier hs-var hs-var">teEntityType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="teState"><span class="annot"><span class="annottext">TwinEntity -&gt; TwinState
+</span><a href="DigitalTwin.TwinSystem.html#teState"><span class="hs-identifier hs-var hs-var">teState</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinState"><span class="hs-identifier hs-type">TwinState</span></a></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="teParameters"><span class="annot"><span class="annottext">TwinEntity -&gt; Map Text Value
+</span><a href="DigitalTwin.TwinSystem.html#teParameters"><span class="hs-identifier hs-var hs-var">teParameters</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">M.Map</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier hs-type">Value</span></a></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680244419"><span id="local-6989586621680244428"><span class="annot"><span class="annottext">TwinEntity -&gt; TwinEntity -&gt; Bool
+(TwinEntity -&gt; TwinEntity -&gt; Bool)
+-&gt; (TwinEntity -&gt; TwinEntity -&gt; Bool) -&gt; Eq TwinEntity
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TwinEntity -&gt; TwinEntity -&gt; Bool
+== :: TwinEntity -&gt; TwinEntity -&gt; Bool
+$c/= :: TwinEntity -&gt; TwinEntity -&gt; Bool
+/= :: TwinEntity -&gt; TwinEntity -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680244432"><span id="local-6989586621680244442"><span id="local-6989586621680244446"><span class="annot"><span class="annottext">Int -&gt; TwinEntity -&gt; ShowS
+[TwinEntity] -&gt; ShowS
+TwinEntity -&gt; String
+(Int -&gt; TwinEntity -&gt; ShowS)
+-&gt; (TwinEntity -&gt; String)
+-&gt; ([TwinEntity] -&gt; ShowS)
+-&gt; Show TwinEntity
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TwinEntity -&gt; ShowS
+showsPrec :: Int -&gt; TwinEntity -&gt; ShowS
+$cshow :: TwinEntity -&gt; String
+show :: TwinEntity -&gt; String
+$cshowList :: [TwinEntity] -&gt; ShowS
+showList :: [TwinEntity] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="annot"><span class="hs-comment">-- | Simulation type</span></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">type</span><span> </span><span id="TwinSimulation"><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinSimulation"><span class="hs-identifier hs-var">TwinSimulation</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinEntity"><span class="hs-identifier hs-type">TwinEntity</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinEntity"><span class="hs-identifier hs-type">TwinEntity</span></a></span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="annot"><span class="hs-comment">-- | Create a digital twin for an entity</span></span><span>
+</span><span id="line-37"></span><span class="annot"><a href="DigitalTwin.TwinSystem.html#createTwin"><span class="hs-identifier hs-type">createTwin</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier hs-type">Value</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinEntity"><span class="hs-identifier hs-type">TwinEntity</span></a></span><span>
+</span><span id="line-38"></span><span id="createTwin"><span class="annot"><span class="annottext">createTwin :: Text -&gt; Text -&gt; Value -&gt; IO TwinEntity
+</span><a href="DigitalTwin.TwinSystem.html#createTwin"><span class="hs-identifier hs-var hs-var">createTwin</span></a></span></span><span> </span><span id="local-6989586621680244448"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680244448"><span class="hs-identifier hs-var">entityId</span></a></span></span><span> </span><span id="local-6989586621680244449"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680244449"><span class="hs-identifier hs-var">entityType</span></a></span></span><span> </span><span id="local-6989586621680244450"><span class="annot"><span class="annottext">Value
+</span><a href="#local-6989586621680244450"><span class="hs-identifier hs-var">initialState</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-39"></span><span>  </span><span id="local-6989586621680244451"><span class="annot"><a href="#local-6989586621680244451"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO UTCTime
+</span><span class="hs-identifier hs-var">getCurrentTime</span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinEntity"><span class="hs-identifier hs-type">TwinEntity</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680244448"><span class="hs-identifier hs-type">entityId</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680244449"><span class="hs-identifier hs-type">entityType</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinState"><span class="hs-identifier hs-type">TwinState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680244450"><span class="hs-identifier hs-type">initialState</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nothing</span></span><span> </span><span class="annot"><a href="#local-6989586621680244451"><span class="hs-identifier hs-type">now</span></a></span><span> </span><span class="annot"><span class="hs-number">0.0</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-identifier hs-type">M.empty</span></span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="annot"><span class="hs-comment">-- | Sync twin with real entity state</span></span><span>
+</span><span id="line-43"></span><span class="annot"><a href="DigitalTwin.TwinSystem.html#syncTwin"><span class="hs-identifier hs-type">syncTwin</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinEntity"><span class="hs-identifier hs-type">TwinEntity</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier hs-type">Value</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinEntity"><span class="hs-identifier hs-type">TwinEntity</span></a></span><span>
+</span><span id="line-44"></span><span id="syncTwin"><span class="annot"><span class="annottext">syncTwin :: TwinEntity -&gt; Value -&gt; IO TwinEntity
+</span><a href="DigitalTwin.TwinSystem.html#syncTwin"><span class="hs-identifier hs-var hs-var">syncTwin</span></a></span></span><span> </span><span id="local-6989586621680244453"><span class="annot"><span class="annottext">TwinEntity
+</span><a href="#local-6989586621680244453"><span class="hs-identifier hs-var">twin</span></a></span></span><span> </span><span id="local-6989586621680244454"><span class="annot"><span class="annottext">Value
+</span><a href="#local-6989586621680244454"><span class="hs-identifier hs-var">newState</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-45"></span><span>  </span><span id="local-6989586621680244455"><span class="annot"><a href="#local-6989586621680244455"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO UTCTime
+</span><span class="hs-identifier hs-var">getCurrentTime</span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680244456"><span class="annot"><a href="#local-6989586621680244456"><span class="hs-identifier hs-var hs-var">updatedState</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Value -&gt; Maybe Value -&gt; UTCTime -&gt; Double -&gt; TwinState
+</span><a href="DigitalTwin.TwinSystem.html#TwinState"><span class="hs-identifier hs-var">TwinState</span></a></span><span> </span><span class="annot"><span class="annottext">Value
+</span><a href="#local-6989586621680244454"><span class="hs-identifier hs-var">newState</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Value
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680244455"><span class="hs-identifier hs-var">now</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">1.0</span></span><span>
+</span><span id="line-47"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="#local-6989586621680244453"><span class="hs-identifier hs-type">twin</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html#teState"><span class="hs-identifier hs-var">teState</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621680244456"><span class="hs-identifier hs-type">updatedState</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="annot"><span class="hs-comment">-- | Predict future state using simulation</span></span><span>
+</span><span id="line-50"></span><span class="annot"><a href="DigitalTwin.TwinSystem.html#predictFuture"><span class="hs-identifier hs-type">predictFuture</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="DigitalTwin.TwinSystem.html#TwinEntity"><span class="hs-identifier hs-type">TwinEntity</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier hs-type">Value</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span id="predictFuture"><span class="annot"><span class="annottext">predictFuture :: TwinEntity -&gt; Int -&gt; IO (Maybe Value)
+</span><a href="DigitalTwin.TwinSystem.html#predictFuture"><span class="hs-identifier hs-var hs-var">predictFuture</span></a></span></span><span> </span><span class="annot"><span class="annottext">TwinEntity
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Value -&gt; IO (Maybe Value)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">Maybe Value
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>  </span><span class="hs-comment">-- Placeholder</span></pre></body></html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Location types - Warehouses and stores</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Inventory.Location.html"><span class="hs-identifier">Inventory.Location</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="annot"><span class="hs-comment">-- | Location ID must be positive</span></span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-comment">{-@ type LocationId = {v:Int64 | v &gt; 0} @-}</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="annot"><span class="hs-comment">-- | Location - Warehouse or store</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">data</span><span> </span><span id="Location"><span class="annot"><a href="Inventory.Location.html#Location"><span class="hs-identifier hs-var">Location</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Location"><span class="annot"><a href="Inventory.Location.html#Location"><span class="hs-identifier hs-var">Location</span></a></span></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="locId"><span class="annot"><span class="annottext">Location -&gt; Int64
+</span><a href="Inventory.Location.html#locId"><span class="hs-identifier hs-var hs-var">locId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="locCode"><span class="annot"><span class="annottext">Location -&gt; Text
+</span><a href="Inventory.Location.html#locCode"><span class="hs-identifier hs-var hs-var">locCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="locName"><span class="annot"><span class="annottext">Location -&gt; Text
+</span><a href="Inventory.Location.html#locName"><span class="hs-identifier hs-var hs-var">locName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span id="locType"><span class="annot"><span class="annottext">Location -&gt; LocationType
+</span><a href="Inventory.Location.html#locType"><span class="hs-identifier hs-var hs-var">locType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Inventory.Location.html#LocationType"><span class="hs-identifier hs-type">LocationType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>    </span><span id="locParentId"><span class="annot"><span class="annottext">Location -&gt; Maybe Int64
+</span><a href="Inventory.Location.html#locParentId"><span class="hs-identifier hs-var hs-var">locParentId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>    </span><span id="locAddress"><span class="annot"><span class="annottext">Location -&gt; Text
+</span><a href="Inventory.Location.html#locAddress"><span class="hs-identifier hs-var hs-var">locAddress</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span id="locFlags"><span class="annot"><span class="annottext">Location -&gt; Int
+</span><a href="Inventory.Location.html#locFlags"><span class="hs-identifier hs-var hs-var">locFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680278216"><span id="local-6989586621680278232"><span id="local-6989586621680278236"><span class="annot"><span class="annottext">Int -&gt; Location -&gt; ShowS
+[Location] -&gt; ShowS
+Location -&gt; String
+(Int -&gt; Location -&gt; ShowS)
+-&gt; (Location -&gt; String) -&gt; ([Location] -&gt; ShowS) -&gt; Show Location
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Location -&gt; ShowS
+showsPrec :: Int -&gt; Location -&gt; ShowS
+$cshow :: Location -&gt; String
+show :: Location -&gt; String
+$cshowList :: [Location] -&gt; ShowS
+showList :: [Location] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680278241"><span id="local-6989586621680278255"><span class="annot"><span class="annottext">Location -&gt; Location -&gt; Bool
+(Location -&gt; Location -&gt; Bool)
+-&gt; (Location -&gt; Location -&gt; Bool) -&gt; Eq Location
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Location -&gt; Location -&gt; Bool
+== :: Location -&gt; Location -&gt; Bool
+$c/= :: Location -&gt; Location -&gt; Bool
+/= :: Location -&gt; Location -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="annot"><span class="hs-comment">-- | Location type</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">data</span><span> </span><span id="LocationType"><span class="annot"><a href="Inventory.Location.html#LocationType"><span class="hs-identifier hs-var">LocationType</span></a></span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="LTWarehouse"><span class="annot"><a href="Inventory.Location.html#LTWarehouse"><span class="hs-identifier hs-var">LTWarehouse</span></a></span></span><span> </span><span class="hs-comment">-- &#1057;&#1082;&#1083;&#1072;&#1076;</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="LTStore"><span class="annot"><a href="Inventory.Location.html#LTStore"><span class="hs-identifier hs-var">LTStore</span></a></span></span><span> </span><span class="hs-comment">-- &#1052;&#1072;&#1075;&#1072;&#1079;&#1080;&#1085;</span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="LTOffice"><span class="annot"><a href="Inventory.Location.html#LTOffice"><span class="hs-identifier hs-var">LTOffice</span></a></span></span><span> </span><span class="hs-comment">-- &#1054;&#1092;&#1080;&#1089;</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="LTTransit"><span class="annot"><a href="Inventory.Location.html#LTTransit"><span class="hs-identifier hs-var">LTTransit</span></a></span></span><span> </span><span class="hs-comment">-- &#1058;&#1088;&#1072;&#1085;&#1079;&#1080;&#1090;</span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680278264"><span id="local-6989586621680278266"><span id="local-6989586621680278269"><span class="annot"><span class="annottext">Int -&gt; LocationType -&gt; ShowS
+[LocationType] -&gt; ShowS
+LocationType -&gt; String
+(Int -&gt; LocationType -&gt; ShowS)
+-&gt; (LocationType -&gt; String)
+-&gt; ([LocationType] -&gt; ShowS)
+-&gt; Show LocationType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LocationType -&gt; ShowS
+showsPrec :: Int -&gt; LocationType -&gt; ShowS
+$cshow :: LocationType -&gt; String
+show :: LocationType -&gt; String
+$cshowList :: [LocationType] -&gt; ShowS
+showList :: [LocationType] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680278272"><span id="local-6989586621680278277"><span class="annot"><span class="annottext">LocationType -&gt; LocationType -&gt; Bool
+(LocationType -&gt; LocationType -&gt; Bool)
+-&gt; (LocationType -&gt; LocationType -&gt; Bool) -&gt; Eq LocationType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LocationType -&gt; LocationType -&gt; Bool
+== :: LocationType -&gt; LocationType -&gt; Bool
+$c/= :: LocationType -&gt; LocationType -&gt; Bool
+/= :: LocationType -&gt; LocationType -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680278280"><span id="local-6989586621680278288"><span id="local-6989586621680278295"><span id="local-6989586621680278303"><span id="local-6989586621680278306"><span id="local-6989586621680278311"><span id="local-6989586621680278317"><span id="local-6989586621680278321"><span class="annot"><span class="annottext">Int -&gt; LocationType
+LocationType -&gt; Int
+LocationType -&gt; [LocationType]
+LocationType -&gt; LocationType
+LocationType -&gt; LocationType -&gt; [LocationType]
+LocationType -&gt; LocationType -&gt; LocationType -&gt; [LocationType]
+(LocationType -&gt; LocationType)
+-&gt; (LocationType -&gt; LocationType)
+-&gt; (Int -&gt; LocationType)
+-&gt; (LocationType -&gt; Int)
+-&gt; (LocationType -&gt; [LocationType])
+-&gt; (LocationType -&gt; LocationType -&gt; [LocationType])
+-&gt; (LocationType -&gt; LocationType -&gt; [LocationType])
+-&gt; (LocationType -&gt; LocationType -&gt; LocationType -&gt; [LocationType])
+-&gt; Enum LocationType
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: LocationType -&gt; LocationType
+succ :: LocationType -&gt; LocationType
+$cpred :: LocationType -&gt; LocationType
+pred :: LocationType -&gt; LocationType
+$ctoEnum :: Int -&gt; LocationType
+toEnum :: Int -&gt; LocationType
+$cfromEnum :: LocationType -&gt; Int
+fromEnum :: LocationType -&gt; Int
+$cenumFrom :: LocationType -&gt; [LocationType]
+enumFrom :: LocationType -&gt; [LocationType]
+$cenumFromThen :: LocationType -&gt; LocationType -&gt; [LocationType]
+enumFromThen :: LocationType -&gt; LocationType -&gt; [LocationType]
+$cenumFromTo :: LocationType -&gt; LocationType -&gt; [LocationType]
+enumFromTo :: LocationType -&gt; LocationType -&gt; [LocationType]
+$cenumFromThenTo :: LocationType -&gt; LocationType -&gt; LocationType -&gt; [LocationType]
+enumFromThenTo :: LocationType -&gt; LocationType -&gt; LocationType -&gt; [LocationType]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="annot"><span class="hs-comment">-- | Location flags</span></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">data</span><span> </span><span id="LocationFlags"><span class="annot"><a href="Inventory.Location.html#LocationFlags"><span class="hs-identifier hs-var">LocationFlags</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LocationFlags"><span class="annot"><a href="Inventory.Location.html#LocationFlags"><span class="hs-identifier hs-var">LocationFlags</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="lfActive"><span class="annot"><span class="annottext">LocationFlags -&gt; Bool
+</span><a href="Inventory.Location.html#lfActive"><span class="hs-identifier hs-var hs-var">lfActive</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span>
+</span><span id="line-34"></span><span>    </span><span id="lfPrimary"><span class="annot"><span class="annottext">LocationFlags -&gt; Bool
+</span><a href="Inventory.Location.html#lfPrimary"><span class="hs-identifier hs-var hs-var">lfPrimary</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span>
+</span><span id="line-35"></span><span>    </span><span id="lfAcceptReturns"><span class="annot"><span class="annottext">LocationFlags -&gt; Bool
+</span><a href="Inventory.Location.html#lfAcceptReturns"><span class="hs-identifier hs-var hs-var">lfAcceptReturns</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680278333"><span id="local-6989586621680278340"><span id="local-6989586621680278344"><span class="annot"><span class="annottext">Int -&gt; LocationFlags -&gt; ShowS
+[LocationFlags] -&gt; ShowS
+LocationFlags -&gt; String
+(Int -&gt; LocationFlags -&gt; ShowS)
+-&gt; (LocationFlags -&gt; String)
+-&gt; ([LocationFlags] -&gt; ShowS)
+-&gt; Show LocationFlags
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LocationFlags -&gt; ShowS
+showsPrec :: Int -&gt; LocationFlags -&gt; ShowS
+$cshow :: LocationFlags -&gt; String
+show :: LocationFlags -&gt; String
+$cshowList :: [LocationFlags] -&gt; ShowS
+showList :: [LocationFlags] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680278347"><span id="local-6989586621680278353"><span class="annot"><span class="annottext">LocationFlags -&gt; LocationFlags -&gt; Bool
+(LocationFlags -&gt; LocationFlags -&gt; Bool)
+-&gt; (LocationFlags -&gt; LocationFlags -&gt; Bool) -&gt; Eq LocationFlags
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LocationFlags -&gt; LocationFlags -&gt; Bool
+== :: LocationFlags -&gt; LocationFlags -&gt; Bool
+$c/= :: LocationFlags -&gt; LocationFlags -&gt; Bool
+/= :: LocationFlags -&gt; LocationFlags -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span></pre></body></html>

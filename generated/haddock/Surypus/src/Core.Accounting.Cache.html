@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-- | Cached Read Model - Thread-safe in-memory STM cache for account balances.</span><span>
+</span><span id="line-2"></span><span class="hs-comment">-- Phase 3 (US-3-3): Read-model caching with TTL-like behavior via bounded size.</span><span>
+</span><span id="line-3"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html"><span class="hs-identifier">Core.Accounting.Cache</span></a></span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#ReadModelCache"><span class="hs-identifier">ReadModelCache</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#CacheStats"><span class="hs-identifier">CacheStats</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#mkReadModelCache"><span class="hs-identifier">mkReadModelCache</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#getCachedBalance"><span class="hs-identifier">getCachedBalance</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#putCachedBalance"><span class="hs-identifier">putCachedBalance</span></a></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#getCachedAccountReadModel"><span class="hs-identifier">getCachedAccountReadModel</span></a></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#invalidateCache"><span class="hs-identifier">invalidateCache</span></a></span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#clearCache"><span class="hs-identifier">clearCache</span></a></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#cacheStats"><span class="hs-identifier">cacheStats</span></a></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Concurrent.STM</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">TVar</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">atomically</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">modifyTVar'</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">newTVarIO</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">readTVarIO</span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="System.Cache.html"><span class="hs-identifier">System.Cache</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.Cache.html#STMCache"><span class="hs-identifier">STMCache</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="System.Cache.html#newSTMCache"><span class="hs-identifier">newSTMCache</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="System.Cache.html#stmCacheClear"><span class="hs-identifier">stmCacheClear</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="System.Cache.html#stmCacheDelete"><span class="hs-identifier">stmCacheDelete</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="System.Cache.html#stmCacheGet"><span class="hs-identifier">stmCacheGet</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="System.Cache.html#stmCachePut"><span class="hs-identifier">stmCachePut</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="System.Cache.html#stmCacheSize"><span class="hs-identifier">stmCacheSize</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="annot"><span class="hs-comment">-- | Cache statistics for observability</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="CacheStats"><span class="annot"><a href="Core.Accounting.Cache.html#CacheStats"><span class="hs-identifier hs-var">CacheStats</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CacheStats"><span class="annot"><a href="Core.Accounting.Cache.html#CacheStats"><span class="hs-identifier hs-var">CacheStats</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="csHits"><span class="annot"><span class="annottext">CacheStats -&gt; Int
+</span><a href="Core.Accounting.Cache.html#csHits"><span class="hs-identifier hs-var hs-var">csHits</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="csMisses"><span class="annot"><span class="annottext">CacheStats -&gt; Int
+</span><a href="Core.Accounting.Cache.html#csMisses"><span class="hs-identifier hs-var hs-var">csMisses</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="csSize"><span class="annot"><span class="annottext">CacheStats -&gt; Int
+</span><a href="Core.Accounting.Cache.html#csSize"><span class="hs-identifier hs-var hs-var">csSize</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680357302"><span id="local-6989586621680357310"><span id="local-6989586621680357314"><span class="annot"><span class="annottext">Int -&gt; CacheStats -&gt; ShowS
+[CacheStats] -&gt; ShowS
+CacheStats -&gt; String
+(Int -&gt; CacheStats -&gt; ShowS)
+-&gt; (CacheStats -&gt; String)
+-&gt; ([CacheStats] -&gt; ShowS)
+-&gt; Show CacheStats
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CacheStats -&gt; ShowS
+showsPrec :: Int -&gt; CacheStats -&gt; ShowS
+$cshow :: CacheStats -&gt; String
+show :: CacheStats -&gt; String
+$cshowList :: [CacheStats] -&gt; ShowS
+showList :: [CacheStats] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680357319"><span id="local-6989586621680357325"><span class="annot"><span class="annottext">CacheStats -&gt; CacheStats -&gt; Bool
+(CacheStats -&gt; CacheStats -&gt; Bool)
+-&gt; (CacheStats -&gt; CacheStats -&gt; Bool) -&gt; Eq CacheStats
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CacheStats -&gt; CacheStats -&gt; Bool
+== :: CacheStats -&gt; CacheStats -&gt; Bool
+$c/= :: CacheStats -&gt; CacheStats -&gt; Bool
+/= :: CacheStats -&gt; CacheStats -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-comment">-- | Thread-safe read model cache using STM.</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- Backed by 'System.Cache.STMCache' with LRU eviction via bounded size.</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">data</span><span> </span><span id="ReadModelCache"><span class="annot"><a href="Core.Accounting.Cache.html#ReadModelCache"><span class="hs-identifier hs-var">ReadModelCache</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ReadModelCache"><span class="annot"><a href="Core.Accounting.Cache.html#ReadModelCache"><span class="hs-identifier hs-var">ReadModelCache</span></a></span></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="rcCache"><span class="annot"><span class="annottext">ReadModelCache -&gt; STMCache Int64 Double
+</span><a href="Core.Accounting.Cache.html#rcCache"><span class="hs-identifier hs-var hs-var">rcCache</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Cache.html#STMCache"><span class="hs-identifier hs-type">STMCache</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="rcHits"><span class="annot"><span class="annottext">ReadModelCache -&gt; TVar Int
+</span><a href="Core.Accounting.Cache.html#rcHits"><span class="hs-identifier hs-var hs-var">rcHits</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">TVar</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="rcMisses"><span class="annot"><span class="annottext">ReadModelCache -&gt; TVar Int
+</span><a href="Core.Accounting.Cache.html#rcMisses"><span class="hs-identifier hs-var hs-var">rcMisses</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">TVar</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- | Create a new cache with the given maximum size.</span><span>
+</span><span id="line-36"></span><span class="hs-comment">-- When the cache reaches maxSize, the least recently used entry is evicted.</span><span>
+</span><span id="line-37"></span><span class="annot"><a href="Core.Accounting.Cache.html#mkReadModelCache"><span class="hs-identifier hs-type">mkReadModelCache</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#ReadModelCache"><span class="hs-identifier hs-type">ReadModelCache</span></a></span><span>
+</span><span id="line-38"></span><span id="mkReadModelCache"><span class="annot"><span class="annottext">mkReadModelCache :: Int -&gt; IO ReadModelCache
+</span><a href="Core.Accounting.Cache.html#mkReadModelCache"><span class="hs-identifier hs-var hs-var">mkReadModelCache</span></a></span></span><span> </span><span id="local-6989586621680357333"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680357333"><span class="hs-identifier hs-var">maxSize</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-39"></span><span>  </span><span id="local-6989586621680357334"><span class="annot"><a href="#local-6989586621680357334"><span class="hs-identifier hs-var">cache</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; IO (STMCache Int64 Double)
+forall k v. Int -&gt; IO (STMCache k v)
+</span><a href="System.Cache.html#newSTMCache"><span class="hs-identifier hs-var">newSTMCache</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680357333"><span class="hs-identifier hs-var">maxSize</span></a></span><span>
+</span><span id="line-40"></span><span>  </span><span id="local-6989586621680357335"><span class="annot"><a href="#local-6989586621680357335"><span class="hs-identifier hs-var">hits</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">newTVarIO</span></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
+</span><span id="line-41"></span><span>  </span><span id="local-6989586621680357336"><span class="annot"><a href="#local-6989586621680357336"><span class="hs-identifier hs-var">misses</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">newTVarIO</span></span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
+</span><span id="line-42"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#ReadModelCache"><span class="hs-identifier hs-type">ReadModelCache</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680357334"><span class="hs-identifier hs-type">cache</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680357335"><span class="hs-identifier hs-type">hits</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680357336"><span class="hs-identifier hs-type">misses</span></a></span><span>
+</span><span id="line-43"></span><span>
+</span><span id="line-44"></span><span class="hs-comment">-- | Look up a cached balance.</span><span>
+</span><span id="line-45"></span><span class="hs-comment">-- Returns 0.0 for a cache miss (account not cached yet).</span><span>
+</span><span id="line-46"></span><span class="hs-comment">-- Thread-safe: concurrent STM access is atomic.</span><span>
+</span><span id="line-47"></span><span class="annot"><a href="Core.Accounting.Cache.html#getCachedBalance"><span class="hs-identifier hs-type">getCachedBalance</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#ReadModelCache"><span class="hs-identifier hs-type">ReadModelCache</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-48"></span><span id="getCachedBalance"><span class="annot"><span class="annottext">getCachedBalance :: ReadModelCache -&gt; Int64 -&gt; IO Double
+</span><a href="Core.Accounting.Cache.html#getCachedBalance"><span class="hs-identifier hs-var hs-var">getCachedBalance</span></a></span></span><span> </span><span id="local-6989586621680357337"><span class="annot"><span class="annottext">ReadModelCache
+</span><a href="#local-6989586621680357337"><span class="hs-identifier hs-var">cache</span></a></span></span><span> </span><span id="local-6989586621680357338"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680357338"><span class="hs-identifier hs-var">key</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-49"></span><span>  </span><span id="local-6989586621680357339"><span class="annot"><a href="#local-6989586621680357339"><span class="hs-identifier hs-var">mval</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">STM (Maybe Double) -&gt; IO (Maybe Double)
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="annot"><span class="annottext">(STM (Maybe Double) -&gt; IO (Maybe Double))
+-&gt; STM (Maybe Double) -&gt; IO (Maybe Double)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; STMCache Int64 Double -&gt; STM (Maybe Double)
+forall k v. Eq k =&gt; k -&gt; STMCache k v -&gt; STM (Maybe v)
+</span><a href="System.Cache.html#stmCacheGet"><span class="hs-identifier hs-var">stmCacheGet</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680357338"><span class="hs-identifier hs-var">key</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ReadModelCache -&gt; STMCache Int64 Double
+</span><a href="Core.Accounting.Cache.html#rcCache"><span class="hs-identifier hs-var">rcCache</span></a></span><span> </span><span class="annot"><span class="annottext">ReadModelCache
+</span><a href="#local-6989586621680357337"><span class="hs-identifier hs-var">cache</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680357339"><span class="hs-identifier hs-type">mval</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-51"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680357340"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680357340"><span class="hs-identifier hs-var">val</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-52"></span><span>      </span><span class="annot"><span class="annottext">STM () -&gt; IO ()
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="annot"><span class="annottext">(STM () -&gt; IO ()) -&gt; STM () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TVar Int -&gt; (Int -&gt; Int) -&gt; STM ()
+forall a. TVar a -&gt; (a -&gt; a) -&gt; STM ()
+</span><span class="hs-identifier hs-var">modifyTVar'</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ReadModelCache -&gt; TVar Int
+</span><a href="Core.Accounting.Cache.html#rcHits"><span class="hs-identifier hs-var">rcHits</span></a></span><span> </span><span class="annot"><span class="annottext">ReadModelCache
+</span><a href="#local-6989586621680357337"><span class="hs-identifier hs-var">cache</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>      </span><span class="annot"><span class="annottext">Double -&gt; IO Double
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680357340"><span class="hs-identifier hs-var">val</span></a></span><span>
+</span><span id="line-54"></span><span>    </span><span class="annot"><span class="annottext">Maybe Double
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-55"></span><span>      </span><span class="annot"><span class="annottext">STM () -&gt; IO ()
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="annot"><span class="annottext">(STM () -&gt; IO ()) -&gt; STM () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TVar Int -&gt; (Int -&gt; Int) -&gt; STM ()
+forall a. TVar a -&gt; (a -&gt; a) -&gt; STM ()
+</span><span class="hs-identifier hs-var">modifyTVar'</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ReadModelCache -&gt; TVar Int
+</span><a href="Core.Accounting.Cache.html#rcMisses"><span class="hs-identifier hs-var">rcMisses</span></a></span><span> </span><span class="annot"><span class="annottext">ReadModelCache
+</span><a href="#local-6989586621680357337"><span class="hs-identifier hs-var">cache</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span>      </span><span class="annot"><span class="annottext">Double -&gt; IO Double
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0.0</span></span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="hs-comment">-- | Store a balance in the cache (or update an existing entry).</span><span>
+</span><span id="line-59"></span><span class="hs-comment">-- Uses LRU eviction: inserting at the front of the list.</span><span>
+</span><span id="line-60"></span><span class="annot"><a href="Core.Accounting.Cache.html#putCachedBalance"><span class="hs-identifier hs-type">putCachedBalance</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#ReadModelCache"><span class="hs-identifier hs-type">ReadModelCache</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-61"></span><span id="putCachedBalance"><span class="annot"><span class="annottext">putCachedBalance :: ReadModelCache -&gt; Int64 -&gt; Double -&gt; IO ()
+</span><a href="Core.Accounting.Cache.html#putCachedBalance"><span class="hs-identifier hs-var hs-var">putCachedBalance</span></a></span></span><span> </span><span id="local-6989586621680357342"><span class="annot"><span class="annottext">ReadModelCache
+</span><a href="#local-6989586621680357342"><span class="hs-identifier hs-var">cache</span></a></span></span><span> </span><span id="local-6989586621680357343"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680357343"><span class="hs-identifier hs-var">key</span></a></span></span><span> </span><span id="local-6989586621680357344"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680357344"><span class="hs-identifier hs-var">val</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">STM () -&gt; IO ()
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="annot"><span class="annottext">(STM () -&gt; IO ()) -&gt; STM () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Double -&gt; STMCache Int64 Double -&gt; STM ()
+forall k v. Eq k =&gt; k -&gt; v -&gt; STMCache k v -&gt; STM ()
+</span><a href="System.Cache.html#stmCachePut"><span class="hs-identifier hs-var">stmCachePut</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680357343"><span class="hs-identifier hs-var">key</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680357344"><span class="hs-identifier hs-var">val</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ReadModelCache -&gt; STMCache Int64 Double
+</span><a href="Core.Accounting.Cache.html#rcCache"><span class="hs-identifier hs-var">rcCache</span></a></span><span> </span><span class="annot"><span class="annottext">ReadModelCache
+</span><a href="#local-6989586621680357342"><span class="hs-identifier hs-var">cache</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span>
+</span><span id="line-63"></span><span class="hs-comment">-- | Get cached account read model metadata (reserved for future use).</span><span>
+</span><span id="line-64"></span><span class="hs-comment">-- Currently returns Nothing; will be populated with AccountReadModel when</span><span>
+</span><span id="line-65"></span><span class="hs-comment">-- the read model is enhanced to support full serialization.</span><span>
+</span><span id="line-66"></span><span class="annot"><a href="Core.Accounting.Cache.html#getCachedAccountReadModel"><span class="hs-identifier hs-type">getCachedAccountReadModel</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#ReadModelCache"><span class="hs-identifier hs-type">ReadModelCache</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-67"></span><span id="getCachedAccountReadModel"><span class="annot"><span class="annottext">getCachedAccountReadModel :: ReadModelCache -&gt; Int64 -&gt; IO (Maybe Text)
+</span><a href="Core.Accounting.Cache.html#getCachedAccountReadModel"><span class="hs-identifier hs-var hs-var">getCachedAccountReadModel</span></a></span></span><span> </span><span class="annot"><span class="annottext">ReadModelCache
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Text -&gt; IO (Maybe Text)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-68"></span><span>
+</span><span id="line-69"></span><span class="annot"><span class="hs-comment">-- | Remove a single entry from the cache.</span></span><span>
+</span><span id="line-70"></span><span class="annot"><a href="Core.Accounting.Cache.html#invalidateCache"><span class="hs-identifier hs-type">invalidateCache</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#ReadModelCache"><span class="hs-identifier hs-type">ReadModelCache</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-71"></span><span id="invalidateCache"><span class="annot"><span class="annottext">invalidateCache :: ReadModelCache -&gt; Int64 -&gt; IO ()
+</span><a href="Core.Accounting.Cache.html#invalidateCache"><span class="hs-identifier hs-var hs-var">invalidateCache</span></a></span></span><span> </span><span id="local-6989586621680357345"><span class="annot"><span class="annottext">ReadModelCache
+</span><a href="#local-6989586621680357345"><span class="hs-identifier hs-var">cache</span></a></span></span><span> </span><span id="local-6989586621680357346"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680357346"><span class="hs-identifier hs-var">key</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">STM () -&gt; IO ()
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="annot"><span class="annottext">(STM () -&gt; IO ()) -&gt; STM () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; STMCache Int64 Double -&gt; STM ()
+forall k v. Eq k =&gt; k -&gt; STMCache k v -&gt; STM ()
+</span><a href="System.Cache.html#stmCacheDelete"><span class="hs-identifier hs-var">stmCacheDelete</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680357346"><span class="hs-identifier hs-var">key</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ReadModelCache -&gt; STMCache Int64 Double
+</span><a href="Core.Accounting.Cache.html#rcCache"><span class="hs-identifier hs-var">rcCache</span></a></span><span> </span><span class="annot"><span class="annottext">ReadModelCache
+</span><a href="#local-6989586621680357345"><span class="hs-identifier hs-var">cache</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="annot"><span class="hs-comment">-- | Clear all entries from the cache (does not reset statistics).</span></span><span>
+</span><span id="line-74"></span><span class="annot"><a href="Core.Accounting.Cache.html#clearCache"><span class="hs-identifier hs-type">clearCache</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#ReadModelCache"><span class="hs-identifier hs-type">ReadModelCache</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span><span id="clearCache"><span class="annot"><span class="annottext">clearCache :: ReadModelCache -&gt; IO ()
+</span><a href="Core.Accounting.Cache.html#clearCache"><span class="hs-identifier hs-var hs-var">clearCache</span></a></span></span><span> </span><span id="local-6989586621680357347"><span class="annot"><span class="annottext">ReadModelCache
+</span><a href="#local-6989586621680357347"><span class="hs-identifier hs-var">cache</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">STM () -&gt; IO ()
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="annot"><span class="annottext">(STM () -&gt; IO ()) -&gt; STM () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">STMCache Int64 Double -&gt; STM ()
+forall k v. STMCache k v -&gt; STM ()
+</span><a href="System.Cache.html#stmCacheClear"><span class="hs-identifier hs-var">stmCacheClear</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ReadModelCache -&gt; STMCache Int64 Double
+</span><a href="Core.Accounting.Cache.html#rcCache"><span class="hs-identifier hs-var">rcCache</span></a></span><span> </span><span class="annot"><span class="annottext">ReadModelCache
+</span><a href="#local-6989586621680357347"><span class="hs-identifier hs-var">cache</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span><span>
+</span><span id="line-77"></span><span class="annot"><span class="hs-comment">-- | Return current cache statistics.</span></span><span>
+</span><span id="line-78"></span><span class="annot"><a href="Core.Accounting.Cache.html#cacheStats"><span class="hs-identifier hs-type">cacheStats</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#ReadModelCache"><span class="hs-identifier hs-type">ReadModelCache</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#CacheStats"><span class="hs-identifier hs-type">CacheStats</span></a></span><span>
+</span><span id="line-79"></span><span id="cacheStats"><span class="annot"><span class="annottext">cacheStats :: ReadModelCache -&gt; IO CacheStats
+</span><a href="Core.Accounting.Cache.html#cacheStats"><span class="hs-identifier hs-var hs-var">cacheStats</span></a></span></span><span> </span><span id="local-6989586621680357348"><span class="annot"><span class="annottext">ReadModelCache
+</span><a href="#local-6989586621680357348"><span class="hs-identifier hs-var">cache</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-80"></span><span>  </span><span id="local-6989586621680357349"><span class="annot"><a href="#local-6989586621680357349"><span class="hs-identifier hs-var">hits</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar Int -&gt; IO Int
+forall a. TVar a -&gt; IO a
+</span><span class="hs-identifier hs-var">readTVarIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ReadModelCache -&gt; TVar Int
+</span><a href="Core.Accounting.Cache.html#rcHits"><span class="hs-identifier hs-var">rcHits</span></a></span><span> </span><span class="annot"><span class="annottext">ReadModelCache
+</span><a href="#local-6989586621680357348"><span class="hs-identifier hs-var">cache</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-81"></span><span>  </span><span id="local-6989586621680357350"><span class="annot"><a href="#local-6989586621680357350"><span class="hs-identifier hs-var">misses</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">readTVarIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Core.Accounting.Cache.html#rcMisses"><span class="hs-identifier hs-var">rcMisses</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680357348"><span class="hs-identifier hs-type">cache</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-82"></span><span>  </span><span id="local-6989586621680357351"><span class="annot"><a href="#local-6989586621680357351"><span class="hs-identifier hs-var">size</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">atomically</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="System.Cache.html#stmCacheSize"><span class="hs-identifier hs-type">stmCacheSize</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Core.Accounting.Cache.html#rcCache"><span class="hs-identifier hs-var">rcCache</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680357348"><span class="hs-identifier hs-type">cache</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-83"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="Core.Accounting.Cache.html#CacheStats"><span class="hs-identifier hs-type">CacheStats</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680357349"><span class="hs-identifier hs-type">hits</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680357350"><span class="hs-identifier hs-type">misses</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680357351"><span class="hs-identifier hs-type">size</span></a></span><span>
+</span><span id="line-84"></span></pre></body></html>

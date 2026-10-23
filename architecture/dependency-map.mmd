@@ -1,0 +1,86 @@
+%% Surypus Architecture Dependency Map
+%% Generated: 2026-09-02
+
+graph TD
+    Domain["Domain Layer"]
+    Domain --> DAL
+    Domain --> Core
+    
+    Core["Core / Shared"]
+    Core -->|"types"| Domain
+    
+    DAL["Data Access Layer"]
+    DAL -->|"queries"| PostgreSQL
+    DAL -->|"repositories"| Domain
+    
+    Service["Service Layer"]
+    Service -->|"business logic"| Domain
+    Service -->|"data"| DAL
+    
+    API["API Layer"]
+    API -->|"calls"| Service
+    API -->|"auth"| Auth
+    
+    Infra["Infrastructure"]
+    Infra -->|"encryption"| Security
+    Infra -->|"email"| Messaging
+    
+    System["System"]
+    System -->|"auth"| Auth
+    System -->|"audit"| DAL
+    
+    Auth["Auth / RBAC"]
+    Auth -->|"JWT"| Security
+    
+    Security["Security"]
+    Security -->|"quantum crypto"| ExternalCrypto
+    
+    External["External Integrations"]
+    External -->|"EGAIS"| EGAIS
+    External -->|"Jasper"| Jasper
+    External -->|"Pentaho"| Pentaho
+    
+    MultiTenancy["Multi-tenancy"]
+    MultiTenancy -->|"tenant isolation"| DAL
+    
+    UI["UI / Frontend"]
+    UI -->|"REST API"| API
+    
+    CI["CI/CD"]
+    CI -->|"builds"| Service
+    CI -->|"tests"| DAL
+    
+    Codegen["Code Generation"]
+    Codegen -->|"generates"| Domain
+    Codegen -->|"generates"| DAL
+    
+    AI["AI Agent"]
+    AI -->|"reads"| Domain
+    AI -->|"reads"| DAL
+    
+    PostgreSQL[("PostgreSQL")]
+    EventStore["Event Store"]
+    EventStore -->|"events"| Domain
+    EventStore -->|"persistence"| DAL
+    
+    classDef domain fill:#f9f,stroke:#333,stroke-width:2px
+    classDef dal fill:#bbf,stroke:#333,stroke-width:2px
+    classDef service fill:#bfb,stroke:#333,stroke-width:2px
+    classDef api fill:#fbb,stroke:#333,stroke-width:2px
+    classDef infra fill:#ff9,stroke:#333,stroke-width:2px
+    classDef system fill:#9cf,stroke:#333,stroke-width:2px
+    classDef security fill:#f66,stroke:#333,stroke-width:2px
+    classDef external fill:#ccc,stroke:#333,stroke-width:2px
+    classDef database fill:#9f9,stroke:#333,stroke-width:2px
+    classDef ai fill:#99f,stroke:#333,stroke-width:2px
+    
+    class Domain,Core domain
+    class DAL,PostgreSQL,EventStore dal
+    class Service service
+    class API,UI api
+    class Infra,MultiTenancy infra
+    class System system
+    class Auth,Security security
+    class External,EGAIS,Jasper,Pentaho,ExternalCrypto external
+    class CI,Codegen database
+    class AI ai

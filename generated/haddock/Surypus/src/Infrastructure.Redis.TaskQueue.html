@@ -1,0 +1,947 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-- | Redis Task Queue for background report processing</span><span>
+</span><span id="line-2"></span><span class="hs-comment">-- Implements Phase 3-4: Redis Task Queue - &#1060;&#1086;&#1085;&#1086;&#1074;&#1072;&#1103; &#1086;&#1073;&#1088;&#1072;&#1073;&#1086;&#1090;&#1082;&#1072; &#1086;&#1090;&#1095;&#1077;&#1090;&#1086;&#1074;</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE DeriveAnyClass #-}</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html"><span class="hs-identifier">Infrastructure.Redis.TaskQueue</span></a></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Task"><span class="hs-identifier">Task</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskStatus"><span class="hs-identifier">TaskStatus</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskQueue"><span class="hs-identifier">TaskQueue</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#mkTaskQueue"><span class="hs-identifier">mkTaskQueue</span></a></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#enqueueTask"><span class="hs-identifier">enqueueTask</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#dequeueTask"><span class="hs-identifier">dequeueTask</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#getTaskStatus"><span class="hs-identifier">getTaskStatus</span></a></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#updateTaskStatus"><span class="hs-identifier">updateTaskStatus</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#startWorker"><span class="hs-identifier">startWorker</span></a></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#ReportTask"><span class="hs-identifier">ReportTask</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier">ToJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier">FromJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier">Value</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html#encode"><span class="hs-identifier">encode</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Decoding.html#decode"><span class="hs-identifier">decode</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text.Encoding</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">encodeUtf8</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">decodeUtf8</span></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">getCurrentTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/uuid-1.3.16.1-d576f62f2a5eb0bca982da2293062be85ff746012395f41cd006f9e65813338e/share/doc/html/src/Data.UUID.html"><span class="hs-identifier">Data.UUID</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/uuid-types-1.0.6.1-c9e453ee0337c0e8750e505c4555956d0f757fb78db1da989efe0f346af33fa3/share/doc/html/src/Data.UUID.Types.Internal.html#UUID"><span class="hs-identifier">UUID</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/uuid-1.3.16.1-d576f62f2a5eb0bca982da2293062be85ff746012395f41cd006f9e65813338e/share/doc/html/src/Data.UUID.V4.html"><span class="hs-identifier">Data.UUID.V4</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">UUID</span></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/hedis-0.15.2-2078f5c542580a2a2e90152cd2e903d915d6f0216bf2efa01dce5e03f4630cd5/share/doc/html/src/Database.Redis.html"><span class="hs-identifier">Database.Redis</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">R</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ByteString</span></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString.Lazy</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">LBS</span></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.List.NonEmpty</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">NonEmpty</span></span><span class="hs-special">(</span><span class="annot"><span class="hs-operator">(:|)</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Concurrent</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">forkIO</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">threadDelay</span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">forever</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">void</span></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Exception</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">catch</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">SomeException</span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">fromMaybe</span></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="annot"><span class="hs-comment">-- | Task status enumeration</span></span><span>
+</span><span id="line-39"></span><span class="hs-keyword">data</span><span> </span><span id="TaskStatus"><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskStatus"><span class="hs-identifier hs-var">TaskStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Pending"><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Pending"><span class="hs-identifier hs-var">Pending</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Processing"><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Processing"><span class="hs-identifier hs-var">Processing</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Completed"><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Completed"><span class="hs-identifier hs-var">Completed</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Failed"><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Failed"><span class="hs-identifier hs-var">Failed</span></a></span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680270602"><span id="local-6989586621680270604"><span id="local-6989586621680270608"><span class="annot"><span class="annottext">Int -&gt; TaskStatus -&gt; ShowS
+[TaskStatus] -&gt; ShowS
+TaskStatus -&gt; String
+(Int -&gt; TaskStatus -&gt; ShowS)
+-&gt; (TaskStatus -&gt; String)
+-&gt; ([TaskStatus] -&gt; ShowS)
+-&gt; Show TaskStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TaskStatus -&gt; ShowS
+showsPrec :: Int -&gt; TaskStatus -&gt; ShowS
+$cshow :: TaskStatus -&gt; String
+show :: TaskStatus -&gt; String
+$cshowList :: [TaskStatus] -&gt; ShowS
+showList :: [TaskStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680270613"><span id="local-6989586621680270618"><span class="annot"><span class="annottext">TaskStatus -&gt; TaskStatus -&gt; Bool
+(TaskStatus -&gt; TaskStatus -&gt; Bool)
+-&gt; (TaskStatus -&gt; TaskStatus -&gt; Bool) -&gt; Eq TaskStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TaskStatus -&gt; TaskStatus -&gt; Bool
+== :: TaskStatus -&gt; TaskStatus -&gt; Bool
+$c/= :: TaskStatus -&gt; TaskStatus -&gt; Bool
+/= :: TaskStatus -&gt; TaskStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680270623"><span id="local-6989586621680270625"><span class="annot"><span class="annottext">(forall x. TaskStatus -&gt; Rep TaskStatus x)
+-&gt; (forall x. Rep TaskStatus x -&gt; TaskStatus) -&gt; Generic TaskStatus
+forall x. Rep TaskStatus x -&gt; TaskStatus
+forall x. TaskStatus -&gt; Rep TaskStatus x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. TaskStatus -&gt; Rep TaskStatus x
+from :: forall x. TaskStatus -&gt; Rep TaskStatus x
+$cto :: forall x. Rep TaskStatus x -&gt; TaskStatus
+to :: forall x. Rep TaskStatus x -&gt; TaskStatus
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680270631"><span id="local-6989586621680270638"><span id="local-6989586621680270641"><span id="local-6989586621680270644"><span id="local-6989586621680270647"><span class="annot"><span class="annottext">[TaskStatus] -&gt; Value
+[TaskStatus] -&gt; Encoding
+TaskStatus -&gt; Bool
+TaskStatus -&gt; Value
+TaskStatus -&gt; Encoding
+(TaskStatus -&gt; Value)
+-&gt; (TaskStatus -&gt; Encoding)
+-&gt; ([TaskStatus] -&gt; Value)
+-&gt; ([TaskStatus] -&gt; Encoding)
+-&gt; (TaskStatus -&gt; Bool)
+-&gt; ToJSON TaskStatus
+forall a.
+(a -&gt; Value)
+-&gt; (a -&gt; Encoding)
+-&gt; ([a] -&gt; Value)
+-&gt; ([a] -&gt; Encoding)
+-&gt; (a -&gt; Bool)
+-&gt; ToJSON a
+$ctoJSON :: TaskStatus -&gt; Value
+toJSON :: TaskStatus -&gt; Value
+$ctoEncoding :: TaskStatus -&gt; Encoding
+toEncoding :: TaskStatus -&gt; Encoding
+$ctoJSONList :: [TaskStatus] -&gt; Value
+toJSONList :: [TaskStatus] -&gt; Value
+$ctoEncodingList :: [TaskStatus] -&gt; Encoding
+toEncodingList :: [TaskStatus] -&gt; Encoding
+$comitField :: TaskStatus -&gt; Bool
+omitField :: TaskStatus -&gt; Bool
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></a></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680270773"><span id="local-6989586621680270780"><span id="local-6989586621680270783"><span class="annot"><span class="annottext">Maybe TaskStatus
+Value -&gt; Parser [TaskStatus]
+Value -&gt; Parser TaskStatus
+(Value -&gt; Parser TaskStatus)
+-&gt; (Value -&gt; Parser [TaskStatus])
+-&gt; Maybe TaskStatus
+-&gt; FromJSON TaskStatus
+forall a.
+(Value -&gt; Parser a)
+-&gt; (Value -&gt; Parser [a]) -&gt; Maybe a -&gt; FromJSON a
+$cparseJSON :: Value -&gt; Parser TaskStatus
+parseJSON :: Value -&gt; Parser TaskStatus
+$cparseJSONList :: Value -&gt; Parser [TaskStatus]
+parseJSONList :: Value -&gt; Parser [TaskStatus]
+$comittedField :: Maybe TaskStatus
+omittedField :: Maybe TaskStatus
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">FromJSON</span></a></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="annot"><span class="hs-comment">-- | Generic task data structure</span></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">data</span><span> </span><span id="Task"><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Task"><span class="hs-identifier hs-var">Task</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Task"><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Task"><span class="hs-identifier hs-var">Task</span></a></span></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="taskId"><span class="annot"><span class="annottext">Task -&gt; UUID
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskId"><span class="hs-identifier hs-var hs-var">taskId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/uuid-types-1.0.6.1-c9e453ee0337c0e8750e505c4555956d0f757fb78db1da989efe0f346af33fa3/share/doc/html/src/Data.UUID.Types.Internal.html#UUID"><span class="hs-identifier hs-type">UUID</span></a></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="taskType"><span class="annot"><span class="annottext">Task -&gt; Text
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskType"><span class="hs-identifier hs-var hs-var">taskType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="taskPayload"><span class="annot"><span class="annottext">Task -&gt; Value
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskPayload"><span class="hs-identifier hs-var hs-var">taskPayload</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier hs-type">Value</span></a></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="taskStatus"><span class="annot"><span class="annottext">Task -&gt; TaskStatus
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskStatus"><span class="hs-identifier hs-var hs-var">taskStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="taskCreatedAt"><span class="annot"><span class="annottext">Task -&gt; UTCTime
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskCreatedAt"><span class="hs-identifier hs-var hs-var">taskCreatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="taskStartedAt"><span class="annot"><span class="annottext">Task -&gt; Maybe UTCTime
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskStartedAt"><span class="hs-identifier hs-var hs-var">taskStartedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="taskCompletedAt"><span class="annot"><span class="annottext">Task -&gt; Maybe UTCTime
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskCompletedAt"><span class="hs-identifier hs-var hs-var">taskCompletedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="taskError"><span class="annot"><span class="annottext">Task -&gt; Maybe Text
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskError"><span class="hs-identifier hs-var hs-var">taskError</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680270889"><span id="local-6989586621680270906"><span id="local-6989586621680270910"><span class="annot"><span class="annottext">Int -&gt; Task -&gt; ShowS
+[Task] -&gt; ShowS
+Task -&gt; String
+(Int -&gt; Task -&gt; ShowS)
+-&gt; (Task -&gt; String) -&gt; ([Task] -&gt; ShowS) -&gt; Show Task
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Task -&gt; ShowS
+showsPrec :: Int -&gt; Task -&gt; ShowS
+$cshow :: Task -&gt; String
+show :: Task -&gt; String
+$cshowList :: [Task] -&gt; ShowS
+showList :: [Task] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680270913"><span id="local-6989586621680270928"><span class="annot"><span class="annottext">Task -&gt; Task -&gt; Bool
+(Task -&gt; Task -&gt; Bool) -&gt; (Task -&gt; Task -&gt; Bool) -&gt; Eq Task
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Task -&gt; Task -&gt; Bool
+== :: Task -&gt; Task -&gt; Bool
+$c/= :: Task -&gt; Task -&gt; Bool
+/= :: Task -&gt; Task -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680270932"><span id="local-6989586621680270934"><span class="annot"><span class="annottext">(forall x. Task -&gt; Rep Task x)
+-&gt; (forall x. Rep Task x -&gt; Task) -&gt; Generic Task
+forall x. Rep Task x -&gt; Task
+forall x. Task -&gt; Rep Task x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Task -&gt; Rep Task x
+from :: forall x. Task -&gt; Rep Task x
+$cto :: forall x. Rep Task x -&gt; Task
+to :: forall x. Rep Task x -&gt; Task
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680270937"><span id="local-6989586621680270943"><span id="local-6989586621680270946"><span id="local-6989586621680270949"><span id="local-6989586621680270952"><span class="annot"><span class="annottext">[Task] -&gt; Value
+[Task] -&gt; Encoding
+Task -&gt; Bool
+Task -&gt; Value
+Task -&gt; Encoding
+(Task -&gt; Value)
+-&gt; (Task -&gt; Encoding)
+-&gt; ([Task] -&gt; Value)
+-&gt; ([Task] -&gt; Encoding)
+-&gt; (Task -&gt; Bool)
+-&gt; ToJSON Task
+forall a.
+(a -&gt; Value)
+-&gt; (a -&gt; Encoding)
+-&gt; ([a] -&gt; Value)
+-&gt; ([a] -&gt; Encoding)
+-&gt; (a -&gt; Bool)
+-&gt; ToJSON a
+$ctoJSON :: Task -&gt; Value
+toJSON :: Task -&gt; Value
+$ctoEncoding :: Task -&gt; Encoding
+toEncoding :: Task -&gt; Encoding
+$ctoJSONList :: [Task] -&gt; Value
+toJSONList :: [Task] -&gt; Value
+$ctoEncodingList :: [Task] -&gt; Encoding
+toEncodingList :: [Task] -&gt; Encoding
+$comitField :: Task -&gt; Bool
+omitField :: Task -&gt; Bool
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></a></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680271142"><span id="local-6989586621680271148"><span id="local-6989586621680271151"><span class="annot"><span class="annottext">Maybe Task
+Value -&gt; Parser [Task]
+Value -&gt; Parser Task
+(Value -&gt; Parser Task)
+-&gt; (Value -&gt; Parser [Task]) -&gt; Maybe Task -&gt; FromJSON Task
+forall a.
+(Value -&gt; Parser a)
+-&gt; (Value -&gt; Parser [a]) -&gt; Maybe a -&gt; FromJSON a
+$cparseJSON :: Value -&gt; Parser Task
+parseJSON :: Value -&gt; Parser Task
+$cparseJSONList :: Value -&gt; Parser [Task]
+parseJSONList :: Value -&gt; Parser [Task]
+$comittedField :: Maybe Task
+omittedField :: Maybe Task
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">FromJSON</span></a></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="annot"><span class="hs-comment">-- | Report-specific task payload</span></span><span>
+</span><span id="line-56"></span><span class="hs-keyword">data</span><span> </span><span id="ReportTask"><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#ReportTask"><span class="hs-identifier hs-var">ReportTask</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ReportTask"><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#ReportTask"><span class="hs-identifier hs-var">ReportTask</span></a></span></span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="rtReportId"><span class="annot"><span class="annottext">ReportTask -&gt; UUID
+</span><a href="Infrastructure.Redis.TaskQueue.html#rtReportId"><span class="hs-identifier hs-var hs-var">rtReportId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/uuid-types-1.0.6.1-c9e453ee0337c0e8750e505c4555956d0f757fb78db1da989efe0f346af33fa3/share/doc/html/src/Data.UUID.Types.Internal.html#UUID"><span class="hs-identifier hs-type">UUID</span></a></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="rtReportType"><span class="annot"><span class="annottext">ReportTask -&gt; Text
+</span><a href="Infrastructure.Redis.TaskQueue.html#rtReportType"><span class="hs-identifier hs-var hs-var">rtReportType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="rtParameters"><span class="annot"><span class="annottext">ReportTask -&gt; Value
+</span><a href="Infrastructure.Redis.TaskQueue.html#rtParameters"><span class="hs-identifier hs-var hs-var">rtParameters</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier hs-type">Value</span></a></span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="rtTenantId"><span class="annot"><span class="annottext">ReportTask -&gt; Text
+</span><a href="Infrastructure.Redis.TaskQueue.html#rtTenantId"><span class="hs-identifier hs-var hs-var">rtTenantId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680271277"><span id="local-6989586621680271284"><span id="local-6989586621680271288"><span class="annot"><span class="annottext">Int -&gt; ReportTask -&gt; ShowS
+[ReportTask] -&gt; ShowS
+ReportTask -&gt; String
+(Int -&gt; ReportTask -&gt; ShowS)
+-&gt; (ReportTask -&gt; String)
+-&gt; ([ReportTask] -&gt; ShowS)
+-&gt; Show ReportTask
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ReportTask -&gt; ShowS
+showsPrec :: Int -&gt; ReportTask -&gt; ShowS
+$cshow :: ReportTask -&gt; String
+show :: ReportTask -&gt; String
+$cshowList :: [ReportTask] -&gt; ShowS
+showList :: [ReportTask] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680271291"><span id="local-6989586621680271297"><span class="annot"><span class="annottext">ReportTask -&gt; ReportTask -&gt; Bool
+(ReportTask -&gt; ReportTask -&gt; Bool)
+-&gt; (ReportTask -&gt; ReportTask -&gt; Bool) -&gt; Eq ReportTask
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ReportTask -&gt; ReportTask -&gt; Bool
+== :: ReportTask -&gt; ReportTask -&gt; Bool
+$c/= :: ReportTask -&gt; ReportTask -&gt; Bool
+/= :: ReportTask -&gt; ReportTask -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680271301"><span id="local-6989586621680271303"><span class="annot"><span class="annottext">(forall x. ReportTask -&gt; Rep ReportTask x)
+-&gt; (forall x. Rep ReportTask x -&gt; ReportTask) -&gt; Generic ReportTask
+forall x. Rep ReportTask x -&gt; ReportTask
+forall x. ReportTask -&gt; Rep ReportTask x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. ReportTask -&gt; Rep ReportTask x
+from :: forall x. ReportTask -&gt; Rep ReportTask x
+$cto :: forall x. Rep ReportTask x -&gt; ReportTask
+to :: forall x. Rep ReportTask x -&gt; ReportTask
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680271306"><span id="local-6989586621680271313"><span id="local-6989586621680271316"><span id="local-6989586621680271319"><span id="local-6989586621680271322"><span class="annot"><span class="annottext">[ReportTask] -&gt; Value
+[ReportTask] -&gt; Encoding
+ReportTask -&gt; Bool
+ReportTask -&gt; Value
+ReportTask -&gt; Encoding
+(ReportTask -&gt; Value)
+-&gt; (ReportTask -&gt; Encoding)
+-&gt; ([ReportTask] -&gt; Value)
+-&gt; ([ReportTask] -&gt; Encoding)
+-&gt; (ReportTask -&gt; Bool)
+-&gt; ToJSON ReportTask
+forall a.
+(a -&gt; Value)
+-&gt; (a -&gt; Encoding)
+-&gt; ([a] -&gt; Value)
+-&gt; ([a] -&gt; Encoding)
+-&gt; (a -&gt; Bool)
+-&gt; ToJSON a
+$ctoJSON :: ReportTask -&gt; Value
+toJSON :: ReportTask -&gt; Value
+$ctoEncoding :: ReportTask -&gt; Encoding
+toEncoding :: ReportTask -&gt; Encoding
+$ctoJSONList :: [ReportTask] -&gt; Value
+toJSONList :: [ReportTask] -&gt; Value
+$ctoEncodingList :: [ReportTask] -&gt; Encoding
+toEncodingList :: [ReportTask] -&gt; Encoding
+$comitField :: ReportTask -&gt; Bool
+omitField :: ReportTask -&gt; Bool
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></a></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680271417"><span id="local-6989586621680271424"><span id="local-6989586621680271427"><span class="annot"><span class="annottext">Maybe ReportTask
+Value -&gt; Parser [ReportTask]
+Value -&gt; Parser ReportTask
+(Value -&gt; Parser ReportTask)
+-&gt; (Value -&gt; Parser [ReportTask])
+-&gt; Maybe ReportTask
+-&gt; FromJSON ReportTask
+forall a.
+(Value -&gt; Parser a)
+-&gt; (Value -&gt; Parser [a]) -&gt; Maybe a -&gt; FromJSON a
+$cparseJSON :: Value -&gt; Parser ReportTask
+parseJSON :: Value -&gt; Parser ReportTask
+$cparseJSONList :: Value -&gt; Parser [ReportTask]
+parseJSONList :: Value -&gt; Parser [ReportTask]
+$comittedField :: Maybe ReportTask
+omittedField :: Maybe ReportTask
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">FromJSON</span></a></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="annot"><span class="hs-comment">-- | Task queue configuration</span></span><span>
+</span><span id="line-65"></span><span class="hs-keyword">data</span><span> </span><span id="TaskQueue"><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskQueue"><span class="hs-identifier hs-var">TaskQueue</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TaskQueue"><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskQueue"><span class="hs-identifier hs-var">TaskQueue</span></a></span></span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tqRedisConn"><span class="annot"><span class="annottext">TaskQueue -&gt; Connection
+</span><a href="Infrastructure.Redis.TaskQueue.html#tqRedisConn"><span class="hs-identifier hs-var hs-var">tqRedisConn</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/hedis-0.15.2-2078f5c542580a2a2e90152cd2e903d915d6f0216bf2efa01dce5e03f4630cd5/share/doc/html/src/Database.Redis.Connection.html#Connection"><span class="hs-identifier hs-type">R.Connection</span></a></span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="tqQueueName"><span class="annot"><span class="annottext">TaskQueue -&gt; Text
+</span><a href="Infrastructure.Redis.TaskQueue.html#tqQueueName"><span class="hs-identifier hs-var hs-var">tqQueueName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="tqWorkerCount"><span class="annot"><span class="annottext">TaskQueue -&gt; Int
+</span><a href="Infrastructure.Redis.TaskQueue.html#tqWorkerCount"><span class="hs-identifier hs-var hs-var">tqWorkerCount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-70"></span><span>
+</span><span id="line-71"></span><span class="annot"><span class="hs-comment">-- | Create a new task queue</span></span><span>
+</span><span id="line-72"></span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#mkTaskQueue"><span class="hs-identifier hs-type">mkTaskQueue</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/hedis-0.15.2-2078f5c542580a2a2e90152cd2e903d915d6f0216bf2efa01dce5e03f4630cd5/share/doc/html/src/Database.Redis.Connection.html#Connection"><span class="hs-identifier hs-type">R.Connection</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskQueue"><span class="hs-identifier hs-type">TaskQueue</span></a></span><span>
+</span><span id="line-73"></span><span id="mkTaskQueue"><span class="annot"><span class="annottext">mkTaskQueue :: Connection -&gt; Text -&gt; Int -&gt; TaskQueue
+</span><a href="Infrastructure.Redis.TaskQueue.html#mkTaskQueue"><span class="hs-identifier hs-var hs-var">mkTaskQueue</span></a></span></span><span> </span><span id="local-6989586621680271498"><span class="annot"><span class="annottext">Connection
+</span><a href="#local-6989586621680271498"><span class="hs-identifier hs-var">conn</span></a></span></span><span> </span><span id="local-6989586621680271499"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680271499"><span class="hs-identifier hs-var">queueName</span></a></span></span><span> </span><span id="local-6989586621680271500"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680271500"><span class="hs-identifier hs-var">workerCount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-74"></span><span>  </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskQueue"><span class="hs-identifier hs-type">TaskQueue</span></a></span><span>
+</span><span id="line-75"></span><span>    </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">tqRedisConn :: Connection
+</span><a href="Infrastructure.Redis.TaskQueue.html#tqRedisConn"><span class="hs-identifier hs-var">tqRedisConn</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Connection
+</span><a href="#local-6989586621680271498"><span class="hs-identifier hs-var">conn</span></a></span><span>
+</span><span id="line-76"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tqQueueName :: Text
+</span><a href="Infrastructure.Redis.TaskQueue.html#tqQueueName"><span class="hs-identifier hs-var">tqQueueName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680271499"><span class="hs-identifier hs-var">queueName</span></a></span><span>
+</span><span id="line-77"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tqWorkerCount :: Int
+</span><a href="Infrastructure.Redis.TaskQueue.html#tqWorkerCount"><span class="hs-identifier hs-var">tqWorkerCount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680271500"><span class="hs-identifier hs-var">workerCount</span></a></span><span>
+</span><span id="line-78"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span class="annot"><span class="hs-comment">-- | Serialize task to ByteString</span></span><span>
+</span><span id="line-81"></span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#taskToBytes"><span class="hs-identifier hs-type">taskToBytes</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Task"><span class="hs-identifier hs-type">Task</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span>
+</span><span id="line-82"></span><span id="taskToBytes"><span class="annot"><span class="annottext">taskToBytes :: Task -&gt; Either String ByteString
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskToBytes"><span class="hs-identifier hs-var hs-var">taskToBytes</span></a></span></span><span> </span><span id="local-6989586621680271502"><span class="annot"><span class="annottext">Task
+</span><a href="#local-6989586621680271502"><span class="hs-identifier hs-var">task</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Either String ByteString
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; Either String ByteString)
+-&gt; ByteString -&gt; Either String ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">LazyByteString -&gt; ByteString
+</span><span class="hs-identifier hs-var">LBS.toStrict</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Task -&gt; LazyByteString
+forall a. ToJSON a =&gt; a -&gt; LazyByteString
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html#encode"><span class="hs-identifier hs-var">encode</span></a></span><span> </span><span class="annot"><span class="annottext">Task
+</span><a href="#local-6989586621680271502"><span class="hs-identifier hs-var">task</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-83"></span><span>
+</span><span id="line-84"></span><span class="annot"><span class="hs-comment">-- | Deserialize task from ByteString</span></span><span>
+</span><span id="line-85"></span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#taskFromBytes"><span class="hs-identifier hs-type">taskFromBytes</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ByteString</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Task"><span class="hs-identifier hs-type">Task</span></a></span><span>
+</span><span id="line-86"></span><span id="taskFromBytes"><span class="annot"><span class="annottext">taskFromBytes :: ByteString -&gt; Either String Task
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskFromBytes"><span class="hs-identifier hs-var hs-var">taskFromBytes</span></a></span></span><span> </span><span id="local-6989586621680271505"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271505"><span class="hs-identifier hs-var">bs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-87"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">LazyByteString -&gt; Maybe Task
+forall a. FromJSON a =&gt; LazyByteString -&gt; Maybe a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Decoding.html#decode"><span class="hs-identifier hs-var">decode</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString -&gt; LazyByteString
+</span><span class="hs-identifier hs-var">LBS.fromStrict</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271505"><span class="hs-identifier hs-var">bs</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-88"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680271507"><span class="annot"><span class="annottext">Task
+</span><a href="#local-6989586621680271507"><span class="hs-identifier hs-var">task</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Task -&gt; Either String Task
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">Task
+</span><a href="#local-6989586621680271507"><span class="hs-identifier hs-var">task</span></a></span><span>
+</span><span id="line-89"></span><span>    </span><span class="annot"><span class="annottext">Maybe Task
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String Task
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Failed to parse task&quot;</span></span><span>
+</span><span id="line-90"></span><span>
+</span><span id="line-91"></span><span class="annot"><span class="hs-comment">-- | Enqueue a task for background processing</span></span><span>
+</span><span id="line-92"></span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#enqueueTask"><span class="hs-identifier hs-type">enqueueTask</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskQueue"><span class="hs-identifier hs-type">TaskQueue</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier hs-type">Value</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/uuid-types-1.0.6.1-c9e453ee0337c0e8750e505c4555956d0f757fb78db1da989efe0f346af33fa3/share/doc/html/src/Data.UUID.Types.Internal.html#UUID"><span class="hs-identifier hs-type">UUID</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-93"></span><span id="enqueueTask"><span class="annot"><span class="annottext">enqueueTask :: TaskQueue -&gt; Text -&gt; Value -&gt; IO (Either Text UUID)
+</span><a href="Infrastructure.Redis.TaskQueue.html#enqueueTask"><span class="hs-identifier hs-var hs-var">enqueueTask</span></a></span></span><span> </span><span id="local-6989586621680271508"><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271508"><span class="hs-identifier hs-var">queue</span></a></span></span><span> </span><span id="local-6989586621680271509"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680271509"><span class="hs-identifier hs-var">taskType</span></a></span></span><span> </span><span id="local-6989586621680271510"><span class="annot"><span class="annottext">Value
+</span><a href="#local-6989586621680271510"><span class="hs-identifier hs-var">payload</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-94"></span><span>  </span><span id="local-6989586621680271511"><span class="annot"><a href="#local-6989586621680271511"><span class="hs-identifier hs-var">taskId</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO UUID
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/uuid-1.3.16.1-d576f62f2a5eb0bca982da2293062be85ff746012395f41cd006f9e65813338e/share/doc/html/src/Data.UUID.V4.html#nextRandom"><span class="hs-identifier hs-var">UUID.nextRandom</span></a></span><span>
+</span><span id="line-95"></span><span>  </span><span id="local-6989586621680271513"><span class="annot"><a href="#local-6989586621680271513"><span class="hs-identifier hs-var">timestamp</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">getCurrentTime</span></span><span>
+</span><span id="line-96"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680271514"><span class="annot"><a href="#local-6989586621680271514"><span class="hs-identifier hs-var hs-var">task</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Task"><span class="hs-identifier hs-type">Task</span></a></span><span>
+</span><span id="line-97"></span><span>        </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">taskId :: UUID
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskId"><span class="hs-identifier hs-var">taskId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UUID
+</span><a href="#local-6989586621680271511"><span class="hs-identifier hs-var">taskId</span></a></span><span>
+</span><span id="line-98"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">taskType :: Text
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskType"><span class="hs-identifier hs-var">taskType</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680271509"><span class="hs-identifier hs-var">taskType</span></a></span><span>
+</span><span id="line-99"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">taskPayload :: Value
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskPayload"><span class="hs-identifier hs-var">taskPayload</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Value
+</span><a href="#local-6989586621680271510"><span class="hs-identifier hs-var">payload</span></a></span><span>
+</span><span id="line-100"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">taskStatus :: TaskStatus
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskStatus"><span class="hs-identifier hs-var">taskStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Infrastructure.Redis.TaskQueue.html#Pending"><span class="hs-identifier hs-var">Pending</span></a></span><span>
+</span><span id="line-101"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">taskCreatedAt :: UTCTime
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskCreatedAt"><span class="hs-identifier hs-var">taskCreatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680271513"><span class="hs-identifier hs-var">timestamp</span></a></span><span>
+</span><span id="line-102"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">taskStartedAt :: Maybe UTCTime
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskStartedAt"><span class="hs-identifier hs-var">taskStartedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe UTCTime
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-103"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">taskCompletedAt :: Maybe UTCTime
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskCompletedAt"><span class="hs-identifier hs-var">taskCompletedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe UTCTime
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-104"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">taskError :: Maybe Text
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskError"><span class="hs-identifier hs-var">taskError</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-105"></span><span>        </span><span class="hs-special">}</span><span>
+</span><span id="line-106"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#taskToBytes"><span class="hs-identifier hs-type">taskToBytes</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680271514"><span class="hs-identifier hs-type">task</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-107"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621680271515"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621680271515"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text UUID -&gt; IO (Either Text UUID)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text UUID -&gt; IO (Either Text UUID))
+-&gt; Either Text UUID -&gt; IO (Either Text UUID)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text UUID
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Either Text UUID) -&gt; Text -&gt; Either Text UUID
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621680271515"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-108"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621680271517"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271517"><span class="hs-identifier hs-var">taskBytes</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-109"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680271521"><span class="annot"><span class="annottext">queueKey :: ByteString
+</span><a href="#local-6989586621680271521"><span class="hs-identifier hs-var hs-var hs-var">queueKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; ByteString
+</span><span class="hs-identifier hs-var">encodeUtf8</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; ByteString) -&gt; Text -&gt; ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TaskQueue -&gt; Text
+</span><a href="Infrastructure.Redis.TaskQueue.html#tqQueueName"><span class="hs-identifier hs-var">tqQueueName</span></a></span><span> </span><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271508"><span class="hs-identifier hs-var">queue</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;:pending&quot;</span></span><span>
+</span><span id="line-110"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680271525"><span class="annot"><span class="annottext">taskKey :: ByteString
+</span><a href="#local-6989586621680271525"><span class="hs-identifier hs-var hs-var hs-var">taskKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; ByteString
+</span><span class="hs-identifier hs-var">encodeUtf8</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; ByteString) -&gt; Text -&gt; ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;task:&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">UUID -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">UUID
+</span><a href="#local-6989586621680271511"><span class="hs-identifier hs-var">taskId</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-111"></span><span>      </span><span id="local-6989586621680271527"><span class="annot"><a href="#local-6989586621680271527"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Connection
+-&gt; Redis (Either Reply Status) -&gt; IO (Either Reply Status)
+forall a. Connection -&gt; Redis a -&gt; IO a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/hedis-0.15.2-2078f5c542580a2a2e90152cd2e903d915d6f0216bf2efa01dce5e03f4630cd5/share/doc/html/src/Database.Redis.Connection.html#runRedis"><span class="hs-identifier hs-var">R.runRedis</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskQueue -&gt; Connection
+</span><a href="Infrastructure.Redis.TaskQueue.html#tqRedisConn"><span class="hs-identifier hs-var">tqRedisConn</span></a></span><span> </span><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271508"><span class="hs-identifier hs-var">queue</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Redis (Either Reply Status) -&gt; IO (Either Reply Status))
+-&gt; Redis (Either Reply Status) -&gt; IO (Either Reply Status)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-112"></span><span>        </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; [ByteString] -&gt; Redis (Either Reply Integer)
+forall (m :: * -&gt; *) (f :: * -&gt; *).
+RedisCtx m f =&gt;
+ByteString -&gt; [ByteString] -&gt; m (f Integer)
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/hedis-0.15.2-2078f5c542580a2a2e90152cd2e903d915d6f0216bf2efa01dce5e03f4630cd5/share/doc/html/src/Database.Redis.Commands.html#rpush"><span class="hs-identifier hs-var">R.rpush</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271521"><span class="hs-identifier hs-var">queueKey</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271517"><span class="hs-identifier hs-var">taskBytes</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-113"></span><span>        </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/hedis-0.15.2-2078f5c542580a2a2e90152cd2e903d915d6f0216bf2efa01dce5e03f4630cd5/share/doc/html/src/Database.Redis.ManualCommands.html#set"><span class="hs-identifier hs-type">R.set</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680271525"><span class="hs-identifier hs-type">taskKey</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680271517"><span class="hs-identifier hs-type">taskBytes</span></a></span><span>
+</span><span id="line-114"></span><span>      </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680271527"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-115"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="annot"><span class="annottext">Status
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text UUID -&gt; IO (Either Text UUID)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text UUID -&gt; IO (Either Text UUID))
+-&gt; Either Text UUID -&gt; IO (Either Text UUID)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">UUID -&gt; Either Text UUID
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">UUID
+</span><a href="#local-6989586621680271511"><span class="hs-identifier hs-var">taskId</span></a></span><span>
+</span><span id="line-116"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621680271531"><span class="annot"><span class="annottext">Reply
+</span><a href="#local-6989586621680271531"><span class="hs-identifier hs-var">redisErr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text UUID -&gt; IO (Either Text UUID)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text UUID -&gt; IO (Either Text UUID))
+-&gt; Either Text UUID -&gt; IO (Either Text UUID)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text UUID
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Either Text UUID) -&gt; Text -&gt; Either Text UUID
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Text) -&gt; String -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Reply -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Reply
+</span><a href="#local-6989586621680271531"><span class="hs-identifier hs-var">redisErr</span></a></span><span>
+</span><span id="line-117"></span><span>
+</span><span id="line-118"></span><span class="annot"><span class="hs-comment">-- | Dequeue a task for processing</span></span><span>
+</span><span id="line-119"></span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#dequeueTask"><span class="hs-identifier hs-type">dequeueTask</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskQueue"><span class="hs-identifier hs-type">TaskQueue</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Task"><span class="hs-identifier hs-type">Task</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-120"></span><span id="dequeueTask"><span class="annot"><span class="annottext">dequeueTask :: TaskQueue -&gt; IO (Either Text (Maybe Task))
+</span><a href="Infrastructure.Redis.TaskQueue.html#dequeueTask"><span class="hs-identifier hs-var hs-var">dequeueTask</span></a></span></span><span> </span><span id="local-6989586621680271532"><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271532"><span class="hs-identifier hs-var">queue</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-121"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680271535"><span class="annot"><span class="annottext">queueKey :: ByteString
+</span><a href="#local-6989586621680271535"><span class="hs-identifier hs-var hs-var hs-var">queueKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; ByteString
+</span><span class="hs-identifier hs-var">encodeUtf8</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; ByteString) -&gt; Text -&gt; ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TaskQueue -&gt; Text
+</span><a href="Infrastructure.Redis.TaskQueue.html#tqQueueName"><span class="hs-identifier hs-var">tqQueueName</span></a></span><span> </span><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271532"><span class="hs-identifier hs-var">queue</span></a></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;:pending&quot;</span></span><span>
+</span><span id="line-122"></span><span>  </span><span id="local-6989586621680271536"><span class="annot"><a href="#local-6989586621680271536"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Connection
+-&gt; Redis (Either Reply (Maybe (ByteString, ByteString)))
+-&gt; IO (Either Reply (Maybe (ByteString, ByteString)))
+forall a. Connection -&gt; Redis a -&gt; IO a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/hedis-0.15.2-2078f5c542580a2a2e90152cd2e903d915d6f0216bf2efa01dce5e03f4630cd5/share/doc/html/src/Database.Redis.Connection.html#runRedis"><span class="hs-identifier hs-var">R.runRedis</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskQueue -&gt; Connection
+</span><a href="Infrastructure.Redis.TaskQueue.html#tqRedisConn"><span class="hs-identifier hs-var">tqRedisConn</span></a></span><span> </span><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271532"><span class="hs-identifier hs-var">queue</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Redis (Either Reply (Maybe (ByteString, ByteString)))
+ -&gt; IO (Either Reply (Maybe (ByteString, ByteString))))
+-&gt; Redis (Either Reply (Maybe (ByteString, ByteString)))
+-&gt; IO (Either Reply (Maybe (ByteString, ByteString)))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[ByteString]
+-&gt; Integer -&gt; Redis (Either Reply (Maybe (ByteString, ByteString)))
+forall (m :: * -&gt; *) (f :: * -&gt; *).
+RedisCtx m f =&gt;
+[ByteString] -&gt; Integer -&gt; m (f (Maybe (ByteString, ByteString)))
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/hedis-0.15.2-2078f5c542580a2a2e90152cd2e903d915d6f0216bf2efa01dce5e03f4630cd5/share/doc/html/src/Database.Redis.Commands.html#brpop"><span class="hs-identifier hs-var">R.brpop</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271535"><span class="hs-identifier hs-var">queueKey</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">Integer
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-123"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680271536"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-124"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680271538"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271538"><span class="hs-identifier hs-var">taskBytes</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span>
+</span><span id="line-125"></span><span>      </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Either String Task
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskFromBytes"><span class="hs-identifier hs-var">taskFromBytes</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271538"><span class="hs-identifier hs-var">taskBytes</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-126"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621680271539"><span class="annot"><span class="annottext">Task
+</span><a href="#local-6989586621680271539"><span class="hs-identifier hs-var">task</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text (Maybe Task) -&gt; IO (Either Text (Maybe Task))
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text (Maybe Task) -&gt; IO (Either Text (Maybe Task)))
+-&gt; Either Text (Maybe Task) -&gt; IO (Either Text (Maybe Task))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Maybe Task -&gt; Either Text (Maybe Task)
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">(Maybe Task -&gt; Either Text (Maybe Task))
+-&gt; Maybe Task -&gt; Either Text (Maybe Task)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Task -&gt; Maybe Task
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Task
+</span><a href="#local-6989586621680271539"><span class="hs-identifier hs-var">task</span></a></span><span>
+</span><span id="line-127"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621680271540"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621680271540"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text (Maybe Task) -&gt; IO (Either Text (Maybe Task))
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text (Maybe Task) -&gt; IO (Either Text (Maybe Task)))
+-&gt; Either Text (Maybe Task) -&gt; IO (Either Text (Maybe Task))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text (Maybe Task)
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Either Text (Maybe Task))
+-&gt; Text -&gt; Either Text (Maybe Task)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621680271540"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-128"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="annot"><span class="annottext">Maybe (ByteString, ByteString)
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text (Maybe Task) -&gt; IO (Either Text (Maybe Task))
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text (Maybe Task) -&gt; IO (Either Text (Maybe Task)))
+-&gt; Either Text (Maybe Task) -&gt; IO (Either Text (Maybe Task))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Maybe Task -&gt; Either Text (Maybe Task)
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">Maybe Task
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-129"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621680271541"><span class="annot"><span class="annottext">Reply
+</span><a href="#local-6989586621680271541"><span class="hs-identifier hs-var">redisErr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text (Maybe Task) -&gt; IO (Either Text (Maybe Task))
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text (Maybe Task) -&gt; IO (Either Text (Maybe Task)))
+-&gt; Either Text (Maybe Task) -&gt; IO (Either Text (Maybe Task))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text (Maybe Task)
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Either Text (Maybe Task))
+-&gt; Text -&gt; Either Text (Maybe Task)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Text) -&gt; String -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Reply -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Reply
+</span><a href="#local-6989586621680271541"><span class="hs-identifier hs-var">redisErr</span></a></span><span>
+</span><span id="line-130"></span><span>
+</span><span id="line-131"></span><span class="annot"><span class="hs-comment">-- | Get task status from Redis</span></span><span>
+</span><span id="line-132"></span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#getTaskStatus"><span class="hs-identifier hs-type">getTaskStatus</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskQueue"><span class="hs-identifier hs-type">TaskQueue</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/uuid-types-1.0.6.1-c9e453ee0337c0e8750e505c4555956d0f757fb78db1da989efe0f346af33fa3/share/doc/html/src/Data.UUID.Types.Internal.html#UUID"><span class="hs-identifier hs-type">UUID</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-133"></span><span id="getTaskStatus"><span class="annot"><span class="annottext">getTaskStatus :: TaskQueue -&gt; UUID -&gt; IO (Either Text TaskStatus)
+</span><a href="Infrastructure.Redis.TaskQueue.html#getTaskStatus"><span class="hs-identifier hs-var hs-var">getTaskStatus</span></a></span></span><span> </span><span id="local-6989586621680271542"><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271542"><span class="hs-identifier hs-var">queue</span></a></span></span><span> </span><span id="local-6989586621680271543"><span class="annot"><span class="annottext">UUID
+</span><a href="#local-6989586621680271543"><span class="hs-identifier hs-var">taskId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-134"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680271547"><span class="annot"><span class="annottext">taskKey :: ByteString
+</span><a href="#local-6989586621680271547"><span class="hs-identifier hs-var hs-var hs-var">taskKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; ByteString
+</span><span class="hs-identifier hs-var">encodeUtf8</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; ByteString) -&gt; Text -&gt; ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;task:&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">UUID -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">UUID
+</span><a href="#local-6989586621680271543"><span class="hs-identifier hs-var">taskId</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-135"></span><span>  </span><span id="local-6989586621680271548"><span class="annot"><a href="#local-6989586621680271548"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Connection
+-&gt; Redis (Either Reply (Maybe ByteString))
+-&gt; IO (Either Reply (Maybe ByteString))
+forall a. Connection -&gt; Redis a -&gt; IO a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/hedis-0.15.2-2078f5c542580a2a2e90152cd2e903d915d6f0216bf2efa01dce5e03f4630cd5/share/doc/html/src/Database.Redis.Connection.html#runRedis"><span class="hs-identifier hs-var">R.runRedis</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskQueue -&gt; Connection
+</span><a href="Infrastructure.Redis.TaskQueue.html#tqRedisConn"><span class="hs-identifier hs-var">tqRedisConn</span></a></span><span> </span><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271542"><span class="hs-identifier hs-var">queue</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Redis (Either Reply (Maybe ByteString))
+ -&gt; IO (Either Reply (Maybe ByteString)))
+-&gt; Redis (Either Reply (Maybe ByteString))
+-&gt; IO (Either Reply (Maybe ByteString))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Redis (Either Reply (Maybe ByteString))
+forall (m :: * -&gt; *) (f :: * -&gt; *).
+RedisCtx m f =&gt;
+ByteString -&gt; m (f (Maybe ByteString))
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/hedis-0.15.2-2078f5c542580a2a2e90152cd2e903d915d6f0216bf2efa01dce5e03f4630cd5/share/doc/html/src/Database.Redis.Commands.html#get"><span class="hs-identifier hs-var">R.get</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271547"><span class="hs-identifier hs-var">taskKey</span></a></span><span>
+</span><span id="line-136"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680271548"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-137"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680271550"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271550"><span class="hs-identifier hs-var">taskBytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span>
+</span><span id="line-138"></span><span>      </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Either String Task
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskFromBytes"><span class="hs-identifier hs-var">taskFromBytes</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271550"><span class="hs-identifier hs-var">taskBytes</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-139"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621680271551"><span class="annot"><span class="annottext">Task
+</span><a href="#local-6989586621680271551"><span class="hs-identifier hs-var">task</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text TaskStatus -&gt; IO (Either Text TaskStatus)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text TaskStatus -&gt; IO (Either Text TaskStatus))
+-&gt; Either Text TaskStatus -&gt; IO (Either Text TaskStatus)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TaskStatus -&gt; Either Text TaskStatus
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">(TaskStatus -&gt; Either Text TaskStatus)
+-&gt; TaskStatus -&gt; Either Text TaskStatus
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Task -&gt; TaskStatus
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskStatus"><span class="hs-identifier hs-var">taskStatus</span></a></span><span> </span><span class="annot"><span class="annottext">Task
+</span><a href="#local-6989586621680271551"><span class="hs-identifier hs-var">task</span></a></span><span>
+</span><span id="line-140"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621680271552"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621680271552"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text TaskStatus -&gt; IO (Either Text TaskStatus)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text TaskStatus -&gt; IO (Either Text TaskStatus))
+-&gt; Either Text TaskStatus -&gt; IO (Either Text TaskStatus)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text TaskStatus
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Either Text TaskStatus) -&gt; Text -&gt; Either Text TaskStatus
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621680271552"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-141"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="annot"><span class="annottext">Maybe ByteString
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text TaskStatus -&gt; IO (Either Text TaskStatus)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text TaskStatus -&gt; IO (Either Text TaskStatus))
+-&gt; Either Text TaskStatus -&gt; IO (Either Text TaskStatus)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text TaskStatus
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Task not found&quot;</span></span><span>
+</span><span id="line-142"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621680271553"><span class="annot"><span class="annottext">Reply
+</span><a href="#local-6989586621680271553"><span class="hs-identifier hs-var">redisErr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text TaskStatus -&gt; IO (Either Text TaskStatus)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text TaskStatus -&gt; IO (Either Text TaskStatus))
+-&gt; Either Text TaskStatus -&gt; IO (Either Text TaskStatus)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text TaskStatus
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Either Text TaskStatus) -&gt; Text -&gt; Either Text TaskStatus
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Text) -&gt; String -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Reply -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Reply
+</span><a href="#local-6989586621680271553"><span class="hs-identifier hs-var">redisErr</span></a></span><span>
+</span><span id="line-143"></span><span>
+</span><span id="line-144"></span><span class="annot"><span class="hs-comment">-- | Update task status in Redis</span></span><span>
+</span><span id="line-145"></span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#updateTaskStatus"><span class="hs-identifier hs-type">updateTaskStatus</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskQueue"><span class="hs-identifier hs-type">TaskQueue</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/uuid-types-1.0.6.1-c9e453ee0337c0e8750e505c4555956d0f757fb78db1da989efe0f346af33fa3/share/doc/html/src/Data.UUID.Types.Internal.html#UUID"><span class="hs-identifier hs-type">UUID</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskStatus"><span class="hs-identifier hs-type">TaskStatus</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-146"></span><span id="updateTaskStatus"><span class="annot"><span class="annottext">updateTaskStatus :: TaskQueue
+-&gt; UUID -&gt; TaskStatus -&gt; Maybe Text -&gt; IO (Either Text ())
+</span><a href="Infrastructure.Redis.TaskQueue.html#updateTaskStatus"><span class="hs-identifier hs-var hs-var">updateTaskStatus</span></a></span></span><span> </span><span id="local-6989586621680271554"><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271554"><span class="hs-identifier hs-var">queue</span></a></span></span><span> </span><span id="local-6989586621680271555"><span class="annot"><span class="annottext">UUID
+</span><a href="#local-6989586621680271555"><span class="hs-identifier hs-var">taskId</span></a></span></span><span> </span><span id="local-6989586621680271556"><span class="annot"><span class="annottext">TaskStatus
+</span><a href="#local-6989586621680271556"><span class="hs-identifier hs-var">status</span></a></span></span><span> </span><span id="local-6989586621680271557"><span class="annot"><span class="annottext">Maybe Text
+</span><a href="#local-6989586621680271557"><span class="hs-identifier hs-var">errorMsg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-147"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680271561"><span class="annot"><span class="annottext">taskKey :: ByteString
+</span><a href="#local-6989586621680271561"><span class="hs-identifier hs-var hs-var hs-var">taskKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; ByteString
+</span><span class="hs-identifier hs-var">encodeUtf8</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; ByteString) -&gt; Text -&gt; ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;task:&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">UUID -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">UUID
+</span><a href="#local-6989586621680271555"><span class="hs-identifier hs-var">taskId</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-148"></span><span>  </span><span id="local-6989586621680271562"><span class="annot"><a href="#local-6989586621680271562"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Connection
+-&gt; Redis (Either Reply (Maybe ByteString))
+-&gt; IO (Either Reply (Maybe ByteString))
+forall a. Connection -&gt; Redis a -&gt; IO a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/hedis-0.15.2-2078f5c542580a2a2e90152cd2e903d915d6f0216bf2efa01dce5e03f4630cd5/share/doc/html/src/Database.Redis.Connection.html#runRedis"><span class="hs-identifier hs-var">R.runRedis</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskQueue -&gt; Connection
+</span><a href="Infrastructure.Redis.TaskQueue.html#tqRedisConn"><span class="hs-identifier hs-var">tqRedisConn</span></a></span><span> </span><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271554"><span class="hs-identifier hs-var">queue</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Redis (Either Reply (Maybe ByteString))
+ -&gt; IO (Either Reply (Maybe ByteString)))
+-&gt; Redis (Either Reply (Maybe ByteString))
+-&gt; IO (Either Reply (Maybe ByteString))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Redis (Either Reply (Maybe ByteString))
+forall (m :: * -&gt; *) (f :: * -&gt; *).
+RedisCtx m f =&gt;
+ByteString -&gt; m (f (Maybe ByteString))
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/hedis-0.15.2-2078f5c542580a2a2e90152cd2e903d915d6f0216bf2efa01dce5e03f4630cd5/share/doc/html/src/Database.Redis.Commands.html#get"><span class="hs-identifier hs-var">R.get</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271561"><span class="hs-identifier hs-var">taskKey</span></a></span><span>
+</span><span id="line-149"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680271562"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-150"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680271563"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271563"><span class="hs-identifier hs-var">taskBytes</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span>
+</span><span id="line-151"></span><span>      </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Either String Task
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskFromBytes"><span class="hs-identifier hs-var">taskFromBytes</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271563"><span class="hs-identifier hs-var">taskBytes</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-152"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621680271564"><span class="annot"><span class="annottext">Task
+</span><a href="#local-6989586621680271564"><span class="hs-identifier hs-var">task</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-153"></span><span>          </span><span id="local-6989586621680271565"><span class="annot"><a href="#local-6989586621680271565"><span class="hs-identifier hs-var">timestamp</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO UTCTime
+</span><span class="hs-identifier hs-var">getCurrentTime</span></span><span>
+</span><span id="line-154"></span><span>          </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680271569"><span class="annot"><a href="#local-6989586621680271569"><span class="hs-identifier hs-var hs-var">updatedTask</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Task
+</span><a href="#local-6989586621680271564"><span class="hs-identifier hs-var">task</span></a></span><span>
+</span><span id="line-155"></span><span>                </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#taskStatus"><span class="hs-identifier hs-var">taskStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621680271556"><span class="hs-identifier hs-type">status</span></a></span><span>
+</span><span id="line-156"></span><span>                </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#taskStartedAt"><span class="hs-identifier hs-var">taskStartedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><a href="#local-6989586621680271556"><span class="hs-identifier hs-type">status</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">==</span></span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Processing"><span class="hs-identifier hs-type">Processing</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><a href="#local-6989586621680271565"><span class="hs-identifier hs-type">timestamp</span></a></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#taskStartedAt"><span class="hs-identifier hs-var">taskStartedAt</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680271564"><span class="hs-identifier hs-type">task</span></a></span><span>
+</span><span id="line-157"></span><span>                </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#taskCompletedAt"><span class="hs-identifier hs-var">taskCompletedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><a href="#local-6989586621680271556"><span class="hs-identifier hs-type">status</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">`elem`</span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Completed"><span class="hs-identifier hs-type">Completed</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Failed"><span class="hs-identifier hs-type">Failed</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><a href="#local-6989586621680271565"><span class="hs-identifier hs-type">timestamp</span></a></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#taskCompletedAt"><span class="hs-identifier hs-var">taskCompletedAt</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680271564"><span class="hs-identifier hs-type">task</span></a></span><span>
+</span><span id="line-158"></span><span>                </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#taskError"><span class="hs-identifier hs-var">taskError</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621680271557"><span class="hs-identifier hs-type">errorMsg</span></a></span><span>
+</span><span id="line-159"></span><span>                </span><span class="hs-special">}</span><span>
+</span><span id="line-160"></span><span>          </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#taskToBytes"><span class="hs-identifier hs-type">taskToBytes</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680271569"><span class="hs-identifier hs-type">updatedTask</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-161"></span><span>            </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621680271571"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621680271571"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text () -&gt; IO (Either Text ())
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text () -&gt; IO (Either Text ()))
+-&gt; Either Text () -&gt; IO (Either Text ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text ()
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Either Text ()) -&gt; Text -&gt; Either Text ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621680271571"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-162"></span><span>            </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621680271572"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271572"><span class="hs-identifier hs-var">updatedBytes</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-163"></span><span>              </span><span id="local-6989586621680271573"><span class="annot"><a href="#local-6989586621680271573"><span class="hs-identifier hs-var">setResult</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Connection
+-&gt; Redis (Either Reply Status) -&gt; IO (Either Reply Status)
+forall a. Connection -&gt; Redis a -&gt; IO a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/hedis-0.15.2-2078f5c542580a2a2e90152cd2e903d915d6f0216bf2efa01dce5e03f4630cd5/share/doc/html/src/Database.Redis.Connection.html#runRedis"><span class="hs-identifier hs-var">R.runRedis</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TaskQueue -&gt; Connection
+</span><a href="Infrastructure.Redis.TaskQueue.html#tqRedisConn"><span class="hs-identifier hs-var">tqRedisConn</span></a></span><span> </span><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271554"><span class="hs-identifier hs-var">queue</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Redis (Either Reply Status) -&gt; IO (Either Reply Status))
+-&gt; Redis (Either Reply Status) -&gt; IO (Either Reply Status)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString -&gt; Redis (Either Reply Status)
+forall (m :: * -&gt; *) (f :: * -&gt; *).
+RedisCtx m f =&gt;
+ByteString -&gt; ByteString -&gt; m (f Status)
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/hedis-0.15.2-2078f5c542580a2a2e90152cd2e903d915d6f0216bf2efa01dce5e03f4630cd5/share/doc/html/src/Database.Redis.ManualCommands.html#set"><span class="hs-identifier hs-var">R.set</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271561"><span class="hs-identifier hs-var">taskKey</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680271572"><span class="hs-identifier hs-var">updatedBytes</span></a></span><span>
+</span><span id="line-164"></span><span>              </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680271573"><span class="hs-identifier hs-type">setResult</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-165"></span><span>                </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="annot"><span class="annottext">Status
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text () -&gt; IO (Either Text ())
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text () -&gt; IO (Either Text ()))
+-&gt; Either Text () -&gt; IO (Either Text ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">() -&gt; Either Text ()
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-166"></span><span>                </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621680271574"><span class="annot"><span class="annottext">Reply
+</span><a href="#local-6989586621680271574"><span class="hs-identifier hs-var">redisErr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text () -&gt; IO (Either Text ())
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text () -&gt; IO (Either Text ()))
+-&gt; Either Text () -&gt; IO (Either Text ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text ()
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Either Text ()) -&gt; Text -&gt; Either Text ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Text) -&gt; String -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Reply -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Reply
+</span><a href="#local-6989586621680271574"><span class="hs-identifier hs-var">redisErr</span></a></span><span>
+</span><span id="line-167"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621680271575"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621680271575"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text () -&gt; IO (Either Text ())
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text () -&gt; IO (Either Text ()))
+-&gt; Either Text () -&gt; IO (Either Text ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text ()
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Either Text ()) -&gt; Text -&gt; Either Text ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621680271575"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-168"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="annot"><span class="annottext">Maybe ByteString
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text () -&gt; IO (Either Text ())
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text () -&gt; IO (Either Text ()))
+-&gt; Either Text () -&gt; IO (Either Text ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text ()
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Task not found&quot;</span></span><span>
+</span><span id="line-169"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621680271576"><span class="annot"><span class="annottext">Reply
+</span><a href="#local-6989586621680271576"><span class="hs-identifier hs-var">redisErr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text () -&gt; IO (Either Text ())
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text () -&gt; IO (Either Text ()))
+-&gt; Either Text () -&gt; IO (Either Text ())
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text ()
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Either Text ()) -&gt; Text -&gt; Either Text ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Text) -&gt; String -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Reply -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Reply
+</span><a href="#local-6989586621680271576"><span class="hs-identifier hs-var">redisErr</span></a></span><span>
+</span><span id="line-170"></span><span>
+</span><span id="line-171"></span><span class="annot"><span class="hs-comment">-- | Start worker processes for the task queue</span></span><span>
+</span><span id="line-172"></span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#startWorker"><span class="hs-identifier hs-type">startWorker</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskQueue"><span class="hs-identifier hs-type">TaskQueue</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Task"><span class="hs-identifier hs-type">Task</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-173"></span><span id="startWorker"><span class="annot"><span class="annottext">startWorker :: TaskQueue -&gt; (Task -&gt; IO ()) -&gt; IO ()
+</span><a href="Infrastructure.Redis.TaskQueue.html#startWorker"><span class="hs-identifier hs-var hs-var">startWorker</span></a></span></span><span> </span><span id="local-6989586621680271577"><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271577"><span class="hs-identifier hs-var">queue</span></a></span></span><span> </span><span id="local-6989586621680271578"><span class="annot"><span class="annottext">Task -&gt; IO ()
+</span><a href="#local-6989586621680271578"><span class="hs-identifier hs-var">taskHandler</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-174"></span><span>  </span><span class="annot"><span class="annottext">(Int -&gt; IO ThreadId) -&gt; [Int] -&gt; IO ()
+forall (t :: * -&gt; *) (m :: * -&gt; *) a b.
+(Foldable t, Monad m) =&gt;
+(a -&gt; m b) -&gt; t a -&gt; m ()
+</span><span class="hs-identifier hs-var">mapM_</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">IO () -&gt; IO ThreadId
+</span><span class="hs-identifier hs-var">forkIO</span></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; IO ThreadId) -&gt; IO () -&gt; IO ThreadId
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TaskQueue -&gt; (Task -&gt; IO ()) -&gt; IO ()
+</span><a href="Infrastructure.Redis.TaskQueue.html#workerLoop"><span class="hs-identifier hs-var">workerLoop</span></a></span><span> </span><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271577"><span class="hs-identifier hs-var">queue</span></a></span><span> </span><span class="annot"><span class="annottext">Task -&gt; IO ()
+</span><a href="#local-6989586621680271578"><span class="hs-identifier hs-var">taskHandler</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-glyph">..</span><span class="annot"><span class="annottext">TaskQueue -&gt; Int
+</span><a href="Infrastructure.Redis.TaskQueue.html#tqWorkerCount"><span class="hs-identifier hs-var">tqWorkerCount</span></a></span><span> </span><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271577"><span class="hs-identifier hs-var">queue</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-175"></span><span>  </span><span class="annot"><span class="annottext">() -&gt; IO ()
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-176"></span><span>
+</span><span id="line-177"></span><span class="annot"><span class="hs-comment">-- | Worker loop that continuously processes tasks</span></span><span>
+</span><span id="line-178"></span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#workerLoop"><span class="hs-identifier hs-type">workerLoop</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#TaskQueue"><span class="hs-identifier hs-type">TaskQueue</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Task"><span class="hs-identifier hs-type">Task</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-179"></span><span id="workerLoop"><span class="annot"><span class="annottext">workerLoop :: TaskQueue -&gt; (Task -&gt; IO ()) -&gt; IO ()
+</span><a href="Infrastructure.Redis.TaskQueue.html#workerLoop"><span class="hs-identifier hs-var hs-var">workerLoop</span></a></span></span><span> </span><span id="local-6989586621680271581"><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271581"><span class="hs-identifier hs-var">queue</span></a></span></span><span> </span><span id="local-6989586621680271582"><span class="annot"><span class="annottext">Task -&gt; IO ()
+</span><a href="#local-6989586621680271582"><span class="hs-identifier hs-var">taskHandler</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IO () -&gt; IO ()
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">forever</span></span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; IO ()) -&gt; IO () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-180"></span><span>  </span><span id="local-6989586621680271583"><span class="annot"><a href="#local-6989586621680271583"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TaskQueue -&gt; IO (Either Text (Maybe Task))
+</span><a href="Infrastructure.Redis.TaskQueue.html#dequeueTask"><span class="hs-identifier hs-var">dequeueTask</span></a></span><span> </span><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271581"><span class="hs-identifier hs-var">queue</span></a></span><span>
+</span><span id="line-181"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680271583"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-182"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680271584"><span class="annot"><span class="annottext">Task
+</span><a href="#local-6989586621680271584"><span class="hs-identifier hs-var">task</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-183"></span><span>      </span><span class="hs-comment">-- Update status to Processing</span><span>
+</span><span id="line-184"></span><span>      </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TaskQueue
+-&gt; UUID -&gt; TaskStatus -&gt; Maybe Text -&gt; IO (Either Text ())
+</span><a href="Infrastructure.Redis.TaskQueue.html#updateTaskStatus"><span class="hs-identifier hs-var">updateTaskStatus</span></a></span><span> </span><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271581"><span class="hs-identifier hs-var">queue</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Task -&gt; UUID
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskId"><span class="hs-identifier hs-var">taskId</span></a></span><span> </span><span class="annot"><span class="annottext">Task
+</span><a href="#local-6989586621680271584"><span class="hs-identifier hs-var">task</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Infrastructure.Redis.TaskQueue.html#Processing"><span class="hs-identifier hs-var">Processing</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-185"></span><span>      </span><span class="hs-comment">-- Execute task handler with error handling</span><span>
+</span><span id="line-186"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">catch</span></span><span> </span><span class="hs-special">(</span><span class="hs-keyword">do</span><span>
+</span><span id="line-187"></span><span>        </span><span class="annot"><a href="#local-6989586621680271582"><span class="hs-identifier hs-type">taskHandler</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680271584"><span class="hs-identifier hs-type">task</span></a></span><span>
+</span><span id="line-188"></span><span>        </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#updateTaskStatus"><span class="hs-identifier hs-type">updateTaskStatus</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680271581"><span class="hs-identifier hs-type">queue</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#taskId"><span class="hs-identifier hs-var">taskId</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680271584"><span class="hs-identifier hs-type">task</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="Infrastructure.Redis.TaskQueue.html#Completed"><span class="hs-identifier hs-type">Completed</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Nothing</span></span><span>
+</span><span id="line-189"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621680271585"><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621680271585"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">SomeException</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-190"></span><span>        </span><span class="annot"><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TaskQueue
+-&gt; UUID -&gt; TaskStatus -&gt; Maybe Text -&gt; IO (Either Text ())
+</span><a href="Infrastructure.Redis.TaskQueue.html#updateTaskStatus"><span class="hs-identifier hs-var">updateTaskStatus</span></a></span><span> </span><span class="annot"><span class="annottext">TaskQueue
+</span><a href="#local-6989586621680271581"><span class="hs-identifier hs-var">queue</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Task -&gt; UUID
+</span><a href="Infrastructure.Redis.TaskQueue.html#taskId"><span class="hs-identifier hs-var">taskId</span></a></span><span> </span><span class="annot"><span class="annottext">Task
+</span><a href="#local-6989586621680271584"><span class="hs-identifier hs-var">task</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">TaskStatus
+</span><a href="Infrastructure.Redis.TaskQueue.html#Failed"><span class="hs-identifier hs-var">Failed</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Maybe Text
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(Text -&gt; Maybe Text) -&gt; Text -&gt; Maybe Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">(String -&gt; Text) -&gt; String -&gt; Text
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">SomeException -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">SomeException
+</span><a href="#local-6989586621680271585"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-191"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-192"></span><span>      </span><span class="hs-comment">-- Small delay to prevent tight loop</span><span>
+</span><span id="line-193"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">threadDelay</span></span><span> </span><span class="annot"><span class="hs-number">100000</span></span><span> </span><span class="hs-comment">-- 100ms</span><span>
+</span><span id="line-194"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="annot"><span class="annottext">Maybe Task
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-195"></span><span>      </span><span class="hs-comment">-- No tasks available, wait before retrying</span><span>
+</span><span id="line-196"></span><span>      </span><span class="annot"><span class="annottext">Int -&gt; IO ()
+</span><span class="hs-identifier hs-var">threadDelay</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1000000</span></span><span> </span><span class="hs-comment">-- 1 second</span><span>
+</span><span id="line-197"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621680271586"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680271586"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-198"></span><span>      </span><span class="hs-comment">-- Error dequeuing, wait before retrying</span><span>
+</span><span id="line-199"></span><span>      </span><span class="annot"><span class="annottext">Int -&gt; IO ()
+</span><span class="hs-identifier hs-var">threadDelay</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1000000</span></span><span> </span><span class="hs-comment">-- 1 second</span><span>
+</span><span id="line-200"></span></pre></body></html>
