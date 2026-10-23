@@ -194,7 +194,7 @@ The GSD package-legitimacy seam (`query package-legitimacy check`) supports npm/
 
 | Package | Registry | In LTS 22.21 | Source Repo | Verdict | Disposition |
 |---------|----------|--------------|-------------|---------|-------------|
-| `postgresql-migration` | Hackage | `0.2.1.8` | github.com/andrevdm/postgresql-migration | OK (low downloads: 1618 total / 26 in last 30 days; tested with GHC 9.6.1; revised 2026-01-11) [CITED: hackage] | Approved — planner adds a `checkpoint:human-verify` only if the team dislikes the low download count |
+| `postgresql-migration` | Hackage | `0.2.1.8` | github.com/andrevdm/postgresql-migration | OK (low downloads: 1618 total / 26 in last 30 days; tested with GHC 9.6.1; revised 2026-01-11) [CITED: hackage] | Approved — **explicit acceptance recorded in Phase 1** (plan 01-02 task 1, autonomous; low-download-count risk accepted, no `checkpoint:human-verify` required) |
 | `postgresql-simple` | Hackage | `0.7.0.0` | github.com/haskellari/postgresql-simple | OK | Approved |
 | `optparse-applicative` | Hackage | `0.18.1.0` | github.com/pcapriotti/optparse-applicative | OK | Approved |
 | `resource-pool` | Hackage | `0.4.0.0` | github.com/haskellari/resource-pool | OK (already an indirect dep) | Approved |
@@ -748,7 +748,7 @@ run cfg opts = do
 
 | # | Claim | Section | Risk if Wrong |
 |---|-------|---------|---------------|
-| A1 | The team accepts `postgresql-migration` (low download count) as the executor | Standard Stack | Planner must instead build a libpq-based executor; +1–2 tasks |
+| A1 | The team accepts `postgresql-migration` (low download count) as the executor | Standard Stack | Planner must instead build a libpq-based executor; +1–2 tasks | Accepted — low-download-count risk accepted at Phase 1 planning time (explicit decision, plan 01-02 task 1); libpq reserve retained |
 | A2 | `DATABASE_URL` is the canonical database variable (not `DB_*`, not `PG*`) | Summary / Config | `.env.example` and Docker must be rewritten again; low risk, mechanical |
 | A3 | `PORT` is the canonical port variable (`APP_PORT` deprecated) and `LOG_LEVEL` (default `info`) is the canonical log level | Config | Docker already exports `PORT`, so this is the lower-cost choice; an unrecognised `LOG_LEVEL` value makes startup fail |
 | A4 | `SURYPUS_JWT_SECRET` stays required even before auth exists | Config / Security | If the team wants a dev default, Phase 6 inherits a weak-secret habit |
@@ -759,17 +759,19 @@ run cfg opts = do
 
 **If this table is non-empty, the planner must gate the corresponding decision behind a `checkpoint:human-verify` or an explicit task note.**
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Exact set of required env vars.**
    - What we know: `.env.example` lists `DATABASE_URL`, `JWT_SECRET`, `APP_PORT`; code reads `DB_*` and `SURYPUS_JWT_SECRET`.
    - What's unclear: whether `DB_*` must keep working for existing deployments.
    - Recommendation: canonical `DATABASE_URL` + `SURYPUS_JWT_SECRET` required, `PORT`/`LOG_LEVEL` optional; keep `DB_*` as a documented fallback for one release.
+   - **RESOLVED**: canonical `DATABASE_URL` + `SURYPUS_JWT_SECRET` required; `DB_*` fallback kept for one release (Phase 1 plans 01-01 task 1/3).
 
 2. **PostgreSQL target version.**
    - What we know: local server 18.6; CI and compose use 16.
    - What's unclear: whether 18-only features are wanted (none are used today).
    - Recommendation: pin CI + compose to `postgres:16` and state "16+" in docs; do not test against 18 in CI this phase.
+   - **RESOLVED**: CI + compose pinned to `postgres:16`; docs say "16+"; plans 01-04 task 3 and 01-05 task 1 adopt it.
 
 3. **Fate of `DAL.Database` / `DAL.Pool` / `Surypus.DB.Pool` (three pool modules).**
    - What we know: `apiServer` imports `DAL.Pool`; `DAL.Database.createPool` has a hard-coded DSN and a global tenant `IORef`.
@@ -792,6 +794,7 @@ run cfg opts = do
    - What we know: code returns plain text `OK` / `DB OK`; `docs/API.md:480-483` documents `{ "status": "ok", "timestamp": … }`; `STATE.md:25,40` claims `{status:"ok", db:"ok"}`; the Docker `HEALTHCHECK` only needs `curl -f`, so it is format-agnostic.
    - What's unclear: whether any external monitor parses the body.
    - Recommendation: keep plain text (smallest change, matches the current binary contract and `HEALTHCHECK`), serve both paths from one probe, and correct `docs/API.md` + `STATE.md` in the same commit. If JSON is wanted, do it once for both paths and add a test asserting the exact keys.
+   - **RESOLVED**: JSON locked to `{"status":"ok","db":"ok"}` / 503 `{"status":"error","db":"down"}` by `01-SKELETON.md` walking-skeleton contract; plans 01-01 task 2 adopt it; docs corrected in 01-05 task 3.
 
 ## Environment Availability
 

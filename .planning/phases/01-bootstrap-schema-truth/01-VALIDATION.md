@@ -39,19 +39,21 @@ created: "2026-10-23"
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 01-01-01 | 01 | 1 | BOOT-06 | — | Toolchain pinned in all five sources; no floating resolver | unit (shell) | `./scripts/check-toolchain.sh` | ❌ W0 | ⬜ pending |
-| 01-02-01 | 02 | 1 | BOOT-01 | T-01-01 | Missing env vars are named in the failure message; secrets never logged | unit | `stack test --test-arguments "--match Surypus.Config"` | ❌ W0 | ⬜ pending |
-| 01-02-02 | 02 | 1 | BOOT-01 | — | `PORT` parses; invalid port fails fast | unit | same spec | ❌ W0 | ⬜ pending |
-| 01-03-01 | 03 | 2 | BOOT-03 | T-01-02 | Path traversal rejected; filename whitelist enforced | unit | `stack test --test-arguments "--match MigrationRunner"` | ❌ W0 | ⬜ pending |
-| 01-03-02 | 03 | 2 | BOOT-03 | — | Duplicate numeric prefix fails pre-flight without touching DB | unit | same spec | ❌ W0 | ⬜ pending |
-| 01-03-03 | 03 | 2 | BOOT-03 | T-01-03 | Re-run is a no-op; edited applied file fails with checksum message | integration | same spec (live DB) | ❌ W0 | ⬜ pending |
-| 01-03-04 | 03 | 2 | BOOT-03 | T-01-04 | Concurrent run fails on advisory lock (no blocking lock) | integration | same spec (two connections) | ❌ W0 | ⬜ pending |
-| 01-04-01 | 04 | 3 | BOOT-04 | — | Empty DB builds from canonical corpus in one command | integration | `stack run -- migrate` on scratch DB | ❌ W0 | ⬜ pending |
-| 01-04-02 | 04 | 3 | BOOT-04 | — | `bills`/`payments`/`accounts` expose the columns the ORM writes | integration | `information_schema.columns` assertions | ❌ W0 | ⬜ pending |
-| 01-05-01 | 05 | 3 | BOOT-02 | T-01-05 | Health body is constant; no driver text or DSN leaked | integration | `stack test --test-arguments "--match Health"` | ❌ W0 | ⬜ pending |
-| 01-05-02 | 05 | 3 | BOOT-02 | — | 200 when DB reachable, 503 when pool points at closed port | integration | same spec (`port=1` case) | ❌ W0 | ⬜ pending |
-| 01-06-01 | 06 | 4 | BOOT-05 | — | CI job starts real PostgreSQL, migrates, runs DB specs (none pending) | CI | workflow run | ⚠️ misconfigured | ⬜ pending |
-| 01-06-02 | 06 | 4 | BOOT-01 | — | `stack run` binds `PORT`, `curl -f /api/v1/health` succeeds | smoke (CI) | `stack run &` + `curl -f` | ❌ W0 | ⬜ pending |
+| 01-01-01 | 01-01 | 1 | BOOT-01 | T-01-01 | Serve: `stack run` поднимает Warp; probe не печатает DSN | smoke (server) | `stack build --test --no-run-tests && ./scripts/smoke-health.sh` | ✅ | ⬜ pending |
+| 01-01-02 | 01-01 | 1 | BOOT-02 | T-01-05 | Health JSON константен `{"status","db"}`, без утечки | integration | `stack test --test-arguments "--match API.Health"` | ✅ | ⬜ pending |
+| 01-01-03 | 01-01 | 1 | BOOT-01 | T-01-08 | Fail-fast: все пропуски перечислены, секреты не в тексте | unit (config) | `stack test --test-arguments "--match Surypus.Config"` | ✅ | ⬜ pending |
+| 01-02-01 | 01-02 | 2 | BOOT-03 | T-01-02 | Pre-flight strict grammar, без SQL-конкатенации имён | unit | `stack build --test --no-run-tests && TEST_URL=$(./scripts/create_test_db.sh) && DATABASE_URL="$TEST_URL" SURYPUS_JWT_SECRET=test-only stack run -- migrate --dir test/fixtures/migrations && test "$(psql "$TEST_URL" -tAc 'SELECT count(*) FROM surypus_schema_migrations' | tr -d ' ')" = "2"` | ✅ | ⬜ pending |
+| 01-02-02 | 01-02 | 2 | BOOT-03 | T-01-03 | Advisory lock не блокирует (`pg_try_advisory_lock`) | integration | `stack test --test-arguments "--match DB.MigrationRunner" 2>&1 | tee /tmp/migration-runner.log && grep -Eq '[1-9][0-9]* examples?, 0 failures' /tmp/migration-runner.log` | ✅ | ⬜ pending |
+| 01-02-03 | 01-02 | 2 | BOOT-03 | T-01-04 | Checksum mismatch до DDL, откат применения файла | integration | `stack test --test-arguments "--match DB.MigrationRunner" 2>&1 | tee /tmp/migration-runner-int.log && grep -Eq '[1-9][0-9]* examples?, 0 failures' /tmp/migration-runner-int.log && ! grep -rn "runMigrations" src app` | ✅ | ⬜ pending |
+| 01-03-01 | 01-03 | 3 | BOOT-04 | T-01-04 | Canonical corpus воспроизводим одной командой | integration | `TEST_URL=$(./scripts/create_test_db.sh) && DATABASE_URL="$TEST_URL" SURYPUS_JWT_SECRET=test-only stack run -- migrate && DATABASE_URL="$TEST_URL" SURYPUS_JWT_SECRET=test-only stack run -- migrate && DATABASE_URL="$TEST_URL" ./scripts/verify-schema.sh` | ✅ | ⬜ pending |
+| 01-03-02 | 01-03 | 3 | BOOT-04 | T-01-03 | DB.Schema консистентен с применяемым корпусом | integration | `stack test --test-arguments "--match DB.Schema" 2>&1 | tee /tmp/schema-spec.log && grep -Eq '[1-9][0-9]* examples?, 0 failures' /tmp/schema-spec.log` | ✅ | ⬜ pending |
+| 01-03-03 | 01-03 | 3 | BOOT-04 | T-01-SC | Нет второго пути миграций (`config/migrations` запрещён, runner — канон) | docs/shell | `! grep -n "config/migrations" AGENTS.md && grep -q "stack run -- migrate" AGENTS.md && test "$(ls sql/migrations/*.sql | wc -l)" -eq 2` | ✅ | ⬜ pending |
+| 01-04-01 | 01-04 | 1 | BOOT-06 | T-01-SC | Toolchain pinned в пяти источниках, drift = красный билд | shell | `./scripts/check-toolchain.sh && stack build --test --no-run-tests` | ✅ | ⬜ pending |
+| 01-04-02 | 01-04 | 1 | BOOT-06 | T-01-SC | CI/compose/Dockerfile/devcontainer без floating версий | shell | `./scripts/check-toolchain.sh` | ✅ | ⬜ pending |
+| 01-04-03 | 01-04 | 1 | BOOT-06 | T-01-04 | Тестовая БД через `create_test_db.sh`, compose floor `postgres:16` | integration | `TEST_URL=$(./scripts/create_test_db.sh) && psql "$TEST_URL" -tAc "SELECT 1" | grep -qx 1 && ./scripts/check-toolchain.sh` | ✅ | ⬜ pending |
+| 01-05-01 | 01-05 | 4 | BOOT-05 | T-01-07 | Ни один workflow/скрипт не проглатывает ошибку, ни тихого pending | CI | `./scripts/ci-local.sh` | ✅ | ⬜ pending |
+| 01-05-02 | 01-05 | 4 | BOOT-05 | T-01-07 | DB-спеки выполняются, не pending; EventStoreSpec зарегистрирован | integration | `CI=true stack test --test-arguments "--match DB.EventStore" 2>&1 | tee /tmp/db-eventstore.log && grep -Eq '[1-9][0-9]* examples?, 0 failures' /tmp/db-eventstore.log && ! grep -Eq '[1-9][0-9]* pending' /tmp/db-eventstore.log` | ✅ | ⬜ pending |
+| 01-05-03 | 01-05 | 4 | BOOT-05 | T-01-06 | `make migrate` через canonical runner; README/docs/API синхронны | shell | `./scripts/check-no-swallowed-errors.sh && TEST_URL=$(./scripts/create_test_db.sh) && DATABASE_URL="$TEST_URL" SURYPUS_JWT_SECRET=test-only make migrate` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
