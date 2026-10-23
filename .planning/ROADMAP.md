@@ -34,7 +34,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. CI поднимает реальный PostgreSQL и прогоняет `stack test` так, что БД-тесты выполняются, а не помечаются pending.
   4. Одна версия тулчейна (GHC 9.6.5 / LTS 22.21) в `stack.yaml`, `cabal.project`, Dockerfile, devcontainer и CI — сборка с нуля воспроизводится.
   5. Старт падает быстро и с понятным сообщением, если не заданы обязательные переменные окружения.
-**Plans**: TBD
+**Plans**: 5 plans
+- [ ] 01-01-PLAN.md — рабочий сервер, JSON health, fail-fast конфигурация
+- [ ] 01-02-PLAN.md — канонический runner миграций: pre-flight, lock, ledger
+- [ ] 01-03-PLAN.md — канонический корпус V001/V002 и архив legacy
+- [ ] 01-04-PLAN.md — один тулчейн и одноразовая тестовая БД
+- [ ] 01-05-PLAN.md — CI на реальном PostgreSQL без pending
 
 ### Phase 2: Money & VAT Canon
 **Goal**: В домене ровно один тип денег и ровно один движок НДС, а единица ставки выражена типом — так что расчёт не может уехать на копейку или на множитель 100.
@@ -147,7 +152,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Bootstrap & Schema Truth | 0/0 | Not started | - |
+| 1. Bootstrap & Schema Truth | 0/5 | Planned | - |
 | 2. Money & VAT Canon | 0/0 | Not started | - |
 | 3. Ledger Canon & Transaction Gateway | 0/0 | Not started | - |
 | 4. Master Data & Inventory Canon | 0/0 | Not started | - |
