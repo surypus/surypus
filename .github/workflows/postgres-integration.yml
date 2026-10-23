@@ -58,18 +58,11 @@ jobs:
 
       - name: Run database migrations
         env:
-          PGHOST: localhost
-          PGPORT: 5432
-          PGUSER: postgres
-          PGPASSWORD: postgres
-          PGDATABASE: surypus_test
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/surypus_test
+          SURYPUS_JWT_SECRET: ci-test-only
         run: |
-          echo "Running migrations..."
-          # Run SQL migration files
-          for f in sql/migrations/*.sql; do
-            echo "Applying $f"
-            psql -h localhost -U postgres -d surypus_test -f "$f" 2>/dev/null || echo "Migration $f skipped"
-          done
+          echo "Running migrations via canonical runner..."
+          DATABASE_URL="postgres://postgres:postgres@localhost:5432/surypus_test" SURYPUS_JWT_SECRET=ci-test-only stack run -- migrate
 
       - name: Run integration tests
         env:
@@ -80,9 +73,10 @@ jobs:
           PGDATABASE: surypus_test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/surypus_test
         run: |
-          stack test --test-arguments "--match Integration" 2>/dev/null || \
-          stack test --test-arguments "--match DB" 2>/dev/null || \
-          echo "No integration tests found"
+          stack test --test-arguments "--match Integration" || (
+            echo "No integration tests matched; failing explicitly per Phase 1 gate"
+            exit 1
+          )
 
       - name: Run database-specific tests
         env:
@@ -92,6 +86,7 @@ jobs:
           PGPASSWORD: postgres
           PGDATABASE: surypus_test
         run: |
-          stack test --test-arguments "--match Repository" 2>/dev/null || \
-          stack test --test-arguments "--match Query" 2>/dev/null || \
-          echo "No database tests found"
+          stack test --test-arguments "--match DB" || (
+            echo "DB tests did not run; failing explicitly per Phase 1 gate"
+            exit 1
+          )
