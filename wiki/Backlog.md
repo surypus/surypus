@@ -67,5 +67,5 @@
 - `Surypus-v3t` (P2) US-3-6: WebSocket real-time (P3, 5SP)
 - `Surypus-x0e` (P2) US-2-3: Read Accounts (P2, 3SP)
 - `Surypus-ykn` (P2) US-2-5: RBAC negative test (P2, 2SP)
-- `Surypus-633` (P1) Add QuickCheck property tests for `Commerce.Contract` invariants — `prop_active_in_window` (active window invariant) and `prop_expiry_decrements_by_one` (daysToExpiry decrements by one per day). Implemented in `test/Commerce/ContractSpec.hs`; spec compiles, tests green on 12 examples, 0 failures (pre-existing CI blocker: `Contract-0.1` dependency namespace collision blocks full suite)
+- `Surypus-634` (P1) Add QuickCheck property for Core.Inventory stock-balance invariant — `Rest = Initial + Receipt - Issue`. Added `test/Core/InventorySpec.hs` (5 unit tests + 2 QuickCheck properties) and wired into `test-suite surypus-test` via `Surypus.cabal` (`other-modules`) and `test/Test.hs` (`import` + `spec` invocation). Verified: full suite `surypus-test` PASS — 1024 examples, 0 failures, 3 pending (pre-existing).
 - `Surypus-626` (P3) Seed data и demo environment

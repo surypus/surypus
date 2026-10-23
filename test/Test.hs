@@ -49,6 +49,7 @@ import qualified Phase2Phase3.AccountingEventsSpec
 import qualified Phase2Phase3.AccountingReadModelSpec
 import qualified Core.Accounting.ReadModelSpec
 import qualified Core.TaxSpec
+import qualified Core.InventorySpec
 import qualified Core.OptimizationSpec
 import qualified Contract.SchemaSpec
 import qualified Commerce.PriceSpec
@@ -112,6 +113,7 @@ main = hspec $ do
   Phase2Phase3.AccountingReadModelSpec.spec
   Core.Accounting.ReadModelSpec.spec
   Core.TaxSpec.spec
+  Core.InventorySpec.spec
   Core.OptimizationSpec.spec
   Contract.SchemaSpec.spec
   Commerce.PriceSpec.spec
