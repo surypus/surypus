@@ -115,6 +115,7 @@
 - **OPS-01**: Просмотр аудит-лога
 - **OPS-02**: Экспорт пробного баланса и журнала в CSV
 - **OPS-03**: Разделение landing-страниц по ролям
+- **OPS-04**: Единый канон очереди задач — `DAL.Queue` на PostgreSQL, DDL вынесен в миграцию
 
 ## Out of Scope
 
@@ -136,17 +137,79 @@
 
 ## Traceability
 
-Заполняется при создании roadmap.
+Обновлено при создании roadmap (2026-10-23). Каждое требование отображено ровно в одну фазу.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| — | — | — |
+| BOOT-01 | Phase 1 | Pending |
+| BOOT-02 | Phase 1 | Pending |
+| BOOT-03 | Phase 1 | Pending |
+| BOOT-04 | Phase 1 | Pending |
+| BOOT-05 | Phase 1 | Pending |
+| BOOT-06 | Phase 1 | Pending |
+| MONEY-01 | Phase 2 | Pending |
+| MONEY-02 | Phase 2 | Pending |
+| MONEY-03 | Phase 2 | Pending |
+| MONEY-04 | Phase 2 | Pending |
+| MONEY-05 | Phase 2 | Pending |
+| LEDGER-01 | Phase 3 | Pending |
+| LEDGER-02 | Phase 3 | Pending |
+| LEDGER-03 | Phase 3 | Pending |
+| LEDGER-04 | Phase 3 | Pending |
+| LEDGER-05 | Phase 3 | Pending |
+| LEDGER-06 | Phase 3 | Pending |
+| LEDGER-07 | Phase 3 | Pending |
+| MAST-01 | Phase 4 | Pending |
+| MAST-02 | Phase 4 | Pending |
+| MAST-03 | Phase 4 | Pending |
+| MAST-04 | Phase 4 | Pending |
+| STCK-01 | Phase 4 | Pending |
+| STCK-02 | Phase 4 | Pending |
+| STCK-03 | Phase 4 | Pending |
+| STCK-05 | Phase 4 | Pending |
+| STCK-06 | Phase 4 | Pending |
+| STCK-04 | Phase 5 | Pending |
+| BILL-01 | Phase 5 | Pending |
+| BILL-02 | Phase 5 | Pending |
+| BILL-03 | Phase 5 | Pending |
+| BILL-04 | Phase 5 | Pending |
+| BILL-05 | Phase 5 | Pending |
+| BILL-06 | Phase 5 | Pending |
+| PAY-01 | Phase 5 | Pending |
+| PAY-02 | Phase 5 | Pending |
+| AUTH-01 | Phase 6 | Pending |
+| AUTH-02 | Phase 6 | Pending |
+| AUTH-03 | Phase 6 | Pending |
+| AUTH-04 | Phase 6 | Pending |
+| AUTH-05 | Phase 6 | Pending |
+| AUTH-06 | Phase 6 | Pending |
+| AUTH-07 | Phase 6 | Pending |
+| UI-01 | Phase 7 | Pending |
+| UI-02 | Phase 7 | Pending |
+| UI-03 | Phase 7 | Pending |
+| UI-04 | Phase 7 | Pending |
+| UI-05 | Phase 7 | Pending |
+| VERF-01 | Phase 8 | Pending |
+| VERF-02 | Phase 8 | Pending |
+| VERF-03 | Phase 8 | Pending |
+| VERF-04 | Phase 8 | Pending |
 
 **Coverage:**
 - v1 requirements: 52 total
-- Mapped to phases: 0
-- Unmapped: 52 ⚠️ (ожидает roadmap)
+- Mapped to phases: 52
+- Unmapped: 0 ✓
+
+| Phase | Requirements |
+|-------|--------------|
+| Phase 1 — Bootstrap & Schema Truth | 6 (BOOT) |
+| Phase 2 — Money & VAT Canon | 5 (MONEY) |
+| Phase 3 — Ledger Canon & Transaction Gateway | 7 (LEDGER) |
+| Phase 4 — Master Data & Inventory Canon | 9 (MAST, STCK) |
+| Phase 5 — Billing, Payments & Trial Balance | 9 (BILL, PAY, STCK-04) |
+| Phase 6 — Auth & RBAC | 7 (AUTH) |
+| Phase 7 — Server-rendered UI (HTMX) | 5 (UI) |
+| Phase 8 — Verification & Proof | 4 (VERF) |
 
 ---
 *Requirements defined: 2026-10-23*
-*Last updated: 2026-10-23 after initial definition*
+*Last updated: 2026-10-23 after roadmap creation*
