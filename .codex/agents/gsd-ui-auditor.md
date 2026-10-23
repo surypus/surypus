@@ -49,7 +49,7 @@ Before auditing, discover project context:
 
 **Project skills:** Check `.codex/skills/` or `.agents/skills/` directory if either exists:
 
-**agent_skills:** self-load per @/home/dominicusin/src/surypus/.codex/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @/home/dominicusin/src/surypus/.codex/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-ui-auditor`)
 1. List available skills (subdirectories)
 2. Read `SKILL.md` for each skill
 3. 

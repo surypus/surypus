@@ -21,6 +21,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decisionMentioned = decisionMentioned;
+exports.phaseDirProblem = phaseDirProblem;
 exports.loadPlanContents = loadPlanContents;
 exports.loadSummaryContents = loadSummaryContents;
 exports.loadDecisionExtraction = loadDecisionExtraction;
@@ -70,6 +71,24 @@ function decisionMentioned(haystack, decision) {
     return phrase ? normalizePhrase(haystack).includes(phrase) : false;
 }
 // ─── File reading ─────────────────────────────────────────────────────────────
+// #4939: loadPlanContents answers no files for a path that is not there, and that reads
+// as "no plan cites anything" — so a phase-dir argument that names no directory
+// (the phase NUMBER in the phase-dir slot) must be told apart BEFORE the scan.
+// Answers null for a directory, else what is wrong with the path and what to do
+// about it. Like the plan gate's contextKind (#4794), the message names the real
+// stat outcome: a permission or I/O failure (EACCES, ELOOP, EIO) is reported as
+// unreadable, not as a missing directory. Only ENOENT/ENOTDIR mean the path is not there.
+function phaseDirProblem(dirPath) {
+    const passDirectory = 'Pass the phase DIRECTORY (e.g. .planning/phases/01-slug), not the phase number.';
+    const st = (0, gate_evidence_cjs_1.statEvidence)(dirPath);
+    if (st.kind === 'none')
+        return { reason: 'phase directory not found', what: 'does not exist', hint: passDirectory, unreadable: false };
+    if (st.kind === 'unreadable')
+        return { reason: 'phase directory unreadable', what: `could not be read (${st.reason})`, hint: 'Check that the directory is readable.', unreadable: true };
+    if (st.value.isDirectory())
+        return null;
+    return { reason: 'phase path is not a directory', what: st.value.isFile() ? 'is a file, not a directory' : 'is not a directory', hint: passDirectory, unreadable: false };
+}
 /**
  * The contents of the phase files `pick` selects (#5170, ADR-5057 §4). An ABSENT phase directory
  * is "no files" (`found []`); a directory or file that exists but cannot be read is `unreadable` —

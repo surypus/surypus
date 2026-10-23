@@ -47,7 +47,7 @@ Before researching, discover project context:
 - Load `rules/*.md` as needed during **research**.
 - Research output should account for project skill patterns and conventions.
 
-**agent_skills:** self-load per @/home/dominicusin/src/surypus/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @/home/dominicusin/src/surypus/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-phase-researcher`)
 
 **.clinerules enforcement:** If `.clinerules` exists, extract all actionable directives (required tools, forbidden patterns, coding conventions, testing rules, security requirements). Include a `## Project Constraints (from .clinerules)` section in RESEARCH.md listing these directives so the planner can verify compliance. Treat .clinerules directives with the same authority as locked decisions from CONTEXT.md — research should not recommend approaches that contradict them.
 </project_context>

@@ -281,6 +281,11 @@ bd ready
   - Replaced two `head points` calls (lines 94, 101) with `points !! 0` — the preceding `length points `shouldBe` 1` guard makes the index safe, but `head` is a partial function that triggers GHC's `-Wx-partial` warning
   - Removed duplicate `monad-logger` entry from test-suite `build-depends` in Surypus.cabal (was listed twice, harmless but untidy)
   - Verified: **793 examples, 0 failures, 3 pending** — no new warnings, all tests pass
+- [x] Wire Commerce.ServiceBillSpec + fix getBalance overpayment clamp (2026-10-22)
+  - 5 tests: partial payment remainder, full payment → 0, overpayment clamped to 0 (same NonNeg invariant as Commerce.Invoice), zero total → 0, QuickCheck property for non-negative balance
+  - Real bug fixed: `getBalance sb = sbTotal sb - sbPaid sb` returned negative when `sbPaid > sbTotal`; now `max 0 (sbTotal sb - sbPaid sb)`
+  - Negative check confirmed: spec compiled against the pre-fix source fails exactly 2 examples (overpayment + property), proving it is not vacuous
+  - Verified: **1002 examples, 0 new failures, 2 pending** (pre-existing DAL.EventStore DB auth failures + pre-existing pending); new spec 5/5 green
 
 ### DevOps
 - [x] Add Docker configuration

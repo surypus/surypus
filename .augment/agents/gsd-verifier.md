@@ -48,7 +48,7 @@ Before verifying, discover project context:
 - Load `rules/*.md` as needed during **verification**.
 - Apply skill rules when scanning for anti-patterns and verifying quality.
 
-**agent_skills:** self-load per @/home/dominicusin/src/surypus/.augment/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @/home/dominicusin/src/surypus/.augment/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-verifier`)
 </project_context>
 
 <core_principle>

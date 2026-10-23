@@ -77,7 +77,28 @@ prop_formatNonEmpty =
     forAll (elements [usd, eur, jpy]) $ \cur ->
       not (T.null (formatAmount cur amount))
 
-spec :: Spec
+-- | Property: convertAmount result is non-negative when the input is
+-- non-negative (matches the @NonNeg@ refinement on the result).
+prop_convertAmountNonNeg :: Property
+prop_convertAmountNonNeg =
+  forAll (choose (0, 10000)) $ \amount ->
+    forAll (elements [usd, eur, jpy]) $ \from ->
+      forAll (elements [usd, eur, jpy]) $ \to ->
+        convertAmount from to amount >= 0
+
+-- | Property: convertAmount is additive in the amount for fixed source and
+-- target currencies: convertAmount c1 c2 (a + b) == c1->c2 a + c1->c2 b.
+prop_convertAmountAdditive :: Property
+prop_convertAmountAdditive =
+  forAll (choose (0, 10000)) $ \a ->
+    forAll (choose (0, 10000)) $ \b ->
+      forAll (elements [usd, eur, jpy]) $ \from ->
+        forAll (elements [usd, eur, jpy]) $ \to ->
+          let lhs = convertAmount from to (a + b)
+              rhs = convertAmount from to a + convertAmount from to b
+              scale = max 1.0 (max (abs lhs) (abs rhs))
+           in abs (lhs - rhs) <= 1e-9 * scale
+
 spec = describe "Finance.Currency" $ do
   describe "convertAmount" $ do
     it "converts USD to EUR correctly" $
@@ -148,3 +169,7 @@ spec = describe "Finance.Currency" $ do
       property prop_formatContainsSymbol
     it "format produces non-empty text" $
       property prop_formatNonEmpty
+    it "conversion result is non-negative" $
+      property prop_convertAmountNonNeg
+    it "conversion is additive" $
+      property prop_convertAmountAdditive

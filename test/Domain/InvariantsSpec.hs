@@ -26,6 +26,7 @@ import Commerce.Orders.Quotation (QuotationLine (..), calcQuotationTotal)
 import Commerce.Payment (Payment (..), PaymentMethod (..), PaymentStatus (..))
 import Commerce.RetBill (RetBill (..), calcFinalAmount)
 import Inventory.GoodsTaxEx (GoodsTaxEx (..), calcTaxAmount)
+import Inventory.Stock (Stock (..), StockFlags (..), mkStock, validateStock)
 import Logistics.Transfer (TransferLine (..), calcTransferAmount, getRemainingQtty)
 import Logistics.Warehouse (StockMovement (..), calcStockBalance)
 import Retail.Receipts.SmartReceipt (SmartReceiptLine (..), calcReceiptTotal)
@@ -150,6 +151,20 @@ instance Arbitrary SmartReceiptLine where
       <*> pure discount
       <*> choose (0, 100)
 
+instance Arbitrary StockFlags where
+  arbitrary = StockFlags <$> arbitrary <*> arbitrary
+
+instance Arbitrary Stock where
+  arbitrary = do
+    goodsId <- arbitrary
+    locId <- arbitrary
+    qtty <- arbitrary
+    resrv <- arbitrary
+    ordered <- arbitrary
+    cost <- arbitrary
+    price <- arbitrary
+    pure $ Stock goodsId locId qtty resrv ordered cost price
+
 -- ---------------------------------------------------------------------------
 -- Properties
 -- ---------------------------------------------------------------------------
@@ -220,6 +235,14 @@ prop_commissionNonNeg :: Agent -> Double -> Property
 prop_commissionNonNeg agent sales =
   sales >= 0 ==> calcCommission agent sales >= 0
 
+-- | 'mkStock' must never produce an invalid balance: any input it accepts
+-- satisfies 'validateStock', and the reconstructed record is unchanged.
+prop_mkStock_validatesTrue :: Stock -> StockFlags -> Property
+prop_mkStock_validatesTrue s flags =
+  case mkStock (sGoodsId s) (sLocationId s) (sQtty s) (sResrvQtty s) (sOrderedQtty s) (sCost s) (sPrice s) flags of
+    Nothing -> property True
+    Just s' -> validateStock s' flags === True .&&. s' == s
+
 spec :: Spec
 spec = do
   describe "Finance.Currency - convertAmount" $ do
@@ -255,6 +278,9 @@ spec = do
 
   describe "Logistics.Warehouse - calcStockBalance" $ do
     prop "stock balance is non-negative" prop_stockBalanceNonNeg
+
+  describe "Inventory.Stock - mkStock / validateStock" $ do
+    prop "reconstructed stock validates True" prop_mkStock_validatesTrue
 
   describe "Retail.Receipts.SmartReceipt - calcReceiptTotal" $ do
     prop "receipt total is non-negative" prop_receiptTotalNonNeg

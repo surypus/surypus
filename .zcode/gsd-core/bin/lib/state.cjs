@@ -14,10 +14,13 @@ const node_path_1 = __importDefault(require("node:path"));
 const pattern_cjs_1 = require("./pattern.cjs");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const ioMod = require("./io.cjs");
-const { output, error, declineNoOp, formatDiagnosticToken } = ioMod;
+const { output, error, declineNoOp, formatDiagnosticToken, ERROR_REASON } = ioMod;
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const cliExitModule = require("./cli-exit.cjs");
 const { ExitError } = cliExitModule;
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const capabilityLedgerMod = require("./capability-ledger.cjs");
+const { readSmallRegularFile } = capabilityLedgerMod;
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const stateContract = require("./state-contract.cjs");
 const { publishStateContract } = stateContract;
@@ -316,19 +319,51 @@ function cmdStateGet(cwd, section, raw) {
         output({ error: `Section or field "${section}" not found` }, raw, '');
     }
 }
-function readTextArgOrFile(cwd, value, filePath, label) {
+/**
+ * #4926: cap on a `--<flag>-file` text input. Twice the 128 KiB one argv string
+ * can carry on Linux, so the file form never takes less than the inline form,
+ * and the entry echoed back on stdout stays small.
+ */
+const TEXT_FILE_MAX_BYTES = 256 * 1024;
+/**
+ * Resolve a text argument that may instead be supplied as a file (`--<flag>`
+ * or `--<flag>-file`).
+ *
+ * #4926: the file is a read-once INPUT — its contents are copied into
+ * STATE.md and the path itself is never written, recorded, or resolved
+ * again — so it is not a project-write resource and is not confined to the
+ * project root. A scratch file from an agent's temp directory is accepted.
+ * A relative path still resolves against the project root.
+ *
+ * A file that cannot be read is a caller error and goes through the fault
+ * path — stderr, non-zero exit (USAGE), `--json-errors` envelope — rather than
+ * an `{ added: false }` payload at exit 0 that a shell caller gating on `$?`
+ * reads as success while nothing was written.
+ *
+ * An unconfined path is hostile input, so the read goes through
+ * `readSmallRegularFile`: a FIFO, a device (`/dev/zero`, a piped `/dev/stdin`)
+ * or a directory is refused without blocking, and a file over
+ * TEXT_FILE_MAX_BYTES is refused without being read.
+ */
+function readTextArgOrFile(cwd, value, filePath, flag) {
     if (!filePath)
         return value;
-    // Path traversal guard: ensure file resolves within project directory
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/unbound-method
-    const { assertWithinRoot, PathAcceptance } = require('./security.cjs');
-    const contained = assertWithinRoot(filePath, cwd, `${label} path`, PathAcceptance.AbsoluteInsideRoot);
+    const refuse = (why) => error(`--${flag}-file could not be read: ${formatDiagnosticToken(filePath)}${why ? ` (${why})` : ''}`, ERROR_REASON.USAGE);
+    let content;
     try {
-        return node_fs_1.default.readFileSync(contained, 'utf-8').trimEnd();
+        content = readSmallRegularFile(node_path_1.default.resolve(cwd, filePath), TEXT_FILE_MAX_BYTES);
     }
-    catch {
-        throw new Error(`${label} file not found: ${filePath}`);
+    catch (err) {
+        const code = err.code;
+        if (code === 'EFBIG')
+            return refuse(`larger than ${TEXT_FILE_MAX_BYTES} bytes`);
+        if (code === 'EISDIR' || code === 'ENXIO')
+            return refuse('not a regular file');
+        return refuse(code);
     }
+    if (content === null)
+        return refuse('ENOENT');
+    return content.trimEnd();
 }
 function cmdStatePatch(cwd, patches, raw) {
     // Validate all field names before processing
@@ -1224,25 +1259,19 @@ function cmdStateUpdateProgress(cwd, raw) {
 }
 function cmdStateAddDecision(cwd, options, raw) {
     const statePath = planningPaths(cwd).state;
-    if (!node_fs_1.default.existsSync(statePath)) {
-        output({ error: 'STATE.md not found' }, raw, undefined);
-        return;
-    }
+    // #4926: every refusal from this verb goes through the fault path (non-zero
+    // exit), so a caller gating on `$?` never reads success while nothing was written.
+    if (!node_fs_1.default.existsSync(statePath))
+        return error('STATE.md not found', ERROR_REASON.USAGE);
     const { phase, summary, summary_file, rationale, rationale_file } = options;
-    let summaryText = undefined;
-    let rationaleText = '';
-    try {
-        summaryText = readTextArgOrFile(cwd, summary, summary_file, 'summary');
-        rationaleText = readTextArgOrFile(cwd, rationale || '', rationale_file, 'rationale') || '';
-    }
-    catch (err) {
-        output({ added: false, reason: err.message }, raw, 'false');
-        return;
-    }
-    if (!summaryText) {
-        output({ error: 'summary required' }, raw, undefined);
-        return;
-    }
+    const summaryText = readTextArgOrFile(cwd, summary, summary_file, 'summary');
+    // The rationale is optional: blank, inline or file, means "no rationale".
+    const rationaleInput = readTextArgOrFile(cwd, rationale || '', rationale_file, 'rationale') || '';
+    const rationaleText = rationaleInput.trim() ? rationaleInput : '';
+    // A blank inline value is refused the same as a blank file (the file form is
+    // trimEnd()ed by readTextArgOrFile, the inline form is not).
+    if (!summaryText || !summaryText.trim())
+        return error('summary required — pass a non-blank --summary or --summary-file', ERROR_REASON.USAGE);
     // #3231/#3481: `--phase` omitted → resolve from the STATE.md being written, via
     // the canonical ladder `state prune` uses. A decision entry is a permanent
     // record, so a literal `[Phase ?]` written while `current_phase` sat three
@@ -1310,23 +1339,14 @@ function cmdStateAddDecision(cwd, options, raw) {
 }
 function cmdStateAddBlocker(cwd, text, raw) {
     const statePath = planningPaths(cwd).state;
-    if (!node_fs_1.default.existsSync(statePath)) {
-        output({ error: 'STATE.md not found' }, raw, undefined);
-        return;
-    }
+    // #4926: every refusal from this verb goes through the fault path (non-zero
+    // exit), so a caller gating on `$?` never reads success while nothing was written.
+    if (!node_fs_1.default.existsSync(statePath))
+        return error('STATE.md not found', ERROR_REASON.USAGE);
     const blockerOptions = typeof text === 'object' && text !== null ? text : { text: text };
-    let blockerText = undefined;
-    try {
-        blockerText = readTextArgOrFile(cwd, blockerOptions.text, blockerOptions.text_file, 'blocker');
-    }
-    catch (err) {
-        output({ added: false, reason: err.message }, raw, 'false');
-        return;
-    }
-    if (!blockerText) {
-        output({ error: 'text required' }, raw, undefined);
-        return;
-    }
+    const blockerText = readTextArgOrFile(cwd, blockerOptions.text, blockerOptions.text_file, 'text');
+    if (!blockerText || !blockerText.trim())
+        return error('text required — pass a non-blank --text or --text-file', ERROR_REASON.USAGE);
     const entry = `- ${blockerText}`;
     let _added = false;
     let created = false;
@@ -1379,25 +1399,16 @@ function cmdStateAddBlocker(cwd, text, raw) {
 }
 function cmdStateAddRoadmapEvolution(cwd, options, raw) {
     const statePath = planningPaths(cwd).state;
-    if (!node_fs_1.default.existsSync(statePath)) {
-        output({ error: 'STATE.md not found' }, raw, undefined);
-        return;
-    }
+    // #4926: every refusal from this verb goes through the fault path (non-zero
+    // exit), so a caller gating on `$?` never reads success while nothing was written.
+    if (!node_fs_1.default.existsSync(statePath))
+        return error('STATE.md not found', ERROR_REASON.USAGE);
     const { phase, action, after, note, note_file, urgent } = options;
-    let noteText = undefined;
-    try {
-        noteText = readTextArgOrFile(cwd, note, note_file, 'note');
-    }
-    catch (err) {
-        output({ added: false, reason: err.message }, raw, 'false');
-        return;
-    }
+    const noteText = readTextArgOrFile(cwd, note, note_file, 'note');
     // Reject missing / empty / whitespace-only notes — an evolution entry with no
     // narrative is meaningless and would corrupt the section with a dangling bullet.
-    if (!noteText || !noteText.trim()) {
-        output({ error: 'note required' }, raw, undefined);
-        return;
-    }
+    if (!noteText || !noteText.trim())
+        return error('note required — pass a non-blank --note or --note-file', ERROR_REASON.USAGE);
     // Flatten line breaks so the entry is always a single Markdown bullet. The
     // dedupe + rendering contract is line-oriented; a multiline --note-file would
     // otherwise spill continuation lines outside the bullet and defeat dedupe.
@@ -5098,6 +5109,23 @@ function cmdStateJson(cwd, raw) {
     output(built, raw, JSON.stringify(built, null, 2));
 }
 /**
+ * 1-based position of the first plan with no summary, when SOME of the phase's plans already have
+ * one (a gap-closure re-entry: plans 1..17 are done and 18 and 19 are the gap plans, #4945).
+ * `null` when no plan is summarized yet, when every plan is, or when the phase directory cannot be
+ * found: the phase then starts at plan 1, exactly as before. Plans and summaries are paired by the
+ * phase locator's own rule, so this agrees with `init` and `phase-plan-index`.
+ */
+function firstPlanToRun(cwd, phaseNumber) {
+    const located = phaseLocatorMod.findPhaseInternal(cwd, String(phaseNumber));
+    if (!located || !located.found)
+        return null;
+    const { plans, incomplete_plans: incomplete } = located;
+    if (incomplete.length === 0 || incomplete.length === plans.length)
+        return null;
+    const index = plans.indexOf(incomplete[0]);
+    return index === -1 ? null : index + 1;
+}
+/**
  * Update STATE.md when a new phase begins execution.
  * Updates body text fields (Current focus, Status, Last Activity, Current Position)
  * and synchronizes frontmatter via writeStateMd.
@@ -5144,6 +5172,8 @@ function cmdStateBeginPhase(cwd, phaseNumber, phaseName, planCount, raw) {
         phaseNumber: phaseNumber,
         phaseName: phaseName ?? null,
         planCount: planCount ?? null,
+        // #4945: a gap-closure re-entry starts at the first plan still to run, not at plan 1.
+        startPlan: firstPlanToRun(cwd, phaseNumber),
     };
     const deps = {
         clock: clock_cjs_1.realClock,

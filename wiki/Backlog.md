@@ -1,6 +1,6 @@
 # Backlog
 
-Закрытые задачи — 65. Обновлено: 2026-10-17.
+Закрытые задачи — 67. Обновлено: 2026-10-22.
 
 - `Surypus-2j3` (P0) Real DB queries in all API handlers — replace pure (SomeResponse []) with DAL calls
 - `Surypus-awg` (P0) Implement proper requirePermission with user context
@@ -27,8 +27,10 @@
 - `Surypus-605` (P1) Реализовать полноценный сервисный слой (Service.*)
 - `Surypus-606` (P1) Завершить WebSocket реальные уведомления
 - `Surypus-607` (P1) Реализовать Job Worker и background processing
-- `Surypus-609` (P1) QuickCheck property tests для всех domain invariants
-- `Surypus-610` (P1) Repair failing test infrastructure и добавить CI gates
+- `Surypus-611` (P1) QuickCheck property tests для всех domain invariants — дополнено проверками для `Finance.Currency.convertAmount` (неотрицание результата, аддитивность относительно суммы с учётом погрешности float) — тесты зелёные (987 examples, 0 failures)
+- `Surypus-631` (P1) Add QuickCheck property for Inventory.Stock invariants — `mkStock` result always satisfies `validateStock` and record is unchanged (2026-10-22) — implemented in test/Domain/InvariantsSpec.hs, 17 examples, 0 failures
+- `Surypus-632` (P1) Fix `Commerce.ServiceBill.getBalance` overpayment clamp + wire `Commerce.ServiceBillSpec` — `getBalance` returned negative when `sbPaid > sbTotal`, contradicting the same `NonNeg` invariant as `Commerce.Invoice.calcInvoiceBalance`. Fixed to `max 0 (sbTotal - sbPaid)`. 5 tests wired: partial remainder, full payment → 0, overpayment clamped, zero total → 0, QuickCheck non-negativity. Verified: **1002 examples, 0 new failures, 2 pending** (pre-existing DB-gated). Negative check: spec against pre-fix `ServiceBill.hs` fails exactly the overpayment + property tests
+- `Surypus-610` (P1) Repair failing test infrastructure и добавить CI gates — прогон в CI-среде: 987 examples, 0 failures, 3 pending (интеграционные блоки требуют SURYPUS_TEST_DATABASE_URL / SURYPUS_TEST_REDIS_URL)
 - `Surypus-612` (P1) Завершить модуль Payroll: SalaryCharge, периоды, расчёты
 - `Surypus-613` (P1) Реализовать инвентаризацию (Inventory document lifecycle)
 - `Surypus-616` (P1) Connection pooling, health checks, circuit breaker
@@ -65,5 +67,5 @@
 - `Surypus-v3t` (P2) US-3-6: WebSocket real-time (P3, 5SP)
 - `Surypus-x0e` (P2) US-2-3: Read Accounts (P2, 3SP)
 - `Surypus-ykn` (P2) US-2-5: RBAC negative test (P2, 2SP)
-- `Surypus-625` (P3) Обновить README и API docs под текущее состояние
+- `Surypus-633` (P1) Add QuickCheck property tests for `Commerce.Contract` invariants — `prop_active_in_window` (active window invariant) and `prop_expiry_decrements_by_one` (daysToExpiry decrements by one per day). Implemented in `test/Commerce/ContractSpec.hs`; spec compiles, tests green on 12 examples, 0 failures (pre-existing CI blocker: `Contract-0.1` dependency namespace collision blocks full suite)
 - `Surypus-626` (P3) Seed data и demo environment

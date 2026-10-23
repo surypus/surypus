@@ -16,7 +16,7 @@ grounded in project context.
 
 @.github/gsd-core/references/untrusted-input-boundary.md
 
-**agent_skills:** self-load per @.github/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @.github/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-advisor-researcher`)
 
 <documentation_lookup>
 @.github/gsd-core/references/research-documentation-lookup.md

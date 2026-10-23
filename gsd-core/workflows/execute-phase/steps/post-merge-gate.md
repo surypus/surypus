@@ -72,7 +72,10 @@ if [ -n "$BUILD_CMD" ]; then
     echo "⚠ Post-merge build gate timed out after 5 minutes"
   else
     echo "✗ Post-merge build gate failed (exit code ${BUILD_EXIT})"
-    WAVE_FAILURE_COUNT=$((WAVE_FAILURE_COUNT + 1))
+    # gsd-handoff:begin wave-failure-record
+    _GSD_HANDOFF="$( { git rev-parse --absolute-git-dir 2>/dev/null || echo "${TMPDIR:-/tmp}/gsd-$(pwd | cksum | cut -d' ' -f1)"; } )/gsd-handoff"; mkdir -p "$_GSD_HANDOFF"
+    printf '.\n' >> "$_GSD_HANDOFF/wave-failures"  # one line per failed gate; a variable would not survive the next block (#4915)
+    # gsd-handoff:end wave-failure-record
   fi
 fi
 ```
@@ -81,7 +84,7 @@ fi
 
 **If `BUILD_EXIT` is 124 (timeout):** Log warning, treat as non-blocking, continue to Test gate.
 
-**If `BUILD_EXIT` is non-zero (build failure):** Increment `WAVE_FAILURE_COUNT` (same semantics as test failures). Present failure output and offer "Fix now" or "Continue" options (same as step 5.8).
+**If `BUILD_EXIT` is non-zero (build failure):** The block above has already recorded the failure in the cumulative wave-failure handoff file (same semantics as test failures; step 5.8 reads it). Present failure output and offer "Fix now" or "Continue" options (same as step 5.8).
 
 **Step B — Test gate:**
 
@@ -145,7 +148,10 @@ elif [ "${TEST_EXIT}" -eq 124 ]; then
   echo "⚠ POST-MERGE TEST GATE TIMED OUT after ${TEST_GATE_TIMEOUT}s — the runner did not exit, likely stuck in watch/dev mode (e.g. vitest without 'run'). Verify tests with a one-shot command (e.g. 'vitest run') or raise workflow.test_gate_timeout. For Xcode suites: xcodebuild collects a sysdiagnose into the .xcresult by default (~10 minutes on a passing suite) — add '-collect-test-diagnostics never' to the test command or raise workflow.test_gate_timeout."
 else
   echo "✗ Post-merge test gate failed (exit code ${TEST_EXIT})"
-  WAVE_FAILURE_COUNT=$((WAVE_FAILURE_COUNT + 1))
+  # gsd-handoff:begin wave-failure-record
+  _GSD_HANDOFF="$( { git rev-parse --absolute-git-dir 2>/dev/null || echo "${TMPDIR:-/tmp}/gsd-$(pwd | cksum | cut -d' ' -f1)"; } )/gsd-handoff"; mkdir -p "$_GSD_HANDOFF"
+  printf '.\n' >> "$_GSD_HANDOFF/wave-failures"  # one line per failed gate; a variable would not survive the next block (#4915)
+  # gsd-handoff:end wave-failure-record
 fi
 ```
 
@@ -153,6 +159,6 @@ fi
 
 **If `TEST_EXIT` is 124 (timeout):** The runner did not exit within the budget — surface the printed message clearly (watch/dev mode is the likely cause; #1857). Treated as non-blocking (a genuinely long suite may just need a larger `workflow.test_gate_timeout`), but it is NEVER silently ignored — the watch-mode cause is named so the user can fix it (one-shot command / `workflow.test_command` / larger timeout).
 
-**If `TEST_EXIT` is non-zero (test failure):** Increment `WAVE_FAILURE_COUNT` to track
-cumulative failures across waves. Subsequent waves should report:
-`⚠ Note: ${WAVE_FAILURE_COUNT} prior wave(s) had test failures`
+**If `TEST_EXIT` is non-zero (test failure):** The block above has recorded the failure in the cumulative wave-failure handoff file, which tracks
+failures across waves (a shell counter cannot: every fenced block is its own shell, #4915). Subsequent waves should report:
+`⚠ Note: ${WAVE_FAILURE_COUNT} prior wave(s) had test failures` (`WAVE_FAILURE_COUNT` is read from the handoff file, as in step 5.8 of `execute-phase.md`)

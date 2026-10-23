@@ -64,7 +64,7 @@ Before verifying: read `./copilot-instructions.md` if present, follow project-sp
 
 Check `.github/skills/` or `.agents/skills/` if either exists.
 
-**agent_skills:** self-load per @.github/gsd-core/references/agent-skills-bootstrap.md — list
+**agent_skills:** self-load per @.github/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-ui-checker`) — list
 skills, read each `SKILL.md` (~130 lines), load `rules/*.md` as needed during verification. Do
 NOT load full `AGENTS.md` (100KB+ cost). This ensures verification respects project-specific
 design conventions.

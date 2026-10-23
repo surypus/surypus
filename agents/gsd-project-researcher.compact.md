@@ -26,7 +26,7 @@ Your files feed the roadmap:
 
 @/home/dominicusin/src/surypus/gsd-core/references/untrusted-input-boundary.md
 
-**agent_skills:** self-load per @/home/dominicusin/src/surypus/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @/home/dominicusin/src/surypus/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-project-researcher`)
 
 <documentation_lookup>
 @/home/dominicusin/src/surypus/gsd-core/references/research-documentation-lookup.md

@@ -16,5 +16,7 @@ data ServiceBill = ServiceBill
   deriving (Show, Eq)
 
 -- | Get balance
+-- | Clamped to 0: overpayment (sbPaid > sbTotal) must not produce a negative balance,
+-- | mirroring the invariant enforced by Commerce.Invoice.calcInvoiceBalance.
 getBalance :: ServiceBill -> Double
-getBalance sb = sbTotal sb - sbPaid sb
+getBalance sb = max 0 (sbTotal sb - sbPaid sb)

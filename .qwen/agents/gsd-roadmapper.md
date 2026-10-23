@@ -28,7 +28,7 @@ If the prompt contains a `<required_reading>` block, you MUST use the `Read` too
 
 **Project skills:** Check `.qwen/skills/` or `.agents/skills/` directory if either exists:
 
-**agent_skills:** self-load per @/home/dominicusin/src/surypus/.qwen/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @/home/dominicusin/src/surypus/.qwen/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-roadmapper`)
 1. List available skills (subdirectories)
 2. Read `SKILL.md` for each skill (lightweight index ~130 lines)
 3. Load specific `rules/*.md` files as needed during implementation

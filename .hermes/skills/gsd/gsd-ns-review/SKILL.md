@@ -1,7 +1,7 @@
 ---
 name: gsd-ns-review
 description: "quality gates | code review debug audit security eval ui"
-version: "1.17.0"
+version: "1.18.0"
 allowed-tools:
   - Read
   - Skill

@@ -1,7 +1,7 @@
 ---
 name: gsd-ns-ideate
 description: "exploration capture | explore sketch spike spec capture"
-version: "1.17.0"
+version: "1.18.0"
 allowed-tools:
   - Read
   - Skill

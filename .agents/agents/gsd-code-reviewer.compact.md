@@ -42,7 +42,7 @@ Read `./GEMINI.md` if present — follow project guidelines, security requiremen
 
 **Project skills:** check `.agents/skills/` or `.agents/skills/`: list skill subdirectories, read each `SKILL.md` (lightweight index ~130 lines), load specific `rules/*.md` as needed. 
 
-**agent_skills:** self-load per @.agents/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @.agents/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-code-reviewer`)
 </project_context>
 
 <review_scope>

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// gsd-hook-version: 1.17.0
+// gsd-hook-version: 1.18.0
 // GSD Worktree Path Guard — PreToolUse hook
 // Blocks Edit/Write/MultiEdit tool calls that target absolute paths outside the worktree root.
 //

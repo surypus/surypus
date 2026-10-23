@@ -20,6 +20,8 @@ const markdown_sectionizer_cjs_1 = require("./markdown-sectionizer.cjs");
 const io = require("./io.cjs");
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- config-loader.cjs is an export= CommonJS module
 const configLoader = require("./config-loader.cjs");
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- capability-ledger.cjs is an export= CommonJS module
+const capabilityLedger = require("./capability-ledger.cjs");
 const project_root_cjs_1 = require("./project-root.cjs");
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- model-resolver.cjs is an export= CommonJS module
 const modelResolver = require("./model-resolver.cjs");
@@ -3773,7 +3775,7 @@ function buildAgentSkillsBlock(config, agentType, projectRoot, diagnostics) {
     }).join('\n');
     return `<agent_skills>\nRead these user-configured skills:\n${lines}\n</agent_skills>`;
 }
-function cmdAgentSkills(cwd, agentType, raw, jsonMode) {
+function cmdAgentSkills(cwd, agentType, raw, jsonMode, skillsOnly = false) {
     if (!agentType) {
         output('', raw, '');
         return;
@@ -3804,8 +3806,13 @@ function cmdAgentSkills(cwd, agentType, raw, jsonMode) {
     // (a real exit code) instead of a prose config-get gate. Compact is tried
     // first when requested; a missing compact sibling falls back to canonical
     // with the fallback disclosed in the payload itself, never a silent switch.
+    //
+    // #5122: `skillsOnly` (the CLI's `--skills-only`) is the agent's own
+    // self-load. It wants configured skills and nothing else, so it skips the
+    // fallback on every runtime — otherwise a non-Claude agent reads its own
+    // persona back into itself as if it were a skills block.
     let agentPayloadVariant = null;
-    if (!block) {
+    if (!block && !skillsOnly) {
         const runtime = (config && config['runtime']) || process.env['GSD_RUNTIME'] || 'claude';
         if (runtime !== 'claude') {
             const agentCheck = checkAgentsInstalled(runtime, projectRoot);
@@ -4071,7 +4078,7 @@ function buildSkillManifest(cwd, skillsDir = null) {
             if (!entry.isDirectory())
                 continue;
             const skillMdPath = node_path_1.default.join(rootPath, entry.name, 'SKILL.md');
-            const content = (0, shell_command_projection_cjs_1.platformReadSync)(skillMdPath);
+            const content = capabilityLedger.readSkillFile(skillMdPath);
             if (content !== null) {
                 if (pushSkillEntry(`${entry.name}/SKILL.md`, content, skillMdPath))
                     skillCount++;
@@ -4096,7 +4103,7 @@ function buildSkillManifest(cwd, skillsDir = null) {
                 if (!nested.isDirectory())
                     continue;
                 const nestedSkillMd = node_path_1.default.join(nestedSkillsDir, nested.name, 'SKILL.md');
-                const nestedContent = (0, shell_command_projection_cjs_1.platformReadSync)(nestedSkillMd);
+                const nestedContent = capabilityLedger.readSkillFile(nestedSkillMd);
                 if (nestedContent === null)
                     continue;
                 // Use forward-slash separator explicitly so manifest paths are posix-style

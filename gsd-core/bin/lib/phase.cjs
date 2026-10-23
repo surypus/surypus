@@ -1068,6 +1068,62 @@ function describeGoalShapedTitle(description) {
         `as the phase title; consider a short title with the detail moved to **Goal:**.`);
 }
 /**
+ * Phase numbers the roadmap itself declares — a section header or a roadmap bullet — sentinels
+ * excluded. This is deliberately NOT the allocation set: allocation also counts on-disk directories
+ * and sibling-worktree phases so a new number cannot collide, but a `Depends on:` line has to point
+ * at something a reader of THIS roadmap can find (#5113).
+ */
+function roadmapDeclaredPhaseNums(rawContent) {
+    const { regex: headerPattern, phaseNumGroup } = buildPhaseHeadingScanRegex(PHASE_HEADING_BASELINE.LABEL_ONLY);
+    const bulletPattern = /^[ \t]*-[ \t]*\[[^\]]{0,200}\][ \t]*\*{0,2}Phase[ \t]+(\d+)(?=[:.\s*]|$)/gim;
+    const nums = new Set();
+    let m;
+    while ((m = headerPattern.exec(rawContent)) !== null) {
+        const num = parseInt(m[phaseNumGroup], 10);
+        if (!isSentinelPhaseId(num))
+            nums.add(num);
+    }
+    while ((m = bulletPattern.exec(rawContent)) !== null) {
+        const num = parseInt(m[1], 10);
+        if (!isSentinelPhaseId(num))
+            nums.add(num);
+    }
+    return [...nums];
+}
+/**
+ * The `**Depends on:**` line for a freshly added numeric phase: the nearest lower phase the roadmap
+ * declares, or `Nothing` when it declares none. It was `newId - 1` regardless, which named a phase
+ * that exists only on a sibling branch, as an orphan directory, or not at all when numbering has a
+ * gap (#5113). Custom-named phases carry no dependency line.
+ */
+function dependsOnLine(newPhaseId, declared) {
+    if (typeof newPhaseId !== 'number')
+        return '';
+    let nearest = null;
+    for (const n of declared)
+        if (n < newPhaseId && (nearest === null || n > nearest))
+            nearest = n;
+    return `\n**Depends on:** ${nearest === null ? 'Nothing' : `Phase ${nearest}`}`;
+}
+/**
+ * Splice a phase entry into `rawContent` at `at`, changing nothing else: the blank lines around the
+ * block and its line endings are the block's own, so the surrounding document is published byte for
+ * byte (#5113). `block` is LF text that starts and ends with a newline.
+ */
+function spliceRoadmapBlock(rawContent, atOffset, block) {
+    const eol = rawContent.includes('\r\n') ? '\r\n' : '\n';
+    // The insertion offset is found by searching for '\n---', which lands between the CR and the LF of
+    // a CRLF pair; splice before the pair instead of through it.
+    const at = rawContent[atOffset - 1] === '\r' && rawContent[atOffset] === '\n' ? atOffset - 1 : atOffset;
+    const before = rawContent.slice(0, at);
+    const after = rawContent.slice(at);
+    const body = block.replace(/^\n+/, '').replace(/\n+$/, '\n').replace(/\n/g, eol);
+    const blankBefore = before === '' || /(?:\r?\n){2}$/.test(before);
+    const lead = blankBefore ? '' : /\n$/.test(before) ? eol : eol + eol;
+    const tail = after === '' || /^\r?\n/.test(after) ? '' : eol;
+    return before + lead + body + tail + after;
+}
+/**
  * #3163: compute the byte offset in `rawContent` where a new `### Phase N:`
  * entry should be inserted — at the end of the active phase list, scoped to the
  * CURRENT MILESTONE so the entry can never land before a trailing `---` in
@@ -1310,13 +1366,11 @@ function cmdPhaseAdd(cwd, description, raw, customId) {
         const dirPath = node_path_1.default.join(planningDir(cwd), 'phases', _dirName);
         (0, shell_command_projection_cjs_1.platformEnsureDir)(dirPath);
         (0, shell_command_projection_cjs_1.platformWriteSync)(node_path_1.default.join(dirPath, '.gitkeep'), '');
-        const dependsOn = config.phase_naming === 'custom'
-            ? ''
-            : `\n**Depends on:** Phase ${typeof _newPhaseId === 'number' ? _newPhaseId - 1 : 'TBD'}`;
+        const dependsOn = config.phase_naming === 'custom' ? '' : dependsOnLine(_newPhaseId, roadmapDeclaredPhaseNums(rawContent));
         const phaseEntry = `\n### Phase ${_newPhaseId}: ${description}\n\n**Goal:** [To be planned]\n**Requirements**: TBD${dependsOn}\n**Plans:** 0 plans\n\nPlans:\n- [ ] TBD (run ${(0, runtime_slash_cjs_1.formatGsdSlash)('plan-phase', (0, runtime_slash_cjs_1.resolveRuntime)(cwd))} ${_newPhaseId} to break down)\n`;
         const insertAt = phaseEntryInsertOffset(rawContent, cwd);
-        const updatedContent = rawContent.slice(0, insertAt) + phaseEntry + rawContent.slice(insertAt);
-        (0, shell_command_projection_cjs_1.platformWriteSync)(roadmapPath, updatedContent);
+        const updatedContent = spliceRoadmapBlock(rawContent, insertAt, phaseEntry);
+        (0, shell_command_projection_cjs_1.platformWriteSync)(roadmapPath, updatedContent, { verbatim: true });
         return { newPhaseId: _newPhaseId, dirName: _dirName };
     });
     const titleWarning = describeGoalShapedTitle(description);
@@ -1432,12 +1486,10 @@ function cmdPhaseAddBatch(cwd, descriptions, raw) {
             const dirPath = node_path_1.default.join(planningDir(cwd), 'phases', dirName);
             (0, shell_command_projection_cjs_1.platformEnsureDir)(dirPath);
             (0, shell_command_projection_cjs_1.platformWriteSync)(node_path_1.default.join(dirPath, '.gitkeep'), '');
-            const dependsOn = config.phase_naming === 'custom'
-                ? ''
-                : `\n**Depends on:** Phase ${typeof newPhaseId === 'number' ? newPhaseId - 1 : 'TBD'}`;
+            const dependsOn = config.phase_naming === 'custom' ? '' : dependsOnLine(newPhaseId, roadmapDeclaredPhaseNums(rawContent));
             const phaseEntry = `\n### Phase ${newPhaseId}: ${description}\n\n**Goal:** [To be planned]\n**Requirements**: TBD${dependsOn}\n**Plans:** 0 plans\n\nPlans:\n- [ ] TBD (run ${(0, runtime_slash_cjs_1.formatGsdSlash)('plan-phase', (0, runtime_slash_cjs_1.resolveRuntime)(cwd))} ${newPhaseId} to break down)\n`;
             const insertAt = phaseEntryInsertOffset(rawContent, cwd);
-            rawContent = rawContent.slice(0, insertAt) + phaseEntry + rawContent.slice(insertAt);
+            rawContent = spliceRoadmapBlock(rawContent, insertAt, phaseEntry);
             added.push({
                 phase_number: typeof newPhaseId === 'number' ? newPhaseId : String(newPhaseId),
                 padded: typeof newPhaseId === 'number' ? String(newPhaseId).padStart(2, '0') : String(newPhaseId),
@@ -1447,7 +1499,7 @@ function cmdPhaseAddBatch(cwd, descriptions, raw) {
                 naming_mode: config.phase_naming,
             });
         }
-        (0, shell_command_projection_cjs_1.platformWriteSync)(roadmapPath, rawContent);
+        (0, shell_command_projection_cjs_1.platformWriteSync)(roadmapPath, rawContent, { verbatim: true });
         return added;
     });
     output({ phases: results, count: results.length }, raw);
@@ -3061,6 +3113,42 @@ function formatRequirementsLineWarning(phaseNum, rawLine, analysis) {
             oversized,
     };
 }
+/**
+ * #4972: advisory gaps for the phase artifacts that active `verify:post` steps
+ * declared `onError: "halt"` and `produces` (SECURITY.md, VALIDATION.md).
+ * Missing file, an unresolved `status: draft`, or (SECURITY.md) `threats_open`
+ * above zero. Any other `status` spelling counts as closed — the audit skills
+ * do not pin one value, so this does not invent a vocabulary.
+ */
+function auditArtifactWarnings(cwd, phaseFullDir) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- lazy: loop-resolver pulls in the capability registry
+    const loopResolver = require('./loop-resolver.cjs');
+    const out = [];
+    const files = node_fs_1.default.readdirSync(phaseFullDir);
+    for (const hook of loopResolver.resolveActiveHooksForPoint(cwd, 'verify:post').activeHooks) {
+        if (hook.kind !== 'step' || hook.onError !== 'halt')
+            continue;
+        for (const artifact of hook.produces ?? []) {
+            if (!/^[A-Z][A-Z0-9-]*\.md$/.test(artifact))
+                continue;
+            const skill = hook.ref?.skill ?? hook.capId;
+            const found = files.filter((f) => f === artifact || f.endsWith(`-${artifact}`)).sort()[0];
+            if (!found) {
+                out.push(`${artifact}: missing — the ${hook.capId} audit (/gsd:${skill}) never ran for this phase, and a verify:post step cannot block the close (#4972)`);
+                continue;
+            }
+            const fm = frontmatterMod.extractFrontmatter(node_fs_1.default.readFileSync(node_path_1.default.join(phaseFullDir, found), 'utf-8'));
+            if (typeof fm['status'] === 'string' && fm['status'].trim().toLowerCase() === 'draft') {
+                out.push(`${found}: status is still draft — the ${hook.capId} audit (/gsd:${skill}) was not completed (#4972)`);
+            }
+            const open = Number(fm['threats_open']);
+            if (artifact === 'SECURITY.md' && Number.isFinite(open) && open > 0) {
+                out.push(`${found}: ${open} threat(s) still open (#4972)`);
+            }
+        }
+    }
+    return out;
+}
 function cmdPhaseComplete(cwd, phaseNum, raw) {
     if (!phaseNum) {
         error('phase number required for phase complete');
@@ -3273,6 +3361,23 @@ function cmdPhaseComplete(cwd, phaseNum, raw) {
     catch {
         /* best-effort, same posture as the #2245 pre-scan above: an unreadable
          * SUMMARY means one fewer advisory this run, never a blocked completion. */
+    }
+    // #4972: a `verify:post` STEP declared `onError: "halt"` that produces a
+    // phase artifact (security -> SECURITY.md, nyquist -> VALIDATION.md) reads as
+    // a blocking precondition, but a step is advisory by construction (ADR-894
+    // "steps are additive, gates block") and the workflow only prints a line the
+    // operator can ignore — so a phase could close with the audit never run. This
+    // verb is the one place every close passes through, so it names the gap on
+    // the same ADVISORY `warnings[]` channel as the #2572 check above. Advisory,
+    // not a refusal: both capabilities are on by default, so a hard block here
+    // would stop every existing project's next phase close; the security
+    // threats-open gate at `ship:pre` is the enforced one and is untouched.
+    try {
+        warnings.push(...auditArtifactWarnings(cwd, phaseFullDir));
+    }
+    catch {
+        /* best-effort, same posture as the advisories above: an unresolvable hook
+         * set or unreadable artifact means one fewer advisory, never a blocked close. */
     }
     let nextPhaseNum = null;
     let nextPhaseName = null;
@@ -4230,7 +4335,11 @@ function cmdPhaseComplete(cwd, phaseNum, raw) {
                     nextPhaseDisk,
                 }, {
                     clock: clock_cjs_1.realClock,
-                    roadmapProvider: () => roadmapContent,
+                    // #4901: the body counter derives from the same current-milestone scope
+                    // as its frontmatter twin below (postCompletionRoadmapScope), not the
+                    // whole file, so the two writers cannot disagree on which
+                    // `## Progress` table they count.
+                    roadmapProvider: () => (roadmapContent !== null ? extractCurrentMilestone(roadmapContent, cwd) : null),
                     sourcePath: statePath,
                 });
                 stateContent = completeResult.content;

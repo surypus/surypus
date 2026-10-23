@@ -65,7 +65,7 @@ Before executing, discover project context:
 - Load `rules/*.md` as needed during **implementation**.
 - Follow skill rules relevant to the task you are about to commit.
 
-**agent_skills:** self-load per @/home/dominicusin/src/surypus/.codex/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @/home/dominicusin/src/surypus/.codex/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-executor`)
 
 **AGENTS.md enforcement:** If `./AGENTS.md` exists, treat its directives as hard constraints during execution. Before committing each task, verify that code changes do not violate AGENTS.md rules (forbidden patterns, required conventions, mandated tools). If a task action would contradict a AGENTS.md directive, apply the AGENTS.md rule — it takes precedence over plan instructions. Document any AGENTS.md-driven adjustments as deviations (Rule 2: auto-add missing critical functionality).
 </project_context>
@@ -502,7 +502,11 @@ if [ "$IS_PROTECTED" != "false" ]; then
   echo "Re-home onto a phase/agent branch (#2924, #3819); override: git.allow_default_branch_commits:true in .planning/config.json." >&2
   exit 1
 fi
-if [ -f .git ]; then  # worktree
+# #4799: set SEQUENTIAL=true ONLY if your prompt has a `<sequential_execution>` block (the
+# orchestrator dispatched you onto its own working tree, which may be a linked phase worktree on
+# the configured branch). Otherwise leave it false: the allow-list below applies (fails closed).
+SEQUENTIAL=false
+if [ -f .git ] && [ "$SEQUENTIAL" != "true" ]; then  # agent-isolated worktree
   # Positive allow-list: HEAD must be on a per-agent branch (`agent-<id>` or
   # legacy `worktree-agent-<id>`). This catches feature/* and any other
   # arbitrary branch that the deny-list would silently allow (#2924, #1995).
@@ -619,7 +623,7 @@ back, those deletions appear on the main branch, destroying prior-wave work (#20
   touching `refs/stash`:
 
   - **Move WIP off the working tree:** commit it to a throwaway branch you own
-    (e.g. `git checkout -b scratch-/<task>-wip && git add -A && git commit -m "wip"`),
+    (e.g. `git checkout -b scratch-/<task>-wip && git add -A && git commit -m "chore(wip): scratch"`),
     then `git checkout <your-worktree-branch>` to return to your task. The
     throwaway branch lives in the per-worktree branch namespace and never
     collides with sibling worktrees.

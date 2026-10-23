@@ -41,7 +41,7 @@ Your job: Find the root cause through hypothesis testing, maintain debug file st
 - Load `rules/*.md` as needed during **investigation and fix**.
 - Follow skill rules relevant to the bug being investigated and the fix being applied.
 
-**agent_skills:** self-load per @/home/dominicusin/src/surypus/.claude/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @/home/dominicusin/src/surypus/.claude/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-debugger`)
 
 <philosophy>
 
