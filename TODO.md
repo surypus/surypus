@@ -533,6 +533,10 @@ bd ready
   - DAL.Schema.migrateAll: no-op that shadowed the real migration in Surypus.DB.Schema.runMigrations
   - No `return ()` / `undefined` / `TODO` stub patterns remain anywhere in src/
 
+- [x] Wire test/DAL/EventStoreSpec.hs into cabal test-suite (2026-10-23)
+  - Added `DAL.EventStoreSpec` to the test-suite `other-modules` in `Surypus.cabal` — first coverage for `DAL.EventStore` (5 tests: append/retrieve events, get events from sequence, get latest sequence, snapshot round-trip, replay from snapshot). The spec is DB-gated (pends without SURYPUS_TEST_DATABASE_URL), wired through `DAL.EventStoreIntegration`.
+  - Verified: **1012 examples, 0 failures, 3 pending**
+
 ## Stats
 
 | Status | Count |
@@ -574,4 +578,5 @@ bd ready
 | Done (Dead stub removal ×6) | 1 |
 | Done (New: closePool real teardown) | 1 |
 | Done (Dead stub removal ×8) | 1 |
-| **Total** | **95** |
+| Done (New: DAL.EventStoreSpec wired into cabal test-suite) | 1 |
+| **Total** | **96** |

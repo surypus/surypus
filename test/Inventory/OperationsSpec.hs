@@ -137,6 +137,12 @@ spec = do
     it "stays non-negative when every lot is non-negative" $
       property $ \lots -> recalculateBalance lots >= (0 :: Double)
 
+  describe "Inventory.Operations.recalculateBalance - theorem" $ do
+    it "recalculates as the sum of lot quantities for arbitrary non-negative quantities" $
+      property prop_recalculateBalance_eq_sumOfLotQtty
+    it "stays non-negative when every lot is non-negative (theorem)" $
+      property prop_recalculateBalance_nonneg
+
   describe "Inventory.Operations - class guard" $ do
     it "every quantity-taking validator fails closed on non-positive quantity and accepts a valid one" $ do
       let validators =
@@ -150,9 +156,35 @@ spec = do
               then (pure () :: IO ())
               else expectationFailure (name ++ ": expected " ++ show expected ++ ", got " ++ show actual)
       mapM_
-        ( \(name, f) -> do
+        ( \ (name, f) -> do
             expect (name ++ " qty 0") StockOpInvalidQuantity (f 0)
             expect (name ++ " qty -1") StockOpInvalidQuantity (f (-1))
             expect (name ++ " qty 5") StockOpSuccess (f 5)
         )
         validators
+
+-- ---------------------------------------------------------------------------
+-- Property-based tests for recalculateBalance theorem
+-- ---------------------------------------------------------------------------
+
+-- | Helper: build a Lot with the given quantity (all other fields zero).
+mkLot :: Double -> Lot
+mkLot q = Lot 1 1 1 q 0 0 (fromGregorian 2024 1 1) Nothing 0 Nothing Nothing Nothing
+
+-- | 'recalculateBalance' is the sum of lot quantities (pinned theorem).
+prop_recalculateBalance_eq_sumOfLotQtty :: [Double] -> Property
+prop_recalculateBalance_eq_sumOfLotQtty qs =
+  recalculateBalance (map mkLot qs) === sum qs
+
+-- | Non-negative Double generator (no negatives, no discards).
+genNonNegDouble :: Gen Double
+genNonNegDouble = choose (0, 100000)
+
+-- | 'recalculateBalance' stays non-negative when every lot quantity is
+-- non-negative (the module's documented invariant).
+prop_recalculateBalance_nonneg :: Property
+prop_recalculateBalance_nonneg =
+  forAll (listOf genNonNegDouble) $ \qs ->
+    recalculateBalance (map mkLot qs) >= 0
+
+

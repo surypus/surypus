@@ -250,6 +250,39 @@ prop_validateStock_manual =
           forAll (choose (0, 1000)) $ \p ->
             validateStock (Stock 1 1 q r o c p) (StockFlags False False) === True
 
+-- | validateStock rejects a Stock with negative sQtty when negativeAllowed is off.
+prop_validateStock_rejectsNegativeQtyOff :: Property
+prop_validateStock_rejectsNegativeQtyOff =
+  forAll (choose (0, 1000)) $ \r ->
+    forAll (choose (0, 1000)) $ \o ->
+      forAll (choose (0, 1000)) $ \c ->
+        forAll (choose (0, 1000)) $ \p ->
+          let s = Stock 1 1 (-1) r o c p
+          in validateStock s (StockFlags False False) === False
+
+-- | validateStock accepts a negative-qtty Stock when negativeAllowed is on.
+prop_validateStock_acceptsNegativeQtyOn :: Property
+prop_validateStock_acceptsNegativeQtyOn =
+  forAll (choose (0, 1000)) $ \r ->
+    forAll (choose (0, 1000)) $ \o ->
+      forAll (choose (0, 1000)) $ \c ->
+        forAll (choose (0, 1000)) $ \p ->
+          let s = Stock 1 1 (-1) r o c p
+          in validateStock s (StockFlags True False) === True
+
+-- | validateStock is equivalent to the documented rule:
+-- | (sQtty >= 0 || negativeAllowed) && all other fields non-negative.
+prop_validateStock_consistentWithFlags :: Property
+prop_validateStock_consistentWithFlags =
+  forAll (choose (0, 1000)) $ \q ->
+    forAll (choose (0, 1000)) $ \r ->
+      forAll (choose (0, 1000)) $ \o ->
+        forAll (choose (0, 1000)) $ \c ->
+          forAll (choose (0, 1000)) $ \p ->
+            let s = Stock 1 1 q r o c p
+                flags = StockFlags False False
+            in validateStock s flags === (q >= 0 && all (>= 0) [sResrvQtty s, sOrderedQtty s, sCost s, sPrice s])
+
 -- ============================================================================
 -- MAIN TEST
 -- ============================================================================
@@ -285,3 +318,8 @@ spec = do
     prop "mkStock accepts negative quantity when negativeAllowed on" prop_mkStock_acceptsNegativeQuantity
     prop "all fields non-negative after mkStock" prop_mkStock_fieldsNonNeg
     prop "validateStock True for manually-built Stock" prop_validateStock_manual
+
+
+    prop "validateStock rejects negative quantity when negativeAllowed off" prop_validateStock_rejectsNegativeQtyOff
+    prop "validateStock accepts negative quantity when negativeAllowed on" prop_validateStock_acceptsNegativeQtyOn
+    prop "validateStock consistent with negativeAllowed flag" prop_validateStock_consistentWithFlags

@@ -55,6 +55,8 @@
 - [ ] **TASK-029**: Integration tests for v51.0 features (snapshots, multi-tenant, rate limits, WebSocket) — effort: **5 days**
 - [x] **TASK-030**: Expand QuickCheck properties (accounting, stock, VAT invariants; multi-tenant isolation) — effort: **4 days** ✅ Closed 2026-10-22: QuickCheckInvariantsSpec expanded with a "Stock invariants" section — 6 properties (mkStock success/non-negativity; reject/accept negative quantity; validateStock True for mkStock results and manual Stock; all-fields non-negative). All 6 properties run end-to-end against `Inventory.Stock` (100 cases each, 0 failures); full QuickCheckInvariantsSpec = 20 examples, 0 failures. Finance.AccountSpec added 2026-10-20 (3 invariants) remains as the partial item; multi-tenant QuickCheck remains open.
 
+  - **2026-10-23 (follow-up, this run)**: Reinforced the `Inventory.Stock` invariants in `QuickCheckInvariantsSpec` — added 3 deterministic properties: `prop_validateStock_rejectsNegativeQtyOff` (negative qty rejected when `negativeAllowed` off), `prop_validateStock_acceptsNegativeQtyOn` (negative qty accepted when on), and `prop_validateStock_consistentWithFlags` (pins the documented rule `sQtty >= 0 || negativeAllowed && all-fields-non-negative`). Verified: full suite **1017 examples, 0 failures, 3 pending** (DB-gated).
+
 ## Priority P1 (Should do — production hardening)
 
 - [ ] **TASK-005**: Create `DAL.Payroll` module with insert/query/audit — effort: **3 days**
@@ -92,6 +94,7 @@
 
 - [x] **TASK-036**: QuickCheck property coverage for `Commerce.Payment` — `isCompleted`, `canRefund`, `calcPaymentAmount` ≥ 0, `validatePayment` (4 properties, 100 cases each, 0 failures). Implemented 2026-10-23; verified via `stack test` (1010 examples, 0 failures, 3 pending — the 3 pending are the DB/Redis integration tests that require env vars).
   - Extends TASK-030 (QuickCheck expansion): payment invariants were not covered by any property suite before this change.
+- [x] **TASK-028 (follow-up, 2026-10-23)**: Wire `test/DAL/EventStoreSpec.hs` into cabal test-suite — `DAL.EventStoreSpec` added to `Surypus.cabal` test-suite `other-modules` (5 tests: append/retrieve events, get events from sequence, get latest sequence, snapshot round-trip, replay from snapshot). DB-gated (pends without `SURYPUS_TEST_DATABASE_URL`), wired through `DAL.EventStoreIntegration`. Verified: **1012 examples, 0 failures, 3 pending**.
 - [ ] **TASK-029**: Integration tests for v51.0 features (snapshots, multi-tenant, rate limits, WebSocket) — effort: **5 days** (open)
 - [ ] **TASK-030**: Multi-tenant QuickCheck isolation — effort: **2 days** (partial; payment properties added 2026-10-23; remaining multi-tenant property coverage open)
 
