@@ -21,7 +21,7 @@ import Data.Time (Day, getCurrentTime)
 import DAL.DB
 import DAL.EventStore (Event(..), appendEvent, currentEventSchemaVersion)
 import DAL.Pool (ConnectionPool)
-import Finance.Types (AccTurn   (..))
+import Finance.Types (AccTurn (..))
 
 --------------------------------------------------------------------------------
 -- Type Aliases with Refinements

@@ -287,6 +287,11 @@ bd ready
   - Negative check confirmed: spec compiled against the pre-fix source fails exactly 2 examples (overpayment + property), proving it is not vacuous
   - Verified: **1002 examples, 0 new failures, 2 pending** (pre-existing DAL.EventStore DB auth failures + pre-existing pending); new spec 5/5 green
 
+- [x] Wire `MultiTenancy.TenantConfigSpec` into cabal test-suite (2026-10-23)
+  - 7 tests over `MultiTenancy.TenantConfig`: `defaultTenant` invariants, `tenantSchema` behaviour, `tenantSchema` == `tcDatabaseSchema` field
+  - Targets TASK-030 (multi-tenant QuickCheck isolation) — first QuickCheck coverage of the multi-tenant config module
+  - Verified: **1011 examples, 0 failures, 3 pending** (cabal test, GHC 9.10.3); 3 pending are DB/Redis integration specs
+
 ### DevOps
 - [x] Add Docker configuration
 - [x] Add CI/CD pipeline

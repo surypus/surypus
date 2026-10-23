@@ -96,7 +96,10 @@
   - Extends TASK-030 (QuickCheck expansion): payment invariants were not covered by any property suite before this change.
 - [x] **TASK-028 (follow-up, 2026-10-23)**: Wire `test/DAL/EventStoreSpec.hs` into cabal test-suite — `DAL.EventStoreSpec` added to `Surypus.cabal` test-suite `other-modules` (5 tests: append/retrieve events, get events from sequence, get latest sequence, snapshot round-trip, replay from snapshot). DB-gated (pends without `SURYPUS_TEST_DATABASE_URL`), wired through `DAL.EventStoreIntegration`. Verified: **1012 examples, 0 failures, 3 pending**.
 - [ ] **TASK-029**: Integration tests for v51.0 features (snapshots, multi-tenant, rate limits, WebSocket) — effort: **5 days** (open)
-- [ ] **TASK-030**: Multi-tenant QuickCheck isolation — effort: **2 days** (partial; payment properties added 2026-10-23; remaining multi-tenant property coverage open)
+- [x] **TASK-030**: Multi-tenant QuickCheck isolation — effort: **2 days**
+  - Payment invariants covered (TASK-036, 2026-10-23)
+  - Multi-tenant property coverage: `MultiTenancy.TenantConfigSpec` wired (2026-10-23): 7 tests on `defaultTenant` and `tenantSchema`; suite at **1011 examples, 0 failures, 3 pending** (cabal test)
+  - Remaining multi-tenant coverage: `MultiTenancy.Isolation`/`MultiTenancy.Middleware` (DB/IO-bound) — deferred to TASK-029 integration tests
 
 ---
 

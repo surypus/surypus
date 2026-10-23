@@ -68,6 +68,7 @@ import qualified DAL.PoolSpec
 import qualified DAL.EventStoreIntegration
 import qualified Infrastructure.Redis.EventStreamSpec
 import qualified Infrastructure.EventStore.AccountingIntegration
+import qualified MultiTenancy.TenantConfigSpec
 
 main :: IO ()
 main = hspec $ do
@@ -133,5 +134,6 @@ main = hspec $ do
   Infrastructure.Redis.EventStreamSpec.spec
   Infrastructure.EventStore.AccountingIntegration.spec
   Domain.InvariantsSpec.spec
+  MultiTenancy.TenantConfigSpec.spec
   Core.DSL.ParserSpec.spec
 
