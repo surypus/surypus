@@ -58,7 +58,7 @@ Before auditing, discover project context:
 
 **Project skills:** Check `.kilo/skills/` or `.kilo/skills/` directory if either exists:
 
-**agent_skills:** self-load per @/home/dominicusin/src/surypus/.kilo/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @/home/dominicusin/src/surypus/.kilo/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-ui-auditor`)
 1. List available skills (subdirectories)
 2. Read `SKILL.md` for each skill
 3. 

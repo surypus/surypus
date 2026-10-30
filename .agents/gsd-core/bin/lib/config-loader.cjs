@@ -25,11 +25,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 const node_fs_1 = __importDefault(require("node:fs"));
-const node_os_1 = __importDefault(require("node:os"));
 const node_path_1 = __importDefault(require("node:path"));
 const shell_command_projection_cjs_1 = require("./shell-command-projection.cjs");
 // #4717: runtime-identity fill — env rung + per-install marker rung.
 const runtime_slash_cjs_1 = require("./runtime-slash.cjs");
+const runtime_homes_cjs_1 = require("./runtime-homes.cjs");
 const runtime_name_policy_cjs_1 = require("./runtime-name-policy.cjs");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const planningWorkspace = require("./planning-workspace.cjs");
@@ -935,7 +935,7 @@ function loadConfigResolvedInternal(cwd, options = {}) {
         // untouched. Faults in the global file stay silent in this branch (the
         // project config governs; the nearer file is the actionable one).
         try {
-            const shadowHome = process.env['GSD_HOME'] || node_os_1.default.homedir();
+            const shadowHome = (0, runtime_homes_cjs_1.resolveGsdHome)();
             const shadowPath = node_path_1.default.join(shadowHome, '.gsd', 'defaults.json');
             const shadowRead = _readConfigFile(shadowPath);
             if (shadowRead.kind === 'ok') {
@@ -997,7 +997,7 @@ function loadConfigResolvedInternal(cwd, options = {}) {
         }
         // Branch D or E: no .planning/
         try {
-            const home = process.env['GSD_HOME'] || node_os_1.default.homedir();
+            const home = (0, runtime_homes_cjs_1.resolveGsdHome)();
             const globalDefaultsPath = node_path_1.default.join(home, '.gsd', 'defaults.json');
             const globalRead = _readConfigFile(globalDefaultsPath);
             if (globalRead.kind === 'fault') {

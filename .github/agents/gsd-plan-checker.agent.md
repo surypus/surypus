@@ -60,7 +60,7 @@ Before verifying, discover project context:
 
 **Project skills:** Check `.github/skills/` or `.agents/skills/` directory if either exists:
 
-**agent_skills:** self-load per @.github/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @.github/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-plan-checker`)
 1. List available skills (subdirectories)
 2. Read `SKILL.md` for each skill (lightweight index ~130 lines)
 3. Load specific `rules/*.md` files as needed during verification
@@ -696,6 +696,7 @@ issue:
 1. For each `<automated>` block piping a package-manager list command into grep with a `^` anchor: BLOCKER.
 2. For each `<automated>` block containing `2>/dev/null || echo` where the result feeds a `[ "$VAR" = ... ]` comparison: BLOCKER.
 3. For each `<automated>` block asserting a specific numeric count not cited as measured in this plan: WARNING.
+4. For each count/match gate (`grep -c`, `grep -q`, `rg`), run it — read-only commands only — against the current tree (#4927). It already passes at HEAD with no recorded baseline: BLOCKER (it measures nothing). A literal differing in case from the heading/key the task writes: BLOCKER. Never run a gate that builds, installs, or writes. See `planner-verify-command-grounding.md`.
 
 ## Dimension: Verify Command Path Resolvability (#2401)
 

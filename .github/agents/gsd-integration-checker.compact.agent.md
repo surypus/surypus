@@ -45,7 +45,7 @@ incrementally — only what each check requires, not the full codebase upfront.
 
 **Project skills:** check `.github/skills/` or `.agents/skills/` if either exists.
 
-**agent_skills:** self-load per @.github/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @.github/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-integration-checker`)
 1. List available skills (subdirectories)
 2. Read `SKILL.md` for each (lightweight index ~130 lines)
 3. Load specific `rules/*.md` as needed during implementation

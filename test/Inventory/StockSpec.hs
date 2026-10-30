@@ -8,6 +8,30 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 import Inventory.StockOps
+import Test.QuickCheck
+
+instance Arbitrary InvStock where
+  arbitrary =
+    InvStock
+      <$> arbitrary
+      <*> arbitrary
+      <*> arbitrary
+      <*> arbitrary
+      <*> arbitrary
+
+prop_totalQuantityForGood_equalsSum :: [InvStock] -> Int64 -> Bool
+prop_totalQuantityForGood_equalsSum stocks gid =
+  totalQuantityForGood stocks gid == sum [isQty s | s <- stocks, isGoodsId s == gid]
+
+prop_transfer_preservesQuantity ::
+     [InvStock] -> Double -> Int -> Int -> Property
+prop_transfer_preservesQuantity stocks qty fromW toW =
+  let before = totalQuantityForGood stocks 1
+      mv = StockMovement Transfer 1 (Just (fromIntegral fromW)) (Just (fromIntegral toW)) qty Nothing
+      after = case applyMovement stocks mv of
+        Left _ -> totalQuantityForGood stocks 1
+        Right ss -> totalQuantityForGood ss 1
+  in before === after
 
 spec :: Spec
 spec = do
@@ -54,3 +78,16 @@ spec = do
           Just r -> isQty r `shouldBe` 250
           Nothing -> fail "Stock missing"
         Left err -> fail (T.unpack err)
+
+  describe "Inventory.StockOps - QuickCheck invariants" $ do
+    it "totalQuantityForGood equals the sum of quantities for that good" $
+      forAll arbitrary $ \stocks ->
+        forAll (choose (0, 1000) :: Gen Int64) $ \gid ->
+          property (prop_totalQuantityForGood_equalsSum stocks gid)
+
+    it "a transfer preserves total quantity for the good" $
+      forAll arbitrary $ \stocks ->
+        forAll (choose (1, 200) :: Gen Double) $ \qty ->
+          forAll (choose (1, 2) :: Gen Int) $ \fromW ->
+          forAll (choose (1, 2) :: Gen Int) $ \toW ->
+            property (prop_transfer_preservesQuantity stocks qty fromW toW)

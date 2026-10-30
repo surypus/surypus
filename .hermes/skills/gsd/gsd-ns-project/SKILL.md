@@ -1,7 +1,7 @@
 ---
 name: gsd-ns-project
 description: "project lifecycle | milestones audits summary"
-version: "1.17.0"
+version: "1.18.0"
 allowed-tools:
   - Read
   - Skill

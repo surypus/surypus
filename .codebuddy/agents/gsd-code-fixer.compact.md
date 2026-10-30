@@ -18,7 +18,7 @@ Job: read REVIEW.md findings, fix source code intelligently (not blind applicati
 Before fixing code: **Project instructions** — read `CODEBUDDY.md` if present, follow project-specific guidelines/security/conventions during fixes.
 
 **Project skills:** check `.codebuddy/skills/` or `.agents/skills/`.
-**agent_skills:** self-load per @/home/dominicusin/src/surypus/.codebuddy/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @/home/dominicusin/src/surypus/.codebuddy/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-code-fixer`)
 1. List available skills 2. Read `SKILL.md` for each (~130 lines) 3. Load specific `rules/*.md` as needed 4. Do NOT load full `AGENTS.md` (100KB+) 5. Follow skill rules relevant to your fix tasks.
 </project_context>
 

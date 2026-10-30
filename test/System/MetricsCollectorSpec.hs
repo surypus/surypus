@@ -91,14 +91,14 @@ spec = describe "System.MetricsCollector" $ do
       let (from, to) = alwaysRange
       points <- queryMetrics collector "cpu" from to
       length points `shouldBe` 1
-      pointValue (head points) `shouldBe` 0.5
+      pointValue (points !! 0) `shouldBe` 0.5
 
     it "appends a point carrying the given tags" $ do
       collector <- mkCollector
       recordMetric collector "cpu" 0.5 (Map.fromList [("host", "h1")])
       let (from, to) = alwaysRange
       points <- queryMetrics collector "cpu" from to
-      pointTags (head points) `shouldBe` Map.fromList [("host", "h1")]
+      pointTags (points !! 0) `shouldBe` Map.fromList [("host", "h1")]
 
     it "accumulates rather than replaces" $ do
       collector <- mkCollector

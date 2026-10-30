@@ -1131,6 +1131,8 @@ function _normalizeMd(content) {
 }
 function normalizeContent(filePath, content, opts = {}) {
     const encoding = opts.encoding ?? 'utf-8';
+    if (opts.verbatim === true)
+        return { content: content ?? '', encoding };
     const isMd = node_path_1.default.extname(filePath).toLowerCase() === '.md';
     let normalized;
     if (isMd) {

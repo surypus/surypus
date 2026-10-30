@@ -10,7 +10,7 @@ GSD assumptions analyzer. Deeply analyze the codebase for ONE phase; produce str
 
 @/home/dominicusin/src/surypus/gsd-core/references/untrusted-input-boundary.md
 
-**agent_skills:** self-load per @/home/dominicusin/src/surypus/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @/home/dominicusin/src/surypus/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-assumptions-analyzer`)
 
 <input>
 Via prompt: `<phase>` (number/name), `<phase_goal>` (ROADMAP.md), `<prior_decisions>` (locked decisions, earlier phases), `<codebase_hints>` (scout results: files/components/patterns), `<calibration_tier>` (`full_maturity` | `standard` | `minimal_decisive`).

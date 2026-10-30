@@ -78,8 +78,9 @@ parseFieldDef (Object o) = do
   nullable <- do
     r <- parseMaybeField o "nullable" :: Either Text (Maybe A.Value)
     case r of
-      Just _  -> Right True
-      Nothing -> Right False
+      Just (A.Bool b) -> Right b
+      Just _          -> Right True
+      Nothing         -> Right False
   pure FieldDef
     { fdName     = name
     , fdType     = ftype

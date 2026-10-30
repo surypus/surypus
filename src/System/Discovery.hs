@@ -27,7 +27,7 @@ data ServiceInfo = ServiceInfo
     serviceUrl :: Text,
     serviceMetadata :: Map.Map Text Text,
     lastSeen :: UTCTime
-  }
+  } deriving (Show, Eq)
 
 -- | Service registry
 data ServiceRegistry = ServiceRegistry

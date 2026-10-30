@@ -26,7 +26,7 @@ Spawned by `discuss-phase` via `Task()`. You do NOT present output directly to t
 
 @.agents/gsd-core/references/untrusted-input-boundary.md
 
-**agent_skills:** self-load per @.agents/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @.agents/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-advisor-researcher`)
 
 <documentation_lookup>
 @.agents/gsd-core/references/research-documentation-lookup.md

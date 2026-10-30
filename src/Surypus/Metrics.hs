@@ -9,6 +9,7 @@ module Surypus.Metrics
     recordGauge,
     httpRequestsTotal,
     httpRequestDuration,
+    histBuckets,
     httpRequestsError,
     dbPoolConnections,
     jobQueueSize,
@@ -111,6 +112,12 @@ getMetricsValue metrics name = do
     "http.requests_error" -> readCounter (httpRequestsError metrics)
     "http.request_duration_sum" -> readTVarIO (histSum (httpRequestDuration metrics))
     "http.request_duration_count" -> fromIntegral <$> readTVarIO (histCount (httpRequestDuration metrics))
+    "db.pool_connections" -> do
+      let Gauge var = dbPoolConnections metrics
+      readTVarIO var
+    "job.queue_size" -> do
+      let Gauge var = jobQueueSize metrics
+      readTVarIO var
     _ -> pure 0
 
 readCounter :: Counter -> IO Double

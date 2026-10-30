@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
 const security_cjs_1 = require("./security.cjs");
+const tdd_test_files_cjs_1 = require("./tdd-test-files.cjs");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const ioMod = require("./io.cjs");
 const { output, error, ERROR_REASON } = ioMod;
@@ -37,9 +38,7 @@ function isBehaviorAddingTaskContent(content) {
             .filter(Boolean);
         hasSourceFiles = fileLines.some((file) => !/\.md$/i.test(file) &&
             !/\.json$/i.test(file) &&
-            !/\.test\.[^.]+$/i.test(file) &&
-            !/\.spec\.[^.]+$/i.test(file) &&
-            !/(^|[\\/])tests?[\\/]/i.test(file) &&
+            !(0, tdd_test_files_cjs_1.isTestFilePath)(file) &&
             !/\.(yml|yaml|toml|ini|cfg|conf|properties)$/i.test(file) &&
             !/(^|[\\/])\.env(\..+)?$/i.test(file));
     }

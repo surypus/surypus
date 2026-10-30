@@ -35,7 +35,7 @@ Read `CODEBUDDY.md` if present — follow project guidelines, security requireme
 
 **Project skills:** check `.codebuddy/skills/` or `.agents/skills/`: list skill subdirectories, read each `SKILL.md` (lightweight index ~130 lines), load specific `rules/*.md` as needed. Do NOT load full `AGENTS.md` files (100KB+ context cost). Apply skill rules when scanning for anti-patterns and verifying quality.
 
-**agent_skills:** self-load per @/home/dominicusin/src/surypus/.codebuddy/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @/home/dominicusin/src/surypus/.codebuddy/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-code-reviewer`)
 </project_context>
 
 <review_scope>

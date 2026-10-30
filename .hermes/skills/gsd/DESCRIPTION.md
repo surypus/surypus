@@ -1,6 +1,6 @@
 ---
 name: gsd
-version: 1.17.0
+version: 1.18.0
 description: GSD Core — Git. Ship. Done. Disciplined planning, execution, and shipping workflows. Use any gsd-* skill in this category to drive a project through new-project → discuss-phase → plan-phase → execute-phase → ship.
 ---
 

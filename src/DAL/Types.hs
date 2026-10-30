@@ -1,16 +1,86 @@
+-- Ledger entry: single canonical type for double-entry bookkeeping (Phase 3).
+-- Originally: DAL.Types - Phase 1 stubs (Person, Goods, Payment, User, etc.)
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+module DAL.Types
+  ( -- * Ledger entry (Phase 3)
+    LedgerEntry (..)
+  , PersonEntity (..)
+  , CustomerEntity (..)
+  , ProductionOrderEntity (..)
+  , ReportConfigEntity (..)
+  , BillEntity (..)
+  , TaxEntity (..)
+  , EntryId
+  , -- * Phase 1 stubs
+    Pagination (..)
+  , QueryResult (..)
+  , CommandResult (..)
+  , MutationResult (..)
+  , Person (..)
+  , Goods (..)
+  , Bill (..)
+  , Location (..)
+  , Order (..)
+  , Payment (..)
+  , User (..)
+  , Price (..)
+  , GoodsPrice (..)
+  , Tax (..)
+  , Currency (..)
+  , AccPlan (..)
+  , AccTurn (..)
+  , AccTurnInput (..)
+  , Employee (..)
+  , Salary (..)
+  , StockMovement (..)
+  , Timesheet (..)
+  , BillLine (..)
+  , PayrollResult (..)
+  , DocumentRegisterType (..)
+  , Workflow (..)
+  , WorkflowInput (..)
+  , WorkflowInstance (..)
+  , WorkflowStatus (..)
+  , OksmRecord (..)
+  , OkvRecord (..)
+  , OkeiRecord (..)
+  , Okpd2Record (..)
+  , Okved2Record (..)
+  , TnvedRecord (..)
+  , OkatoRecord (..)
+  , OktmoRecord (..)
+  , OkofRecord (..)
+  , OkpRecord (..)
+  , OkdpRecord (..)
+  , OksoRecord (..)
+  , OkunRecord (..)
+  , OkudRecord (..)
+  , OkfsRecord (..)
+  , OknpoRecord (..)
+  , Stock (..)
+  , Lot (..)
+  , Tenant (..)
+  , TenantInput (..)
+  , UserInput (..)
+  , mrId
+  , -- * Type aliases
+    PaymentInput
+  , BillInput
+  , EmployeeInput
+  , SalaryInput
+  , StockMovementInput
+  , TimesheetInput
+  ) where
 
-module DAL.Types where
-
+import Data.Decimal (Decimal)
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Int (Int64)
 import Data.Text (Text)
@@ -18,12 +88,7 @@ import qualified Data.Text as T
 import Data.Time (Day, UTCTime)
 import GHC.Generics (Generic)
 
--- Generated from dsl/schema.yaml
--- DO NOT EDIT MANUALLY
-
--- DSL entities:
--- Entity: PersonEntity
--- SQL table: person
+-- | PersonEntity (DSL-generated entity)
 data PersonEntity = PersonEntity
   { personEntityId :: !T.Text
   , code :: !T.Text
@@ -34,53 +99,10 @@ data PersonEntity = PersonEntity
   , status :: !T.Text
   } deriving (Show, Eq, Generic)
 
-instance FromJSON (PersonEntity)
-instance ToJSON (PersonEntity)
+instance FromJSON PersonEntity
+instance ToJSON PersonEntity
 
--- Entity: CustomerEntity
--- SQL table: customer
-data CustomerEntity = CustomerEntity
-  { customerEntityId :: !T.Text
-  , code :: !T.Text
-  , name :: !T.Text
-  , email :: !T.Text
-  , creditLimit :: !T.Text
-  , active :: !T.Text
-  , createdAt :: !T.Text
-  } deriving (Show, Eq, Generic)
-
-instance FromJSON (CustomerEntity)
-instance ToJSON (CustomerEntity)
-
--- Entity: ProductionOrderEntity
--- SQL table: production_order
-data ProductionOrderEntity = ProductionOrderEntity
-  { productionOrderEntityId :: !T.Text
-  , number :: !T.Text
-  , productId :: !T.Text
-  , qty :: !T.Text
-  , dueDate :: !T.Text
-  , status :: !T.Text
-  } deriving (Show, Eq, Generic)
-
-instance FromJSON (ProductionOrderEntity)
-instance ToJSON (ProductionOrderEntity)
-
--- Entity: ReportConfigEntity
--- SQL table: report_config
-data ReportConfigEntity = ReportConfigEntity
-  { reportConfigEntityId :: !T.Text
-  , title :: !T.Text
-  , query :: !T.Text
-  , refreshMinutes :: !T.Text
-  , enabled :: !T.Text
-  } deriving (Show, Eq, Generic)
-
-instance FromJSON (ReportConfigEntity)
-instance ToJSON (ReportConfigEntity)
-
--- Entity: BillEntity
--- SQL table: bill
+-- | BillEntity (DSL-generated entity)
 data BillEntity = BillEntity
   { billEntityId :: !T.Text
   , billEntityNumber :: !T.Text
@@ -89,11 +111,10 @@ data BillEntity = BillEntity
   , billEntityStatus :: !T.Text
   } deriving (Show, Eq, Generic)
 
-instance FromJSON (BillEntity)
-instance ToJSON (BillEntity)
+instance FromJSON BillEntity
+instance ToJSON BillEntity
 
--- Entity: TaxEntity
--- SQL table: tax
+-- | TaxEntity (DSL-generated entity)
 data TaxEntity = TaxEntity
   { taxEntityId :: !T.Text
   , taxEntityCode :: !T.Text
@@ -101,8 +122,18 @@ data TaxEntity = TaxEntity
   , taxEntityRate :: !T.Text
   } deriving (Show, Eq, Generic)
 
-instance FromJSON (TaxEntity)
-instance ToJSON (TaxEntity)
+instance FromJSON TaxEntity
+instance ToJSON TaxEntity
+
+type EntryId = Int
+
+-- | Ledger entry: single canonical type for double-entry bookkeeping (Phase 3).
+data LedgerEntry = LedgerEntry
+  { leId     :: EntryId
+  , leDebit  :: Text
+  , leCredit :: Text
+  , leAmount :: Decimal
+  } deriving (Eq, Show)
 
 -- | Pagination parameters (Phase 1: stub)
 data Pagination = Pagination
@@ -184,7 +215,7 @@ data Bill = Bill
   , billCode :: !(Maybe T.Text)
   , billType :: !(Maybe T.Text)
   , billStatus :: !(Maybe T.Text)
-  , billDate :: !Data.Time.Day
+  , billDate :: !Day
   , billPersonId :: !(Maybe Int)
   , billLocationId :: !(Maybe Int)
   , billTotal :: !Double
@@ -213,7 +244,7 @@ data Order = Order
   , orderDate :: !UTCTime
   , orderPersonId :: !(Maybe Int64)
   , orderLocationId :: !(Maybe Int64)
-  , orderType :: !(Maybe Text)
+  , orderType :: !(Maybe T.Text)
   , orderTotal :: !(Maybe Double)
   , orderDiscount :: !(Maybe Double)
   , orderTax :: !(Maybe Double)
@@ -238,8 +269,8 @@ instance ToJSON Payment
 data User = User
   { userId :: !Int64
   , userName :: !Text
-  , userPassword :: !(Maybe Text)
-  , userEmail :: !(Maybe Text)
+  , userPassword :: !(Maybe T.Text)
+  , userEmail :: !(Maybe T.Text)
   , userPersonId :: !(Maybe Int64)
   , userStatus :: !Text
   , userTenantId :: !Int64
@@ -248,7 +279,7 @@ data User = User
 instance FromJSON User
 instance ToJSON User
 
--- | GoodsPrice (Phase 1: stub)
+-- | Price (Phase 1: stub)
 data Price = Price
   { priceId :: !Int64
   , priceGoodsId :: !Int64
@@ -259,6 +290,10 @@ data Price = Price
   , priceEndDate :: !(Maybe UTCTime)
   } deriving (Show, Eq, Generic)
 
+instance FromJSON Price
+instance ToJSON Price
+
+-- | GoodsPrice (Phase 1: stub)
 data GoodsPrice = GoodsPrice
   { goodsPriceId :: !Int64
   , goodsPriceGoodsId :: !Int64
@@ -389,25 +424,25 @@ instance ToJSON BillLine
 
 -- Payroll result (domain type)
 data PayrollResult = PayrollResult
-  { payrollResultId :: Int64
-  , payrollResultTenantId :: Int64
+  { payrollResultId :: !Int64
+  , payrollResultTenantId :: !Int64
   , payrollResultPeriod :: Day
-  , payrollResultEmployeeId :: Int64
-  , payrollResultGross :: Double
-  , payrollResultDeductions :: Double
-  , payrollResultNet :: Double
-  , payrollResultIncomeTax :: Double
-  , payrollResultSocialTax :: Double
-  , payrollResultAdvance :: Double
-  , payrollResultBonus :: Double
-  , payrollResultVacationPay :: Double
-  , payrollResultSickPay :: Double
-  , payrollResultTotalToPay :: Double
-  , payrollResultCurrency :: Text
-  , payrollResultVersion :: Int
-  , payrollResultCreatedBy :: Maybe Int64
-  , payrollResultCreatedAt :: UTCTime
-  , payrollResultUpdatedAt :: UTCTime
+  , payrollResultEmployeeId :: !Int64
+  , payrollResultGross :: !Double
+  , payrollResultDeductions :: !Double
+  , payrollResultNet :: !Double
+  , payrollResultIncomeTax :: !Double
+  , payrollResultSocialTax :: !Double
+  , payrollResultAdvance :: !Double
+  , payrollResultBonus :: !Double
+  , payrollResultVacationPay :: !Double
+  , payrollResultSickPay :: !Double
+  , payrollResultTotalToPay :: !Double
+  , payrollResultCurrency :: !Text
+  , payrollResultVersion :: !Int
+  , payrollResultCreatedBy :: !(Maybe Int64)
+  , payrollResultCreatedAt :: !UTCTime
+  , payrollResultUpdatedAt :: !UTCTime
   } deriving (Show, Eq, Generic)
 
 instance FromJSON PayrollResult
@@ -457,7 +492,11 @@ data WorkflowInstance = WorkflowInstance
 instance FromJSON WorkflowInstance
 instance ToJSON WorkflowInstance
 
-data WorkflowStatus = WorkflowPending | WorkflowRunning | WorkflowCompleted | WorkflowFailed
+data WorkflowStatus
+  = WorkflowPending
+  | WorkflowRunning
+  | WorkflowCompleted
+  | WorkflowFailed
   deriving (Show, Eq, Generic)
 
 instance FromJSON WorkflowStatus
@@ -470,17 +509,26 @@ data OksmRecord = OksmRecord
   , oksmName :: !Text
   } deriving (Show, Eq, Generic)
 
+instance FromJSON OksmRecord
+instance ToJSON OksmRecord
+
 data OkvRecord = OkvRecord
   { okvId :: !Int64
   , okvCode :: !Text
   , okvName :: !Text
   } deriving (Show, Eq, Generic)
 
+instance FromJSON OkvRecord
+instance ToJSON OkvRecord
+
 data OkeiRecord = OkeiRecord
   { okeiId :: !Int64
   , okeiCode :: !Text
   , okeiName :: !Text
   } deriving (Show, Eq, Generic)
+
+instance FromJSON OkeiRecord
+instance ToJSON OkeiRecord
 
 data Okpd2Record = Okpd2Record
   { okpd2Id :: !Int64
@@ -489,12 +537,18 @@ data Okpd2Record = Okpd2Record
   , okpd2ParentCode :: !(Maybe Text)
   } deriving (Show, Eq, Generic)
 
+instance FromJSON Okpd2Record
+instance ToJSON Okpd2Record
+
 data Okved2Record = Okved2Record
   { okved2Id :: !Int64
   , okved2Code :: !Text
   , okved2Name :: !Text
   , okved2ParentCode :: !(Maybe Text)
   } deriving (Show, Eq, Generic)
+
+instance FromJSON Okved2Record
+instance ToJSON Okved2Record
 
 data TnvedRecord = TnvedRecord
   { tnvedId :: !Int64
@@ -503,12 +557,18 @@ data TnvedRecord = TnvedRecord
   , tnvedParentCode :: !(Maybe Text)
   } deriving (Show, Eq, Generic)
 
+instance FromJSON TnvedRecord
+instance ToJSON TnvedRecord
+
 data OkatoRecord = OkatoRecord
   { okatoId :: !Int64
   , okatoCode :: !Text
   , okatoName :: !Text
   , okatoParentCode :: !(Maybe Text)
   } deriving (Show, Eq, Generic)
+
+instance FromJSON OkatoRecord
+instance ToJSON OkatoRecord
 
 data OktmoRecord = OktmoRecord
   { oktmoId :: !Int64
@@ -517,12 +577,18 @@ data OktmoRecord = OktmoRecord
   , oktmoParentCode :: !(Maybe Text)
   } deriving (Show, Eq, Generic)
 
+instance FromJSON OktmoRecord
+instance ToJSON OktmoRecord
+
 data OkofRecord = OkofRecord
   { okofId :: !Int64
   , okofCode :: !Text
   , okofName :: !Text
   , okofParentCode :: !(Maybe Text)
   } deriving (Show, Eq, Generic)
+
+instance FromJSON OkofRecord
+instance ToJSON OkofRecord
 
 data OkpRecord = OkpRecord
   { okpId :: !Int64
@@ -531,6 +597,9 @@ data OkpRecord = OkpRecord
   , okpParentCode :: !(Maybe Text)
   } deriving (Show, Eq, Generic)
 
+instance FromJSON OkpRecord
+instance ToJSON OkpRecord
+
 data OkdpRecord = OkdpRecord
   { okdpId :: !Int64
   , okdpCode :: !Text
@@ -538,11 +607,17 @@ data OkdpRecord = OkdpRecord
   , okdpParentCode :: !(Maybe Text)
   } deriving (Show, Eq, Generic)
 
+instance FromJSON OkdpRecord
+instance ToJSON OkdpRecord
+
 data OksoRecord = OksoRecord
   { oksoId :: !Int64
   , oksoCode :: !Text
   , oksoName :: !Text
   } deriving (Show, Eq, Generic)
+
+instance FromJSON OksoRecord
+instance ToJSON OksoRecord
 
 data OkunRecord = OkunRecord
   { okunId :: !Int64
@@ -551,11 +626,17 @@ data OkunRecord = OkunRecord
   , okunParentCode :: !(Maybe Text)
   } deriving (Show, Eq, Generic)
 
+instance FromJSON OkunRecord
+instance ToJSON OkunRecord
+
 data OkudRecord = OkudRecord
   { okudId :: !Int64
   , okudCode :: !Text
   , okudName :: !Text
   } deriving (Show, Eq, Generic)
+
+instance FromJSON OkudRecord
+instance ToJSON OkudRecord
 
 data OkfsRecord = OkfsRecord
   { okfsId :: !Int64
@@ -563,13 +644,17 @@ data OkfsRecord = OkfsRecord
   , okfsName :: !Text
   } deriving (Show, Eq, Generic)
 
+instance FromJSON OkfsRecord
+instance ToJSON OkfsRecord
+
 data OknpoRecord = OknpoRecord
   { oknpoId :: !Int64
   , oknpoCode :: !Text
   , oknpoName :: !Text
   } deriving (Show, Eq, Generic)
 
--- Generated by surypus-codegen
+instance FromJSON OknpoRecord
+instance ToJSON OknpoRecord
 
 -- | Stock balance row (API view over the @stock@ table)
 data Stock = Stock
@@ -626,6 +711,45 @@ instance FromJSON UserInput
 instance ToJSON UserInput
 
 -- | Convenience accessor for the id carried by a 'MutationResult'
+-- | CustomerEntity (DSL-generated entity)
+data CustomerEntity = CustomerEntity
+  { customerEntityId :: !T.Text
+  , code :: !T.Text
+  , name :: !T.Text
+  , email :: !T.Text
+  , creditLimit :: !T.Text
+  , active :: !T.Text
+  , createdAt :: !T.Text
+  } deriving (Show, Eq, Generic)
+
+instance FromJSON CustomerEntity
+instance ToJSON CustomerEntity
+
+-- | ProductionOrderEntity (DSL-generated entity)
+data ProductionOrderEntity = ProductionOrderEntity
+  { productionOrderEntityId :: !T.Text
+  , number :: !T.Text
+  , productId :: !T.Text
+  , qty :: !T.Text
+  , dueDate :: !T.Text
+  , status :: !T.Text
+  } deriving (Show, Eq, Generic)
+
+instance FromJSON ProductionOrderEntity
+instance ToJSON ProductionOrderEntity
+
+-- | ReportConfigEntity (DSL-generated entity)
+data ReportConfigEntity = ReportConfigEntity
+  { reportConfigEntityId :: !T.Text
+  , title :: !T.Text
+  , query :: !T.Text
+  , refreshMinutes :: !T.Text
+  , enabled :: !T.Text
+  } deriving (Show, Eq, Generic)
+
+instance FromJSON ReportConfigEntity
+instance ToJSON ReportConfigEntity
+
 mrId :: MutationResult -> Maybe Int64
 mrId = mutationId
 

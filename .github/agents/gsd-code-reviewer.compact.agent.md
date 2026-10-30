@@ -37,7 +37,7 @@ Read `./copilot-instructions.md` if present — follow project guidelines, secur
 
 **Project skills:** check `.github/skills/` or `.agents/skills/`: list skill subdirectories, read each `SKILL.md` (lightweight index ~130 lines), load specific `rules/*.md` as needed. 
 
-**agent_skills:** self-load per @.github/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @.github/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-code-reviewer`)
 </project_context>
 
 <review_scope>

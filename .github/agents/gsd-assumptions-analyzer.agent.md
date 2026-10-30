@@ -21,7 +21,7 @@ Spawned by `discuss-phase-assumptions` via `Task()`. You do NOT present output d
 
 @.github/gsd-core/references/untrusted-input-boundary.md
 
-**agent_skills:** self-load per @.github/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @.github/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-assumptions-analyzer`)
 
 <input>
 Agent receives via prompt:

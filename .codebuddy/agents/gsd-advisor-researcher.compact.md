@@ -14,7 +14,7 @@ grounded in project context.
 
 @/home/dominicusin/src/surypus/.codebuddy/gsd-core/references/untrusted-input-boundary.md
 
-**agent_skills:** self-load per @/home/dominicusin/src/surypus/.codebuddy/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @/home/dominicusin/src/surypus/.codebuddy/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-advisor-researcher`)
 
 <documentation_lookup>
 @/home/dominicusin/src/surypus/.codebuddy/gsd-core/references/research-documentation-lookup.md

@@ -4,6 +4,10 @@
 module Main where
 
 import Test.Hspec
+import qualified Finance.ExchangeRateSpec
+import qualified Finance.CurrencySpec
+import qualified Finance.AccountSpec
+import qualified Commerce.PaymentSpec
 import qualified Finance.TaxSpec
 import qualified Finance.AccountingSpec
 import qualified Finance.BillSpec
@@ -11,6 +15,7 @@ import qualified Surypus.ValidationSpec
 import qualified Core.PayrollSpec
 import qualified Core.Accounting.CacheSpec
 import qualified Core.Accounting.RedisCacheSpec
+import qualified System.DiscoverySpec
 import qualified System.RateLimiterSpec
 import qualified System.CacheSpec
 import qualified System.CircuitBreakerSpec
@@ -18,6 +23,7 @@ import qualified System.CounterSpec
 import qualified System.MetricsCollectorSpec
 import qualified System.SequenceSpec
 import qualified System.RetrySpec
+import qualified System.SecretsSpec
 import qualified JWTSpec
 import qualified ConfigSpec
 import qualified ObservabilitySpec
@@ -27,6 +33,7 @@ import qualified Surypus.RBAC.StoreSpec
 import qualified ConcurrencySpec
 import qualified QuickCheckInvariantsSpec
 import qualified Domain.InvariantsSpec
+import qualified Core.DSL.ParserSpec
 import qualified Inventory.StockSpec
 import qualified Inventory.WarehouseSpec
 import qualified Inventory.GoodsSpec
@@ -42,12 +49,17 @@ import qualified Phase2Phase3.AccountingEventsSpec
 import qualified Phase2Phase3.AccountingReadModelSpec
 import qualified Core.Accounting.ReadModelSpec
 import qualified Core.TaxSpec
+import qualified Core.InventorySpec
 import qualified Core.OptimizationSpec
 import qualified Contract.SchemaSpec
 import qualified Commerce.PriceSpec
 import qualified Commerce.CashSessionTempSpec
+import qualified Commerce.InvoiceSpec
+import qualified Commerce.ServiceBillSpec
+import qualified Commerce.ContractSpec
 import qualified EmailSpec
 import qualified System.ValidationSpec
+import qualified Surypus.MetricsSpec
 import qualified TranscendenceSpec
 import qualified AdditionalTests
 import qualified DAL.TypesSpec
@@ -56,14 +68,19 @@ import qualified DAL.PoolSpec
 import qualified DAL.EventStoreIntegration
 import qualified Infrastructure.Redis.EventStreamSpec
 import qualified Infrastructure.EventStore.AccountingIntegration
+import qualified MultiTenancy.TenantConfigSpec
 
 main :: IO ()
 main = hspec $ do
+  Finance.ExchangeRateSpec.spec
+  Finance.CurrencySpec.spec
+  Finance.AccountSpec.spec
   Finance.TaxSpec.spec
   Finance.AccountingSpec.spec
   Finance.BillSpec.spec
   Surypus.ValidationSpec.spec
   Core.PayrollSpec.spec
+  System.DiscoverySpec.spec
   System.RateLimiterSpec.spec
   System.CacheSpec.spec
   System.CircuitBreakerSpec.spec
@@ -71,6 +88,7 @@ main = hspec $ do
   System.MetricsCollectorSpec.spec
   System.SequenceSpec.spec
   System.RetrySpec.spec
+  System.SecretsSpec.spec
   JWTSpec.spec
   Core.Accounting.CacheSpec.spec
   Core.Accounting.RedisCacheSpec.spec
@@ -96,12 +114,17 @@ main = hspec $ do
   Phase2Phase3.AccountingReadModelSpec.spec
   Core.Accounting.ReadModelSpec.spec
   Core.TaxSpec.spec
+  Core.InventorySpec.spec
   Core.OptimizationSpec.spec
   Contract.SchemaSpec.spec
   Commerce.PriceSpec.spec
   Commerce.CashSessionTempSpec.spec
+  Commerce.InvoiceSpec.spec
+  Commerce.PaymentSpec.spec
+  Commerce.ContractSpec.spec
   EmailSpec.spec
   System.ValidationSpec.spec
+  Surypus.MetricsSpec.spec
   AdditionalTests.spec
   TranscendenceSpec.spec
   DAL.TypesSpec.spec
@@ -111,3 +134,6 @@ main = hspec $ do
   Infrastructure.Redis.EventStreamSpec.spec
   Infrastructure.EventStore.AccountingIntegration.spec
   Domain.InvariantsSpec.spec
+  MultiTenancy.TenantConfigSpec.spec
+  Core.DSL.ParserSpec.spec
+

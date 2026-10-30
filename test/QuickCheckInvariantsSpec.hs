@@ -5,10 +5,14 @@ module QuickCheckInvariantsSpec (spec) where
 
 import Test.Hspec
 import Test.Hspec.QuickCheck (prop)
-import Test.QuickCheck
-import Core.Payroll.Calculation
+import Test.QuickCheck (Arbitrary, Gen, Property, forAll, choose, listOf, oneof, suchThat, (.&&.), property, (===))
+import Data.Int (Int64)
+import Data.Text (Text, pack)
 import Data.Time (Day, fromGregorian)
 import Data.Decimal (Decimal)
+import Data.Maybe (isJust)
+import Core.Payroll.Calculation
+import Inventory.Stock (Stock (..), StockFlags (..), mkStock, validateStock)
 
 -- ============================================================================
 -- Decimal generators
@@ -46,6 +50,31 @@ genDecimalBonus = genDecimal (0, 1000000)
 
 genDecimalAdditions :: Gen Decimal
 genDecimalAdditions = genDecimal (0, 500000)
+
+-- ============================================================================
+-- Shared generators (reused by the new invariant groups)
+-- ============================================================================
+
+genInt64 :: Gen Int64
+genInt64 = fromIntegral <$> (choose (0, 1000000) :: Gen Integer) :: Gen Int64
+
+genDay :: Gen Day
+genDay = fromGregorian <$> choose (2020, 2030) <*> choose (1, 12) <*> choose (1, 28)
+
+genText :: Gen Text
+genText = pack <$> listOf (choose ('a', 'z'))
+
+arbitraryInt64 :: Gen Int64
+arbitraryInt64 = genInt64
+
+arbitraryMaybeInt64 :: Gen (Maybe Int64)
+arbitraryMaybeInt64 = oneof [pure Nothing, Just <$> genInt64]
+
+arbitraryMaybeText :: Gen (Maybe Text)
+arbitraryMaybeText = oneof [pure Nothing, Just <$> genText]
+
+arbitraryMaybeDay :: Gen (Maybe Day)
+arbitraryMaybeDay = oneof [pure Nothing, Just <$> genDay]
 
 -- ============================================================================
 -- PAYROLL INVARIANTS
@@ -152,6 +181,109 @@ prop_income_tax_high =
     in calcIncomeTax salary == expected
 
 -- ============================================================================
+-- STOCK INVARIANTS (TASK-030: stock invariants)
+-- ============================================================================
+
+-- | mkStock succeeds whenever every quantity is non-negative.
+prop_mkStock_nonNeg :: Property
+prop_mkStock_nonNeg =
+  forAll (choose (0, 1000)) $ \q ->
+    forAll (choose (0, 1000)) $ \r ->
+      forAll (choose (0, 1000)) $ \o ->
+        forAll (choose (0, 1000)) $ \c ->
+          forAll (choose (0, 1000)) $ \p ->
+            case mkStock 1 1 q r o c p (StockFlags False False) of
+              Nothing -> property False
+              Just _  -> property True
+
+-- | validateStock returns True for any Stock created via mkStock.
+prop_validateStock_mkStock :: Property
+prop_validateStock_mkStock =
+  forAll (choose (0, 1000)) $ \q ->
+    forAll (choose (0, 1000)) $ \r ->
+      forAll (choose (0, 1000)) $ \o ->
+        forAll (choose (0, 1000)) $ \c ->
+          forAll (choose (0, 1000)) $ \p ->
+            case mkStock 1 1 q r o c p (StockFlags False False) of
+              Nothing -> property False
+              Just s  -> validateStock s (StockFlags False False) === True
+
+-- | mkStock rejects a negative quantity when negativeAllowed is off.
+prop_mkStock_rejectsNegativeQuantity :: Property
+prop_mkStock_rejectsNegativeQuantity =
+  forAll (choose (0, 1000)) $ \r ->
+    forAll (choose (0, 1000)) $ \o ->
+      forAll (choose (0, 1000)) $ \c ->
+        forAll (choose (0, 1000)) $ \p ->
+          mkStock 1 1 (-1) r o c p (StockFlags False False) === Nothing
+
+-- | mkStock accepts a negative quantity when negativeAllowed is on.
+prop_mkStock_acceptsNegativeQuantity :: Property
+prop_mkStock_acceptsNegativeQuantity =
+  forAll (choose (0, 1000)) $ \r ->
+    forAll (choose (0, 1000)) $ \o ->
+      forAll (choose (0, 1000)) $ \c ->
+        forAll (choose (0, 1000)) $ \p ->
+          isJust (mkStock 1 1 (-1) r o c p (StockFlags True False))
+
+-- | Every stored field is non-negative after a successful mkStock.
+prop_mkStock_fieldsNonNeg :: Property
+prop_mkStock_fieldsNonNeg =
+  forAll (choose (0, 1000)) $ \q ->
+    forAll (choose (0, 1000)) $ \r ->
+      forAll (choose (0, 1000)) $ \o ->
+        forAll (choose (0, 1000)) $ \c ->
+          forAll (choose (0, 1000)) $ \p ->
+            case mkStock 1 1 q r o c p (StockFlags False False) of
+              Nothing -> property False
+              Just s  -> property $
+                sQtty s >= 0 && sResrvQtty s >= 0 && sOrderedQtty s >= 0
+                && sCost s >= 0 && sPrice s >= 0
+
+-- | validateStock is True for a manually-built Stock with non-negative fields.
+prop_validateStock_manual :: Property
+prop_validateStock_manual =
+  forAll (choose (0, 1000)) $ \q ->
+    forAll (choose (0, 1000)) $ \r ->
+      forAll (choose (0, 1000)) $ \o ->
+        forAll (choose (0, 1000)) $ \c ->
+          forAll (choose (0, 1000)) $ \p ->
+            validateStock (Stock 1 1 q r o c p) (StockFlags False False) === True
+
+-- | validateStock rejects a Stock with negative sQtty when negativeAllowed is off.
+prop_validateStock_rejectsNegativeQtyOff :: Property
+prop_validateStock_rejectsNegativeQtyOff =
+  forAll (choose (0, 1000)) $ \r ->
+    forAll (choose (0, 1000)) $ \o ->
+      forAll (choose (0, 1000)) $ \c ->
+        forAll (choose (0, 1000)) $ \p ->
+          let s = Stock 1 1 (-1) r o c p
+          in validateStock s (StockFlags False False) === False
+
+-- | validateStock accepts a negative-qtty Stock when negativeAllowed is on.
+prop_validateStock_acceptsNegativeQtyOn :: Property
+prop_validateStock_acceptsNegativeQtyOn =
+  forAll (choose (0, 1000)) $ \r ->
+    forAll (choose (0, 1000)) $ \o ->
+      forAll (choose (0, 1000)) $ \c ->
+        forAll (choose (0, 1000)) $ \p ->
+          let s = Stock 1 1 (-1) r o c p
+          in validateStock s (StockFlags True False) === True
+
+-- | validateStock is equivalent to the documented rule:
+-- | (sQtty >= 0 || negativeAllowed) && all other fields non-negative.
+prop_validateStock_consistentWithFlags :: Property
+prop_validateStock_consistentWithFlags =
+  forAll (choose (0, 1000)) $ \q ->
+    forAll (choose (0, 1000)) $ \r ->
+      forAll (choose (0, 1000)) $ \o ->
+        forAll (choose (0, 1000)) $ \c ->
+          forAll (choose (0, 1000)) $ \p ->
+            let s = Stock 1 1 q r o c p
+                flags = StockFlags False False
+            in validateStock s flags === (q >= 0 && all (>= 0) [sResrvQtty s, sOrderedQtty s, sCost s, sPrice s])
+
+-- ============================================================================
 -- MAIN TEST
 -- ============================================================================
 
@@ -178,3 +310,16 @@ spec = do
   describe "Income tax brackets" $ do
     prop "500k-3.5M: 15% marginal" prop_income_tax_medium
     prop "3.5M-5M: 18% marginal" prop_income_tax_high
+
+  describe "Stock invariants" $ do
+    prop "mkStock succeeds for non-negative quantities" prop_mkStock_nonNeg
+    prop "validateStock True for mkStock results" prop_validateStock_mkStock
+    prop "mkStock rejects negative quantity when negativeAllowed off" prop_mkStock_rejectsNegativeQuantity
+    prop "mkStock accepts negative quantity when negativeAllowed on" prop_mkStock_acceptsNegativeQuantity
+    prop "all fields non-negative after mkStock" prop_mkStock_fieldsNonNeg
+    prop "validateStock True for manually-built Stock" prop_validateStock_manual
+
+
+    prop "validateStock rejects negative quantity when negativeAllowed off" prop_validateStock_rejectsNegativeQtyOff
+    prop "validateStock accepts negative quantity when negativeAllowed on" prop_validateStock_acceptsNegativeQtyOn
+    prop "validateStock consistent with negativeAllowed flag" prop_validateStock_consistentWithFlags

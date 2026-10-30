@@ -9,12 +9,7 @@ import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Time (Day, fromGregorian)
 
--- | Non-negative amount
-
 {-@ type NonNeg = {v:Double | v >= 0} @-}
-
--- | Percentage (0-100)
-
 {-@ type Percent = {v:Double | v >= 0 && v <= 100} @-}
 
 -- | Invoice - Invoice
@@ -31,7 +26,8 @@ data Invoice = Invoice
 
 -- | Calculate invoice balance (amount due)
 -- = Invariant: result >= 0 (cannot owe negative)
+-- Overpayment is not receivable, so the balance never goes below zero.
 
 {-@ calcInvoiceBalance :: Invoice -> NonNeg @-}
 calcInvoiceBalance :: Invoice -> Double
-calcInvoiceBalance i = invTotal i - invPaid i
+calcInvoiceBalance i = max 0 (invTotal i - invPaid i)

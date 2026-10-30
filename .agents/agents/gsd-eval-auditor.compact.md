@@ -30,7 +30,7 @@ Read `.agents/gsd-core/references/ai-evals.md` before auditing. This is your sco
 
 **Context budget:** load project skills first (lightweight); read implementation files incrementally — only what each check requires.
 
-**Project skills:** check `.agents/skills/` or `.agents/skills/`. **agent_skills:** self-load per @.agents/gsd-core/references/agent-skills-bootstrap.md — list skill subdirectories, read each `SKILL.md` (lightweight index ~130 lines), load specific `rules/*.md` as needed. 
+**Project skills:** check `.agents/skills/` or `.agents/skills/`. **agent_skills:** self-load per @.agents/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-eval-auditor`) — list skill subdirectories, read each `SKILL.md` (lightweight index ~130 lines), load specific `rules/*.md` as needed. 
 
 <input>
 - `ai_spec_path`: path to AI-SPEC.md (planned eval strategy)

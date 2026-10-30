@@ -17,6 +17,12 @@
  * tolerant. A plan id that is not `<phase>-<plan>` (a plan named `.*-PLAN.md`) matches nothing,
  * and a git failure is "no commits" exactly as before.
  *
+ * Cross-plan GREEN (#4867): a gap closure is planned as a RED-only probe plan plus the plan that
+ * `depends_on` it and carries the fix. A `type: tdd` plan with its own RED but no GREEN is credited
+ * with a `feat(...)` commit under any plan that lists it in `depends_on`, directly or through a
+ * chain; the row carries `greenFrom` and the report names the supplier. Its own RED is still
+ * required, and a plan nothing depends on is scored on its own commits alone.
+ *
  * Argv after the verb: `<phase>` (a number; an unresolvable phase reports zero plans).
  */
 var __importDefault = (this && this.__importDefault) || function (mod) {
@@ -31,7 +37,7 @@ const gate_evidence_cjs_1 = require("./gate-evidence.cjs");
 const gate_evaluation_scope_cjs_1 = require("./gate-evaluation-scope.cjs");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const frontmatterMod = require("./frontmatter.cjs");
-const { frontmatterKeyHasValue } = frontmatterMod;
+const { frontmatterKeyHasValue, extractFrontmatter } = frontmatterMod;
 /**
  * True when the plan's frontmatter declares `type: tdd` (CRLF included, #2449). The block is the
  * one fence owner's, read as RAW text — not through the YAML parser — so a block the parser refuses
@@ -41,6 +47,35 @@ const { frontmatterKeyHasValue } = frontmatterMod;
  */
 function isTddPlan(content) {
     return frontmatterKeyHasValue(content, 'type', 'tdd');
+}
+/** A `depends_on` token as a plan id: `01.1-20`, `01.1-20-PLAN` and `01.1-20-PLAN.md` all name plan `01.1-20`. */
+function toPlanId(token) {
+    return token.trim().replace(/-PLAN(?:\.md)?$/i, '');
+}
+/**
+ * The plan ids a plan lists in `depends_on` (#4867). A plan whose frontmatter does not parse, or has
+ * no `depends_on`, depends on nothing: the pairing below only ever ADDS credit, so an unreadable
+ * link can never turn a failing plan into a passing one.
+ */
+function dependsOnOf(content) {
+    // `extractFrontmatter` does not throw: an unparseable block is an empty result, so `depends_on` is absent.
+    const value = extractFrontmatter(content)['depends_on'];
+    const tokens = Array.isArray(value) ? value.map(String) : typeof value === 'string' ? value.split(',') : [];
+    return tokens.map(toPlanId).filter((id) => id !== '');
+}
+/** Every plan that depends on `planId`, directly or through a chain (#4867); a cycle is walked once. */
+function transitiveDependents(planId, dependents) {
+    const seen = new Set();
+    const queue = [planId];
+    while (queue.length > 0) {
+        for (const next of dependents.get(queue.shift()) ?? []) {
+            if (next !== planId && !seen.has(next)) {
+                seen.add(next);
+                queue.push(next);
+            }
+        }
+    }
+    return [...seen].sort();
 }
 /**
  * The commit types (`test`, `feat`, `refactor`, …) among the plan's own commits — those that
@@ -91,6 +126,9 @@ function evaluateTddReviewCheckpoint(input) {
     const phaseDir = located.kind === 'found' ? located.value : '';
     // Find all PLAN.md files with type: tdd in frontmatter
     const tddPlanFiles = [];
+    // #4867: plan id -> the plans that list it in `depends_on`, over EVERY plan of the phase (a
+    // dependent GREEN plan is usually `type: execute`, not `tdd`).
+    const dependents = new Map();
     const unreadable = [];
     if (phaseDir) {
         const entries = (0, gate_evidence_cjs_1.readDirEvidence)(phaseDir);
@@ -110,8 +148,13 @@ function evaluateTddReviewCheckpoint(input) {
                     const plan = (0, gate_evidence_cjs_1.readTextEvidence)(planPath);
                     if (plan.kind === 'unreadable')
                         unreadable.push({ source: planPath, reason: plan.reason });
-                    else if (plan.kind === 'found' && isTddPlan(plan.value))
-                        tddPlanFiles.push(planPath);
+                    else if (plan.kind === 'found') {
+                        if (isTddPlan(plan.value))
+                            tddPlanFiles.push(planPath);
+                        const planId = node_path_1.default.basename(planPath, '-PLAN.md');
+                        for (const dep of dependsOnOf(plan.value))
+                            dependents.set(dep, [...(dependents.get(dep) ?? []), planId]);
+                    }
                 }
             }
         }
@@ -136,15 +179,24 @@ function evaluateTddReviewCheckpoint(input) {
         const planId = node_path_1.default.basename(planPath, '-PLAN.md');
         const kinds = planCommitKinds(projectDir, planId);
         const red = kinds.has('test');
-        const green = kinds.has('feat');
         const refactor = kinds.has('refactor');
+        // #4867: a RED-only probe plan is satisfied by the GREEN of a plan that (transitively) declares
+        // `depends_on` it. Only a real `feat(...)` commit under such a plan counts; the plan's own RED is
+        // still required, and a plan nothing depends on is scored on its own commits alone.
+        const ownGreen = kinds.has('feat');
+        const greenFrom = ownGreen
+            ? []
+            : transitiveDependents(planId, dependents).filter((dependentId) => planCommitKinds(projectDir, dependentId).has('feat'));
+        const green = ownGreen || greenFrom.length > 0;
         const missing = [];
         if (!red)
             missing.push('RED');
         if (!green)
             missing.push('GREEN');
         const status = missing.length === 0 ? 'Pass' : 'FAIL';
-        rows.push({ planId, red, green, refactor, status, missing });
+        rows.push(greenFrom.length > 0
+            ? { planId, red, green, refactor, status, missing, greenFrom }
+            : { planId, red, green, refactor, status, missing });
     }
     const violations = rows.filter(r => r.status === 'FAIL').length;
     // Build review table
@@ -160,6 +212,9 @@ function evaluateTddReviewCheckpoint(input) {
         tableDivider,
         ...tableRows,
     ].join('\n');
+    for (const r of rows.filter(row => row.greenFrom)) {
+        table += `\n\nPlan ${r.planId} GREEN is supplied by dependent plan ${(r.greenFrom ?? []).join(', ')}.`;
+    }
     if (violations > 0) {
         table += '\n\n⚠ Gate violations are advisory — review before advancing.';
         for (const r of rows.filter(row => row.status === 'FAIL')) {

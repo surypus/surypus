@@ -50,7 +50,7 @@ Read `./AGENTS.md` if present — follow project guidelines, security requiremen
 
 **Project skills:** check `.kilo/skills/` or `.kilo/skills/`: list skill subdirectories, read each `SKILL.md` (lightweight index ~130 lines), load specific `rules/*.md` as needed. 
 
-**agent_skills:** self-load per @/home/dominicusin/src/surypus/.kilo/gsd-core/references/agent-skills-bootstrap.md
+**agent_skills:** self-load per @/home/dominicusin/src/surypus/.kilo/gsd-core/references/agent-skills-bootstrap.md (agent type: `gsd-code-reviewer`)
 </project_context>
 
 <review_scope>

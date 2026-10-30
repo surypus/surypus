@@ -277,6 +277,20 @@ bd ready
   - Exported `defOptimizationState` from `Core.Optimization` (was missing from the export list; zero production callers, no behaviour change)
   - No latent bug found — `Core.Optimization` is a correct 4-function module. The 0-importer status means any future caller gets a tested contract.
   - Verified: **662 examples, 0 failures, 6 pending** (639 → 662)
+- [x] Fix `-Wx-partial` warnings in System.MetricsCollectorSpec + remove duplicate monad-logger dep (2026-10-18)
+  - Replaced two `head points` calls (lines 94, 101) with `points !! 0` — the preceding `length points `shouldBe` 1` guard makes the index safe, but `head` is a partial function that triggers GHC's `-Wx-partial` warning
+  - Removed duplicate `monad-logger` entry from test-suite `build-depends` in Surypus.cabal (was listed twice, harmless but untidy)
+  - Verified: **793 examples, 0 failures, 3 pending** — no new warnings, all tests pass
+- [x] Wire Commerce.ServiceBillSpec + fix getBalance overpayment clamp (2026-10-22)
+  - 5 tests: partial payment remainder, full payment → 0, overpayment clamped to 0 (same NonNeg invariant as Commerce.Invoice), zero total → 0, QuickCheck property for non-negative balance
+  - Real bug fixed: `getBalance sb = sbTotal sb - sbPaid sb` returned negative when `sbPaid > sbTotal`; now `max 0 (sbTotal sb - sbPaid sb)`
+  - Negative check confirmed: spec compiled against the pre-fix source fails exactly 2 examples (overpayment + property), proving it is not vacuous
+  - Verified: **1002 examples, 0 new failures, 2 pending** (pre-existing DAL.EventStore DB auth failures + pre-existing pending); new spec 5/5 green
+
+- [x] Wire `MultiTenancy.TenantConfigSpec` into cabal test-suite (2026-10-23)
+  - 7 tests over `MultiTenancy.TenantConfig`: `defaultTenant` invariants, `tenantSchema` behaviour, `tenantSchema` == `tcDatabaseSchema` field
+  - Targets TASK-030 (multi-tenant QuickCheck isolation) — first QuickCheck coverage of the multi-tenant config module
+  - Verified: **1011 examples, 0 failures, 3 pending** (cabal test, GHC 9.10.3); 3 pending are DB/Redis integration specs
 
 ### DevOps
 - [x] Add Docker configuration
@@ -524,6 +538,10 @@ bd ready
   - DAL.Schema.migrateAll: no-op that shadowed the real migration in Surypus.DB.Schema.runMigrations
   - No `return ()` / `undefined` / `TODO` stub patterns remain anywhere in src/
 
+- [x] Wire test/DAL/EventStoreSpec.hs into cabal test-suite (2026-10-23)
+  - Added `DAL.EventStoreSpec` to the test-suite `other-modules` in `Surypus.cabal` — first coverage for `DAL.EventStore` (5 tests: append/retrieve events, get events from sequence, get latest sequence, snapshot round-trip, replay from snapshot). The spec is DB-gated (pends without SURYPUS_TEST_DATABASE_URL), wired through `DAL.EventStoreIntegration`.
+  - Verified: **1012 examples, 0 failures, 3 pending**
+
 ## Stats
 
 | Status | Count |
@@ -554,6 +572,7 @@ bd ready
 | Done (New: System.Retry) | 1 |
 | Done (New: Commerce.Price + 3 fixes) | 1 |
 | Done (New: System.CircuitBreaker) | 1 |
+| Done (New: Inventory.StockSpec QuickCheck invariants) | 1 |
 | Done (New: Commerce.Discount) | 1 |
 | Done (New: Core.Tax) | 1 |
 | Done (New: Commerce.CashSessionTemp) | 1 |
@@ -564,4 +583,5 @@ bd ready
 | Done (Dead stub removal ×6) | 1 |
 | Done (New: closePool real teardown) | 1 |
 | Done (Dead stub removal ×8) | 1 |
-| **Total** | **95** |
+| Done (New: DAL.EventStoreSpec wired into cabal test-suite) | 1 |
+| **Total** | **96** |
