@@ -1,0 +1,268 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE ScopedTypeVariables #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE LambdaCase #-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.API.Push.html"><span class="hs-identifier">Surypus.API.Push</span></a></span><span>
+</span><span id="line-7"></span><span>    </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Surypus.API.Push.html#PushSubscription"><span class="hs-identifier">PushSubscription</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.Push.html#PushSubscriptionRequest"><span class="hs-identifier">PushSubscriptionRequest</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.Push.html#subscribe"><span class="hs-identifier">subscribe</span></a></span><span>
+</span><span id="line-10"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.Push.html#unsubscribe"><span class="hs-identifier">unsubscribe</span></a></span><span>
+</span><span id="line-11"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.Push.html#sendPush"><span class="hs-identifier">sendPush</span></a></span><span>
+</span><span id="line-12"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.Push.html#PushStore"><span class="hs-identifier">PushStore</span></a></span><span>
+</span><span id="line-13"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.Push.html#newPushStore"><span class="hs-identifier">newPushStore</span></a></span><span>
+</span><span id="line-14"></span><span>    </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Concurrent.STM</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">TVar</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">newTVarIO</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">readTVarIO</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">modifyTVar'</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">atomically</span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier">FromJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier">ToJSON</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map.Strict</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">M</span></span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">data</span><span> </span><span id="PushSubscription"><span class="annot"><a href="Surypus.API.Push.html#PushSubscription"><span class="hs-identifier hs-var">PushSubscription</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PushSubscription"><span class="annot"><a href="Surypus.API.Push.html#PushSubscription"><span class="hs-identifier hs-var">PushSubscription</span></a></span></span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="psUserId"><span class="annot"><span class="annottext">PushSubscription -&gt; Int64
+</span><a href="Surypus.API.Push.html#psUserId"><span class="hs-identifier hs-var hs-var">psUserId</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="psEndpoint"><span class="annot"><span class="annottext">PushSubscription -&gt; Text
+</span><a href="Surypus.API.Push.html#psEndpoint"><span class="hs-identifier hs-var hs-var">psEndpoint</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="psP256dh"><span class="annot"><span class="annottext">PushSubscription -&gt; Text
+</span><a href="Surypus.API.Push.html#psP256dh"><span class="hs-identifier hs-var hs-var">psP256dh</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="psAuth"><span class="annot"><span class="annottext">PushSubscription -&gt; Text
+</span><a href="Surypus.API.Push.html#psAuth"><span class="hs-identifier hs-var hs-var">psAuth</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-29"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680311455"><span id="local-6989586621680311464"><span id="local-6989586621680311468"><span class="annot"><span class="annottext">Int -&gt; PushSubscription -&gt; ShowS
+[PushSubscription] -&gt; ShowS
+PushSubscription -&gt; [Char]
+(Int -&gt; PushSubscription -&gt; ShowS)
+-&gt; (PushSubscription -&gt; [Char])
+-&gt; ([PushSubscription] -&gt; ShowS)
+-&gt; Show PushSubscription
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; [Char]) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PushSubscription -&gt; ShowS
+showsPrec :: Int -&gt; PushSubscription -&gt; ShowS
+$cshow :: PushSubscription -&gt; [Char]
+show :: PushSubscription -&gt; [Char]
+$cshowList :: [PushSubscription] -&gt; ShowS
+showList :: [PushSubscription] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680311473"><span id="local-6989586621680311481"><span class="annot"><span class="annottext">PushSubscription -&gt; PushSubscription -&gt; Bool
+(PushSubscription -&gt; PushSubscription -&gt; Bool)
+-&gt; (PushSubscription -&gt; PushSubscription -&gt; Bool)
+-&gt; Eq PushSubscription
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PushSubscription -&gt; PushSubscription -&gt; Bool
+== :: PushSubscription -&gt; PushSubscription -&gt; Bool
+$c/= :: PushSubscription -&gt; PushSubscription -&gt; Bool
+/= :: PushSubscription -&gt; PushSubscription -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680311486"><span id="local-6989586621680311488"><span class="annot"><span class="annottext">(forall x. PushSubscription -&gt; Rep PushSubscription x)
+-&gt; (forall x. Rep PushSubscription x -&gt; PushSubscription)
+-&gt; Generic PushSubscription
+forall x. Rep PushSubscription x -&gt; PushSubscription
+forall x. PushSubscription -&gt; Rep PushSubscription x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PushSubscription -&gt; Rep PushSubscription x
+from :: forall x. PushSubscription -&gt; Rep PushSubscription x
+$cto :: forall x. Rep PushSubscription x -&gt; PushSubscription
+to :: forall x. Rep PushSubscription x -&gt; PushSubscription
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680311494"><span id="local-6989586621680311501"><span id="local-6989586621680311504"><span id="local-6989586621680311507"><span id="local-6989586621680311510"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Push.html#PushSubscription"><span class="hs-identifier hs-type">PushSubscription</span></a></span></span></span></span></span></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680311641"><span id="local-6989586621680311648"><span id="local-6989586621680311651"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Push.html#PushSubscription"><span class="hs-identifier hs-type">PushSubscription</span></a></span></span></span></span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">data</span><span> </span><span id="PushSubscriptionRequest"><span class="annot"><a href="Surypus.API.Push.html#PushSubscriptionRequest"><span class="hs-identifier hs-var">PushSubscriptionRequest</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PushSubscriptionRequest"><span class="annot"><a href="Surypus.API.Push.html#PushSubscriptionRequest"><span class="hs-identifier hs-var">PushSubscriptionRequest</span></a></span></span><span>
+</span><span id="line-34"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="psrEndpoint"><span class="annot"><span class="annottext">PushSubscriptionRequest -&gt; Text
+</span><a href="Surypus.API.Push.html#psrEndpoint"><span class="hs-identifier hs-var hs-var">psrEndpoint</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="psrP256dh"><span class="annot"><span class="annottext">PushSubscriptionRequest -&gt; Text
+</span><a href="Surypus.API.Push.html#psrP256dh"><span class="hs-identifier hs-var hs-var">psrP256dh</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="psrAuth"><span class="annot"><span class="annottext">PushSubscriptionRequest -&gt; Text
+</span><a href="Surypus.API.Push.html#psrAuth"><span class="hs-identifier hs-var hs-var">psrAuth</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-37"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680311742"><span id="local-6989586621680311748"><span id="local-6989586621680311752"><span class="annot"><span class="annottext">Int -&gt; PushSubscriptionRequest -&gt; ShowS
+[PushSubscriptionRequest] -&gt; ShowS
+PushSubscriptionRequest -&gt; [Char]
+(Int -&gt; PushSubscriptionRequest -&gt; ShowS)
+-&gt; (PushSubscriptionRequest -&gt; [Char])
+-&gt; ([PushSubscriptionRequest] -&gt; ShowS)
+-&gt; Show PushSubscriptionRequest
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; [Char]) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PushSubscriptionRequest -&gt; ShowS
+showsPrec :: Int -&gt; PushSubscriptionRequest -&gt; ShowS
+$cshow :: PushSubscriptionRequest -&gt; [Char]
+show :: PushSubscriptionRequest -&gt; [Char]
+$cshowList :: [PushSubscriptionRequest] -&gt; ShowS
+showList :: [PushSubscriptionRequest] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680311755"><span id="local-6989586621680311760"><span class="annot"><span class="annottext">PushSubscriptionRequest -&gt; PushSubscriptionRequest -&gt; Bool
+(PushSubscriptionRequest -&gt; PushSubscriptionRequest -&gt; Bool)
+-&gt; (PushSubscriptionRequest -&gt; PushSubscriptionRequest -&gt; Bool)
+-&gt; Eq PushSubscriptionRequest
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PushSubscriptionRequest -&gt; PushSubscriptionRequest -&gt; Bool
+== :: PushSubscriptionRequest -&gt; PushSubscriptionRequest -&gt; Bool
+$c/= :: PushSubscriptionRequest -&gt; PushSubscriptionRequest -&gt; Bool
+/= :: PushSubscriptionRequest -&gt; PushSubscriptionRequest -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680311764"><span id="local-6989586621680311766"><span class="annot"><span class="annottext">(forall x.
+ PushSubscriptionRequest -&gt; Rep PushSubscriptionRequest x)
+-&gt; (forall x.
+    Rep PushSubscriptionRequest x -&gt; PushSubscriptionRequest)
+-&gt; Generic PushSubscriptionRequest
+forall x. Rep PushSubscriptionRequest x -&gt; PushSubscriptionRequest
+forall x. PushSubscriptionRequest -&gt; Rep PushSubscriptionRequest x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. PushSubscriptionRequest -&gt; Rep PushSubscriptionRequest x
+from :: forall x. PushSubscriptionRequest -&gt; Rep PushSubscriptionRequest x
+$cto :: forall x. Rep PushSubscriptionRequest x -&gt; PushSubscriptionRequest
+to :: forall x. Rep PushSubscriptionRequest x -&gt; PushSubscriptionRequest
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680311769"><span id="local-6989586621680311776"><span id="local-6989586621680311779"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Push.html#PushSubscriptionRequest"><span class="hs-identifier hs-type">PushSubscriptionRequest</span></a></span></span></span></span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="hs-keyword">type</span><span> </span><span id="PushStore"><span class="annot"><a href="Surypus.API.Push.html#PushStore"><span class="hs-identifier hs-var">PushStore</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">TVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">M.Map</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="annot"><a href="Surypus.API.Push.html#PushSubscription"><span class="hs-identifier hs-type">PushSubscription</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><a href="Surypus.API.Push.html#newPushStore"><span class="hs-identifier hs-type">newPushStore</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="Surypus.API.Push.html#PushStore"><span class="hs-identifier hs-type">PushStore</span></a></span><span>
+</span><span id="line-44"></span><span id="newPushStore"><span class="annot"><span class="annottext">newPushStore :: IO PushStore
+</span><a href="Surypus.API.Push.html#newPushStore"><span class="hs-identifier hs-var hs-var">newPushStore</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Map Int64 PushSubscription -&gt; IO PushStore
+forall a. a -&gt; IO (TVar a)
+</span><span class="hs-identifier hs-var">newTVarIO</span></span><span> </span><span class="annot"><span class="annottext">Map Int64 PushSubscription
+forall k a. Map k a
+</span><span class="hs-identifier hs-var">M.empty</span></span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="annot"><a href="Surypus.API.Push.html#subscribe"><span class="hs-identifier hs-type">subscribe</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Push.html#PushStore"><span class="hs-identifier hs-type">PushStore</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.API.Push.html#PushSubscriptionRequest"><span class="hs-identifier hs-type">PushSubscriptionRequest</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span id="subscribe"><span class="annot"><span class="annottext">subscribe :: PushStore -&gt; Int64 -&gt; PushSubscriptionRequest -&gt; IO ()
+</span><a href="Surypus.API.Push.html#subscribe"><span class="hs-identifier hs-var hs-var">subscribe</span></a></span></span><span> </span><span id="local-6989586621680311835"><span class="annot"><span class="annottext">PushStore
+</span><a href="#local-6989586621680311835"><span class="hs-identifier hs-var">store</span></a></span></span><span> </span><span id="local-6989586621680311836"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680311836"><span class="hs-identifier hs-var">userId</span></a></span></span><span> </span><span id="local-6989586621680311837"><span class="annot"><span class="annottext">PushSubscriptionRequest
+</span><a href="#local-6989586621680311837"><span class="hs-identifier hs-var">req</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">STM () -&gt; IO ()
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="annot"><span class="annottext">(STM () -&gt; IO ()) -&gt; STM () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">PushStore
+-&gt; (Map Int64 PushSubscription -&gt; Map Int64 PushSubscription)
+-&gt; STM ()
+forall a. TVar a -&gt; (a -&gt; a) -&gt; STM ()
+</span><span class="hs-identifier hs-var">modifyTVar'</span></span><span> </span><span class="annot"><span class="annottext">PushStore
+</span><a href="#local-6989586621680311835"><span class="hs-identifier hs-var">store</span></a></span><span> </span><span class="annot"><span class="annottext">((Map Int64 PushSubscription -&gt; Map Int64 PushSubscription)
+ -&gt; STM ())
+-&gt; (Map Int64 PushSubscription -&gt; Map Int64 PushSubscription)
+-&gt; STM ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-48"></span><span>    </span><span class="annot"><span class="annottext">Int64
+-&gt; PushSubscription
+-&gt; Map Int64 PushSubscription
+-&gt; Map Int64 PushSubscription
+forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">M.insert</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680311836"><span class="hs-identifier hs-var">userId</span></a></span><span> </span><span class="annot"><a href="Surypus.API.Push.html#PushSubscription"><span class="hs-identifier hs-type">PushSubscription</span></a></span><span>
+</span><span id="line-49"></span><span>        </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">psUserId :: Int64
+</span><a href="Surypus.API.Push.html#psUserId"><span class="hs-identifier hs-var">psUserId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680311836"><span class="hs-identifier hs-var">userId</span></a></span><span>
+</span><span id="line-50"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">psEndpoint :: Text
+</span><a href="Surypus.API.Push.html#psEndpoint"><span class="hs-identifier hs-var">psEndpoint</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PushSubscriptionRequest -&gt; Text
+</span><a href="Surypus.API.Push.html#psrEndpoint"><span class="hs-identifier hs-var">psrEndpoint</span></a></span><span> </span><span class="annot"><span class="annottext">PushSubscriptionRequest
+</span><a href="#local-6989586621680311837"><span class="hs-identifier hs-var">req</span></a></span><span>
+</span><span id="line-51"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">psP256dh :: Text
+</span><a href="Surypus.API.Push.html#psP256dh"><span class="hs-identifier hs-var">psP256dh</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PushSubscriptionRequest -&gt; Text
+</span><a href="Surypus.API.Push.html#psrP256dh"><span class="hs-identifier hs-var">psrP256dh</span></a></span><span> </span><span class="annot"><span class="annottext">PushSubscriptionRequest
+</span><a href="#local-6989586621680311837"><span class="hs-identifier hs-var">req</span></a></span><span>
+</span><span id="line-52"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">psAuth :: Text
+</span><a href="Surypus.API.Push.html#psAuth"><span class="hs-identifier hs-var">psAuth</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PushSubscriptionRequest -&gt; Text
+</span><a href="Surypus.API.Push.html#psrAuth"><span class="hs-identifier hs-var">psrAuth</span></a></span><span> </span><span class="annot"><span class="annottext">PushSubscriptionRequest
+</span><a href="#local-6989586621680311837"><span class="hs-identifier hs-var">req</span></a></span><span>
+</span><span id="line-53"></span><span>        </span><span class="hs-special">}</span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="annot"><a href="Surypus.API.Push.html#unsubscribe"><span class="hs-identifier hs-type">unsubscribe</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Push.html#PushStore"><span class="hs-identifier hs-type">PushStore</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span id="unsubscribe"><span class="annot"><span class="annottext">unsubscribe :: PushStore -&gt; Int64 -&gt; IO ()
+</span><a href="Surypus.API.Push.html#unsubscribe"><span class="hs-identifier hs-var hs-var">unsubscribe</span></a></span></span><span> </span><span id="local-6989586621680311839"><span class="annot"><span class="annottext">PushStore
+</span><a href="#local-6989586621680311839"><span class="hs-identifier hs-var">store</span></a></span></span><span> </span><span id="local-6989586621680311840"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680311840"><span class="hs-identifier hs-var">userId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">STM () -&gt; IO ()
+forall a. STM a -&gt; IO a
+</span><span class="hs-identifier hs-var">atomically</span></span><span> </span><span class="annot"><span class="annottext">(STM () -&gt; IO ()) -&gt; STM () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">PushStore
+-&gt; (Map Int64 PushSubscription -&gt; Map Int64 PushSubscription)
+-&gt; STM ()
+forall a. TVar a -&gt; (a -&gt; a) -&gt; STM ()
+</span><span class="hs-identifier hs-var">modifyTVar'</span></span><span> </span><span class="annot"><span class="annottext">PushStore
+</span><a href="#local-6989586621680311839"><span class="hs-identifier hs-var">store</span></a></span><span> </span><span class="annot"><span class="annottext">((Map Int64 PushSubscription -&gt; Map Int64 PushSubscription)
+ -&gt; STM ())
+-&gt; (Map Int64 PushSubscription -&gt; Map Int64 PushSubscription)
+-&gt; STM ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Map Int64 PushSubscription -&gt; Map Int64 PushSubscription
+forall k a. Ord k =&gt; k -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">M.delete</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680311840"><span class="hs-identifier hs-var">userId</span></a></span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="annot"><a href="Surypus.API.Push.html#sendPush"><span class="hs-identifier hs-type">sendPush</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Push.html#PushStore"><span class="hs-identifier hs-type">PushStore</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-59"></span><span id="sendPush"><span class="annot"><span class="annottext">sendPush :: PushStore -&gt; Int64 -&gt; Text -&gt; Text -&gt; IO ()
+</span><a href="Surypus.API.Push.html#sendPush"><span class="hs-identifier hs-var hs-var">sendPush</span></a></span></span><span> </span><span id="local-6989586621680311842"><span class="annot"><span class="annottext">PushStore
+</span><a href="#local-6989586621680311842"><span class="hs-identifier hs-var">store</span></a></span></span><span> </span><span id="local-6989586621680311843"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680311843"><span class="hs-identifier hs-var">userId</span></a></span></span><span> </span><span id="local-6989586621680311844"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680311844"><span class="hs-identifier hs-var">title</span></a></span></span><span> </span><span id="local-6989586621680311845"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680311845"><span class="hs-identifier hs-var">body</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-60"></span><span>    </span><span class="annot"><span class="annottext">PushStore -&gt; Int64 -&gt; IO (Maybe PushSubscription)
+</span><a href="Surypus.API.Push.html#getSubscription"><span class="hs-identifier hs-var">getSubscription</span></a></span><span> </span><span class="annot"><span class="annottext">PushStore
+</span><a href="#local-6989586621680311842"><span class="hs-identifier hs-var">store</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680311843"><span class="hs-identifier hs-var">userId</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Maybe PushSubscription)
+-&gt; (Maybe PushSubscription -&gt; IO ()) -&gt; IO ()
+forall a b. IO a -&gt; (a -&gt; IO b) -&gt; IO b
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="hs-glyph">\</span><span class="hs-glyph">case</span><span>
+</span><span id="line-61"></span><span>        </span><span class="annot"><span class="annottext">Maybe PushSubscription
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">() -&gt; IO ()
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680311847"><span class="annot"><span class="annottext">PushSubscription
+</span><a href="#local-6989586621680311847"><span class="hs-identifier hs-var">sub</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-63"></span><span>            </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680311848"><span class="annot"><span class="annottext">endpoint :: Text
+</span><a href="#local-6989586621680311848"><span class="hs-identifier hs-var hs-var hs-var">endpoint</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PushSubscription -&gt; Text
+</span><a href="Surypus.API.Push.html#psEndpoint"><span class="hs-identifier hs-var">psEndpoint</span></a></span><span> </span><span class="annot"><span class="annottext">PushSubscription
+</span><a href="#local-6989586621680311847"><span class="hs-identifier hs-var">sub</span></a></span><span>
+</span><span id="line-64"></span><span>            </span><span class="annot"><span class="annottext">[Char] -&gt; IO ()
+</span><span class="hs-identifier hs-var">putStrLn</span></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; IO ()) -&gt; [Char] -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;[push] Would send to &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; [Char]
+forall a. Show a =&gt; a -&gt; [Char]
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680311848"><span class="hs-identifier hs-var">endpoint</span></a></span><span>
+</span><span id="line-65"></span><span>            </span><span class="annot"><span class="annottext">[Char] -&gt; IO ()
+</span><span class="hs-identifier hs-var">putStrLn</span></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; IO ()) -&gt; [Char] -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;[push] Title: &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; [Char]
+forall a. Show a =&gt; a -&gt; [Char]
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680311844"><span class="hs-identifier hs-var">title</span></a></span><span>
+</span><span id="line-66"></span><span>            </span><span class="annot"><span class="annottext">[Char] -&gt; IO ()
+</span><span class="hs-identifier hs-var">putStrLn</span></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; IO ()) -&gt; [Char] -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;[push] Body: &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; [Char]
+forall a. Show a =&gt; a -&gt; [Char]
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680311845"><span class="hs-identifier hs-var">body</span></a></span><span>
+</span><span id="line-67"></span><span>
+</span><span id="line-68"></span><span class="annot"><a href="Surypus.API.Push.html#getSubscription"><span class="hs-identifier hs-type">getSubscription</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Push.html#PushStore"><span class="hs-identifier hs-type">PushStore</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Surypus.API.Push.html#PushSubscription"><span class="hs-identifier hs-type">PushSubscription</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span id="getSubscription"><span class="annot"><span class="annottext">getSubscription :: PushStore -&gt; Int64 -&gt; IO (Maybe PushSubscription)
+</span><a href="Surypus.API.Push.html#getSubscription"><span class="hs-identifier hs-var hs-var">getSubscription</span></a></span></span><span> </span><span id="local-6989586621680311851"><span class="annot"><span class="annottext">PushStore
+</span><a href="#local-6989586621680311851"><span class="hs-identifier hs-var">store</span></a></span></span><span> </span><span id="local-6989586621680311852"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680311852"><span class="hs-identifier hs-var">userId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Map Int64 PushSubscription -&gt; Maybe PushSubscription
+forall k a. Ord k =&gt; k -&gt; Map k a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">M.lookup</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680311852"><span class="hs-identifier hs-var">userId</span></a></span><span> </span><span class="annot"><span class="annottext">(Map Int64 PushSubscription -&gt; Maybe PushSubscription)
+-&gt; IO (Map Int64 PushSubscription) -&gt; IO (Maybe PushSubscription)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">PushStore -&gt; IO (Map Int64 PushSubscription)
+forall a. TVar a -&gt; IO a
+</span><span class="hs-identifier hs-var">readTVarIO</span></span><span> </span><span class="annot"><span class="annottext">PushStore
+</span><a href="#local-6989586621680311851"><span class="hs-identifier hs-var">store</span></a></span><span>
+</span><span id="line-70"></span></pre></body></html>

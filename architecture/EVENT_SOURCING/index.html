@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://surypus.github.io/surypus/architecture/EVENT_SOURCING/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Архитектура событий - Surypus ERP</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "\u0410\u0440\u0445\u0438\u0442\u0435\u043a\u0442\u0443\u0440\u0430 \u0441\u043e\u0431\u044b\u0442\u0438\u0439";
+        var mkdocs_page_input_path = "architecture/EVENT_SOURCING.md";
+        var mkdocs_page_url = "/surypus/architecture/EVENT_SOURCING/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Surypus ERP
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Главная</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../ARCHITECTURE/">Архитектура</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../TYPES/">Система типов</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../API/">API</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DATABASE/">Хранилище данных</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DEPLOYMENT/">Развёртывание</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../GUIDE/">Руководство</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Руководства</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/accounting/">Как работает бухгалтерия</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/inventory/">Как работает инвентарь</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/rbac/">Как работает RBAC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/jwt/">Как работает JWT-аутентификация</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/persistence/">Как работает персистентность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/event-store/">Как работает Event Store</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">ADR</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0001-haskell-primary-language/">ADR-001: Haskell как основной язык</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0002-mkdocs-site/">ADR-002: MkDocs для сайта документации</a>
+                  </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Архитектура событий</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#_1">Архитектура</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#core-principles">Core Principles</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#1-event-store-append-only">1. Event Store (Append-Only)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#2-aggregate-pattern">2. Aggregate Pattern</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#3-cqrs-command-query-responsibility-segregation">3. CQRS (Command Query Responsibility Segregation)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#4-saga-pattern">4. Saga Pattern</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#event-types">Event Types</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#inventory-domain">Inventory Domain</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#bill-domain">Bill Domain</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#projections-read-models">Projections (Read Models)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#fifo-lots-projection">FIFO Lots Projection</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#stock-balance-projection">Stock Balance Projection</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#_2">Согласованность и инварианты</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#_3">Оптимистичная блокировка</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#invariant-checking">Invariant Checking</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#event-streaming">Event Streaming</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#outbox-pattern">Outbox Pattern</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#kafka-topics">Kafka Topics</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#monitoring">Monitoring</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#key-metrics">Key Metrics</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#deployment">Deployment</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#docker-compose">Docker Compose</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#formal-verification">Formal Verification</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#references">References</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Инженерные модули</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/api-conventions/">API-конвенции</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/bill-module/">Bill-модуль</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/document-module/">Document-модуль</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/hr-payroll-module/">HR/Payroll-модуль</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/job-server-etl/">Job Server ETL</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/person-module/">Person-модуль</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/production-module/">Production-модуль</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/reports-portal/">Reports Portal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/schema-uniqueness/">Schema уникальность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/testing-guide/">Руководство по тестированию</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/EXAMPLES/">Примеры</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../REFINEMENT/">Рефиниции</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../SUMMARY/">Сводка</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Задачи</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Home/">Обзор</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Plans/">Планы</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Backlog/">Бэклог</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Сгенерировано</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/health/">Состояние документации</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/inventory/coverage/">Покрытие</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/inventory/modules/">Каталог модулей</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/inventory/functions/">Функции</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/graphs/">Граф зависимостей</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/haddock/Surypus/">Haddock API</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Surypus ERP</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Архитектура событий</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/surypus/surypus/edit/master/docs/architecture/EVENT_SOURCING.md">Edit on surypus/surypus</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="surypus-event-sourcing-architecture">Surypus Event Sourcing Architecture</h1>
+<h2 id="overview">Overview</h2>
+<p>Surypus реализована на основе <strong>Event Sourcing</strong> и <strong>CQRS</strong> паттернов для обеспечения:</p>
+<ul>
+<li>Полной аудируемости всех изменений</li>
+<li>Восстановления состояния системы на любую дату</li>
+<li>Масштабируемости через разделение read/write моделей</li>
+<li>Надежности через Saga-оркестрацию</li>
+</ul>
+<h2 id="_1">Архитектура</h2>
+<div class="highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────────────────┐
+│                         API Layer                                │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
+│  │  REST API    │  │   gRPC API   │  │   GraphQL (future)   │   │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Command Layer                               │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
+│  │  Commands    │  │   OPA AuthZ  │  │   Saga Orchestrator  │   │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     Event Store                                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
+│  │  PostgreSQL  │  │   Outbox     │  │   Kafka/Redpanda   │   │
+│  │  (events)    │  │   Pattern    │  │   (streaming)      │   │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Projection Layer                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
+│  │   FIFO Lots  │  │   Stock Bal  │  │   Bill Projections   │   │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Query Layer                                 │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
+│  │  Read Models │  │   Cache      │  │   Search Index       │   │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<h2 id="core-principles">Core Principles</h2>
+<h3 id="1-event-store-append-only">1. Event Store (Append-Only)</h3>
+<div class="highlight"><pre><span></span><code><span class="c1">-- Events никогда не удаляются и не обновляются</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">event_store</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">event_id</span><span class="w">            </span><span class="n">BIGSERIAL</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">    </span><span class="n">aggregate_id</span><span class="w">        </span><span class="n">UUID</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">event_type</span><span class="w">          </span><span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">event_data</span><span class="w">          </span><span class="n">JSONB</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">sequence_number</span><span class="w">     </span><span class="nb">BIGINT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">  </span><span class="c1">-- Global ordering</span>
+<span class="w">    </span><span class="n">created_at</span><span class="w">          </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="k">TIME</span><span class="w"> </span><span class="k">ZONE</span><span class="w"> </span><span class="k">DEFAULT</span><span class="w"> </span><span class="k">CURRENT_TIMESTAMP</span>
+<span class="p">);</span>
+</code></pre></div>
+<h3 id="2-aggregate-pattern">2. Aggregate Pattern</h3>
+<div class="highlight"><pre><span></span><code><span class="c1">-- Aggregate = функция над событиями</span>
+<span class="kr">class</span><span class="w"> </span><span class="kt">AggregateState</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="kr">where</span>
+<span class="w">    </span><span class="n">emptyState</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="n">s</span>
+<span class="w">    </span><span class="n">applyEvent</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Event</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Either</span><span class="w"> </span><span class="kt">InvariantViolation</span><span class="w"> </span><span class="n">s</span>
+</code></pre></div>
+<p><strong>Пример: Inventory Aggregate</strong></p>
+<div class="highlight"><pre><span></span><code>Events: [LotCreated, StockReceived, LotConsumed, StockIssued]
+  │
+  ▼
+State: { current_qty, reserved_qty, available_qty, lots: [...] }
+  │
+  ▼
+Invariants: current_qty &gt;= 0, available_qty &gt;= 0, etc.
+</code></pre></div>
+<h3 id="3-cqrs-command-query-responsibility-segregation">3. CQRS (Command Query Responsibility Segregation)</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Commands</th>
+<th>Queries</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Write</td>
+<td>Event Store</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Read</td>
+<td>-</td>
+<td>Projections</td>
+</tr>
+<tr>
+<td>Scale</td>
+<td>Vertically</td>
+<td>Horizontally</td>
+</tr>
+<tr>
+<td>Consistency</td>
+<td>Strong</td>
+<td>Eventual</td>
+</tr>
+</tbody>
+</table>
+<h3 id="4-saga-pattern">4. Saga Pattern</h3>
+<p>Для распределенных транзакций:</p>
+<div class="highlight"><pre><span></span><code>Sales Order Saga:
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│ Reserve Stock│───▶│ Create Bill  │───▶│  Post Bill   │
+└──────────────┘    └──────────────┘    └──────────────┘
+       │                   │                   │
+       ▼                   ▼                   ▼
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│ Release Res. │◀───│ Cancel Bill  │◀───│ Reverse Stock│
+└──────────────┘    └──────────────┘    └──────────────┘
+
+        Compensation (при ошибке выполняется в обратном порядке)
+</code></pre></div>
+<h2 id="event-types">Event Types</h2>
+<h3 id="inventory-domain">Inventory Domain</h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>StockReceived</code></td>
+<td>Поступление товара на склад</td>
+</tr>
+<tr>
+<td><code>StockIssued</code></td>
+<td>Списание товара по FIFO</td>
+</tr>
+<tr>
+<td><code>StockReserved</code></td>
+<td>Резервирование товара</td>
+</tr>
+<tr>
+<td><code>StockReleased</code></td>
+<td>Снятие резерва</td>
+</tr>
+<tr>
+<td><code>StockAdjusted</code></td>
+<td>Корректировка остатка</td>
+</tr>
+<tr>
+<td><code>LotCreated</code></td>
+<td>Создание партии</td>
+</tr>
+<tr>
+<td><code>LotConsumed</code></td>
+<td>Потребление партии</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bill-domain">Bill Domain</h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BillCreated</code></td>
+<td>Создание документа</td>
+</tr>
+<tr>
+<td><code>BillLineAdded</code></td>
+<td>Добавление строки</td>
+</tr>
+<tr>
+<td><code>BillPosted</code></td>
+<td>Проведение документа</td>
+</tr>
+<tr>
+<td><code>BillCancelled</code></td>
+<td>Отмена документа</td>
+</tr>
+</tbody>
+</table>
+<h2 id="projections-read-models">Projections (Read Models)</h2>
+<h3 id="fifo-lots-projection">FIFO Lots Projection</h3>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">projection_fifo_lots</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">lot_id</span><span class="w">              </span><span class="n">UUID</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">    </span><span class="n">goods_id</span><span class="w">            </span><span class="n">UUID</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">location_id</span><span class="w">         </span><span class="n">UUID</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">qty_remaining</span><span class="w">       </span><span class="nb">NUMERIC</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">lot_cost</span><span class="w">            </span><span class="nb">NUMERIC</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">received_at</span><span class="w">         </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="k">TIME</span><span class="w"> </span><span class="k">ZONE</span>
+<span class="p">);</span>
+
+<span class="c1">-- Query: Get FIFO lots for goods issuance</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">projection_lots_fifo</span><span class="p">(</span><span class="n">goods_id</span><span class="p">,</span><span class="w"> </span><span class="n">location_id</span><span class="p">,</span><span class="w"> </span><span class="n">qty_needed</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="stock-balance-projection">Stock Balance Projection</h3>
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">projection_stock_balance</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">goods_id</span><span class="w">            </span><span class="n">UUID</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">location_id</span><span class="w">         </span><span class="n">UUID</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">current_qty</span><span class="w">         </span><span class="nb">NUMERIC</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">reserved_qty</span><span class="w">        </span><span class="nb">NUMERIC</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">available_qty</span><span class="w">       </span><span class="nb">NUMERIC</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">avg_cost</span><span class="w">            </span><span class="nb">NUMERIC</span><span class="w"> </span><span class="k">GENERATED</span><span class="w"> </span><span class="n">ALWAYS</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="p">(</span><span class="k">CASE</span><span class="w"> </span><span class="k">WHEN</span><span class="w"> </span><span class="n">current_qty</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">THEN</span><span class="w"> </span><span class="n">total_cost</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">current_qty</span><span class="w"> </span><span class="k">ELSE</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="k">END</span><span class="p">)</span><span class="w"> </span><span class="n">STORED</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">goods_id</span><span class="p">,</span><span class="w"> </span><span class="n">location_id</span><span class="p">)</span>
+<span class="p">);</span>
+</code></pre></div>
+<h2 id="_2">Согласованность и инварианты</h2>
+<h3 id="_3">Оптимистичная блокировка</h3>
+<div class="highlight"><pre><span></span><code><span class="c1">-- При appending event проверяется версия</span>
+<span class="k">SELECT</span><span class="w"> </span><span class="n">event_append</span><span class="p">(</span>
+<span class="w">    </span><span class="n">aggregate_id</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">'Inventory'</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">'StockIssued'</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">'{...}'</span><span class="p">,</span>
+<span class="w">    </span><span class="n">tenant_id</span><span class="p">,</span>
+<span class="w">    </span><span class="n">expected_version</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w">  </span><span class="c1">-- Проверка версии</span>
+<span class="p">);</span>
+<span class="c1">-- Возвращает ошибку если версия не совпадает</span>
+</code></pre></div>
+<h3 id="invariant-checking">Invariant Checking</h3>
+<div class="highlight"><pre><span></span><code><span class="c1">-- Примеры инвариантов</span>
+<span class="kr">data</span><span class="w"> </span><span class="kt">InvariantViolation</span>
+<span class="w">    </span><span class="ow">=</span><span class="w"> </span><span class="kt">NegativeQuantity</span><span class="w"> </span><span class="kt">Double</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="kt">InsufficientStock</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">needed</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Double</span><span class="p">,</span><span class="w"> </span><span class="n">available</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Double</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="o">|</span><span class="w"> </span><span class="kt">InvalidStatus</span><span class="w"> </span><span class="kt">Text</span><span class="w"> </span><span class="kt">Text</span>
+
+<span class="c1">-- Проверка перед выполнением команды</span>
+<span class="nf">validateCommand</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Command</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Either</span><span class="w"> </span><span class="kt">InvariantViolation</span><span class="w"> </span><span class="nb">()</span>
+</code></pre></div>
+<h2 id="event-streaming">Event Streaming</h2>
+<h3 id="outbox-pattern">Outbox Pattern</h3>
+<div class="highlight"><pre><span></span><code><span class="c1">-- Триггер автоматически создает запись в outbox</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TRIGGER</span><span class="w"> </span><span class="n">trg_event_outbox</span>
+<span class="w">    </span><span class="k">AFTER</span><span class="w"> </span><span class="k">INSERT</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">event_store</span>
+<span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="k">EACH</span><span class="w"> </span><span class="k">ROW</span>
+<span class="w">    </span><span class="k">EXECUTE</span><span class="w"> </span><span class="k">FUNCTION</span><span class="w"> </span><span class="n">trg_event_to_outbox</span><span class="p">();</span>
+
+<span class="c1">-- Event Publisher читает outbox и публикует в Kafka</span>
+</code></pre></div>
+<h3 id="kafka-topics">Kafka Topics</h3>
+<div class="highlight"><pre><span></span><code>surypus.events.inventory.StockReceived
+surypus.events.inventory.StockIssued
+surypus.events.bill.BillPosted
+surypus.projections.updates
+surypus.commands.execute
+</code></pre></div>
+<h2 id="monitoring">Monitoring</h2>
+<h3 id="key-metrics">Key Metrics</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Description</th>
+<th>Alert Threshold</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>event_processing_time</code></td>
+<td>Время обработки события</td>
+<td>&gt; 100ms</td>
+</tr>
+<tr>
+<td><code>projection_lag</code></td>
+<td>Отставание проекций</td>
+<td>&gt; 1000 events</td>
+</tr>
+<tr>
+<td><code>saga_completion_rate</code></td>
+<td>Успешность саг</td>
+<td>&lt; 95%</td>
+</tr>
+<tr>
+<td><code>command_execution_time</code></td>
+<td>Время выполнения команд</td>
+<td>&gt; 500ms</td>
+</tr>
+</tbody>
+</table>
+<h2 id="deployment">Deployment</h2>
+<h3 id="docker-compose">Docker Compose</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Запуск всего стека</span>
+docker-compose<span class="w"> </span>-f<span class="w"> </span>docker/docker-compose.yml<span class="w"> </span>up<span class="w"> </span>-d
+
+<span class="c1"># Сервисы:</span>
+<span class="c1"># - PostgreSQL (Event Store)</span>
+<span class="c1"># - Redpanda (Event Streaming)</span>
+<span class="c1"># - OPA (Authorization)</span>
+<span class="c1"># - Surypus API</span>
+<span class="c1"># - Event Publisher</span>
+<span class="c1"># - Projection Builder</span>
+</code></pre></div>
+<h2 id="formal-verification">Formal Verification</h2>
+<p>Haskell модель обеспечивает:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">-- Свойства FIFO</span>
+<span class="nf">prop_fifoOrder</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="p">[</span><span class="kt">Lot</span><span class="p">]</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Quantity</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Bool</span>
+<span class="nf">prop_quantityConserved</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Stock</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Command</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Bool</span>
+<span class="nf">prop_cannotOverIssue</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Stock</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Quantity</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Bool</span>
+</code></pre></div>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://martinfowler.com/eaaDev/EventSourcing.html">Event Sourcing Pattern</a></li>
+<li><a href="https://martinfowler.com/bliki/CQRS.html">CQRS Pattern</a></li>
+<li><a href="https://microservices.io/patterns/data/saga.html">Saga Pattern</a></li>
+<li><a href="https://microservices.io/patterns/data/transactional-outbox.html">Outbox Pattern</a></li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../adr/0002-mkdocs-site/" class="btn btn-neutral float-left" title="ADR-002: MkDocs для сайта документации"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../engineering/api-conventions/" class="btn btn-neutral float-right" title="API-конвенции">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/surypus/surypus" class="fa fa-code-fork" style="color: #fcfcfc"> surypus/surypus</a>
+        </span>
+    
+    
+      <span><a href="../../adr/0002-mkdocs-site/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../../engineering/api-conventions/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

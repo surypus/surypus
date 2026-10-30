@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DerivingStrategies #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE TypeOperators #-}</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.Api.html"><span class="hs-identifier">Surypus.Api</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Surypus.Api.html#SurypusApi"><span class="hs-identifier">SurypusApi</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Surypus.Api.html#apiProxy"><span class="hs-identifier">apiProxy</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Surypus.Api.html#AuthenticatedUser"><span class="hs-identifier">AuthenticatedUser</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/servant-server-0.20.3.0-5e23ab7c151ac52e4166ba17f90a5aa8b03d4904ac513501a9dae677cbe4aa3d/share/doc/html/src/Servant.html"><span class="hs-identifier">Servant</span></a></span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="annot"><span class="hs-comment">-- | Authenticated user context passed to handlers</span></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">data</span><span> </span><span id="AuthenticatedUser"><span class="annot"><a href="Surypus.Api.html#AuthenticatedUser"><span class="hs-identifier hs-var">AuthenticatedUser</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AuthenticatedUser"><span class="annot"><a href="Surypus.Api.html#AuthenticatedUser"><span class="hs-identifier hs-var">AuthenticatedUser</span></a></span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="auUserId"><span class="annot"><span class="annottext">AuthenticatedUser -&gt; Int64
+</span><a href="Surypus.Api.html#auUserId"><span class="hs-identifier hs-var hs-var">auUserId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="auUsername"><span class="annot"><span class="annottext">AuthenticatedUser -&gt; Text
+</span><a href="Surypus.Api.html#auUsername"><span class="hs-identifier hs-var hs-var">auUsername</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="auRole"><span class="annot"><span class="annottext">AuthenticatedUser -&gt; Text
+</span><a href="Surypus.Api.html#auRole"><span class="hs-identifier hs-var hs-var">auRole</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680313415"><span id="local-6989586621680313424"><span id="local-6989586621680313428"><span class="annot"><span class="annottext">Int -&gt; AuthenticatedUser -&gt; ShowS
+[AuthenticatedUser] -&gt; ShowS
+AuthenticatedUser -&gt; String
+(Int -&gt; AuthenticatedUser -&gt; ShowS)
+-&gt; (AuthenticatedUser -&gt; String)
+-&gt; ([AuthenticatedUser] -&gt; ShowS)
+-&gt; Show AuthenticatedUser
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AuthenticatedUser -&gt; ShowS
+showsPrec :: Int -&gt; AuthenticatedUser -&gt; ShowS
+$cshow :: AuthenticatedUser -&gt; String
+show :: AuthenticatedUser -&gt; String
+$cshowList :: [AuthenticatedUser] -&gt; ShowS
+showList :: [AuthenticatedUser] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680313433"><span id="local-6989586621680313440"><span class="annot"><span class="annottext">AuthenticatedUser -&gt; AuthenticatedUser -&gt; Bool
+(AuthenticatedUser -&gt; AuthenticatedUser -&gt; Bool)
+-&gt; (AuthenticatedUser -&gt; AuthenticatedUser -&gt; Bool)
+-&gt; Eq AuthenticatedUser
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AuthenticatedUser -&gt; AuthenticatedUser -&gt; Bool
+== :: AuthenticatedUser -&gt; AuthenticatedUser -&gt; Bool
+$c/= :: AuthenticatedUser -&gt; AuthenticatedUser -&gt; Bool
+/= :: AuthenticatedUser -&gt; AuthenticatedUser -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680313445"><span id="local-6989586621680313447"><span class="annot"><span class="annottext">(forall x. AuthenticatedUser -&gt; Rep AuthenticatedUser x)
+-&gt; (forall x. Rep AuthenticatedUser x -&gt; AuthenticatedUser)
+-&gt; Generic AuthenticatedUser
+forall x. Rep AuthenticatedUser x -&gt; AuthenticatedUser
+forall x. AuthenticatedUser -&gt; Rep AuthenticatedUser x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. AuthenticatedUser -&gt; Rep AuthenticatedUser x
+from :: forall x. AuthenticatedUser -&gt; Rep AuthenticatedUser x
+$cto :: forall x. Rep AuthenticatedUser x -&gt; AuthenticatedUser
+to :: forall x. Rep AuthenticatedUser x -&gt; AuthenticatedUser
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="annot"><span class="hs-comment">-- | Auth-protected API type (all endpoints require authentication)</span></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">type</span><span> </span><span id="SurypusApi"><span class="annot"><a href="Surypus.Api.html#SurypusApi"><span class="hs-identifier hs-var">SurypusApi</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/servant-0.20.3.0-0e92ee56e74f45091f328aff20f2ade3005a26769e733870087bd8ac60418ac4/share/doc/html/src/Servant.API.Experimental.Auth.html#AuthProtect"><span class="hs-identifier hs-type">AuthProtect</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;jwt&quot;</span></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/servant-0.20.3.0-0e92ee56e74f45091f328aff20f2ade3005a26769e733870087bd8ac60418ac4/share/doc/html/src/Servant.API.Sub.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;api&quot;</span></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/servant-0.20.3.0-0e92ee56e74f45091f328aff20f2ade3005a26769e733870087bd8ac60418ac4/share/doc/html/src/Servant.API.Sub.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;v1&quot;</span></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/servant-0.20.3.0-0e92ee56e74f45091f328aff20f2ade3005a26769e733870087bd8ac60418ac4/share/doc/html/src/Servant.API.Sub.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span> </span><span class="annot"><a href="Surypus.Api.html#RawApi"><span class="hs-identifier hs-type">RawApi</span></a></span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">type</span><span> </span><span id="RawApi"><span class="annot"><a href="Surypus.Api.html#RawApi"><span class="hs-identifier hs-var">RawApi</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/servant-0.20.3.0-0e92ee56e74f45091f328aff20f2ade3005a26769e733870087bd8ac60418ac4/share/doc/html/src/Servant.API.Verbs.html#Get"><span class="hs-identifier hs-type">Get</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/servant-0.20.3.0-0e92ee56e74f45091f328aff20f2ade3005a26769e733870087bd8ac60418ac4/share/doc/html/src/Servant.API.ContentTypes.html#JSON"><span class="hs-identifier hs-type">JSON</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="annot"><a href="Surypus.Api.html#apiProxy"><span class="hs-identifier hs-type">apiProxy</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Proxy</span></span><span> </span><span class="annot"><a href="Surypus.Api.html#SurypusApi"><span class="hs-identifier hs-type">SurypusApi</span></a></span><span>
+</span><span id="line-33"></span><span id="apiProxy"><span class="annot"><span class="annottext">apiProxy :: Proxy SurypusApi
+</span><a href="Surypus.Api.html#apiProxy"><span class="hs-identifier hs-var hs-var">apiProxy</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Proxy SurypusApi
+forall {k} (t :: k). Proxy t
+</span><span class="hs-identifier hs-var">Proxy</span></span><span>
+</span><span id="line-34"></span></pre></body></html>

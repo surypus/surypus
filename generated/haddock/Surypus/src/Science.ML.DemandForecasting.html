@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Science.ML.DemandForecasting.html"><span class="hs-identifier">Science.ML.DemandForecasting</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Science.ML.DemandForecasting.html#DemandForecast"><span class="hs-identifier">DemandForecast</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Science.ML.DemandForecasting.html#ForecastPoint"><span class="hs-identifier">ForecastPoint</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Science.ML.DemandForecasting.html#ForecastingModel"><span class="hs-identifier">ForecastingModel</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Science.ML.DemandForecasting.html#trainModel"><span class="hs-identifier">trainModel</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Science.ML.DemandForecasting.html#predict"><span class="hs-identifier">predict</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">fromGregorian</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="annot"><span class="hs-comment">-- | Single forecast point with confidence interval</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">data</span><span> </span><span id="ForecastPoint"><span class="annot"><a href="Science.ML.DemandForecasting.html#ForecastPoint"><span class="hs-identifier hs-var">ForecastPoint</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ForecastPoint"><span class="annot"><a href="Science.ML.DemandForecasting.html#ForecastPoint"><span class="hs-identifier hs-var">ForecastPoint</span></a></span></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="fpDate"><span class="annot"><span class="annottext">ForecastPoint -&gt; Day
+</span><a href="Science.ML.DemandForecasting.html#fpDate"><span class="hs-identifier hs-var hs-var">fpDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="fpPredicted"><span class="annot"><span class="annottext">ForecastPoint -&gt; Double
+</span><a href="Science.ML.DemandForecasting.html#fpPredicted"><span class="hs-identifier hs-var hs-var">fpPredicted</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="fpLower"><span class="annot"><span class="annottext">ForecastPoint -&gt; Double
+</span><a href="Science.ML.DemandForecasting.html#fpLower"><span class="hs-identifier hs-var hs-var">fpLower</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="fpUpper"><span class="annot"><span class="annottext">ForecastPoint -&gt; Double
+</span><a href="Science.ML.DemandForecasting.html#fpUpper"><span class="hs-identifier hs-var hs-var">fpUpper</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680293456"><span id="local-6989586621680293464"><span class="annot"><span class="annottext">ForecastPoint -&gt; ForecastPoint -&gt; Bool
+(ForecastPoint -&gt; ForecastPoint -&gt; Bool)
+-&gt; (ForecastPoint -&gt; ForecastPoint -&gt; Bool) -&gt; Eq ForecastPoint
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ForecastPoint -&gt; ForecastPoint -&gt; Bool
+== :: ForecastPoint -&gt; ForecastPoint -&gt; Bool
+$c/= :: ForecastPoint -&gt; ForecastPoint -&gt; Bool
+/= :: ForecastPoint -&gt; ForecastPoint -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680293469"><span id="local-6989586621680293479"><span id="local-6989586621680293483"><span class="annot"><span class="annottext">Int -&gt; ForecastPoint -&gt; ShowS
+[ForecastPoint] -&gt; ShowS
+ForecastPoint -&gt; String
+(Int -&gt; ForecastPoint -&gt; ShowS)
+-&gt; (ForecastPoint -&gt; String)
+-&gt; ([ForecastPoint] -&gt; ShowS)
+-&gt; Show ForecastPoint
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ForecastPoint -&gt; ShowS
+showsPrec :: Int -&gt; ForecastPoint -&gt; ShowS
+$cshow :: ForecastPoint -&gt; String
+show :: ForecastPoint -&gt; String
+$cshowList :: [ForecastPoint] -&gt; ShowS
+showList :: [ForecastPoint] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="annot"><span class="hs-comment">-- | Demand forecast result</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">data</span><span> </span><span id="DemandForecast"><span class="annot"><a href="Science.ML.DemandForecasting.html#DemandForecast"><span class="hs-identifier hs-var">DemandForecast</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="DemandForecast"><span class="annot"><a href="Science.ML.DemandForecasting.html#DemandForecast"><span class="hs-identifier hs-var">DemandForecast</span></a></span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="dfItemId"><span class="annot"><span class="annottext">DemandForecast -&gt; Int
+</span><a href="Science.ML.DemandForecasting.html#dfItemId"><span class="hs-identifier hs-var hs-var">dfItemId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dfItemName"><span class="annot"><span class="annottext">DemandForecast -&gt; Text
+</span><a href="Science.ML.DemandForecasting.html#dfItemName"><span class="hs-identifier hs-var hs-var">dfItemName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dfPoints"><span class="annot"><span class="annottext">DemandForecast -&gt; [ForecastPoint]
+</span><a href="Science.ML.DemandForecasting.html#dfPoints"><span class="hs-identifier hs-var hs-var">dfPoints</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Science.ML.DemandForecasting.html#ForecastPoint"><span class="hs-identifier hs-type">ForecastPoint</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="dfModelAccuracy"><span class="annot"><span class="annottext">DemandForecast -&gt; Double
+</span><a href="Science.ML.DemandForecasting.html#dfModelAccuracy"><span class="hs-identifier hs-var hs-var">dfModelAccuracy</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680293493"><span id="local-6989586621680293503"><span class="annot"><span class="annottext">DemandForecast -&gt; DemandForecast -&gt; Bool
+(DemandForecast -&gt; DemandForecast -&gt; Bool)
+-&gt; (DemandForecast -&gt; DemandForecast -&gt; Bool) -&gt; Eq DemandForecast
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: DemandForecast -&gt; DemandForecast -&gt; Bool
+== :: DemandForecast -&gt; DemandForecast -&gt; Bool
+$c/= :: DemandForecast -&gt; DemandForecast -&gt; Bool
+/= :: DemandForecast -&gt; DemandForecast -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680293507"><span id="local-6989586621680293517"><span id="local-6989586621680293521"><span class="annot"><span class="annottext">Int -&gt; DemandForecast -&gt; ShowS
+[DemandForecast] -&gt; ShowS
+DemandForecast -&gt; String
+(Int -&gt; DemandForecast -&gt; ShowS)
+-&gt; (DemandForecast -&gt; String)
+-&gt; ([DemandForecast] -&gt; ShowS)
+-&gt; Show DemandForecast
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DemandForecast -&gt; ShowS
+showsPrec :: Int -&gt; DemandForecast -&gt; ShowS
+$cshow :: DemandForecast -&gt; String
+show :: DemandForecast -&gt; String
+$cshowList :: [DemandForecast] -&gt; ShowS
+showList :: [DemandForecast] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="annot"><span class="hs-comment">-- | Forecasting model types</span></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">data</span><span> </span><span id="ForecastingModel"><span class="annot"><a href="Science.ML.DemandForecasting.html#ForecastingModel"><span class="hs-identifier hs-var">ForecastingModel</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="ARIMAX"><span class="annot"><a href="Science.ML.DemandForecasting.html#ARIMAX"><span class="hs-identifier hs-var">ARIMAX</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="ExponentialSmoothing"><span class="annot"><a href="Science.ML.DemandForecasting.html#ExponentialSmoothing"><span class="hs-identifier hs-var">ExponentialSmoothing</span></a></span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="LinearRegression"><span class="annot"><a href="Science.ML.DemandForecasting.html#LinearRegression"><span class="hs-identifier hs-var">LinearRegression</span></a></span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680293527"><span id="local-6989586621680293532"><span class="annot"><span class="annottext">ForecastingModel -&gt; ForecastingModel -&gt; Bool
+(ForecastingModel -&gt; ForecastingModel -&gt; Bool)
+-&gt; (ForecastingModel -&gt; ForecastingModel -&gt; Bool)
+-&gt; Eq ForecastingModel
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ForecastingModel -&gt; ForecastingModel -&gt; Bool
+== :: ForecastingModel -&gt; ForecastingModel -&gt; Bool
+$c/= :: ForecastingModel -&gt; ForecastingModel -&gt; Bool
+/= :: ForecastingModel -&gt; ForecastingModel -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680293536"><span id="local-6989586621680293538"><span id="local-6989586621680293542"><span class="annot"><span class="annottext">Int -&gt; ForecastingModel -&gt; ShowS
+[ForecastingModel] -&gt; ShowS
+ForecastingModel -&gt; String
+(Int -&gt; ForecastingModel -&gt; ShowS)
+-&gt; (ForecastingModel -&gt; String)
+-&gt; ([ForecastingModel] -&gt; ShowS)
+-&gt; Show ForecastingModel
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ForecastingModel -&gt; ShowS
+showsPrec :: Int -&gt; ForecastingModel -&gt; ShowS
+$cshow :: ForecastingModel -&gt; String
+show :: ForecastingModel -&gt; String
+$cshowList :: [ForecastingModel] -&gt; ShowS
+showList :: [ForecastingModel] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="annot"><span class="hs-comment">-- | Train forecasting model on historical data</span></span><span>
+</span><span id="line-38"></span><span class="annot"><a href="Science.ML.DemandForecasting.html#trainModel"><span class="hs-identifier hs-type">trainModel</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Science.ML.DemandForecasting.html#ForecastingModel"><span class="hs-identifier hs-type">ForecastingModel</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span id="trainModel"><span class="annot"><span class="annottext">trainModel :: ForecastingModel -&gt; [(Day, Double)] -&gt; IO ()
+</span><a href="Science.ML.DemandForecasting.html#trainModel"><span class="hs-identifier hs-var hs-var">trainModel</span></a></span></span><span> </span><span class="annot"><span class="annottext">ForecastingModel
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">[(Day, Double)]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; IO ()
+</span><span class="hs-identifier hs-var">putStrLn</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Model trained (placeholder)&quot;</span></span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="annot"><span class="hs-comment">-- | Predict future demand</span></span><span>
+</span><span id="line-42"></span><span class="annot"><a href="Science.ML.DemandForecasting.html#predict"><span class="hs-identifier hs-type">predict</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Science.ML.DemandForecasting.html#ForecastingModel"><span class="hs-identifier hs-type">ForecastingModel</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="Science.ML.DemandForecasting.html#DemandForecast"><span class="hs-identifier hs-type">DemandForecast</span></a></span><span>
+</span><span id="line-43"></span><span id="predict"><span class="annot"><span class="annottext">predict :: ForecastingModel -&gt; Int -&gt; Int -&gt; IO DemandForecast
+</span><a href="Science.ML.DemandForecasting.html#predict"><span class="hs-identifier hs-var hs-var">predict</span></a></span></span><span> </span><span id="local-6989586621680293545"><span class="annot"><span class="annottext">ForecastingModel
+</span><a href="#local-6989586621680293545"><span class="hs-identifier hs-var">model</span></a></span></span><span> </span><span id="local-6989586621680293546"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680293546"><span class="hs-identifier hs-var">itemId</span></a></span></span><span> </span><span id="local-6989586621680293547"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680293547"><span class="hs-identifier hs-var">horizon</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680293548"><span class="annot"><span class="annottext">points :: [ForecastPoint]
+</span><a href="#local-6989586621680293548"><span class="hs-identifier hs-var hs-var">points</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; ForecastPoint -&gt; [ForecastPoint]
+forall a. Int -&gt; a -&gt; [a]
+</span><span class="hs-identifier hs-var">replicate</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680293547"><span class="hs-identifier hs-var">horizon</span></a></span><span> </span><span class="annot"><span class="annottext">(ForecastPoint -&gt; [ForecastPoint])
+-&gt; ForecastPoint -&gt; [ForecastPoint]
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><a href="Science.ML.DemandForecasting.html#ForecastPoint"><span class="hs-identifier hs-type">ForecastPoint</span></a></span><span>
+</span><span id="line-45"></span><span>        </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">fpDate :: Day
+</span><a href="Science.ML.DemandForecasting.html#fpDate"><span class="hs-identifier hs-var">fpDate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Year -&gt; Int -&gt; Int -&gt; Day
+</span><span class="hs-identifier hs-var">fromGregorian</span></span><span> </span><span class="annot"><span class="annottext">Year
+</span><span class="hs-number">2020</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span>
+</span><span id="line-46"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">fpPredicted :: Double
+</span><a href="Science.ML.DemandForecasting.html#fpPredicted"><span class="hs-identifier hs-var">fpPredicted</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-47"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">fpLower :: Double
+</span><a href="Science.ML.DemandForecasting.html#fpLower"><span class="hs-identifier hs-var">fpLower</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-48"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">fpUpper :: Double
+</span><a href="Science.ML.DemandForecasting.html#fpUpper"><span class="hs-identifier hs-var">fpUpper</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-49"></span><span>        </span><span class="hs-special">}</span><span>
+</span><span id="line-50"></span><span>  </span><span class="annot"><span class="annottext">DemandForecast -&gt; IO DemandForecast
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(DemandForecast -&gt; IO DemandForecast)
+-&gt; DemandForecast -&gt; IO DemandForecast
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><a href="Science.ML.DemandForecasting.html#DemandForecast"><span class="hs-identifier hs-type">DemandForecast</span></a></span><span>
+</span><span id="line-51"></span><span>    </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">dfItemId :: Int
+</span><a href="Science.ML.DemandForecasting.html#dfItemId"><span class="hs-identifier hs-var">dfItemId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680293546"><span class="hs-identifier hs-var">itemId</span></a></span><span>
+</span><span id="line-52"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dfItemName :: Text
+</span><a href="Science.ML.DemandForecasting.html#dfItemName"><span class="hs-identifier hs-var">dfItemName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Item &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680293546"><span class="hs-identifier hs-var">itemId</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dfPoints :: [ForecastPoint]
+</span><a href="Science.ML.DemandForecasting.html#dfPoints"><span class="hs-identifier hs-var">dfPoints</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[ForecastPoint]
+</span><a href="#local-6989586621680293548"><span class="hs-identifier hs-var">points</span></a></span><span>
+</span><span id="line-54"></span><span>    </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">dfModelAccuracy :: Double
+</span><a href="Science.ML.DemandForecasting.html#dfModelAccuracy"><span class="hs-identifier hs-var">dfModelAccuracy</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0.85</span></span><span>
+</span><span id="line-55"></span><span>    </span><span class="hs-special">}</span></pre></body></html>

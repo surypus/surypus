@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Order module - Sales orders</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Commerce.Orders.Order.html"><span class="hs-identifier">Commerce.Orders.Order</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Commerce.Orders.Order.html#Order"><span class="hs-identifier">Order</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-4"></span><span>    </span><span class="annot"><a href="Commerce.Orders.Order.html#OrderStatus"><span class="hs-identifier">OrderStatus</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-5"></span><span>    </span><span class="annot"><a href="Commerce.Orders.Order.html#OrderLine"><span class="hs-identifier">OrderLine</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Commerce.Orders.Order.html#LineStatus"><span class="hs-identifier">LineStatus</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Commerce.Orders.Order.html#calcOrderTotal"><span class="hs-identifier">calcOrderTotal</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Commerce.Orders.Order.html#calcLineTotal"><span class="hs-identifier">calcLineTotal</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-10"></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="hs-comment">{-@ type NonNeg = {v:Double | v &gt;= 0} @-}</span><span>
+</span><span id="line-16"></span><span class="hs-comment">{-@ type Discount = {v:Double | v &gt;= 0 &amp;&amp; v &lt;= 100} @-}</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="annot"><span class="hs-comment">-- | Order - Sales order</span></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">data</span><span> </span><span id="Order"><span class="annot"><a href="Commerce.Orders.Order.html#Order"><span class="hs-identifier hs-var">Order</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Order"><span class="annot"><a href="Commerce.Orders.Order.html#Order"><span class="hs-identifier hs-var">Order</span></a></span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="ordId"><span class="annot"><span class="annottext">Order -&gt; Int64
+</span><a href="Commerce.Orders.Order.html#ordId"><span class="hs-identifier hs-var hs-var">ordId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="ordCode"><span class="annot"><span class="annottext">Order -&gt; Text
+</span><a href="Commerce.Orders.Order.html#ordCode"><span class="hs-identifier hs-var hs-var">ordCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="ordClientId"><span class="annot"><span class="annottext">Order -&gt; Int64
+</span><a href="Commerce.Orders.Order.html#ordClientId"><span class="hs-identifier hs-var hs-var">ordClientId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="ordDate"><span class="annot"><span class="annottext">Order -&gt; Day
+</span><a href="Commerce.Orders.Order.html#ordDate"><span class="hs-identifier hs-var hs-var">ordDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="ordDeliveryDate"><span class="annot"><span class="annottext">Order -&gt; Maybe Day
+</span><a href="Commerce.Orders.Order.html#ordDeliveryDate"><span class="hs-identifier hs-var hs-var">ordDeliveryDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="ordStatus"><span class="annot"><span class="annottext">Order -&gt; OrderStatus
+</span><a href="Commerce.Orders.Order.html#ordStatus"><span class="hs-identifier hs-var hs-var">ordStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Orders.Order.html#OrderStatus"><span class="hs-identifier hs-type">OrderStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="ordFlags"><span class="annot"><span class="annottext">Order -&gt; Int
+</span><a href="Commerce.Orders.Order.html#ordFlags"><span class="hs-identifier hs-var hs-var">ordFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680209437"><span id="local-6989586621680209454"><span id="local-6989586621680209458"><span class="annot"><span class="annottext">Int -&gt; Order -&gt; ShowS
+[Order] -&gt; ShowS
+Order -&gt; String
+(Int -&gt; Order -&gt; ShowS)
+-&gt; (Order -&gt; String) -&gt; ([Order] -&gt; ShowS) -&gt; Show Order
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Order -&gt; ShowS
+showsPrec :: Int -&gt; Order -&gt; ShowS
+$cshow :: Order -&gt; String
+show :: Order -&gt; String
+$cshowList :: [Order] -&gt; ShowS
+showList :: [Order] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680209463"><span id="local-6989586621680209478"><span class="annot"><span class="annottext">Order -&gt; Order -&gt; Bool
+(Order -&gt; Order -&gt; Bool) -&gt; (Order -&gt; Order -&gt; Bool) -&gt; Eq Order
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Order -&gt; Order -&gt; Bool
+== :: Order -&gt; Order -&gt; Bool
+$c/= :: Order -&gt; Order -&gt; Bool
+/= :: Order -&gt; Order -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="OrderStatus"><span class="annot"><a href="Commerce.Orders.Order.html#OrderStatus"><span class="hs-identifier hs-var">OrderStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="OSDraft"><span class="annot"><a href="Commerce.Orders.Order.html#OSDraft"><span class="hs-identifier hs-var">OSDraft</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="OSConfirmed"><span class="annot"><a href="Commerce.Orders.Order.html#OSConfirmed"><span class="hs-identifier hs-var">OSConfirmed</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="OSInProgress"><span class="annot"><a href="Commerce.Orders.Order.html#OSInProgress"><span class="hs-identifier hs-var">OSInProgress</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="OSCompleted"><span class="annot"><a href="Commerce.Orders.Order.html#OSCompleted"><span class="hs-identifier hs-var">OSCompleted</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="OSCancelled"><span class="annot"><a href="Commerce.Orders.Order.html#OSCancelled"><span class="hs-identifier hs-var">OSCancelled</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680209488"><span id="local-6989586621680209490"><span id="local-6989586621680209493"><span class="annot"><span class="annottext">Int -&gt; OrderStatus -&gt; ShowS
+[OrderStatus] -&gt; ShowS
+OrderStatus -&gt; String
+(Int -&gt; OrderStatus -&gt; ShowS)
+-&gt; (OrderStatus -&gt; String)
+-&gt; ([OrderStatus] -&gt; ShowS)
+-&gt; Show OrderStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; OrderStatus -&gt; ShowS
+showsPrec :: Int -&gt; OrderStatus -&gt; ShowS
+$cshow :: OrderStatus -&gt; String
+show :: OrderStatus -&gt; String
+$cshowList :: [OrderStatus] -&gt; ShowS
+showList :: [OrderStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680209496"><span id="local-6989586621680209501"><span class="annot"><span class="annottext">OrderStatus -&gt; OrderStatus -&gt; Bool
+(OrderStatus -&gt; OrderStatus -&gt; Bool)
+-&gt; (OrderStatus -&gt; OrderStatus -&gt; Bool) -&gt; Eq OrderStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: OrderStatus -&gt; OrderStatus -&gt; Bool
+== :: OrderStatus -&gt; OrderStatus -&gt; Bool
+$c/= :: OrderStatus -&gt; OrderStatus -&gt; Bool
+/= :: OrderStatus -&gt; OrderStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="annot"><span class="hs-comment">-- | Order line</span></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">data</span><span> </span><span id="OrderLine"><span class="annot"><a href="Commerce.Orders.Order.html#OrderLine"><span class="hs-identifier hs-var">OrderLine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="OrderLine"><span class="annot"><a href="Commerce.Orders.Order.html#OrderLine"><span class="hs-identifier hs-var">OrderLine</span></a></span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="olId"><span class="annot"><span class="annottext">OrderLine -&gt; Int64
+</span><a href="Commerce.Orders.Order.html#olId"><span class="hs-identifier hs-var hs-var">olId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-36"></span><span>    </span><span id="olOrderId"><span class="annot"><span class="annottext">OrderLine -&gt; Int64
+</span><a href="Commerce.Orders.Order.html#olOrderId"><span class="hs-identifier hs-var hs-var">olOrderId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-37"></span><span>    </span><span id="olGoodsId"><span class="annot"><span class="annottext">OrderLine -&gt; Int64
+</span><a href="Commerce.Orders.Order.html#olGoodsId"><span class="hs-identifier hs-var hs-var">olGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-38"></span><span>    </span><span id="olQtty"><span class="annot"><span class="annottext">OrderLine -&gt; Double
+</span><a href="Commerce.Orders.Order.html#olQtty"><span class="hs-identifier hs-var hs-var">olQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-39"></span><span>    </span><span id="olPrice"><span class="annot"><span class="annottext">OrderLine -&gt; Double
+</span><a href="Commerce.Orders.Order.html#olPrice"><span class="hs-identifier hs-var hs-var">olPrice</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-40"></span><span>    </span><span id="olDiscount"><span class="annot"><span class="annottext">OrderLine -&gt; Double
+</span><a href="Commerce.Orders.Order.html#olDiscount"><span class="hs-identifier hs-var hs-var">olDiscount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-41"></span><span>    </span><span id="olStatus"><span class="annot"><span class="annottext">OrderLine -&gt; LineStatus
+</span><a href="Commerce.Orders.Order.html#olStatus"><span class="hs-identifier hs-var hs-var">olStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Orders.Order.html#LineStatus"><span class="hs-identifier hs-type">LineStatus</span></a></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680209512"><span id="local-6989586621680209524"><span id="local-6989586621680209528"><span class="annot"><span class="annottext">Int -&gt; OrderLine -&gt; ShowS
+[OrderLine] -&gt; ShowS
+OrderLine -&gt; String
+(Int -&gt; OrderLine -&gt; ShowS)
+-&gt; (OrderLine -&gt; String)
+-&gt; ([OrderLine] -&gt; ShowS)
+-&gt; Show OrderLine
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; OrderLine -&gt; ShowS
+showsPrec :: Int -&gt; OrderLine -&gt; ShowS
+$cshow :: OrderLine -&gt; String
+show :: OrderLine -&gt; String
+$cshowList :: [OrderLine] -&gt; ShowS
+showList :: [OrderLine] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680209531"><span id="local-6989586621680209542"><span class="annot"><span class="annottext">OrderLine -&gt; OrderLine -&gt; Bool
+(OrderLine -&gt; OrderLine -&gt; Bool)
+-&gt; (OrderLine -&gt; OrderLine -&gt; Bool) -&gt; Eq OrderLine
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: OrderLine -&gt; OrderLine -&gt; Bool
+== :: OrderLine -&gt; OrderLine -&gt; Bool
+$c/= :: OrderLine -&gt; OrderLine -&gt; Bool
+/= :: OrderLine -&gt; OrderLine -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="hs-keyword">data</span><span> </span><span id="LineStatus"><span class="annot"><a href="Commerce.Orders.Order.html#LineStatus"><span class="hs-identifier hs-var">LineStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LSPending"><span class="annot"><a href="Commerce.Orders.Order.html#LSPending"><span class="hs-identifier hs-var">LSPending</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="LSReserved"><span class="annot"><a href="Commerce.Orders.Order.html#LSReserved"><span class="hs-identifier hs-var">LSReserved</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="LSShipped"><span class="annot"><a href="Commerce.Orders.Order.html#LSShipped"><span class="hs-identifier hs-var">LSShipped</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="LSReturned"><span class="annot"><a href="Commerce.Orders.Order.html#LSReturned"><span class="hs-identifier hs-var">LSReturned</span></a></span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680209550"><span id="local-6989586621680209552"><span id="local-6989586621680209555"><span class="annot"><span class="annottext">Int -&gt; LineStatus -&gt; ShowS
+[LineStatus] -&gt; ShowS
+LineStatus -&gt; String
+(Int -&gt; LineStatus -&gt; ShowS)
+-&gt; (LineStatus -&gt; String)
+-&gt; ([LineStatus] -&gt; ShowS)
+-&gt; Show LineStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LineStatus -&gt; ShowS
+showsPrec :: Int -&gt; LineStatus -&gt; ShowS
+$cshow :: LineStatus -&gt; String
+show :: LineStatus -&gt; String
+$cshowList :: [LineStatus] -&gt; ShowS
+showList :: [LineStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680209558"><span id="local-6989586621680209562"><span class="annot"><span class="annottext">LineStatus -&gt; LineStatus -&gt; Bool
+(LineStatus -&gt; LineStatus -&gt; Bool)
+-&gt; (LineStatus -&gt; LineStatus -&gt; Bool) -&gt; Eq LineStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LineStatus -&gt; LineStatus -&gt; Bool
+== :: LineStatus -&gt; LineStatus -&gt; Bool
+$c/= :: LineStatus -&gt; LineStatus -&gt; Bool
+/= :: LineStatus -&gt; LineStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span class="annot"><span class="hs-comment">-- | Calculate order total</span></span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="hs-comment">{-@ calcOrderTotal :: [OrderLine] -&gt; NonNeg @-}</span><span>
+</span><span id="line-51"></span><span class="annot"><a href="Commerce.Orders.Order.html#calcOrderTotal"><span class="hs-identifier hs-type">calcOrderTotal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Commerce.Orders.Order.html#OrderLine"><span class="hs-identifier hs-type">OrderLine</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-52"></span><span id="calcOrderTotal"><span class="annot"><span class="annottext">calcOrderTotal :: [OrderLine] -&gt; Double
+</span><a href="Commerce.Orders.Order.html#calcOrderTotal"><span class="hs-identifier hs-var hs-var">calcOrderTotal</span></a></span></span><span> </span><span id="local-6989586621680209564"><span class="annot"><span class="annottext">[OrderLine]
+</span><a href="#local-6989586621680209564"><span class="hs-identifier hs-var">orderLines</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Double] -&gt; Double
+forall a. Num a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">sum</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(OrderLine -&gt; Double) -&gt; [OrderLine] -&gt; [Double]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">OrderLine -&gt; Double
+</span><a href="Commerce.Orders.Order.html#calcLineTotal"><span class="hs-identifier hs-var">calcLineTotal</span></a></span><span> </span><span class="annot"><span class="annottext">[OrderLine]
+</span><a href="#local-6989586621680209564"><span class="hs-identifier hs-var">orderLines</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span class="hs-comment">-- {-@ calcLineTotal :: OrderLine -&gt; NonNeg @-}</span><span>
+</span><span id="line-55"></span><span class="annot"><a href="Commerce.Orders.Order.html#calcLineTotal"><span class="hs-identifier hs-type">calcLineTotal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Orders.Order.html#OrderLine"><span class="hs-identifier hs-type">OrderLine</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-56"></span><span id="calcLineTotal"><span class="annot"><span class="annottext">calcLineTotal :: OrderLine -&gt; Double
+</span><a href="Commerce.Orders.Order.html#calcLineTotal"><span class="hs-identifier hs-var hs-var">calcLineTotal</span></a></span></span><span> </span><span id="local-6989586621680209566"><span class="annot"><span class="annottext">OrderLine
+</span><a href="#local-6989586621680209566"><span class="hs-identifier hs-var">ol</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">OrderLine -&gt; Double
+</span><a href="Commerce.Orders.Order.html#olQtty"><span class="hs-identifier hs-var">olQtty</span></a></span><span> </span><span class="annot"><span class="annottext">OrderLine
+</span><a href="#local-6989586621680209566"><span class="hs-identifier hs-var">ol</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">OrderLine -&gt; Double
+</span><a href="Commerce.Orders.Order.html#olPrice"><span class="hs-identifier hs-var">olPrice</span></a></span><span> </span><span class="annot"><span class="annottext">OrderLine
+</span><a href="#local-6989586621680209566"><span class="hs-identifier hs-var">ol</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">OrderLine -&gt; Double
+</span><a href="Commerce.Orders.Order.html#olDiscount"><span class="hs-identifier hs-var">olDiscount</span></a></span><span> </span><span class="annot"><span class="annottext">OrderLine
+</span><a href="#local-6989586621680209566"><span class="hs-identifier hs-var">ol</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">100</span></span><span class="hs-special">)</span><span>
+</span><span id="line-57"></span></pre></body></html>

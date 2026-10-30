@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Sync module - Data synchronization</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Integration.Sync.html"><span class="hs-identifier">Integration.Sync</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="annot"><span class="hs-comment">-- | SyncSession - Sync session</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">data</span><span> </span><span id="SyncSession"><span class="annot"><a href="Integration.Sync.html#SyncSession"><span class="hs-identifier hs-var">SyncSession</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SyncSession"><span class="annot"><a href="Integration.Sync.html#SyncSession"><span class="hs-identifier hs-var">SyncSession</span></a></span></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="ssId"><span class="annot"><span class="annottext">SyncSession -&gt; Int64
+</span><a href="Integration.Sync.html#ssId"><span class="hs-identifier hs-var hs-var">ssId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span id="ssDbId"><span class="annot"><span class="annottext">SyncSession -&gt; Int64
+</span><a href="Integration.Sync.html#ssDbId"><span class="hs-identifier hs-var hs-var">ssDbId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="ssStarted"><span class="annot"><span class="annottext">SyncSession -&gt; UTCTime
+</span><a href="Integration.Sync.html#ssStarted"><span class="hs-identifier hs-var hs-var">ssStarted</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="ssFinished"><span class="annot"><span class="annottext">SyncSession -&gt; Maybe UTCTime
+</span><a href="Integration.Sync.html#ssFinished"><span class="hs-identifier hs-var hs-var">ssFinished</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="ssStatus"><span class="annot"><span class="annottext">SyncSession -&gt; SyncStatus
+</span><a href="Integration.Sync.html#ssStatus"><span class="hs-identifier hs-var hs-var">ssStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.Sync.html#SyncStatus"><span class="hs-identifier hs-type">SyncStatus</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680277210"><span id="local-6989586621680277223"><span id="local-6989586621680277227"><span class="annot"><span class="annottext">Int -&gt; SyncSession -&gt; ShowS
+[SyncSession] -&gt; ShowS
+SyncSession -&gt; String
+(Int -&gt; SyncSession -&gt; ShowS)
+-&gt; (SyncSession -&gt; String)
+-&gt; ([SyncSession] -&gt; ShowS)
+-&gt; Show SyncSession
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; SyncSession -&gt; ShowS
+showsPrec :: Int -&gt; SyncSession -&gt; ShowS
+$cshow :: SyncSession -&gt; String
+show :: SyncSession -&gt; String
+$cshowList :: [SyncSession] -&gt; ShowS
+showList :: [SyncSession] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680277232"><span id="local-6989586621680277243"><span class="annot"><span class="annottext">SyncSession -&gt; SyncSession -&gt; Bool
+(SyncSession -&gt; SyncSession -&gt; Bool)
+-&gt; (SyncSession -&gt; SyncSession -&gt; Bool) -&gt; Eq SyncSession
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: SyncSession -&gt; SyncSession -&gt; Bool
+== :: SyncSession -&gt; SyncSession -&gt; Bool
+$c/= :: SyncSession -&gt; SyncSession -&gt; Bool
+/= :: SyncSession -&gt; SyncSession -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">data</span><span> </span><span id="SyncStatus"><span class="annot"><a href="Integration.Sync.html#SyncStatus"><span class="hs-identifier hs-var">SyncStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SSPending"><span class="annot"><a href="Integration.Sync.html#SSPending"><span class="hs-identifier hs-var">SSPending</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SSInProgress"><span class="annot"><a href="Integration.Sync.html#SSInProgress"><span class="hs-identifier hs-var">SSInProgress</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SSCompleted"><span class="annot"><a href="Integration.Sync.html#SSCompleted"><span class="hs-identifier hs-var">SSCompleted</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SSFailed"><span class="annot"><a href="Integration.Sync.html#SSFailed"><span class="hs-identifier hs-var">SSFailed</span></a></span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680277252"><span id="local-6989586621680277254"><span id="local-6989586621680277257"><span class="annot"><span class="annottext">Int -&gt; SyncStatus -&gt; ShowS
+[SyncStatus] -&gt; ShowS
+SyncStatus -&gt; String
+(Int -&gt; SyncStatus -&gt; ShowS)
+-&gt; (SyncStatus -&gt; String)
+-&gt; ([SyncStatus] -&gt; ShowS)
+-&gt; Show SyncStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; SyncStatus -&gt; ShowS
+showsPrec :: Int -&gt; SyncStatus -&gt; ShowS
+$cshow :: SyncStatus -&gt; String
+show :: SyncStatus -&gt; String
+$cshowList :: [SyncStatus] -&gt; ShowS
+showList :: [SyncStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680277260"><span id="local-6989586621680277265"><span class="annot"><span class="annottext">SyncStatus -&gt; SyncStatus -&gt; Bool
+(SyncStatus -&gt; SyncStatus -&gt; Bool)
+-&gt; (SyncStatus -&gt; SyncStatus -&gt; Bool) -&gt; Eq SyncStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: SyncStatus -&gt; SyncStatus -&gt; Bool
+== :: SyncStatus -&gt; SyncStatus -&gt; Bool
+$c/= :: SyncStatus -&gt; SyncStatus -&gt; Bool
+/= :: SyncStatus -&gt; SyncStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="annot"><span class="hs-comment">-- | SyncObject - Synced object</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="SyncObject"><span class="annot"><a href="Integration.Sync.html#SyncObject"><span class="hs-identifier hs-var">SyncObject</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SyncObject"><span class="annot"><a href="Integration.Sync.html#SyncObject"><span class="hs-identifier hs-var">SyncObject</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="soId"><span class="annot"><span class="annottext">SyncObject -&gt; Int64
+</span><a href="Integration.Sync.html#soId"><span class="hs-identifier hs-var hs-var">soId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="soSessionId"><span class="annot"><span class="annottext">SyncObject -&gt; Int64
+</span><a href="Integration.Sync.html#soSessionId"><span class="hs-identifier hs-var hs-var">soSessionId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="soObjectType"><span class="annot"><span class="annottext">SyncObject -&gt; Int64
+</span><a href="Integration.Sync.html#soObjectType"><span class="hs-identifier hs-var hs-var">soObjectType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="soObjectId"><span class="annot"><span class="annottext">SyncObject -&gt; Int64
+</span><a href="Integration.Sync.html#soObjectId"><span class="hs-identifier hs-var hs-var">soObjectId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="soAction"><span class="annot"><span class="annottext">SyncObject -&gt; SyncAction
+</span><a href="Integration.Sync.html#soAction"><span class="hs-identifier hs-var hs-var">soAction</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Integration.Sync.html#SyncAction"><span class="hs-identifier hs-type">SyncAction</span></a></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680277274"><span id="local-6989586621680277283"><span id="local-6989586621680277287"><span class="annot"><span class="annottext">Int -&gt; SyncObject -&gt; ShowS
+[SyncObject] -&gt; ShowS
+SyncObject -&gt; String
+(Int -&gt; SyncObject -&gt; ShowS)
+-&gt; (SyncObject -&gt; String)
+-&gt; ([SyncObject] -&gt; ShowS)
+-&gt; Show SyncObject
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; SyncObject -&gt; ShowS
+showsPrec :: Int -&gt; SyncObject -&gt; ShowS
+$cshow :: SyncObject -&gt; String
+show :: SyncObject -&gt; String
+$cshowList :: [SyncObject] -&gt; ShowS
+showList :: [SyncObject] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680277290"><span id="local-6989586621680277298"><span class="annot"><span class="annottext">SyncObject -&gt; SyncObject -&gt; Bool
+(SyncObject -&gt; SyncObject -&gt; Bool)
+-&gt; (SyncObject -&gt; SyncObject -&gt; Bool) -&gt; Eq SyncObject
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: SyncObject -&gt; SyncObject -&gt; Bool
+== :: SyncObject -&gt; SyncObject -&gt; Bool
+$c/= :: SyncObject -&gt; SyncObject -&gt; Bool
+/= :: SyncObject -&gt; SyncObject -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="SyncAction"><span class="annot"><a href="Integration.Sync.html#SyncAction"><span class="hs-identifier hs-var">SyncAction</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SACreate"><span class="annot"><a href="Integration.Sync.html#SACreate"><span class="hs-identifier hs-var">SACreate</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SAUpdate"><span class="annot"><a href="Integration.Sync.html#SAUpdate"><span class="hs-identifier hs-var">SAUpdate</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="SADelete"><span class="annot"><a href="Integration.Sync.html#SADelete"><span class="hs-identifier hs-var">SADelete</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680277305"><span id="local-6989586621680277307"><span id="local-6989586621680277310"><span class="annot"><span class="annottext">Int -&gt; SyncAction -&gt; ShowS
+[SyncAction] -&gt; ShowS
+SyncAction -&gt; String
+(Int -&gt; SyncAction -&gt; ShowS)
+-&gt; (SyncAction -&gt; String)
+-&gt; ([SyncAction] -&gt; ShowS)
+-&gt; Show SyncAction
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; SyncAction -&gt; ShowS
+showsPrec :: Int -&gt; SyncAction -&gt; ShowS
+$cshow :: SyncAction -&gt; String
+show :: SyncAction -&gt; String
+$cshowList :: [SyncAction] -&gt; ShowS
+showList :: [SyncAction] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680277313"><span id="local-6989586621680277317"><span class="annot"><span class="annottext">SyncAction -&gt; SyncAction -&gt; Bool
+(SyncAction -&gt; SyncAction -&gt; Bool)
+-&gt; (SyncAction -&gt; SyncAction -&gt; Bool) -&gt; Eq SyncAction
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: SyncAction -&gt; SyncAction -&gt; Bool
+== :: SyncAction -&gt; SyncAction -&gt; Bool
+$c/= :: SyncAction -&gt; SyncAction -&gt; Bool
+/= :: SyncAction -&gt; SyncAction -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span></pre></body></html>

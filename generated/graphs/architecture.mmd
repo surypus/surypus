@@ -1,0 +1,106 @@
+---
+flowchart TD
+    title "Surypus High-Level Architecture"
+    ---
+    subgraph "Domain"
+        Core
+        Surypus_Domain
+        Finance
+        Inventory
+        CRM
+        Commerce
+        HR
+        Production
+        Analytics
+        Logistics
+        Retail
+        Marketing
+        Legal
+        DigitalTwin
+        MultiTenancy
+    end
+
+    subgraph "Application"
+        Service
+        Surypus_API
+        App
+        JobWorkerApp
+        EventBridge
+        Messaging
+        Kafka
+        System
+        Tech
+        External
+        Infrastructure
+        Shared
+        Surypus_Codecs
+    end
+
+    subgraph "Data Access"
+        DAL
+        DAL_Database
+        DAL_EventStore
+        DAL_Mutations
+        DAL_ORMPool
+        DAL_Payroll
+        DAL_Pool
+        DAL_Procedures
+        DAL_Classifiers
+        DAL_Conversion
+        DAL_UUIDOrphans
+        DAL_Migration
+    end
+
+    subgraph "Interface"
+        API_Integration_REST
+        Web
+        GraphQL
+        WebSocket
+        REST
+        OpenAPI
+        GraphQL_Proto
+    end
+
+    subgraph "Infrastructure"
+        PostgreSQL
+        Redis
+        EventStore
+        ExternalAPI
+        Kafka_Broker
+        S3_Storage
+    end
+
+    Domain --> Application
+    Application --> Data_Access
+    Data_Access --> Infrastructure
+    Interface --> Application
+    Service --> Core
+    Service --> Data_Access
+    App --> Service
+    Surypus_API --> Finance
+    Surypus_API --> Inventory
+    Surypus_API --> CRM
+    Surypus_API --> Commerce
+    Surypus_API --> HR
+    Surypus_API --> Production
+    API_Integration_REST --> DAL_Database
+    Web --> Surypus_API
+    WebSocket --> EventBridge
+    Kafka --> JobWorkerApp
+    System --> Monitoring
+    Monitoring --> Metrics
+    Monitoring --> Logging
+    Monitoring --> Tracing
+    Surypus_Codecs --> Aeson
+    External --> ExternalAPI
+    ---
+    classDef domain fill:#e1f5e1,stroke:#2e7d32
+    classDef app fill:#e3f2fd,stroke:#1565c0
+    classDef data fill:#fff3e0,stroke:#e65100
+    classDef iface fill:#fce4ec,stroke:#c62828
+    classDef infra fill:#f3e5f5,stroke:#6a1b9a
+    class Domain,Surypus_Domain,Finance,Inventory,CRM,Commerce,HR,Production,Analytics,Logistics,Retail,Marketing,Legal,DigitalTwin,MultiTenancy domain
+    class Service,Surypus_API,App,JobWorkerApp,EventBridge,Messaging,Kafka,System,Tech,External,Infrastructure,Shared,Surypus_Codecs app
+    class DAL,DAL_Database,DAL_EventStore,DAL_Mutations,DAL_ORMPool,DAL_Payroll,DAL_Pool,DAL_Procedures,DAL_Classifiers,DAL_Conversion,DAL_UUIDOrphans,DAL_Migration data
+    class API_Integration_REST,Web,GraphQL,WebSocket,REST,OpenAPI,GraphQL_Proto iface
+    class PostgreSQL,Redis,EventStore,ExternalAPI,Kafka_Broker,S3_Storage infra

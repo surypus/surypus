@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Migration module - Database migrations</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Infrastructure.Migration.html"><span class="hs-identifier">Infrastructure.Migration</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="annot"><span class="hs-comment">-- | Migration - Database migration</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">data</span><span> </span><span id="Migration"><span class="annot"><a href="Infrastructure.Migration.html#Migration"><span class="hs-identifier hs-var">Migration</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Migration"><span class="annot"><a href="Infrastructure.Migration.html#Migration"><span class="hs-identifier hs-var">Migration</span></a></span></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="migId"><span class="annot"><span class="annottext">Migration -&gt; Int64
+</span><a href="Infrastructure.Migration.html#migId"><span class="hs-identifier hs-var hs-var">migId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span id="migVersion"><span class="annot"><span class="annottext">Migration -&gt; Text
+</span><a href="Infrastructure.Migration.html#migVersion"><span class="hs-identifier hs-var hs-var">migVersion</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="migName"><span class="annot"><span class="annottext">Migration -&gt; Text
+</span><a href="Infrastructure.Migration.html#migName"><span class="hs-identifier hs-var hs-var">migName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="migSQL"><span class="annot"><span class="annottext">Migration -&gt; Text
+</span><a href="Infrastructure.Migration.html#migSQL"><span class="hs-identifier hs-var hs-var">migSQL</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="migAppliedAt"><span class="annot"><span class="annottext">Migration -&gt; Maybe Int64
+</span><a href="Infrastructure.Migration.html#migAppliedAt"><span class="hs-identifier hs-var hs-var">migAppliedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680268452"><span id="local-6989586621680268464"><span id="local-6989586621680268468"><span class="annot"><span class="annottext">Int -&gt; Migration -&gt; ShowS
+[Migration] -&gt; ShowS
+Migration -&gt; String
+(Int -&gt; Migration -&gt; ShowS)
+-&gt; (Migration -&gt; String)
+-&gt; ([Migration] -&gt; ShowS)
+-&gt; Show Migration
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Migration -&gt; ShowS
+showsPrec :: Int -&gt; Migration -&gt; ShowS
+$cshow :: Migration -&gt; String
+show :: Migration -&gt; String
+$cshowList :: [Migration] -&gt; ShowS
+showList :: [Migration] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680268473"><span id="local-6989586621680268483"><span class="annot"><span class="annottext">Migration -&gt; Migration -&gt; Bool
+(Migration -&gt; Migration -&gt; Bool)
+-&gt; (Migration -&gt; Migration -&gt; Bool) -&gt; Eq Migration
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Migration -&gt; Migration -&gt; Bool
+== :: Migration -&gt; Migration -&gt; Bool
+$c/= :: Migration -&gt; Migration -&gt; Bool
+/= :: Migration -&gt; Migration -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="annot"><span class="hs-comment">-- | MigrationLog - Migration execution log</span></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="MigrationLog"><span class="annot"><a href="Infrastructure.Migration.html#MigrationLog"><span class="hs-identifier hs-var">MigrationLog</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="MigrationLog"><span class="annot"><a href="Infrastructure.Migration.html#MigrationLog"><span class="hs-identifier hs-var">MigrationLog</span></a></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="mlId"><span class="annot"><span class="annottext">MigrationLog -&gt; Int64
+</span><a href="Infrastructure.Migration.html#mlId"><span class="hs-identifier hs-var hs-var">mlId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span id="mlMigrationId"><span class="annot"><span class="annottext">MigrationLog -&gt; Int64
+</span><a href="Infrastructure.Migration.html#mlMigrationId"><span class="hs-identifier hs-var hs-var">mlMigrationId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="mlExecutedAt"><span class="annot"><span class="annottext">MigrationLog -&gt; Int64
+</span><a href="Infrastructure.Migration.html#mlExecutedAt"><span class="hs-identifier hs-var hs-var">mlExecutedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="mlSuccess"><span class="annot"><span class="annottext">MigrationLog -&gt; Bool
+</span><a href="Infrastructure.Migration.html#mlSuccess"><span class="hs-identifier hs-var hs-var">mlSuccess</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="mlError"><span class="annot"><span class="annottext">MigrationLog -&gt; Maybe Text
+</span><a href="Infrastructure.Migration.html#mlError"><span class="hs-identifier hs-var hs-var">mlError</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680268494"><span id="local-6989586621680268504"><span id="local-6989586621680268508"><span class="annot"><span class="annottext">Int -&gt; MigrationLog -&gt; ShowS
+[MigrationLog] -&gt; ShowS
+MigrationLog -&gt; String
+(Int -&gt; MigrationLog -&gt; ShowS)
+-&gt; (MigrationLog -&gt; String)
+-&gt; ([MigrationLog] -&gt; ShowS)
+-&gt; Show MigrationLog
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; MigrationLog -&gt; ShowS
+showsPrec :: Int -&gt; MigrationLog -&gt; ShowS
+$cshow :: MigrationLog -&gt; String
+show :: MigrationLog -&gt; String
+$cshowList :: [MigrationLog] -&gt; ShowS
+showList :: [MigrationLog] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680268511"><span id="local-6989586621680268520"><span class="annot"><span class="annottext">MigrationLog -&gt; MigrationLog -&gt; Bool
+(MigrationLog -&gt; MigrationLog -&gt; Bool)
+-&gt; (MigrationLog -&gt; MigrationLog -&gt; Bool) -&gt; Eq MigrationLog
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: MigrationLog -&gt; MigrationLog -&gt; Bool
+== :: MigrationLog -&gt; MigrationLog -&gt; Bool
+$c/= :: MigrationLog -&gt; MigrationLog -&gt; Bool
+/= :: MigrationLog -&gt; MigrationLog -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span></pre></body></html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# OPTIONS_GHC -Wno-unused-imports #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="annot"><span class="hs-comment">-- | Background Job System - Task queue and execution</span></span><span>
+</span><span id="line-5"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Production.JobSystem.html"><span class="hs-identifier">Production.JobSystem</span></a></span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><span class="hs-comment">-- * Job Operations</span></span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Production.JobSystem.html#createJob"><span class="hs-identifier">createJob</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Production.JobSystem.html#getJobStatus"><span class="hs-identifier">getJobStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Production.JobSystem.html#listJobs"><span class="hs-identifier">listJobs</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Production.JobSystem.html#listPendingJobs"><span class="hs-identifier">listPendingJobs</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Production.JobSystem.html#processNextJob"><span class="hs-identifier">processNextJob</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><span class="hs-comment">-- * Job Types</span></span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="Production.JobSystem.html#JobStatus"><span class="hs-identifier">JobStatus</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="Production.JobSystem.html#JobPriority"><span class="hs-identifier">JobPriority</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="annot"><span class="hs-comment">-- | Job execution status</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="JobStatus"><span class="annot"><a href="Production.JobSystem.html#JobStatus"><span class="hs-identifier hs-var">JobStatus</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="JobPending"><span class="annot"><a href="Production.JobSystem.html#JobPending"><span class="hs-identifier hs-var">JobPending</span></a></span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="JobRunning"><span class="annot"><a href="Production.JobSystem.html#JobRunning"><span class="hs-identifier hs-var">JobRunning</span></a></span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="JobCompleted"><span class="annot"><a href="Production.JobSystem.html#JobCompleted"><span class="hs-identifier hs-var">JobCompleted</span></a></span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="JobFailed"><span class="annot"><a href="Production.JobSystem.html#JobFailed"><span class="hs-identifier hs-var">JobFailed</span></a></span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="JobCancelled"><span class="annot"><a href="Production.JobSystem.html#JobCancelled"><span class="hs-identifier hs-var">JobCancelled</span></a></span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680288142"><span id="local-6989586621680288144"><span id="local-6989586621680288148"><span class="annot"><span class="annottext">Int -&gt; JobStatus -&gt; ShowS
+[JobStatus] -&gt; ShowS
+JobStatus -&gt; String
+(Int -&gt; JobStatus -&gt; ShowS)
+-&gt; (JobStatus -&gt; String)
+-&gt; ([JobStatus] -&gt; ShowS)
+-&gt; Show JobStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; JobStatus -&gt; ShowS
+showsPrec :: Int -&gt; JobStatus -&gt; ShowS
+$cshow :: JobStatus -&gt; String
+show :: JobStatus -&gt; String
+$cshowList :: [JobStatus] -&gt; ShowS
+showList :: [JobStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680288153"><span id="local-6989586621680288158"><span class="annot"><span class="annottext">JobStatus -&gt; JobStatus -&gt; Bool
+(JobStatus -&gt; JobStatus -&gt; Bool)
+-&gt; (JobStatus -&gt; JobStatus -&gt; Bool) -&gt; Eq JobStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: JobStatus -&gt; JobStatus -&gt; Bool
+== :: JobStatus -&gt; JobStatus -&gt; Bool
+$c/= :: JobStatus -&gt; JobStatus -&gt; Bool
+/= :: JobStatus -&gt; JobStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="annot"><span class="hs-comment">-- | Job priority levels</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="JobPriority"><span class="annot"><a href="Production.JobSystem.html#JobPriority"><span class="hs-identifier hs-var">JobPriority</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="PriorityLow"><span class="annot"><a href="Production.JobSystem.html#PriorityLow"><span class="hs-identifier hs-var">PriorityLow</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PriorityNormal"><span class="annot"><a href="Production.JobSystem.html#PriorityNormal"><span class="hs-identifier hs-var">PriorityNormal</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PriorityHigh"><span class="annot"><a href="Production.JobSystem.html#PriorityHigh"><span class="hs-identifier hs-var">PriorityHigh</span></a></span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="PriorityCritical"><span class="annot"><a href="Production.JobSystem.html#PriorityCritical"><span class="hs-identifier hs-var">PriorityCritical</span></a></span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680288167"><span id="local-6989586621680288169"><span id="local-6989586621680288173"><span class="annot"><span class="annottext">Int -&gt; JobPriority -&gt; ShowS
+[JobPriority] -&gt; ShowS
+JobPriority -&gt; String
+(Int -&gt; JobPriority -&gt; ShowS)
+-&gt; (JobPriority -&gt; String)
+-&gt; ([JobPriority] -&gt; ShowS)
+-&gt; Show JobPriority
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; JobPriority -&gt; ShowS
+showsPrec :: Int -&gt; JobPriority -&gt; ShowS
+$cshow :: JobPriority -&gt; String
+show :: JobPriority -&gt; String
+$cshowList :: [JobPriority] -&gt; ShowS
+showList :: [JobPriority] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680288176"><span id="local-6989586621680288180"><span class="annot"><span class="annottext">JobPriority -&gt; JobPriority -&gt; Bool
+(JobPriority -&gt; JobPriority -&gt; Bool)
+-&gt; (JobPriority -&gt; JobPriority -&gt; Bool) -&gt; Eq JobPriority
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: JobPriority -&gt; JobPriority -&gt; Bool
+== :: JobPriority -&gt; JobPriority -&gt; Bool
+$c/= :: JobPriority -&gt; JobPriority -&gt; Bool
+/= :: JobPriority -&gt; JobPriority -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="annot"><span class="hs-comment">-- | Create a new job in the queue</span></span><span>
+</span><span id="line-38"></span><span id="local-6989586621680288105"><span id="local-6989586621680288106"><span class="annot"><a href="Production.JobSystem.html#createJob"><span class="hs-identifier hs-type">createJob</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621680288105"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621680288106"><span class="hs-identifier hs-type">b</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">)</span></span></span><span>
+</span><span id="line-39"></span><span id="createJob"><span class="annot"><span class="annottext">createJob :: forall a b. a -&gt; b -&gt; IO (Either String Int64)
+</span><a href="Production.JobSystem.html#createJob"><span class="hs-identifier hs-var hs-var">createJob</span></a></span></span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">b
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either String Int64 -&gt; IO (Either String Int64)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either String Int64 -&gt; IO (Either String Int64))
+-&gt; Either String Int64 -&gt; IO (Either String Int64)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String Int64
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Not implemented&quot;</span></span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="annot"><span class="hs-comment">-- | Get job status by ID</span></span><span>
+</span><span id="line-42"></span><span id="local-6989586621680288122"><span class="annot"><a href="Production.JobSystem.html#getJobStatus"><span class="hs-identifier hs-type">getJobStatus</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621680288122"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="annot"><a href="#local-6989586621680288122"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-43"></span><span id="getJobStatus"><span class="annot"><span class="annottext">getJobStatus :: forall a. a -&gt; Int64 -&gt; IO (Either String a)
+</span><a href="Production.JobSystem.html#getJobStatus"><span class="hs-identifier hs-var hs-var">getJobStatus</span></a></span></span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-identifier">_</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either String a -&gt; IO (Either String a)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either String a -&gt; IO (Either String a))
+-&gt; Either String a -&gt; IO (Either String a)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String a
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Not implemented&quot;</span></span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="annot"><span class="hs-comment">-- | List all jobs</span></span><span>
+</span><span id="line-46"></span><span id="local-6989586621680288124"><span class="annot"><a href="Production.JobSystem.html#listJobs"><span class="hs-identifier hs-type">listJobs</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621680288124"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621680288124"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span></span><span>
+</span><span id="line-47"></span><span id="listJobs"><span class="annot"><span class="annottext">listJobs :: forall a. a -&gt; IO (Either String [a])
+</span><a href="Production.JobSystem.html#listJobs"><span class="hs-identifier hs-var hs-var">listJobs</span></a></span></span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either String [a] -&gt; IO (Either String [a])
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either String [a] -&gt; IO (Either String [a]))
+-&gt; Either String [a] -&gt; IO (Either String [a])
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String [a]
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Not implemented&quot;</span></span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="annot"><span class="hs-comment">-- | List pending jobs count</span></span><span>
+</span><span id="line-50"></span><span id="local-6989586621680288126"><span class="annot"><a href="Production.JobSystem.html#listPendingJobs"><span class="hs-identifier hs-type">listPendingJobs</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621680288126"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">)</span></span><span>
+</span><span id="line-51"></span><span id="listPendingJobs"><span class="annot"><span class="annottext">listPendingJobs :: forall a. a -&gt; IO (Either String Int64)
+</span><a href="Production.JobSystem.html#listPendingJobs"><span class="hs-identifier hs-var hs-var">listPendingJobs</span></a></span></span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either String Int64 -&gt; IO (Either String Int64)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either String Int64 -&gt; IO (Either String Int64))
+-&gt; Either String Int64 -&gt; IO (Either String Int64)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String Int64
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Not implemented&quot;</span></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="annot"><span class="hs-comment">-- | Process the next pending job</span></span><span>
+</span><span id="line-54"></span><span id="local-6989586621680288128"><span class="annot"><a href="Production.JobSystem.html#processNextJob"><span class="hs-identifier hs-type">processNextJob</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621680288128"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="#local-6989586621680288128"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span></span><span>
+</span><span id="line-55"></span><span id="processNextJob"><span class="annot"><span class="annottext">processNextJob :: forall a. a -&gt; IO (Either String (Maybe a))
+</span><a href="Production.JobSystem.html#processNextJob"><span class="hs-identifier hs-var hs-var">processNextJob</span></a></span></span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Either String (Maybe a) -&gt; IO (Either String (Maybe a))
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either String (Maybe a) -&gt; IO (Either String (Maybe a)))
+-&gt; Either String (Maybe a) -&gt; IO (Either String (Maybe a))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Either String (Maybe a)
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;Not implemented&quot;</span></span></pre></body></html>

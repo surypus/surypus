@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Invoice module - Invoices</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Commerce.Invoice.html"><span class="hs-identifier">Commerce.Invoice</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Commerce.Invoice.html#Invoice"><span class="hs-identifier">Invoice</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-4"></span><span>    </span><span class="annot"><a href="Commerce.Invoice.html#calcInvoiceBalance"><span class="hs-identifier">calcInvoiceBalance</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Text</span></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">fromGregorian</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-comment">{-@ type NonNeg = {v:Double | v &gt;= 0} @-}</span><span>
+</span><span id="line-13"></span><span class="hs-comment">{-@ type Percent = {v:Double | v &gt;= 0 &amp;&amp; v &lt;= 100} @-}</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="annot"><span class="hs-comment">-- | Invoice - Invoice</span></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">data</span><span> </span><span id="Invoice"><span class="annot"><a href="Commerce.Invoice.html#Invoice"><span class="hs-identifier hs-var">Invoice</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Invoice"><span class="annot"><a href="Commerce.Invoice.html#Invoice"><span class="hs-identifier hs-var">Invoice</span></a></span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="invId"><span class="annot"><span class="annottext">Invoice -&gt; Int64
+</span><a href="Commerce.Invoice.html#invId"><span class="hs-identifier hs-var hs-var">invId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>    </span><span id="invCode"><span class="annot"><span class="annottext">Invoice -&gt; Text
+</span><a href="Commerce.Invoice.html#invCode"><span class="hs-identifier hs-var hs-var">invCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span id="invDate"><span class="annot"><span class="annottext">Invoice -&gt; Day
+</span><a href="Commerce.Invoice.html#invDate"><span class="hs-identifier hs-var hs-var">invDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span id="invDueDate"><span class="annot"><span class="annottext">Invoice -&gt; Day
+</span><a href="Commerce.Invoice.html#invDueDate"><span class="hs-identifier hs-var hs-var">invDueDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="invBillId"><span class="annot"><span class="annottext">Invoice -&gt; Int64
+</span><a href="Commerce.Invoice.html#invBillId"><span class="hs-identifier hs-var hs-var">invBillId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="invTotal"><span class="annot"><span class="annottext">Invoice -&gt; Double
+</span><a href="Commerce.Invoice.html#invTotal"><span class="hs-identifier hs-var hs-var">invTotal</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="invPaid"><span class="annot"><span class="annottext">Invoice -&gt; Double
+</span><a href="Commerce.Invoice.html#invPaid"><span class="hs-identifier hs-var hs-var">invPaid</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680209157"><span id="local-6989586621680209172"><span id="local-6989586621680209176"><span class="annot"><span class="annottext">Int -&gt; Invoice -&gt; ShowS
+[Invoice] -&gt; ShowS
+Invoice -&gt; String
+(Int -&gt; Invoice -&gt; ShowS)
+-&gt; (Invoice -&gt; String) -&gt; ([Invoice] -&gt; ShowS) -&gt; Show Invoice
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Invoice -&gt; ShowS
+showsPrec :: Int -&gt; Invoice -&gt; ShowS
+$cshow :: Invoice -&gt; String
+show :: Invoice -&gt; String
+$cshowList :: [Invoice] -&gt; ShowS
+showList :: [Invoice] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680209181"><span id="local-6989586621680209194"><span class="annot"><span class="annottext">Invoice -&gt; Invoice -&gt; Bool
+(Invoice -&gt; Invoice -&gt; Bool)
+-&gt; (Invoice -&gt; Invoice -&gt; Bool) -&gt; Eq Invoice
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Invoice -&gt; Invoice -&gt; Bool
+== :: Invoice -&gt; Invoice -&gt; Bool
+$c/= :: Invoice -&gt; Invoice -&gt; Bool
+/= :: Invoice -&gt; Invoice -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-comment">-- | Calculate invoice balance (amount due)</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- = Invariant: result &gt;= 0 (cannot owe negative)</span><span>
+</span><span id="line-29"></span><span class="hs-comment">-- Overpayment is not receivable, so the balance never goes below zero.</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="hs-comment">{-@ calcInvoiceBalance :: Invoice -&gt; NonNeg @-}</span><span>
+</span><span id="line-32"></span><span class="annot"><a href="Commerce.Invoice.html#calcInvoiceBalance"><span class="hs-identifier hs-type">calcInvoiceBalance</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.Invoice.html#Invoice"><span class="hs-identifier hs-type">Invoice</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-33"></span><span id="calcInvoiceBalance"><span class="annot"><span class="annottext">calcInvoiceBalance :: Invoice -&gt; Double
+</span><a href="Commerce.Invoice.html#calcInvoiceBalance"><span class="hs-identifier hs-var hs-var">calcInvoiceBalance</span></a></span></span><span> </span><span id="local-6989586621680209198"><span class="annot"><span class="annottext">Invoice
+</span><a href="#local-6989586621680209198"><span class="hs-identifier hs-var">i</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">max</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Invoice -&gt; Double
+</span><a href="Commerce.Invoice.html#invTotal"><span class="hs-identifier hs-var">invTotal</span></a></span><span> </span><span class="annot"><span class="annottext">Invoice
+</span><a href="#local-6989586621680209198"><span class="hs-identifier hs-var">i</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Invoice -&gt; Double
+</span><a href="Commerce.Invoice.html#invPaid"><span class="hs-identifier hs-var">invPaid</span></a></span><span> </span><span class="annot"><span class="annottext">Invoice
+</span><a href="#local-6989586621680209198"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span></pre></body></html>

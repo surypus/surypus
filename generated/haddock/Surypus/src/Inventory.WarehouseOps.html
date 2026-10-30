@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | WarehouseOps module - Warehouse operations</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Inventory.WarehouseOps.html"><span class="hs-identifier">Inventory.WarehouseOps</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="annot"><span class="hs-comment">-- | WarehouseOps - Warehouse operation</span></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">data</span><span> </span><span id="WarehouseOps"><span class="annot"><a href="Inventory.WarehouseOps.html#WarehouseOps"><span class="hs-identifier hs-var">WarehouseOps</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="WarehouseOps"><span class="annot"><a href="Inventory.WarehouseOps.html#WarehouseOps"><span class="hs-identifier hs-var">WarehouseOps</span></a></span></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="woId"><span class="annot"><span class="annottext">WarehouseOps -&gt; Int64
+</span><a href="Inventory.WarehouseOps.html#woId"><span class="hs-identifier hs-var hs-var">woId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span id="woType"><span class="annot"><span class="annottext">WarehouseOps -&gt; WarehouseOpType
+</span><a href="Inventory.WarehouseOps.html#woType"><span class="hs-identifier hs-var hs-var">woType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Inventory.WarehouseOps.html#WarehouseOpType"><span class="hs-identifier hs-type">WarehouseOpType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span id="woGoodsId"><span class="annot"><span class="annottext">WarehouseOps -&gt; Int64
+</span><a href="Inventory.WarehouseOps.html#woGoodsId"><span class="hs-identifier hs-var hs-var">woGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="woFromLocId"><span class="annot"><span class="annottext">WarehouseOps -&gt; Maybe Int64
+</span><a href="Inventory.WarehouseOps.html#woFromLocId"><span class="hs-identifier hs-var hs-var">woFromLocId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="woToLocId"><span class="annot"><span class="annottext">WarehouseOps -&gt; Maybe Int64
+</span><a href="Inventory.WarehouseOps.html#woToLocId"><span class="hs-identifier hs-var hs-var">woToLocId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="woQtty"><span class="annot"><span class="annottext">WarehouseOps -&gt; Double
+</span><a href="Inventory.WarehouseOps.html#woQtty"><span class="hs-identifier hs-var hs-var">woQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="woStatus"><span class="annot"><span class="annottext">WarehouseOps -&gt; OpStatus
+</span><a href="Inventory.WarehouseOps.html#woStatus"><span class="hs-identifier hs-var hs-var">woStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Inventory.WarehouseOps.html#OpStatus"><span class="hs-identifier hs-type">OpStatus</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680286424"><span id="local-6989586621680286440"><span id="local-6989586621680286444"><span class="annot"><span class="annottext">Int -&gt; WarehouseOps -&gt; ShowS
+[WarehouseOps] -&gt; ShowS
+WarehouseOps -&gt; String
+(Int -&gt; WarehouseOps -&gt; ShowS)
+-&gt; (WarehouseOps -&gt; String)
+-&gt; ([WarehouseOps] -&gt; ShowS)
+-&gt; Show WarehouseOps
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; WarehouseOps -&gt; ShowS
+showsPrec :: Int -&gt; WarehouseOps -&gt; ShowS
+$cshow :: WarehouseOps -&gt; String
+show :: WarehouseOps -&gt; String
+$cshowList :: [WarehouseOps] -&gt; ShowS
+showList :: [WarehouseOps] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680286449"><span id="local-6989586621680286463"><span class="annot"><span class="annottext">WarehouseOps -&gt; WarehouseOps -&gt; Bool
+(WarehouseOps -&gt; WarehouseOps -&gt; Bool)
+-&gt; (WarehouseOps -&gt; WarehouseOps -&gt; Bool) -&gt; Eq WarehouseOps
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: WarehouseOps -&gt; WarehouseOps -&gt; Bool
+== :: WarehouseOps -&gt; WarehouseOps -&gt; Bool
+$c/= :: WarehouseOps -&gt; WarehouseOps -&gt; Bool
+/= :: WarehouseOps -&gt; WarehouseOps -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="WarehouseOpType"><span class="annot"><a href="Inventory.WarehouseOps.html#WarehouseOpType"><span class="hs-identifier hs-var">WarehouseOpType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="WOTPick"><span class="annot"><a href="Inventory.WarehouseOps.html#WOTPick"><span class="hs-identifier hs-var">WOTPick</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="WOTPack"><span class="annot"><a href="Inventory.WarehouseOps.html#WOTPack"><span class="hs-identifier hs-var">WOTPack</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="WOTShip"><span class="annot"><a href="Inventory.WarehouseOps.html#WOTShip"><span class="hs-identifier hs-var">WOTShip</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="WOTReceive"><span class="annot"><a href="Inventory.WarehouseOps.html#WOTReceive"><span class="hs-identifier hs-var">WOTReceive</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="WOTReturns"><span class="annot"><a href="Inventory.WarehouseOps.html#WOTReturns"><span class="hs-identifier hs-var">WOTReturns</span></a></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680286473"><span id="local-6989586621680286475"><span id="local-6989586621680286478"><span class="annot"><span class="annottext">Int -&gt; WarehouseOpType -&gt; ShowS
+[WarehouseOpType] -&gt; ShowS
+WarehouseOpType -&gt; String
+(Int -&gt; WarehouseOpType -&gt; ShowS)
+-&gt; (WarehouseOpType -&gt; String)
+-&gt; ([WarehouseOpType] -&gt; ShowS)
+-&gt; Show WarehouseOpType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; WarehouseOpType -&gt; ShowS
+showsPrec :: Int -&gt; WarehouseOpType -&gt; ShowS
+$cshow :: WarehouseOpType -&gt; String
+show :: WarehouseOpType -&gt; String
+$cshowList :: [WarehouseOpType] -&gt; ShowS
+showList :: [WarehouseOpType] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680286481"><span id="local-6989586621680286486"><span class="annot"><span class="annottext">WarehouseOpType -&gt; WarehouseOpType -&gt; Bool
+(WarehouseOpType -&gt; WarehouseOpType -&gt; Bool)
+-&gt; (WarehouseOpType -&gt; WarehouseOpType -&gt; Bool)
+-&gt; Eq WarehouseOpType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: WarehouseOpType -&gt; WarehouseOpType -&gt; Bool
+== :: WarehouseOpType -&gt; WarehouseOpType -&gt; Bool
+$c/= :: WarehouseOpType -&gt; WarehouseOpType -&gt; Bool
+/= :: WarehouseOpType -&gt; WarehouseOpType -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="OpStatus"><span class="annot"><a href="Inventory.WarehouseOps.html#OpStatus"><span class="hs-identifier hs-var">OpStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="OPSPending"><span class="annot"><a href="Inventory.WarehouseOps.html#OPSPending"><span class="hs-identifier hs-var">OPSPending</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="OPSInProgress"><span class="annot"><a href="Inventory.WarehouseOps.html#OPSInProgress"><span class="hs-identifier hs-var">OPSInProgress</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="OPSCompleted"><span class="annot"><a href="Inventory.WarehouseOps.html#OPSCompleted"><span class="hs-identifier hs-var">OPSCompleted</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="OPSCancelled"><span class="annot"><a href="Inventory.WarehouseOps.html#OPSCancelled"><span class="hs-identifier hs-var">OPSCancelled</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680286493"><span id="local-6989586621680286495"><span id="local-6989586621680286498"><span class="annot"><span class="annottext">Int -&gt; OpStatus -&gt; ShowS
+[OpStatus] -&gt; ShowS
+OpStatus -&gt; String
+(Int -&gt; OpStatus -&gt; ShowS)
+-&gt; (OpStatus -&gt; String) -&gt; ([OpStatus] -&gt; ShowS) -&gt; Show OpStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; OpStatus -&gt; ShowS
+showsPrec :: Int -&gt; OpStatus -&gt; ShowS
+$cshow :: OpStatus -&gt; String
+show :: OpStatus -&gt; String
+$cshowList :: [OpStatus] -&gt; ShowS
+showList :: [OpStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680286501"><span id="local-6989586621680286505"><span class="annot"><span class="annottext">OpStatus -&gt; OpStatus -&gt; Bool
+(OpStatus -&gt; OpStatus -&gt; Bool)
+-&gt; (OpStatus -&gt; OpStatus -&gt; Bool) -&gt; Eq OpStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: OpStatus -&gt; OpStatus -&gt; Bool
+== :: OpStatus -&gt; OpStatus -&gt; Bool
+$c/= :: OpStatus -&gt; OpStatus -&gt; Bool
+/= :: OpStatus -&gt; OpStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span></pre></body></html>

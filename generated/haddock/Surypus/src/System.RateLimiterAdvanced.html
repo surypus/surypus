@@ -1,0 +1,456 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html"><span class="hs-identifier">System.RateLimiterAdvanced</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Concurrent.STM</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">TVar</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">atomically</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">newTVarIO</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">readTVar</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">readTVarIO</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">writeTVar</span></span><span class="hs-special">)</span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Sequence</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Seq</span></span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time.Clock</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">NominalDiffTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">addUTCTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">diffUTCTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">getCurrentTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="annot"><span class="hs-comment">-- | Advanced rate limiter with multiple strategies</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">data</span><span> </span><span id="RateLimiterAdvanced"><span class="annot"><a href="System.RateLimiterAdvanced.html#RateLimiterAdvanced"><span class="hs-identifier hs-var">RateLimiterAdvanced</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RateLimiterAdvanced"><span class="annot"><a href="System.RateLimiterAdvanced.html#RateLimiterAdvanced"><span class="hs-identifier hs-var">RateLimiterAdvanced</span></a></span></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="limiterConfig"><span class="annot"><span class="annottext">RateLimiterAdvanced -&gt; RateConfig
+</span><a href="System.RateLimiterAdvanced.html#limiterConfig"><span class="hs-identifier hs-var hs-var">limiterConfig</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#RateConfig"><span class="hs-identifier hs-type">RateConfig</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span id="limiterState"><span class="annot"><span class="annottext">RateLimiterAdvanced -&gt; TVar LimiterState
+</span><a href="System.RateLimiterAdvanced.html#limiterState"><span class="hs-identifier hs-var hs-var">limiterState</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">TVar</span></span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#LimiterState"><span class="hs-identifier hs-type">LimiterState</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="limiterMetrics"><span class="annot"><span class="annottext">RateLimiterAdvanced -&gt; TVar RateMetrics
+</span><a href="System.RateLimiterAdvanced.html#limiterMetrics"><span class="hs-identifier hs-var hs-var">limiterMetrics</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">TVar</span></span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#RateMetrics"><span class="hs-identifier hs-type">RateMetrics</span></a></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="annot"><span class="hs-comment">-- | Rate limiting strategies</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">data</span><span> </span><span id="RateStrategy"><span class="annot"><a href="System.RateLimiterAdvanced.html#RateStrategy"><span class="hs-identifier hs-var">RateStrategy</span></a></span></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="TokenBucket"><span class="annot"><a href="System.RateLimiterAdvanced.html#TokenBucket"><span class="hs-identifier hs-var">TokenBucket</span></a></span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="LeakyBucket"><span class="annot"><a href="System.RateLimiterAdvanced.html#LeakyBucket"><span class="hs-identifier hs-var">LeakyBucket</span></a></span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="FixedWindow"><span class="annot"><a href="System.RateLimiterAdvanced.html#FixedWindow"><span class="hs-identifier hs-var">FixedWindow</span></a></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="SlidingWindow"><span class="annot"><a href="System.RateLimiterAdvanced.html#SlidingWindow"><span class="hs-identifier hs-var">SlidingWindow</span></a></span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680361795"><span id="local-6989586621680361797"><span id="local-6989586621680361801"><span class="annot"><span class="annottext">Int -&gt; RateStrategy -&gt; ShowS
+[RateStrategy] -&gt; ShowS
+RateStrategy -&gt; String
+(Int -&gt; RateStrategy -&gt; ShowS)
+-&gt; (RateStrategy -&gt; String)
+-&gt; ([RateStrategy] -&gt; ShowS)
+-&gt; Show RateStrategy
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; RateStrategy -&gt; ShowS
+showsPrec :: Int -&gt; RateStrategy -&gt; ShowS
+$cshow :: RateStrategy -&gt; String
+show :: RateStrategy -&gt; String
+$cshowList :: [RateStrategy] -&gt; ShowS
+showList :: [RateStrategy] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680361806"><span id="local-6989586621680361811"><span class="annot"><span class="annottext">RateStrategy -&gt; RateStrategy -&gt; Bool
+(RateStrategy -&gt; RateStrategy -&gt; Bool)
+-&gt; (RateStrategy -&gt; RateStrategy -&gt; Bool) -&gt; Eq RateStrategy
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: RateStrategy -&gt; RateStrategy -&gt; Bool
+== :: RateStrategy -&gt; RateStrategy -&gt; Bool
+$c/= :: RateStrategy -&gt; RateStrategy -&gt; Bool
+/= :: RateStrategy -&gt; RateStrategy -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="annot"><span class="hs-comment">-- | Rate configuration</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">data</span><span> </span><span id="RateConfig"><span class="annot"><a href="System.RateLimiterAdvanced.html#RateConfig"><span class="hs-identifier hs-var">RateConfig</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RateConfig"><span class="annot"><a href="System.RateLimiterAdvanced.html#RateConfig"><span class="hs-identifier hs-var">RateConfig</span></a></span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="rateStrategy"><span class="annot"><span class="annottext">RateConfig -&gt; RateStrategy
+</span><a href="System.RateLimiterAdvanced.html#rateStrategy"><span class="hs-identifier hs-var hs-var">rateStrategy</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#RateStrategy"><span class="hs-identifier hs-type">RateStrategy</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="rateLimit"><span class="annot"><span class="annottext">RateConfig -&gt; Double
+</span><a href="System.RateLimiterAdvanced.html#rateLimit"><span class="hs-identifier hs-var hs-var">rateLimit</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="rateWindowSec"><span class="annot"><span class="annottext">RateConfig -&gt; Int
+</span><a href="System.RateLimiterAdvanced.html#rateWindowSec"><span class="hs-identifier hs-var hs-var">rateWindowSec</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="rateBurst"><span class="annot"><span class="annottext">RateConfig -&gt; Int
+</span><a href="System.RateLimiterAdvanced.html#rateBurst"><span class="hs-identifier hs-var hs-var">rateBurst</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="ratePenalty"><span class="annot"><span class="annottext">RateConfig -&gt; Double
+</span><a href="System.RateLimiterAdvanced.html#ratePenalty"><span class="hs-identifier hs-var hs-var">ratePenalty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="annot"><span class="hs-comment">-- | Limiter state by strategy</span></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">data</span><span> </span><span id="LimiterState"><span class="annot"><a href="System.RateLimiterAdvanced.html#LimiterState"><span class="hs-identifier hs-var">LimiterState</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="TokenState"><span class="annot"><a href="System.RateLimiterAdvanced.html#TokenState"><span class="hs-identifier hs-var">TokenState</span></a></span></span><span> </span><span class="hs-special">{</span><span id="tokens"><span class="annot"><span class="annottext">LimiterState -&gt; Double
+</span><a href="System.RateLimiterAdvanced.html#tokens"><span class="hs-identifier hs-var hs-var">tokens</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span> </span><span id="lastRefill"><span class="annot"><span class="annottext">LimiterState -&gt; UTCTime
+</span><a href="System.RateLimiterAdvanced.html#lastRefill"><span class="hs-identifier hs-var hs-var">lastRefill</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">}</span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="LeakState"><span class="annot"><a href="System.RateLimiterAdvanced.html#LeakState"><span class="hs-identifier hs-var">LeakState</span></a></span></span><span> </span><span class="hs-special">{</span><span id="leaks"><span class="annot"><span class="annottext">LimiterState -&gt; Seq UTCTime
+</span><a href="System.RateLimiterAdvanced.html#leaks"><span class="hs-identifier hs-var hs-var">leaks</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Seq.Seq</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">}</span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="WindowState"><span class="annot"><a href="System.RateLimiterAdvanced.html#WindowState"><span class="hs-identifier hs-var">WindowState</span></a></span></span><span> </span><span class="hs-special">{</span><span id="windowCounts"><span class="annot"><span class="annottext">LimiterState -&gt; [(UTCTime, Int)]
+</span><a href="System.RateLimiterAdvanced.html#windowCounts"><span class="hs-identifier hs-var hs-var">windowCounts</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span class="hs-special">}</span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="SlidingState"><span class="annot"><a href="System.RateLimiterAdvanced.html#SlidingState"><span class="hs-identifier hs-var">SlidingState</span></a></span></span><span> </span><span class="hs-special">{</span><span id="slidingRequests"><span class="annot"><span class="annottext">LimiterState -&gt; Seq UTCTime
+</span><a href="System.RateLimiterAdvanced.html#slidingRequests"><span class="hs-identifier hs-var hs-var">slidingRequests</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Seq.Seq</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">}</span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680361831"><span id="local-6989586621680361848"><span id="local-6989586621680361852"><span class="annot"><span class="annottext">Int -&gt; LimiterState -&gt; ShowS
+[LimiterState] -&gt; ShowS
+LimiterState -&gt; String
+(Int -&gt; LimiterState -&gt; ShowS)
+-&gt; (LimiterState -&gt; String)
+-&gt; ([LimiterState] -&gt; ShowS)
+-&gt; Show LimiterState
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LimiterState -&gt; ShowS
+showsPrec :: Int -&gt; LimiterState -&gt; ShowS
+$cshow :: LimiterState -&gt; String
+show :: LimiterState -&gt; String
+$cshowList :: [LimiterState] -&gt; ShowS
+showList :: [LimiterState] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="annot"><span class="hs-comment">-- | Rate metrics</span></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">data</span><span> </span><span id="RateMetrics"><span class="annot"><a href="System.RateLimiterAdvanced.html#RateMetrics"><span class="hs-identifier hs-var">RateMetrics</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RateMetrics"><span class="annot"><a href="System.RateLimiterAdvanced.html#RateMetrics"><span class="hs-identifier hs-var">RateMetrics</span></a></span></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="totalRequests"><span class="annot"><span class="annottext">RateMetrics -&gt; Int
+</span><a href="System.RateLimiterAdvanced.html#totalRequests"><span class="hs-identifier hs-var hs-var">totalRequests</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-42"></span><span>    </span><span id="totalAllowed"><span class="annot"><span class="annottext">RateMetrics -&gt; Int
+</span><a href="System.RateLimiterAdvanced.html#totalAllowed"><span class="hs-identifier hs-var hs-var">totalAllowed</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-43"></span><span>    </span><span id="totalDenied"><span class="annot"><span class="annottext">RateMetrics -&gt; Int
+</span><a href="System.RateLimiterAdvanced.html#totalDenied"><span class="hs-identifier hs-var hs-var">totalDenied</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-44"></span><span>    </span><span id="currentRate"><span class="annot"><span class="annottext">RateMetrics -&gt; Double
+</span><a href="System.RateLimiterAdvanced.html#currentRate"><span class="hs-identifier hs-var hs-var">currentRate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-45"></span><span>    </span><span id="penaltyApplied"><span class="annot"><span class="annottext">RateMetrics -&gt; Int
+</span><a href="System.RateLimiterAdvanced.html#penaltyApplied"><span class="hs-identifier hs-var hs-var">penaltyApplied</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span class="annot"><span class="hs-comment">-- | Initialize advanced rate limiter</span></span><span>
+</span><span id="line-49"></span><span class="annot"><a href="System.RateLimiterAdvanced.html#initRateLimiterAdvanced"><span class="hs-identifier hs-type">initRateLimiterAdvanced</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#RateConfig"><span class="hs-identifier hs-type">RateConfig</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#RateLimiterAdvanced"><span class="hs-identifier hs-type">RateLimiterAdvanced</span></a></span><span>
+</span><span id="line-50"></span><span id="initRateLimiterAdvanced"><span class="annot"><span class="annottext">initRateLimiterAdvanced :: RateConfig -&gt; IO RateLimiterAdvanced
+</span><a href="System.RateLimiterAdvanced.html#initRateLimiterAdvanced"><span class="hs-identifier hs-var hs-var">initRateLimiterAdvanced</span></a></span></span><span> </span><span id="local-6989586621680361864"><span class="annot"><span class="annottext">RateConfig
+</span><a href="#local-6989586621680361864"><span class="hs-identifier hs-var">config</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-51"></span><span>  </span><span id="local-6989586621680361865"><span class="annot"><a href="#local-6989586621680361865"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO UTCTime
+</span><span class="hs-identifier hs-var">getCurrentTime</span></span><span>
+</span><span id="line-52"></span><span>  </span><span id="local-6989586621680361866"><span class="annot"><a href="#local-6989586621680361866"><span class="hs-identifier hs-var">state</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">newTVarIO</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="#local-6989586621680361867"><span class="hs-identifier hs-type">initState</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.RateLimiterAdvanced.html#rateStrategy"><span class="hs-identifier hs-var">rateStrategy</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361864"><span class="hs-identifier hs-type">config</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621680361865"><span class="hs-identifier hs-type">now</span></a></span><span>
+</span><span id="line-53"></span><span>  </span><span id="local-6989586621680361868"><span class="annot"><a href="#local-6989586621680361868"><span class="hs-identifier hs-var">metricsVar</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span>
+</span><span id="line-54"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">newTVarIO</span></span><span>
+</span><span id="line-55"></span><span>      </span><span class="annot"><a href="System.RateLimiterAdvanced.html#RateMetrics"><span class="hs-identifier hs-type">RateMetrics</span></a></span><span>
+</span><span id="line-56"></span><span>        </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#totalRequests"><span class="hs-identifier hs-var">totalRequests</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">,</span><span>
+</span><span id="line-57"></span><span>          </span><span class="annot"><a href="System.RateLimiterAdvanced.html#totalAllowed"><span class="hs-identifier hs-var">totalAllowed</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">,</span><span>
+</span><span id="line-58"></span><span>          </span><span class="annot"><a href="System.RateLimiterAdvanced.html#totalDenied"><span class="hs-identifier hs-var">totalDenied</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">,</span><span>
+</span><span id="line-59"></span><span>          </span><span class="annot"><a href="System.RateLimiterAdvanced.html#currentRate"><span class="hs-identifier hs-var">currentRate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">,</span><span>
+</span><span id="line-60"></span><span>          </span><span class="annot"><a href="System.RateLimiterAdvanced.html#penaltyApplied"><span class="hs-identifier hs-var">penaltyApplied</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
+</span><span id="line-61"></span><span>        </span><span class="hs-special">}</span><span>
+</span><span id="line-62"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#RateLimiterAdvanced"><span class="hs-identifier hs-type">RateLimiterAdvanced</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361864"><span class="hs-identifier hs-type">config</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361866"><span class="hs-identifier hs-type">state</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361868"><span class="hs-identifier hs-type">metricsVar</span></a></span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-64"></span><span>    </span><span id="local-6989586621680361867"><span class="annot"><span class="annottext">initState :: RateStrategy -&gt; UTCTime -&gt; LimiterState
+</span><a href="#local-6989586621680361867"><span class="hs-identifier hs-var hs-var">initState</span></a></span></span><span> </span><span class="annot"><span class="annottext">RateStrategy
+</span><a href="System.RateLimiterAdvanced.html#TokenBucket"><span class="hs-identifier hs-var">TokenBucket</span></a></span><span> </span><span id="local-6989586621680361869"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361869"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; UTCTime -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#TokenState"><span class="hs-identifier hs-var">TokenState</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361869"><span class="hs-identifier hs-var">now</span></a></span><span>
+</span><span id="line-65"></span><span>    </span><span class="annot"><a href="#local-6989586621680361867"><span class="hs-identifier hs-var">initState</span></a></span><span> </span><span class="annot"><span class="annottext">RateStrategy
+</span><a href="System.RateLimiterAdvanced.html#LeakyBucket"><span class="hs-identifier hs-var">LeakyBucket</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Seq UTCTime -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#LeakState"><span class="hs-identifier hs-var">LeakState</span></a></span><span> </span><span class="annot"><span class="annottext">Seq UTCTime
+forall a. Seq a
+</span><span class="hs-identifier hs-var">Seq.empty</span></span><span>
+</span><span id="line-66"></span><span>    </span><span class="annot"><a href="#local-6989586621680361867"><span class="hs-identifier hs-var">initState</span></a></span><span> </span><span class="annot"><span class="annottext">RateStrategy
+</span><a href="System.RateLimiterAdvanced.html#FixedWindow"><span class="hs-identifier hs-var">FixedWindow</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(UTCTime, Int)] -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#WindowState"><span class="hs-identifier hs-var">WindowState</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-67"></span><span>    </span><span class="annot"><a href="#local-6989586621680361867"><span class="hs-identifier hs-var">initState</span></a></span><span> </span><span class="annot"><span class="annottext">RateStrategy
+</span><a href="System.RateLimiterAdvanced.html#SlidingWindow"><span class="hs-identifier hs-var">SlidingWindow</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Seq UTCTime -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#SlidingState"><span class="hs-identifier hs-var">SlidingState</span></a></span><span> </span><span class="annot"><span class="annottext">Seq UTCTime
+forall a. Seq a
+</span><span class="hs-identifier hs-var">Seq.empty</span></span><span>
+</span><span id="line-68"></span><span>
+</span><span id="line-69"></span><span class="annot"><span class="hs-comment">-- | Check request with advanced logic</span></span><span>
+</span><span id="line-70"></span><span class="annot"><a href="System.RateLimiterAdvanced.html#checkRequestAdvanced"><span class="hs-identifier hs-type">checkRequestAdvanced</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#RateLimiterAdvanced"><span class="hs-identifier hs-type">RateLimiterAdvanced</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-71"></span><span id="checkRequestAdvanced"><span class="annot"><span class="annottext">checkRequestAdvanced :: RateLimiterAdvanced -&gt; IO Bool
+</span><a href="System.RateLimiterAdvanced.html#checkRequestAdvanced"><span class="hs-identifier hs-var hs-var">checkRequestAdvanced</span></a></span></span><span> </span><span id="local-6989586621680361872"><span class="annot"><span class="annottext">RateLimiterAdvanced
+</span><a href="#local-6989586621680361872"><span class="hs-identifier hs-var">limiter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-72"></span><span>  </span><span id="local-6989586621680361873"><span class="annot"><a href="#local-6989586621680361873"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO UTCTime
+</span><span class="hs-identifier hs-var">getCurrentTime</span></span><span>
+</span><span id="line-73"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">atomically</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-74"></span><span>    </span><span id="local-6989586621680361874"><span class="annot"><a href="#local-6989586621680361874"><span class="hs-identifier hs-var">state</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">readTVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.RateLimiterAdvanced.html#limiterState"><span class="hs-identifier hs-var">limiterState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361872"><span class="hs-identifier hs-type">limiter</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680361875"><span class="annot"><a href="#local-6989586621680361875"><span class="hs-identifier hs-var">allowed</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680361876"><span class="annot"><a href="#local-6989586621680361876"><span class="hs-identifier hs-var">newState</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621680361877"><span class="hs-identifier hs-type">evaluateStrategy</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361874"><span class="hs-identifier hs-type">state</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361873"><span class="hs-identifier hs-type">now</span></a></span><span>
+</span><span id="line-76"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">writeTVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.RateLimiterAdvanced.html#limiterState"><span class="hs-identifier hs-var">limiterState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361872"><span class="hs-identifier hs-type">limiter</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621680361876"><span class="hs-identifier hs-type">newState</span></a></span><span>
+</span><span id="line-77"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><a href="#local-6989586621680361875"><span class="hs-identifier hs-type">allowed</span></a></span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-79"></span><span>    </span><span id="local-6989586621680361878"><span class="annot"><span class="annottext">cfg :: RateConfig
+</span><a href="#local-6989586621680361878"><span class="hs-identifier hs-var hs-var">cfg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">RateLimiterAdvanced -&gt; RateConfig
+</span><a href="System.RateLimiterAdvanced.html#limiterConfig"><span class="hs-identifier hs-var">limiterConfig</span></a></span><span> </span><span class="annot"><span class="annottext">RateLimiterAdvanced
+</span><a href="#local-6989586621680361872"><span class="hs-identifier hs-var">limiter</span></a></span><span>
+</span><span id="line-80"></span><span>    </span><span id="local-6989586621680361879"><span class="annot"><span class="annottext">rateLmt :: Double
+</span><a href="#local-6989586621680361879"><span class="hs-identifier hs-var hs-var">rateLmt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">RateConfig -&gt; Double
+</span><a href="System.RateLimiterAdvanced.html#rateLimit"><span class="hs-identifier hs-var">rateLimit</span></a></span><span> </span><span class="annot"><span class="annottext">RateConfig
+</span><a href="#local-6989586621680361878"><span class="hs-identifier hs-var">cfg</span></a></span><span>
+</span><span id="line-81"></span><span>    </span><span id="local-6989586621680361884"><span class="annot"><span class="annottext">winSec :: NominalDiffTime
+</span><a href="#local-6989586621680361884"><span class="hs-identifier hs-var hs-var">winSec</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; NominalDiffTime
+forall a b. (Real a, Fractional b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">realToFrac</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">RateConfig -&gt; Int
+</span><a href="System.RateLimiterAdvanced.html#rateWindowSec"><span class="hs-identifier hs-var">rateWindowSec</span></a></span><span> </span><span class="annot"><span class="annottext">RateConfig
+</span><a href="#local-6989586621680361878"><span class="hs-identifier hs-var">cfg</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">NominalDiffTime</span></span><span>
+</span><span id="line-82"></span><span>    </span><span id="local-6989586621680361885"><span class="annot"><span class="annottext">windowDur :: NominalDiffTime
+</span><a href="#local-6989586621680361885"><span class="hs-identifier hs-var hs-var">windowDur</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">NominalDiffTime
+</span><a href="#local-6989586621680361884"><span class="hs-identifier hs-var">winSec</span></a></span><span>
+</span><span id="line-83"></span><span>
+</span><span id="line-84"></span><span>    </span><span id="local-6989586621680361877"><span class="annot"><span class="annottext">evaluateStrategy :: LimiterState -&gt; UTCTime -&gt; (Bool, LimiterState)
+</span><a href="#local-6989586621680361877"><span class="hs-identifier hs-var hs-var">evaluateStrategy</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.RateLimiterAdvanced.html#TokenState"><span class="hs-identifier hs-type">TokenState</span></a></span><span> </span><span id="local-6989586621680361901"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680361901"><span class="hs-identifier hs-var">tokens</span></a></span></span><span> </span><span id="local-6989586621680361902"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361902"><span class="hs-identifier hs-var">lastRefill</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621680361903"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361903"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-85"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680361904"><span class="annot"><span class="annottext">refillRate :: Double
+</span><a href="#local-6989586621680361904"><span class="hs-identifier hs-var hs-var">refillRate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680361879"><span class="hs-identifier hs-var">rateLmt</span></a></span><span>
+</span><span id="line-86"></span><span>          </span><span id="local-6989586621680361910"><span class="annot"><span class="annottext">elapsed :: Double
+</span><a href="#local-6989586621680361910"><span class="hs-identifier hs-var hs-var">elapsed</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">NominalDiffTime -&gt; Double
+forall a b. (Real a, Fractional b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">realToFrac</span></span><span> </span><span class="annot"><span class="annottext">(NominalDiffTime -&gt; Double) -&gt; NominalDiffTime -&gt; Double
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">UTCTime -&gt; UTCTime -&gt; NominalDiffTime
+</span><span class="hs-identifier hs-var">diffUTCTime</span></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361903"><span class="hs-identifier hs-var">now</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361902"><span class="hs-identifier hs-var">lastRefill</span></a></span><span>
+</span><span id="line-87"></span><span>          </span><span id="local-6989586621680361914"><span class="annot"><span class="annottext">newTokens :: Double
+</span><a href="#local-6989586621680361914"><span class="hs-identifier hs-var hs-var">newTokens</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">min</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680361879"><span class="hs-identifier hs-var">rateLmt</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680361901"><span class="hs-identifier hs-var">tokens</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680361910"><span class="hs-identifier hs-var">elapsed</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680361904"><span class="hs-identifier hs-var">refillRate</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-88"></span><span>       </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680361914"><span class="hs-identifier hs-var">newTokens</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">1</span></span><span>
+</span><span id="line-89"></span><span>             </span><span class="hs-keyword">then</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double -&gt; UTCTime -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#TokenState"><span class="hs-identifier hs-var">TokenState</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680361914"><span class="hs-identifier hs-var">newTokens</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361903"><span class="hs-identifier hs-var">now</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-90"></span><span>             </span><span class="hs-keyword">else</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double -&gt; UTCTime -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#TokenState"><span class="hs-identifier hs-var">TokenState</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680361914"><span class="hs-identifier hs-var">newTokens</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361903"><span class="hs-identifier hs-var">now</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-91"></span><span>    </span><span class="annot"><a href="#local-6989586621680361877"><span class="hs-identifier hs-var">evaluateStrategy</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.RateLimiterAdvanced.html#LeakState"><span class="hs-identifier hs-type">LeakState</span></a></span><span> </span><span id="local-6989586621680361918"><span class="annot"><span class="annottext">Seq UTCTime
+</span><a href="#local-6989586621680361918"><span class="hs-identifier hs-var">leaks</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621680361919"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361919"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-92"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680361922"><span class="annot"><span class="annottext">winSize :: NominalDiffTime
+</span><a href="#local-6989586621680361922"><span class="hs-identifier hs-var hs-var">winSize</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; NominalDiffTime
+forall a b. (Real a, Fractional b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">realToFrac</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">RateConfig -&gt; Int
+</span><a href="System.RateLimiterAdvanced.html#rateWindowSec"><span class="hs-identifier hs-var">rateWindowSec</span></a></span><span> </span><span class="annot"><span class="annottext">RateConfig
+</span><a href="#local-6989586621680361878"><span class="hs-identifier hs-var">cfg</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">NominalDiffTime</span></span><span>
+</span><span id="line-93"></span><span>          </span><span id="local-6989586621680361925"><span class="annot"><span class="annottext">validLeaks :: Seq UTCTime
+</span><a href="#local-6989586621680361925"><span class="hs-identifier hs-var hs-var">validLeaks</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(UTCTime -&gt; Bool) -&gt; Seq UTCTime -&gt; Seq UTCTime
+forall a. (a -&gt; Bool) -&gt; Seq a -&gt; Seq a
+</span><span class="hs-identifier hs-var">Seq.dropWhileL</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680361927"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361927"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">UTCTime -&gt; UTCTime -&gt; NominalDiffTime
+</span><span class="hs-identifier hs-var">diffUTCTime</span></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361919"><span class="hs-identifier hs-var">now</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361927"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">NominalDiffTime -&gt; NominalDiffTime -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">NominalDiffTime
+</span><a href="#local-6989586621680361922"><span class="hs-identifier hs-var">winSize</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Seq UTCTime
+</span><a href="#local-6989586621680361918"><span class="hs-identifier hs-var">leaks</span></a></span><span>
+</span><span id="line-94"></span><span>          </span><span id="local-6989586621680361929"><span class="annot"><span class="annottext">count :: Int
+</span><a href="#local-6989586621680361929"><span class="hs-identifier hs-var hs-var">count</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Seq UTCTime -&gt; Int
+forall a. Seq a -&gt; Int
+</span><span class="hs-identifier hs-var">Seq.length</span></span><span> </span><span class="annot"><span class="annottext">Seq UTCTime
+</span><a href="#local-6989586621680361925"><span class="hs-identifier hs-var">validLeaks</span></a></span><span>
+</span><span id="line-95"></span><span>       </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Double
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680361929"><span class="hs-identifier hs-var">count</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680361879"><span class="hs-identifier hs-var">rateLmt</span></a></span><span>
+</span><span id="line-96"></span><span>             </span><span class="hs-keyword">then</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Seq UTCTime -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#LeakState"><span class="hs-identifier hs-var">LeakState</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Seq UTCTime
+</span><a href="#local-6989586621680361925"><span class="hs-identifier hs-var">validLeaks</span></a></span><span> </span><span class="annot"><span class="annottext">Seq UTCTime -&gt; UTCTime -&gt; Seq UTCTime
+forall a. Seq a -&gt; a -&gt; Seq a
+</span><span class="hs-operator hs-var">Seq.|&gt;</span></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361919"><span class="hs-identifier hs-var">now</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-97"></span><span>             </span><span class="hs-keyword">else</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Seq UTCTime -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#LeakState"><span class="hs-identifier hs-var">LeakState</span></a></span><span> </span><span class="annot"><span class="annottext">Seq UTCTime
+</span><a href="#local-6989586621680361925"><span class="hs-identifier hs-var">validLeaks</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-98"></span><span>    </span><span class="annot"><a href="#local-6989586621680361877"><span class="hs-identifier hs-var">evaluateStrategy</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.RateLimiterAdvanced.html#WindowState"><span class="hs-identifier hs-type">WindowState</span></a></span><span> </span><span id="local-6989586621680361932"><span class="annot"><span class="annottext">[(UTCTime, Int)]
+</span><a href="#local-6989586621680361932"><span class="hs-identifier hs-var">counts</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621680361933"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361933"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-99"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680361936"><span class="annot"><span class="annottext">windowStart :: UTCTime
+</span><a href="#local-6989586621680361936"><span class="hs-identifier hs-var hs-var">windowStart</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">NominalDiffTime -&gt; UTCTime -&gt; UTCTime
+</span><span class="hs-identifier hs-var">addUTCTime</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NominalDiffTime -&gt; NominalDiffTime
+forall a. Num a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">negate</span></span><span> </span><span class="annot"><span class="annottext">NominalDiffTime
+</span><a href="#local-6989586621680361885"><span class="hs-identifier hs-var">windowDur</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361933"><span class="hs-identifier hs-var">now</span></a></span><span>
+</span><span id="line-100"></span><span>          </span><span id="local-6989586621680361939"><span class="annot"><span class="annottext">validCounts :: [(UTCTime, Int)]
+</span><a href="#local-6989586621680361939"><span class="hs-identifier hs-var hs-var">validCounts</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((UTCTime, Int) -&gt; Bool) -&gt; [(UTCTime, Int)] -&gt; [(UTCTime, Int)]
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">filter</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span id="local-6989586621680361940"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361940"><span class="hs-identifier hs-var">t</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361940"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime -&gt; UTCTime -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361936"><span class="hs-identifier hs-var">windowStart</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(UTCTime, Int)]
+</span><a href="#local-6989586621680361932"><span class="hs-identifier hs-var">counts</span></a></span><span>
+</span><span id="line-101"></span><span>          </span><span id="local-6989586621680361945"><span class="annot"><span class="annottext">total :: Int
+</span><a href="#local-6989586621680361945"><span class="hs-identifier hs-var hs-var">total</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; Int
+forall a. Num a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">sum</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">((UTCTime, Int) -&gt; Int) -&gt; [(UTCTime, Int)] -&gt; [Int]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">(UTCTime, Int) -&gt; Int
+forall a b. (a, b) -&gt; b
+</span><span class="hs-identifier hs-var">snd</span></span><span> </span><span class="annot"><span class="annottext">[(UTCTime, Int)]
+</span><a href="#local-6989586621680361939"><span class="hs-identifier hs-var">validCounts</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-102"></span><span>       </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Double
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680361945"><span class="hs-identifier hs-var">total</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680361879"><span class="hs-identifier hs-var">rateLmt</span></a></span><span>
+</span><span id="line-103"></span><span>             </span><span class="hs-keyword">then</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[(UTCTime, Int)] -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#WindowState"><span class="hs-identifier hs-var">WindowState</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361933"><span class="hs-identifier hs-var">now</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(UTCTime, Int) -&gt; [(UTCTime, Int)] -&gt; [(UTCTime, Int)]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="annot"><span class="annottext">[(UTCTime, Int)]
+</span><a href="#local-6989586621680361939"><span class="hs-identifier hs-var">validCounts</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-104"></span><span>             </span><span class="hs-keyword">else</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[(UTCTime, Int)] -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#WindowState"><span class="hs-identifier hs-var">WindowState</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361933"><span class="hs-identifier hs-var">now</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(UTCTime, Int) -&gt; [(UTCTime, Int)] -&gt; [(UTCTime, Int)]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="annot"><span class="annottext">[(UTCTime, Int)]
+</span><a href="#local-6989586621680361939"><span class="hs-identifier hs-var">validCounts</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-105"></span><span>    </span><span class="annot"><a href="#local-6989586621680361877"><span class="hs-identifier hs-var">evaluateStrategy</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.RateLimiterAdvanced.html#SlidingState"><span class="hs-identifier hs-type">SlidingState</span></a></span><span> </span><span id="local-6989586621680361948"><span class="annot"><span class="annottext">Seq UTCTime
+</span><a href="#local-6989586621680361948"><span class="hs-identifier hs-var">reqs</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621680361949"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361949"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-106"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680361951"><span class="annot"><span class="annottext">windowStartTime :: UTCTime
+</span><a href="#local-6989586621680361951"><span class="hs-identifier hs-var hs-var">windowStartTime</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">NominalDiffTime -&gt; UTCTime -&gt; UTCTime
+</span><span class="hs-identifier hs-var">addUTCTime</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">NominalDiffTime -&gt; NominalDiffTime
+forall a. Num a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">negate</span></span><span> </span><span class="annot"><span class="annottext">NominalDiffTime
+</span><a href="#local-6989586621680361885"><span class="hs-identifier hs-var">windowDur</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361949"><span class="hs-identifier hs-var">now</span></a></span><span>
+</span><span id="line-107"></span><span>          </span><span id="local-6989586621680361953"><span class="annot"><span class="annottext">validReqs :: Seq UTCTime
+</span><a href="#local-6989586621680361953"><span class="hs-identifier hs-var hs-var">validReqs</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(UTCTime -&gt; Bool) -&gt; Seq UTCTime -&gt; Seq UTCTime
+forall a. (a -&gt; Bool) -&gt; Seq a -&gt; Seq a
+</span><span class="hs-identifier hs-var">Seq.dropWhileL</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680361954"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361954"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361954"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime -&gt; UTCTime -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361951"><span class="hs-identifier hs-var">windowStartTime</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Seq UTCTime
+</span><a href="#local-6989586621680361948"><span class="hs-identifier hs-var">reqs</span></a></span><span>
+</span><span id="line-108"></span><span>       </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Double
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Seq UTCTime -&gt; Int
+forall a. Seq a -&gt; Int
+</span><span class="hs-identifier hs-var">Seq.length</span></span><span> </span><span class="annot"><span class="annottext">Seq UTCTime
+</span><a href="#local-6989586621680361953"><span class="hs-identifier hs-var">validReqs</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680361879"><span class="hs-identifier hs-var">rateLmt</span></a></span><span>
+</span><span id="line-109"></span><span>             </span><span class="hs-keyword">then</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Seq UTCTime -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#SlidingState"><span class="hs-identifier hs-var">SlidingState</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Seq UTCTime
+</span><a href="#local-6989586621680361953"><span class="hs-identifier hs-var">validReqs</span></a></span><span> </span><span class="annot"><span class="annottext">Seq UTCTime -&gt; UTCTime -&gt; Seq UTCTime
+forall a. Seq a -&gt; a -&gt; Seq a
+</span><span class="hs-operator hs-var">Seq.|&gt;</span></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361949"><span class="hs-identifier hs-var">now</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-110"></span><span>             </span><span class="hs-keyword">else</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Seq UTCTime -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#SlidingState"><span class="hs-identifier hs-var">SlidingState</span></a></span><span> </span><span class="annot"><span class="annottext">Seq UTCTime
+</span><a href="#local-6989586621680361953"><span class="hs-identifier hs-var">validReqs</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-111"></span><span>
+</span><span id="line-112"></span><span class="annot"><span class="hs-comment">-- | Check with burst allowance</span></span><span>
+</span><span id="line-113"></span><span class="annot"><a href="System.RateLimiterAdvanced.html#checkRequestWithBurst"><span class="hs-identifier hs-type">checkRequestWithBurst</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#RateLimiterAdvanced"><span class="hs-identifier hs-type">RateLimiterAdvanced</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-114"></span><span id="checkRequestWithBurst"><span class="annot"><span class="annottext">checkRequestWithBurst :: RateLimiterAdvanced -&gt; IO Bool
+</span><a href="System.RateLimiterAdvanced.html#checkRequestWithBurst"><span class="hs-identifier hs-var hs-var">checkRequestWithBurst</span></a></span></span><span> </span><span id="local-6989586621680361956"><span class="annot"><span class="annottext">RateLimiterAdvanced
+</span><a href="#local-6989586621680361956"><span class="hs-identifier hs-var">limiter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-115"></span><span>  </span><span id="local-6989586621680361957"><span class="annot"><a href="#local-6989586621680361957"><span class="hs-identifier hs-var">allowed</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">RateLimiterAdvanced -&gt; IO Bool
+</span><a href="System.RateLimiterAdvanced.html#checkRequestAdvanced"><span class="hs-identifier hs-var">checkRequestAdvanced</span></a></span><span> </span><span class="annot"><span class="annottext">RateLimiterAdvanced
+</span><a href="#local-6989586621680361956"><span class="hs-identifier hs-var">limiter</span></a></span><span>
+</span><span id="line-116"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="hs-identifier hs-type">not</span></span><span> </span><span class="annot"><a href="#local-6989586621680361957"><span class="hs-identifier hs-type">allowed</span></a></span><span>
+</span><span id="line-117"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-118"></span><span>      </span><span class="hs-comment">-- Apply penalty</span><span>
+</span><span id="line-119"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">atomically</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-120"></span><span>        </span><span id="local-6989586621680361959"><span class="annot"><a href="#local-6989586621680361959"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">readTVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.RateLimiterAdvanced.html#limiterMetrics"><span class="hs-identifier hs-var">limiterMetrics</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361956"><span class="hs-identifier hs-type">limiter</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-121"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">writeTVar</span></span><span>
+</span><span id="line-122"></span><span>          </span><span class="hs-special">(</span><span class="annot"><a href="System.RateLimiterAdvanced.html#limiterMetrics"><span class="hs-identifier hs-var">limiterMetrics</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361956"><span class="hs-identifier hs-type">limiter</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-123"></span><span>          </span><span class="annot"><a href="#local-6989586621680361959"><span class="hs-identifier hs-type">m</span></a></span><span>
+</span><span id="line-124"></span><span>            </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#penaltyApplied"><span class="hs-identifier hs-var">penaltyApplied</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#penaltyApplied"><span class="hs-identifier hs-var">penaltyApplied</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361959"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">+</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">,</span><span>
+</span><span id="line-125"></span><span>              </span><span class="annot"><a href="System.RateLimiterAdvanced.html#currentRate"><span class="hs-identifier hs-var">currentRate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#currentRate"><span class="hs-identifier hs-var">currentRate</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361959"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">*</span></span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#ratePenalty"><span class="hs-identifier hs-var">ratePenalty</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.RateLimiterAdvanced.html#limiterConfig"><span class="hs-identifier hs-var">limiterConfig</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361956"><span class="hs-identifier hs-type">limiter</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-126"></span><span>            </span><span class="hs-special">}</span><span>
+</span><span id="line-127"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">False</span></span><span>
+</span><span id="line-128"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">True</span></span><span>
+</span><span id="line-129"></span><span>
+</span><span id="line-130"></span><span class="annot"><span class="hs-comment">-- | Get current rate</span></span><span>
+</span><span id="line-131"></span><span class="annot"><a href="System.RateLimiterAdvanced.html#getRateAdvanced"><span class="hs-identifier hs-type">getRateAdvanced</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#RateLimiterAdvanced"><span class="hs-identifier hs-type">RateLimiterAdvanced</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-132"></span><span id="getRateAdvanced"><span class="annot"><span class="annottext">getRateAdvanced :: RateLimiterAdvanced -&gt; IO Double
+</span><a href="System.RateLimiterAdvanced.html#getRateAdvanced"><span class="hs-identifier hs-var hs-var">getRateAdvanced</span></a></span></span><span> </span><span id="local-6989586621680361961"><span class="annot"><span class="annottext">RateLimiterAdvanced
+</span><a href="#local-6989586621680361961"><span class="hs-identifier hs-var">limiter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TVar RateMetrics -&gt; IO RateMetrics
+forall a. TVar a -&gt; IO a
+</span><span class="hs-identifier hs-var">readTVarIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">RateLimiterAdvanced -&gt; TVar RateMetrics
+</span><a href="System.RateLimiterAdvanced.html#limiterMetrics"><span class="hs-identifier hs-var">limiterMetrics</span></a></span><span> </span><span class="annot"><span class="annottext">RateLimiterAdvanced
+</span><a href="#local-6989586621680361961"><span class="hs-identifier hs-var">limiter</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">IO RateMetrics -&gt; (RateMetrics -&gt; IO Double) -&gt; IO Double
+forall a b. IO a -&gt; (a -&gt; IO b) -&gt; IO b
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; IO Double
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Double -&gt; IO Double)
+-&gt; (RateMetrics -&gt; Double) -&gt; RateMetrics -&gt; IO Double
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">RateMetrics -&gt; Double
+</span><a href="System.RateLimiterAdvanced.html#currentRate"><span class="hs-identifier hs-var">currentRate</span></a></span><span>
+</span><span id="line-133"></span><span>
+</span><span id="line-134"></span><span class="annot"><span class="hs-comment">-- | Reset limiter</span></span><span>
+</span><span id="line-135"></span><span class="annot"><a href="System.RateLimiterAdvanced.html#resetRateLimiterAdvanced"><span class="hs-identifier hs-type">resetRateLimiterAdvanced</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#RateLimiterAdvanced"><span class="hs-identifier hs-type">RateLimiterAdvanced</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-136"></span><span id="resetRateLimiterAdvanced"><span class="annot"><span class="annottext">resetRateLimiterAdvanced :: RateLimiterAdvanced -&gt; IO ()
+</span><a href="System.RateLimiterAdvanced.html#resetRateLimiterAdvanced"><span class="hs-identifier hs-var hs-var">resetRateLimiterAdvanced</span></a></span></span><span> </span><span id="local-6989586621680361964"><span class="annot"><span class="annottext">RateLimiterAdvanced
+</span><a href="#local-6989586621680361964"><span class="hs-identifier hs-var">limiter</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-137"></span><span>  </span><span id="local-6989586621680361965"><span class="annot"><a href="#local-6989586621680361965"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO UTCTime
+</span><span class="hs-identifier hs-var">getCurrentTime</span></span><span>
+</span><span id="line-138"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">atomically</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-139"></span><span>    </span><span id="local-6989586621680361966"><span class="annot"><a href="#local-6989586621680361966"><span class="hs-identifier hs-var">state</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">readTVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.RateLimiterAdvanced.html#limiterState"><span class="hs-identifier hs-var">limiterState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361964"><span class="hs-identifier hs-type">limiter</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-140"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680361967"><span class="annot"><a href="#local-6989586621680361967"><span class="hs-identifier hs-var hs-var">newState</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">RateStrategy -&gt; UTCTime -&gt; LimiterState
+</span><a href="#local-6989586621680361968"><span class="hs-identifier hs-var">initState</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">RateConfig -&gt; RateStrategy
+</span><a href="System.RateLimiterAdvanced.html#rateStrategy"><span class="hs-identifier hs-var">rateStrategy</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">RateLimiterAdvanced -&gt; RateConfig
+</span><a href="System.RateLimiterAdvanced.html#limiterConfig"><span class="hs-identifier hs-var">limiterConfig</span></a></span><span> </span><span class="annot"><span class="annottext">RateLimiterAdvanced
+</span><a href="#local-6989586621680361964"><span class="hs-identifier hs-var">limiter</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361965"><span class="hs-identifier hs-var">now</span></a></span><span>
+</span><span id="line-141"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">writeTVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.RateLimiterAdvanced.html#limiterState"><span class="hs-identifier hs-var">limiterState</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361964"><span class="hs-identifier hs-type">limiter</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621680361967"><span class="hs-identifier hs-type">newState</span></a></span><span>
+</span><span id="line-142"></span><span>    </span><span id="local-6989586621680361969"><span class="annot"><a href="#local-6989586621680361969"><span class="hs-identifier hs-var">m</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">readTVar</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.RateLimiterAdvanced.html#limiterMetrics"><span class="hs-identifier hs-var">limiterMetrics</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361964"><span class="hs-identifier hs-type">limiter</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-143"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">writeTVar</span></span><span>
+</span><span id="line-144"></span><span>      </span><span class="hs-special">(</span><span class="annot"><a href="System.RateLimiterAdvanced.html#limiterMetrics"><span class="hs-identifier hs-var">limiterMetrics</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680361964"><span class="hs-identifier hs-type">limiter</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-145"></span><span>      </span><span class="annot"><a href="#local-6989586621680361969"><span class="hs-identifier hs-type">m</span></a></span><span>
+</span><span id="line-146"></span><span>        </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="System.RateLimiterAdvanced.html#totalRequests"><span class="hs-identifier hs-var">totalRequests</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">,</span><span>
+</span><span id="line-147"></span><span>          </span><span class="annot"><a href="System.RateLimiterAdvanced.html#totalAllowed"><span class="hs-identifier hs-var">totalAllowed</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">,</span><span>
+</span><span id="line-148"></span><span>          </span><span class="annot"><a href="System.RateLimiterAdvanced.html#totalDenied"><span class="hs-identifier hs-var">totalDenied</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">,</span><span>
+</span><span id="line-149"></span><span>          </span><span class="annot"><a href="System.RateLimiterAdvanced.html#currentRate"><span class="hs-identifier hs-var">currentRate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span class="hs-special">,</span><span>
+</span><span id="line-150"></span><span>          </span><span class="annot"><a href="System.RateLimiterAdvanced.html#penaltyApplied"><span class="hs-identifier hs-var">penaltyApplied</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-number">0</span></span><span>
+</span><span id="line-151"></span><span>        </span><span class="hs-special">}</span><span>
+</span><span id="line-152"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-153"></span><span>    </span><span id="local-6989586621680361968"><span class="annot"><span class="annottext">initState :: RateStrategy -&gt; UTCTime -&gt; LimiterState
+</span><a href="#local-6989586621680361968"><span class="hs-identifier hs-var hs-var">initState</span></a></span></span><span> </span><span class="annot"><span class="annottext">RateStrategy
+</span><a href="System.RateLimiterAdvanced.html#TokenBucket"><span class="hs-identifier hs-var">TokenBucket</span></a></span><span> </span><span id="local-6989586621680361970"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361970"><span class="hs-identifier hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; UTCTime -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#TokenState"><span class="hs-identifier hs-var">TokenState</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680361970"><span class="hs-identifier hs-var">now</span></a></span><span>
+</span><span id="line-154"></span><span>    </span><span class="annot"><a href="#local-6989586621680361968"><span class="hs-identifier hs-var">initState</span></a></span><span> </span><span class="annot"><span class="annottext">RateStrategy
+</span><a href="System.RateLimiterAdvanced.html#LeakyBucket"><span class="hs-identifier hs-var">LeakyBucket</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Seq UTCTime -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#LeakState"><span class="hs-identifier hs-var">LeakState</span></a></span><span> </span><span class="annot"><span class="annottext">Seq UTCTime
+forall a. Seq a
+</span><span class="hs-identifier hs-var">Seq.empty</span></span><span>
+</span><span id="line-155"></span><span>    </span><span class="annot"><a href="#local-6989586621680361968"><span class="hs-identifier hs-var">initState</span></a></span><span> </span><span class="annot"><span class="annottext">RateStrategy
+</span><a href="System.RateLimiterAdvanced.html#FixedWindow"><span class="hs-identifier hs-var">FixedWindow</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[(UTCTime, Int)] -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#WindowState"><span class="hs-identifier hs-var">WindowState</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-156"></span><span>    </span><span class="annot"><a href="#local-6989586621680361968"><span class="hs-identifier hs-var">initState</span></a></span><span> </span><span class="annot"><span class="annottext">RateStrategy
+</span><a href="System.RateLimiterAdvanced.html#SlidingWindow"><span class="hs-identifier hs-var">SlidingWindow</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Seq UTCTime -&gt; LimiterState
+</span><a href="System.RateLimiterAdvanced.html#SlidingState"><span class="hs-identifier hs-var">SlidingState</span></a></span><span> </span><span class="annot"><span class="annottext">Seq UTCTime
+forall a. Seq a
+</span><span class="hs-identifier hs-var">Seq.empty</span></span><span>
+</span><span id="line-157"></span></pre></body></html>

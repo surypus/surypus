@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Communication module - Messaging</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Messaging.Communication.html"><span class="hs-identifier">Messaging.Communication</span></a></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="annot"><span class="hs-comment">-- | Message - Internal message</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">data</span><span> </span><span id="Message"><span class="annot"><a href="Messaging.Communication.html#Message"><span class="hs-identifier hs-var">Message</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Message"><span class="annot"><a href="Messaging.Communication.html#Message"><span class="hs-identifier hs-var">Message</span></a></span></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="msgId"><span class="annot"><span class="annottext">Message -&gt; Int64
+</span><a href="Messaging.Communication.html#msgId"><span class="hs-identifier hs-var hs-var">msgId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="msgFromId"><span class="annot"><span class="annottext">Message -&gt; Int64
+</span><a href="Messaging.Communication.html#msgFromId"><span class="hs-identifier hs-var hs-var">msgFromId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="msgToId"><span class="annot"><span class="annottext">Message -&gt; Int64
+</span><a href="Messaging.Communication.html#msgToId"><span class="hs-identifier hs-var hs-var">msgToId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="msgSubject"><span class="annot"><span class="annottext">Message -&gt; Text
+</span><a href="Messaging.Communication.html#msgSubject"><span class="hs-identifier hs-var hs-var">msgSubject</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="msgBody"><span class="annot"><span class="annottext">Message -&gt; Text
+</span><a href="Messaging.Communication.html#msgBody"><span class="hs-identifier hs-var hs-var">msgBody</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="msgSentAt"><span class="annot"><span class="annottext">Message -&gt; UTCTime
+</span><a href="Messaging.Communication.html#msgSentAt"><span class="hs-identifier hs-var hs-var">msgSentAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span id="msgReadAt"><span class="annot"><span class="annottext">Message -&gt; Maybe UTCTime
+</span><a href="Messaging.Communication.html#msgReadAt"><span class="hs-identifier hs-var hs-var">msgReadAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680287175"><span id="local-6989586621680287190"><span id="local-6989586621680287194"><span class="annot"><span class="annottext">Int -&gt; Message -&gt; ShowS
+[Message] -&gt; ShowS
+Message -&gt; String
+(Int -&gt; Message -&gt; ShowS)
+-&gt; (Message -&gt; String) -&gt; ([Message] -&gt; ShowS) -&gt; Show Message
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Message -&gt; ShowS
+showsPrec :: Int -&gt; Message -&gt; ShowS
+$cshow :: Message -&gt; String
+show :: Message -&gt; String
+$cshowList :: [Message] -&gt; ShowS
+showList :: [Message] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680287199"><span id="local-6989586621680287212"><span class="annot"><span class="annottext">Message -&gt; Message -&gt; Bool
+(Message -&gt; Message -&gt; Bool)
+-&gt; (Message -&gt; Message -&gt; Bool) -&gt; Eq Message
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Message -&gt; Message -&gt; Bool
+== :: Message -&gt; Message -&gt; Bool
+$c/= :: Message -&gt; Message -&gt; Bool
+/= :: Message -&gt; Message -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="annot"><span class="hs-comment">-- | Email - Email message</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="Email"><span class="annot"><a href="Messaging.Communication.html#Email"><span class="hs-identifier hs-var">Email</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Email"><span class="annot"><a href="Messaging.Communication.html#Email"><span class="hs-identifier hs-var">Email</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="emId"><span class="annot"><span class="annottext">Email -&gt; Int64
+</span><a href="Messaging.Communication.html#emId"><span class="hs-identifier hs-var hs-var">emId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="emFrom"><span class="annot"><span class="annottext">Email -&gt; Text
+</span><a href="Messaging.Communication.html#emFrom"><span class="hs-identifier hs-var hs-var">emFrom</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="emTo"><span class="annot"><span class="annottext">Email -&gt; Text
+</span><a href="Messaging.Communication.html#emTo"><span class="hs-identifier hs-var hs-var">emTo</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="emSubject"><span class="annot"><span class="annottext">Email -&gt; Text
+</span><a href="Messaging.Communication.html#emSubject"><span class="hs-identifier hs-var hs-var">emSubject</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="emBody"><span class="annot"><span class="annottext">Email -&gt; Text
+</span><a href="Messaging.Communication.html#emBody"><span class="hs-identifier hs-var hs-var">emBody</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="emSentAt"><span class="annot"><span class="annottext">Email -&gt; UTCTime
+</span><a href="Messaging.Communication.html#emSentAt"><span class="hs-identifier hs-var hs-var">emSentAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="emStatus"><span class="annot"><span class="annottext">Email -&gt; EmailStatus
+</span><a href="Messaging.Communication.html#emStatus"><span class="hs-identifier hs-var hs-var">emStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Messaging.Communication.html#EmailStatus"><span class="hs-identifier hs-type">EmailStatus</span></a></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680287225"><span id="local-6989586621680287236"><span id="local-6989586621680287240"><span class="annot"><span class="annottext">Int -&gt; Email -&gt; ShowS
+[Email] -&gt; ShowS
+Email -&gt; String
+(Int -&gt; Email -&gt; ShowS)
+-&gt; (Email -&gt; String) -&gt; ([Email] -&gt; ShowS) -&gt; Show Email
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Email -&gt; ShowS
+showsPrec :: Int -&gt; Email -&gt; ShowS
+$cshow :: Email -&gt; String
+show :: Email -&gt; String
+$cshowList :: [Email] -&gt; ShowS
+showList :: [Email] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680287243"><span id="local-6989586621680287253"><span class="annot"><span class="annottext">Email -&gt; Email -&gt; Bool
+(Email -&gt; Email -&gt; Bool) -&gt; (Email -&gt; Email -&gt; Bool) -&gt; Eq Email
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Email -&gt; Email -&gt; Bool
+== :: Email -&gt; Email -&gt; Bool
+$c/= :: Email -&gt; Email -&gt; Bool
+/= :: Email -&gt; Email -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">data</span><span> </span><span id="EmailStatus"><span class="annot"><a href="Messaging.Communication.html#EmailStatus"><span class="hs-identifier hs-var">EmailStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="EMPending"><span class="annot"><a href="Messaging.Communication.html#EMPending"><span class="hs-identifier hs-var">EMPending</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="EMSent"><span class="annot"><a href="Messaging.Communication.html#EMSent"><span class="hs-identifier hs-var">EMSent</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="EMFailed"><span class="annot"><a href="Messaging.Communication.html#EMFailed"><span class="hs-identifier hs-var">EMFailed</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680287260"><span id="local-6989586621680287262"><span id="local-6989586621680287265"><span class="annot"><span class="annottext">Int -&gt; EmailStatus -&gt; ShowS
+[EmailStatus] -&gt; ShowS
+EmailStatus -&gt; String
+(Int -&gt; EmailStatus -&gt; ShowS)
+-&gt; (EmailStatus -&gt; String)
+-&gt; ([EmailStatus] -&gt; ShowS)
+-&gt; Show EmailStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; EmailStatus -&gt; ShowS
+showsPrec :: Int -&gt; EmailStatus -&gt; ShowS
+$cshow :: EmailStatus -&gt; String
+show :: EmailStatus -&gt; String
+$cshowList :: [EmailStatus] -&gt; ShowS
+showList :: [EmailStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680287268"><span id="local-6989586621680287273"><span class="annot"><span class="annottext">EmailStatus -&gt; EmailStatus -&gt; Bool
+(EmailStatus -&gt; EmailStatus -&gt; Bool)
+-&gt; (EmailStatus -&gt; EmailStatus -&gt; Bool) -&gt; Eq EmailStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: EmailStatus -&gt; EmailStatus -&gt; Bool
+== :: EmailStatus -&gt; EmailStatus -&gt; Bool
+$c/= :: EmailStatus -&gt; EmailStatus -&gt; Bool
+/= :: EmailStatus -&gt; EmailStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="annot"><span class="hs-comment">-- | EAddress - Electronic address</span></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">data</span><span> </span><span id="EAddress"><span class="annot"><a href="Messaging.Communication.html#EAddress"><span class="hs-identifier hs-var">EAddress</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="EAddress"><span class="annot"><a href="Messaging.Communication.html#EAddress"><span class="hs-identifier hs-var">EAddress</span></a></span></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="eaId"><span class="annot"><span class="annottext">EAddress -&gt; Int64
+</span><a href="Messaging.Communication.html#eaId"><span class="hs-identifier hs-var hs-var">eaId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-38"></span><span>    </span><span id="eaPersonId"><span class="annot"><span class="annottext">EAddress -&gt; Int64
+</span><a href="Messaging.Communication.html#eaPersonId"><span class="hs-identifier hs-var hs-var">eaPersonId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-39"></span><span>    </span><span id="eaType"><span class="annot"><span class="annottext">EAddress -&gt; EAddrType
+</span><a href="Messaging.Communication.html#eaType"><span class="hs-identifier hs-var hs-var">eaType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Messaging.Communication.html#EAddrType"><span class="hs-identifier hs-type">EAddrType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-40"></span><span>    </span><span id="eaAddress"><span class="annot"><span class="annottext">EAddress -&gt; Text
+</span><a href="Messaging.Communication.html#eaAddress"><span class="hs-identifier hs-var hs-var">eaAddress</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-41"></span><span>    </span><span id="eaFlags"><span class="annot"><span class="annottext">EAddress -&gt; Int
+</span><a href="Messaging.Communication.html#eaFlags"><span class="hs-identifier hs-var hs-var">eaFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680287282"><span id="local-6989586621680287292"><span id="local-6989586621680287296"><span class="annot"><span class="annottext">Int -&gt; EAddress -&gt; ShowS
+[EAddress] -&gt; ShowS
+EAddress -&gt; String
+(Int -&gt; EAddress -&gt; ShowS)
+-&gt; (EAddress -&gt; String) -&gt; ([EAddress] -&gt; ShowS) -&gt; Show EAddress
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; EAddress -&gt; ShowS
+showsPrec :: Int -&gt; EAddress -&gt; ShowS
+$cshow :: EAddress -&gt; String
+show :: EAddress -&gt; String
+$cshowList :: [EAddress] -&gt; ShowS
+showList :: [EAddress] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680287299"><span id="local-6989586621680287308"><span class="annot"><span class="annottext">EAddress -&gt; EAddress -&gt; Bool
+(EAddress -&gt; EAddress -&gt; Bool)
+-&gt; (EAddress -&gt; EAddress -&gt; Bool) -&gt; Eq EAddress
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: EAddress -&gt; EAddress -&gt; Bool
+== :: EAddress -&gt; EAddress -&gt; Bool
+$c/= :: EAddress -&gt; EAddress -&gt; Bool
+/= :: EAddress -&gt; EAddress -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="hs-keyword">data</span><span> </span><span id="EAddrType"><span class="annot"><a href="Messaging.Communication.html#EAddrType"><span class="hs-identifier hs-var">EAddrType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="EAEmail"><span class="annot"><a href="Messaging.Communication.html#EAEmail"><span class="hs-identifier hs-var">EAEmail</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="EAPhone"><span class="annot"><a href="Messaging.Communication.html#EAPhone"><span class="hs-identifier hs-var">EAPhone</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="EATelegram"><span class="annot"><a href="Messaging.Communication.html#EATelegram"><span class="hs-identifier hs-var">EATelegram</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="EAWhatsApp"><span class="annot"><a href="Messaging.Communication.html#EAWhatsApp"><span class="hs-identifier hs-var">EAWhatsApp</span></a></span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680287316"><span id="local-6989586621680287318"><span id="local-6989586621680287321"><span class="annot"><span class="annottext">Int -&gt; EAddrType -&gt; ShowS
+[EAddrType] -&gt; ShowS
+EAddrType -&gt; String
+(Int -&gt; EAddrType -&gt; ShowS)
+-&gt; (EAddrType -&gt; String)
+-&gt; ([EAddrType] -&gt; ShowS)
+-&gt; Show EAddrType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; EAddrType -&gt; ShowS
+showsPrec :: Int -&gt; EAddrType -&gt; ShowS
+$cshow :: EAddrType -&gt; String
+show :: EAddrType -&gt; String
+$cshowList :: [EAddrType] -&gt; ShowS
+showList :: [EAddrType] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680287324"><span id="local-6989586621680287328"><span class="annot"><span class="annottext">EAddrType -&gt; EAddrType -&gt; Bool
+(EAddrType -&gt; EAddrType -&gt; Bool)
+-&gt; (EAddrType -&gt; EAddrType -&gt; Bool) -&gt; Eq EAddrType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: EAddrType -&gt; EAddrType -&gt; Bool
+== :: EAddrType -&gt; EAddrType -&gt; Bool
+$c/= :: EAddrType -&gt; EAddrType -&gt; Bool
+/= :: EAddrType -&gt; EAddrType -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span></pre></body></html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Cron module - Scheduled tasks</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Production.Scheduling.Cron.html"><span class="hs-identifier">Production.Scheduling.Cron</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="annot"><span class="hs-comment">-- | CronTask - Scheduled task</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">data</span><span> </span><span id="CronTask"><span class="annot"><a href="Production.Scheduling.Cron.html#CronTask"><span class="hs-identifier hs-var">CronTask</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CronTask"><span class="annot"><a href="Production.Scheduling.Cron.html#CronTask"><span class="hs-identifier hs-var">CronTask</span></a></span></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="ctId"><span class="annot"><span class="annottext">CronTask -&gt; Int64
+</span><a href="Production.Scheduling.Cron.html#ctId"><span class="hs-identifier hs-var hs-var">ctId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span id="ctName"><span class="annot"><span class="annottext">CronTask -&gt; Text
+</span><a href="Production.Scheduling.Cron.html#ctName"><span class="hs-identifier hs-var hs-var">ctName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="ctSchedule"><span class="annot"><span class="annottext">CronTask -&gt; Text
+</span><a href="Production.Scheduling.Cron.html#ctSchedule"><span class="hs-identifier hs-var hs-var">ctSchedule</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- cron expression</span><span>
+</span><span id="line-12"></span><span>    </span><span id="ctCommand"><span class="annot"><span class="annottext">CronTask -&gt; Text
+</span><a href="Production.Scheduling.Cron.html#ctCommand"><span class="hs-identifier hs-var hs-var">ctCommand</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="ctEnabled"><span class="annot"><span class="annottext">CronTask -&gt; Bool
+</span><a href="Production.Scheduling.Cron.html#ctEnabled"><span class="hs-identifier hs-var hs-var">ctEnabled</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="ctLastRun"><span class="annot"><span class="annottext">CronTask -&gt; Maybe Int64
+</span><a href="Production.Scheduling.Cron.html#ctLastRun"><span class="hs-identifier hs-var hs-var">ctLastRun</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="ctNextRun"><span class="annot"><span class="annottext">CronTask -&gt; Maybe Int64
+</span><a href="Production.Scheduling.Cron.html#ctNextRun"><span class="hs-identifier hs-var hs-var">ctNextRun</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680289561"><span id="local-6989586621680289576"><span id="local-6989586621680289580"><span class="annot"><span class="annottext">Int -&gt; CronTask -&gt; ShowS
+[CronTask] -&gt; ShowS
+CronTask -&gt; String
+(Int -&gt; CronTask -&gt; ShowS)
+-&gt; (CronTask -&gt; String) -&gt; ([CronTask] -&gt; ShowS) -&gt; Show CronTask
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CronTask -&gt; ShowS
+showsPrec :: Int -&gt; CronTask -&gt; ShowS
+$cshow :: CronTask -&gt; String
+show :: CronTask -&gt; String
+$cshowList :: [CronTask] -&gt; ShowS
+showList :: [CronTask] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680289585"><span id="local-6989586621680289598"><span class="annot"><span class="annottext">CronTask -&gt; CronTask -&gt; Bool
+(CronTask -&gt; CronTask -&gt; Bool)
+-&gt; (CronTask -&gt; CronTask -&gt; Bool) -&gt; Eq CronTask
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CronTask -&gt; CronTask -&gt; Bool
+== :: CronTask -&gt; CronTask -&gt; Bool
+$c/= :: CronTask -&gt; CronTask -&gt; Bool
+/= :: CronTask -&gt; CronTask -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="annot"><span class="hs-comment">-- | CronLog - Task execution log</span></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">data</span><span> </span><span id="CronLog"><span class="annot"><a href="Production.Scheduling.Cron.html#CronLog"><span class="hs-identifier hs-var">CronLog</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CronLog"><span class="annot"><a href="Production.Scheduling.Cron.html#CronLog"><span class="hs-identifier hs-var">CronLog</span></a></span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="clId"><span class="annot"><span class="annottext">CronLog -&gt; Int64
+</span><a href="Production.Scheduling.Cron.html#clId"><span class="hs-identifier hs-var hs-var">clId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="clTaskId"><span class="annot"><span class="annottext">CronLog -&gt; Int64
+</span><a href="Production.Scheduling.Cron.html#clTaskId"><span class="hs-identifier hs-var hs-var">clTaskId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="clStarted"><span class="annot"><span class="annottext">CronLog -&gt; Int64
+</span><a href="Production.Scheduling.Cron.html#clStarted"><span class="hs-identifier hs-var hs-var">clStarted</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="clFinished"><span class="annot"><span class="annottext">CronLog -&gt; Maybe Int64
+</span><a href="Production.Scheduling.Cron.html#clFinished"><span class="hs-identifier hs-var hs-var">clFinished</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="clStatus"><span class="annot"><span class="annottext">CronLog -&gt; CronStatus
+</span><a href="Production.Scheduling.Cron.html#clStatus"><span class="hs-identifier hs-var hs-var">clStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.Scheduling.Cron.html#CronStatus"><span class="hs-identifier hs-type">CronStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="clOutput"><span class="annot"><span class="annottext">CronLog -&gt; Text
+</span><a href="Production.Scheduling.Cron.html#clOutput"><span class="hs-identifier hs-var hs-var">clOutput</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680289610"><span id="local-6989586621680289620"><span id="local-6989586621680289624"><span class="annot"><span class="annottext">Int -&gt; CronLog -&gt; ShowS
+[CronLog] -&gt; ShowS
+CronLog -&gt; String
+(Int -&gt; CronLog -&gt; ShowS)
+-&gt; (CronLog -&gt; String) -&gt; ([CronLog] -&gt; ShowS) -&gt; Show CronLog
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CronLog -&gt; ShowS
+showsPrec :: Int -&gt; CronLog -&gt; ShowS
+$cshow :: CronLog -&gt; String
+show :: CronLog -&gt; String
+$cshowList :: [CronLog] -&gt; ShowS
+showList :: [CronLog] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680289627"><span id="local-6989586621680289636"><span class="annot"><span class="annottext">CronLog -&gt; CronLog -&gt; Bool
+(CronLog -&gt; CronLog -&gt; Bool)
+-&gt; (CronLog -&gt; CronLog -&gt; Bool) -&gt; Eq CronLog
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CronLog -&gt; CronLog -&gt; Bool
+== :: CronLog -&gt; CronLog -&gt; Bool
+$c/= :: CronLog -&gt; CronLog -&gt; Bool
+/= :: CronLog -&gt; CronLog -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="CronStatus"><span class="annot"><a href="Production.Scheduling.Cron.html#CronStatus"><span class="hs-identifier hs-var">CronStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CSRunning"><span class="annot"><a href="Production.Scheduling.Cron.html#CSRunning"><span class="hs-identifier hs-var">CSRunning</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="CSSuccess"><span class="annot"><a href="Production.Scheduling.Cron.html#CSSuccess"><span class="hs-identifier hs-var">CSSuccess</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="CSFailed"><span class="annot"><a href="Production.Scheduling.Cron.html#CSFailed"><span class="hs-identifier hs-var">CSFailed</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680289643"><span id="local-6989586621680289645"><span id="local-6989586621680289648"><span class="annot"><span class="annottext">Int -&gt; CronStatus -&gt; ShowS
+[CronStatus] -&gt; ShowS
+CronStatus -&gt; String
+(Int -&gt; CronStatus -&gt; ShowS)
+-&gt; (CronStatus -&gt; String)
+-&gt; ([CronStatus] -&gt; ShowS)
+-&gt; Show CronStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CronStatus -&gt; ShowS
+showsPrec :: Int -&gt; CronStatus -&gt; ShowS
+$cshow :: CronStatus -&gt; String
+show :: CronStatus -&gt; String
+$cshowList :: [CronStatus] -&gt; ShowS
+showList :: [CronStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680289651"><span id="local-6989586621680289656"><span class="annot"><span class="annottext">CronStatus -&gt; CronStatus -&gt; Bool
+(CronStatus -&gt; CronStatus -&gt; Bool)
+-&gt; (CronStatus -&gt; CronStatus -&gt; Bool) -&gt; Eq CronStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CronStatus -&gt; CronStatus -&gt; Bool
+== :: CronStatus -&gt; CronStatus -&gt; Bool
+$c/= :: CronStatus -&gt; CronStatus -&gt; Bool
+/= :: CronStatus -&gt; CronStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span></pre></body></html>

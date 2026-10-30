@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="annot"><span class="hs-comment">-- | SmartReceipt module - Electronic receipts</span></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Retail.Receipts.SmartReceipt.html"><span class="hs-identifier">Retail.Receipts.SmartReceipt</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#SmartReceipt"><span class="hs-identifier">SmartReceipt</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#PaymentType"><span class="hs-identifier">PaymentType</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#ReceiptStatus"><span class="hs-identifier">ReceiptStatus</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#SmartReceiptLine"><span class="hs-identifier">SmartReceiptLine</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#calcReceiptTotal"><span class="hs-identifier">calcReceiptTotal</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-comment">{-@ type NonNeg = {v:Double | v &gt;= 0} @-}</span><span>
+</span><span id="line-17"></span><span class="hs-comment">{-@ type Discount = {v:Double | v &gt;= 0 &amp;&amp; v &lt;= 100} @-}</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="annot"><span class="hs-comment">-- | SmartReceipt - Electronic receipt</span></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">data</span><span> </span><span id="SmartReceipt"><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#SmartReceipt"><span class="hs-identifier hs-var">SmartReceipt</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SmartReceipt"><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#SmartReceipt"><span class="hs-identifier hs-var">SmartReceipt</span></a></span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="srId"><span class="annot"><span class="annottext">SmartReceipt -&gt; Int64
+</span><a href="Retail.Receipts.SmartReceipt.html#srId"><span class="hs-identifier hs-var hs-var">srId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="srCode"><span class="annot"><span class="annottext">SmartReceipt -&gt; Text
+</span><a href="Retail.Receipts.SmartReceipt.html#srCode"><span class="hs-identifier hs-var hs-var">srCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="srSessionId"><span class="annot"><span class="annottext">SmartReceipt -&gt; Int64
+</span><a href="Retail.Receipts.SmartReceipt.html#srSessionId"><span class="hs-identifier hs-var hs-var">srSessionId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="srDate"><span class="annot"><span class="annottext">SmartReceipt -&gt; Day
+</span><a href="Retail.Receipts.SmartReceipt.html#srDate"><span class="hs-identifier hs-var hs-var">srDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="srTime"><span class="annot"><span class="annottext">SmartReceipt -&gt; UTCTime
+</span><a href="Retail.Receipts.SmartReceipt.html#srTime"><span class="hs-identifier hs-var hs-var">srTime</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="srTotal"><span class="annot"><span class="annottext">SmartReceipt -&gt; Double
+</span><a href="Retail.Receipts.SmartReceipt.html#srTotal"><span class="hs-identifier hs-var hs-var">srTotal</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="srTax"><span class="annot"><span class="annottext">SmartReceipt -&gt; Double
+</span><a href="Retail.Receipts.SmartReceipt.html#srTax"><span class="hs-identifier hs-var hs-var">srTax</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="srPaymentType"><span class="annot"><span class="annottext">SmartReceipt -&gt; PaymentType
+</span><a href="Retail.Receipts.SmartReceipt.html#srPaymentType"><span class="hs-identifier hs-var hs-var">srPaymentType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#PaymentType"><span class="hs-identifier hs-type">PaymentType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span id="srStatus"><span class="annot"><span class="annottext">SmartReceipt -&gt; ReceiptStatus
+</span><a href="Retail.Receipts.SmartReceipt.html#srStatus"><span class="hs-identifier hs-var hs-var">srStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#ReceiptStatus"><span class="hs-identifier hs-type">ReceiptStatus</span></a></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680293062"><span id="local-6989586621680293082"><span id="local-6989586621680293086"><span class="annot"><span class="annottext">Int -&gt; SmartReceipt -&gt; ShowS
+[SmartReceipt] -&gt; ShowS
+SmartReceipt -&gt; String
+(Int -&gt; SmartReceipt -&gt; ShowS)
+-&gt; (SmartReceipt -&gt; String)
+-&gt; ([SmartReceipt] -&gt; ShowS)
+-&gt; Show SmartReceipt
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; SmartReceipt -&gt; ShowS
+showsPrec :: Int -&gt; SmartReceipt -&gt; ShowS
+$cshow :: SmartReceipt -&gt; String
+show :: SmartReceipt -&gt; String
+$cshowList :: [SmartReceipt] -&gt; ShowS
+showList :: [SmartReceipt] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680293091"><span id="local-6989586621680293109"><span class="annot"><span class="annottext">SmartReceipt -&gt; SmartReceipt -&gt; Bool
+(SmartReceipt -&gt; SmartReceipt -&gt; Bool)
+-&gt; (SmartReceipt -&gt; SmartReceipt -&gt; Bool) -&gt; Eq SmartReceipt
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: SmartReceipt -&gt; SmartReceipt -&gt; Bool
+== :: SmartReceipt -&gt; SmartReceipt -&gt; Bool
+$c/= :: SmartReceipt -&gt; SmartReceipt -&gt; Bool
+/= :: SmartReceipt -&gt; SmartReceipt -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">data</span><span> </span><span id="PaymentType"><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#PaymentType"><span class="hs-identifier hs-var">PaymentType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PTCash"><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#PTCash"><span class="hs-identifier hs-var">PTCash</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PTCard"><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#PTCard"><span class="hs-identifier hs-var">PTCard</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PTOnline"><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#PTOnline"><span class="hs-identifier hs-var">PTOnline</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="PTBonus"><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#PTBonus"><span class="hs-identifier hs-var">PTBonus</span></a></span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680293118"><span id="local-6989586621680293120"><span id="local-6989586621680293123"><span class="annot"><span class="annottext">Int -&gt; PaymentType -&gt; ShowS
+[PaymentType] -&gt; ShowS
+PaymentType -&gt; String
+(Int -&gt; PaymentType -&gt; ShowS)
+-&gt; (PaymentType -&gt; String)
+-&gt; ([PaymentType] -&gt; ShowS)
+-&gt; Show PaymentType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PaymentType -&gt; ShowS
+showsPrec :: Int -&gt; PaymentType -&gt; ShowS
+$cshow :: PaymentType -&gt; String
+show :: PaymentType -&gt; String
+$cshowList :: [PaymentType] -&gt; ShowS
+showList :: [PaymentType] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680293126"><span id="local-6989586621680293131"><span class="annot"><span class="annottext">PaymentType -&gt; PaymentType -&gt; Bool
+(PaymentType -&gt; PaymentType -&gt; Bool)
+-&gt; (PaymentType -&gt; PaymentType -&gt; Bool) -&gt; Eq PaymentType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PaymentType -&gt; PaymentType -&gt; Bool
+== :: PaymentType -&gt; PaymentType -&gt; Bool
+$c/= :: PaymentType -&gt; PaymentType -&gt; Bool
+/= :: PaymentType -&gt; PaymentType -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">data</span><span> </span><span id="ReceiptStatus"><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#ReceiptStatus"><span class="hs-identifier hs-var">ReceiptStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RSPrinted"><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#RSPrinted"><span class="hs-identifier hs-var">RSPrinted</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="RSSent"><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#RSSent"><span class="hs-identifier hs-var">RSSent</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="RSReturned"><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#RSReturned"><span class="hs-identifier hs-var">RSReturned</span></a></span></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680293137"><span id="local-6989586621680293139"><span id="local-6989586621680293142"><span class="annot"><span class="annottext">Int -&gt; ReceiptStatus -&gt; ShowS
+[ReceiptStatus] -&gt; ShowS
+ReceiptStatus -&gt; String
+(Int -&gt; ReceiptStatus -&gt; ShowS)
+-&gt; (ReceiptStatus -&gt; String)
+-&gt; ([ReceiptStatus] -&gt; ShowS)
+-&gt; Show ReceiptStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ReceiptStatus -&gt; ShowS
+showsPrec :: Int -&gt; ReceiptStatus -&gt; ShowS
+$cshow :: ReceiptStatus -&gt; String
+show :: ReceiptStatus -&gt; String
+$cshowList :: [ReceiptStatus] -&gt; ShowS
+showList :: [ReceiptStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680293145"><span id="local-6989586621680293149"><span class="annot"><span class="annottext">ReceiptStatus -&gt; ReceiptStatus -&gt; Bool
+(ReceiptStatus -&gt; ReceiptStatus -&gt; Bool)
+-&gt; (ReceiptStatus -&gt; ReceiptStatus -&gt; Bool) -&gt; Eq ReceiptStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ReceiptStatus -&gt; ReceiptStatus -&gt; Bool
+== :: ReceiptStatus -&gt; ReceiptStatus -&gt; Bool
+$c/= :: ReceiptStatus -&gt; ReceiptStatus -&gt; Bool
+/= :: ReceiptStatus -&gt; ReceiptStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="annot"><span class="hs-comment">-- | SmartReceiptLine - Receipt line</span></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">data</span><span> </span><span id="SmartReceiptLine"><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#SmartReceiptLine"><span class="hs-identifier hs-var">SmartReceiptLine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SmartReceiptLine"><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#SmartReceiptLine"><span class="hs-identifier hs-var">SmartReceiptLine</span></a></span></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="srlId"><span class="annot"><span class="annottext">SmartReceiptLine -&gt; Int64
+</span><a href="Retail.Receipts.SmartReceipt.html#srlId"><span class="hs-identifier hs-var hs-var">srlId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-42"></span><span>    </span><span id="srlReceiptId"><span class="annot"><span class="annottext">SmartReceiptLine -&gt; Int64
+</span><a href="Retail.Receipts.SmartReceipt.html#srlReceiptId"><span class="hs-identifier hs-var hs-var">srlReceiptId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-43"></span><span>    </span><span id="srlGoodsId"><span class="annot"><span class="annottext">SmartReceiptLine -&gt; Int64
+</span><a href="Retail.Receipts.SmartReceipt.html#srlGoodsId"><span class="hs-identifier hs-var hs-var">srlGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-44"></span><span>    </span><span id="srlName"><span class="annot"><span class="annottext">SmartReceiptLine -&gt; Text
+</span><a href="Retail.Receipts.SmartReceipt.html#srlName"><span class="hs-identifier hs-var hs-var">srlName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-45"></span><span>    </span><span id="srlQtty"><span class="annot"><span class="annottext">SmartReceiptLine -&gt; Double
+</span><a href="Retail.Receipts.SmartReceipt.html#srlQtty"><span class="hs-identifier hs-var hs-var">srlQtty</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-46"></span><span>    </span><span id="srlPrice"><span class="annot"><span class="annottext">SmartReceiptLine -&gt; Double
+</span><a href="Retail.Receipts.SmartReceipt.html#srlPrice"><span class="hs-identifier hs-var hs-var">srlPrice</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-47"></span><span>    </span><span id="srlDiscount"><span class="annot"><span class="annottext">SmartReceiptLine -&gt; Double
+</span><a href="Retail.Receipts.SmartReceipt.html#srlDiscount"><span class="hs-identifier hs-var hs-var">srlDiscount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-48"></span><span>    </span><span id="srlTax"><span class="annot"><span class="annottext">SmartReceiptLine -&gt; Double
+</span><a href="Retail.Receipts.SmartReceipt.html#srlTax"><span class="hs-identifier hs-var hs-var">srlTax</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680293161"><span id="local-6989586621680293172"><span id="local-6989586621680293176"><span class="annot"><span class="annottext">Int -&gt; SmartReceiptLine -&gt; ShowS
+[SmartReceiptLine] -&gt; ShowS
+SmartReceiptLine -&gt; String
+(Int -&gt; SmartReceiptLine -&gt; ShowS)
+-&gt; (SmartReceiptLine -&gt; String)
+-&gt; ([SmartReceiptLine] -&gt; ShowS)
+-&gt; Show SmartReceiptLine
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; SmartReceiptLine -&gt; ShowS
+showsPrec :: Int -&gt; SmartReceiptLine -&gt; ShowS
+$cshow :: SmartReceiptLine -&gt; String
+show :: SmartReceiptLine -&gt; String
+$cshowList :: [SmartReceiptLine] -&gt; ShowS
+showList :: [SmartReceiptLine] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680293179"><span id="local-6989586621680293189"><span class="annot"><span class="annottext">SmartReceiptLine -&gt; SmartReceiptLine -&gt; Bool
+(SmartReceiptLine -&gt; SmartReceiptLine -&gt; Bool)
+-&gt; (SmartReceiptLine -&gt; SmartReceiptLine -&gt; Bool)
+-&gt; Eq SmartReceiptLine
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: SmartReceiptLine -&gt; SmartReceiptLine -&gt; Bool
+== :: SmartReceiptLine -&gt; SmartReceiptLine -&gt; Bool
+$c/= :: SmartReceiptLine -&gt; SmartReceiptLine -&gt; Bool
+/= :: SmartReceiptLine -&gt; SmartReceiptLine -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="annot"><span class="hs-comment">-- | Calculate receipt total</span></span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span class="hs-comment">{-@ calcReceiptTotal :: [SmartReceiptLine] -&gt; NonNeg @-}</span><span>
+</span><span id="line-55"></span><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#calcReceiptTotal"><span class="hs-identifier hs-type">calcReceiptTotal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Retail.Receipts.SmartReceipt.html#SmartReceiptLine"><span class="hs-identifier hs-type">SmartReceiptLine</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-56"></span><span id="calcReceiptTotal"><span class="annot"><span class="annottext">calcReceiptTotal :: [SmartReceiptLine] -&gt; Double
+</span><a href="Retail.Receipts.SmartReceipt.html#calcReceiptTotal"><span class="hs-identifier hs-var hs-var">calcReceiptTotal</span></a></span></span><span> </span><span id="local-6989586621680293192"><span class="annot"><span class="annottext">[SmartReceiptLine]
+</span><a href="#local-6989586621680293192"><span class="hs-identifier hs-var">receiptLines</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Double] -&gt; Double
+forall a. Num a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">sum</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(SmartReceiptLine -&gt; Double) -&gt; [SmartReceiptLine] -&gt; [Double]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-identifier hs-var">fmap</span></span><span> </span><span class="annot"><span class="annottext">SmartReceiptLine -&gt; Double
+</span><a href="#local-6989586621680293194"><span class="hs-identifier hs-var">lineTotal</span></a></span><span> </span><span class="annot"><span class="annottext">[SmartReceiptLine]
+</span><a href="#local-6989586621680293192"><span class="hs-identifier hs-var">receiptLines</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-58"></span><span>    </span><span id="local-6989586621680293194"><span class="annot"><span class="annottext">lineTotal :: SmartReceiptLine -&gt; Double
+</span><a href="#local-6989586621680293194"><span class="hs-identifier hs-var hs-var">lineTotal</span></a></span></span><span> </span><span id="local-6989586621680293202"><span class="annot"><span class="annottext">SmartReceiptLine
+</span><a href="#local-6989586621680293202"><span class="hs-identifier hs-var">l</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">SmartReceiptLine -&gt; Double
+</span><a href="Retail.Receipts.SmartReceipt.html#srlQtty"><span class="hs-identifier hs-var">srlQtty</span></a></span><span> </span><span class="annot"><span class="annottext">SmartReceiptLine
+</span><a href="#local-6989586621680293202"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">SmartReceiptLine -&gt; Double
+</span><a href="Retail.Receipts.SmartReceipt.html#srlPrice"><span class="hs-identifier hs-var">srlPrice</span></a></span><span> </span><span class="annot"><span class="annottext">SmartReceiptLine
+</span><a href="#local-6989586621680293202"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">SmartReceiptLine -&gt; Double
+</span><a href="Retail.Receipts.SmartReceipt.html#srlDiscount"><span class="hs-identifier hs-var">srlDiscount</span></a></span><span> </span><span class="annot"><span class="annottext">SmartReceiptLine
+</span><a href="#local-6989586621680293202"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">100</span></span><span class="hs-special">)</span><span>
+</span><span id="line-59"></span></pre></body></html>

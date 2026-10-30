@@ -1,0 +1,450 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680336954"><span id="local-6989586621680336955"></span></span><span class="hs-pragma">{-# LANGUAGE DeriveAnyClass #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DerivingStrategies #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE DuplicateRecordFields #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE GeneralizedNewtypeDeriving #-}</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.Types.Bill.html"><span class="hs-identifier">Surypus.Types.Bill</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Surypus.Types.Bill.html#Bill"><span class="hs-identifier">Bill</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Surypus.Types.Bill.html#BillStatus"><span class="hs-identifier">BillStatus</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Surypus.Types.Bill.html#BillLine"><span class="hs-identifier">BillLine</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Surypus.Types.Bill.html#BillInput"><span class="hs-identifier">BillInput</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Surypus.Types.Bill.html#BillSummary"><span class="hs-identifier">BillSummary</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier">FromJSON</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Options"><span class="hs-identifier">Options</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier">ToJSON</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier">defaultOptions</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#genericParseJSON"><span class="hs-identifier">genericParseJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#genericToJSON"><span class="hs-identifier">genericToJSON</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time.Clock</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html"><span class="hs-identifier">Surypus.Types.Common</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier">camelTo2</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">data</span><span> </span><span id="Bill"><span class="annot"><a href="Surypus.Types.Bill.html#Bill"><span class="hs-identifier hs-var">Bill</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Bill"><span class="annot"><a href="Surypus.Types.Bill.html#Bill"><span class="hs-identifier hs-var">Bill</span></a></span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="billId"><span class="annot"><span class="annottext">Bill -&gt; Int64
+</span><a href="Surypus.Types.Bill.html#billId"><span class="hs-identifier hs-var hs-var">billId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="billNumber"><span class="annot"><span class="annottext">Bill -&gt; Text
+</span><a href="Surypus.Types.Bill.html#billNumber"><span class="hs-identifier hs-var hs-var">billNumber</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-26"></span><span>    </span><span id="billStatus"><span class="annot"><span class="annottext">Bill -&gt; BillStatus
+</span><a href="Surypus.Types.Bill.html#billStatus"><span class="hs-identifier hs-var hs-var">billStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Surypus.Types.Bill.html#BillStatus"><span class="hs-identifier hs-type">BillStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-27"></span><span>    </span><span id="billAmount"><span class="annot"><span class="annottext">Bill -&gt; Double
+</span><a href="Surypus.Types.Bill.html#billAmount"><span class="hs-identifier hs-var hs-var">billAmount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="billLines"><span class="annot"><span class="annottext">Bill -&gt; [BillLine]
+</span><a href="Surypus.Types.Bill.html#billLines"><span class="hs-identifier hs-var hs-var">billLines</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="Surypus.Types.Bill.html#BillLine"><span class="hs-identifier hs-type">BillLine</span></a></span><span class="hs-special">]</span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span id="billCreatedAt"><span class="annot"><span class="annottext">Bill -&gt; UTCTime
+</span><a href="Surypus.Types.Bill.html#billCreatedAt"><span class="hs-identifier hs-var hs-var">billCreatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-30"></span><span>    </span><span id="billUpdatedAt"><span class="annot"><span class="annottext">Bill -&gt; Maybe UTCTime
+</span><a href="Surypus.Types.Bill.html#billUpdatedAt"><span class="hs-identifier hs-var hs-var">billUpdatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-31"></span><span>    </span><span id="billPersonId"><span class="annot"><span class="annottext">Bill -&gt; Maybe Int64
+</span><a href="Surypus.Types.Bill.html#billPersonId"><span class="hs-identifier hs-var hs-var">billPersonId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-32"></span><span>    </span><span id="billLocationId"><span class="annot"><span class="annottext">Bill -&gt; Maybe Int64
+</span><a href="Surypus.Types.Bill.html#billLocationId"><span class="hs-identifier hs-var hs-var">billLocationId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680336971"><span id="local-6989586621680336992"><span id="local-6989586621680336996"><span class="annot"><span class="annottext">Int -&gt; Bill -&gt; ShowS
+[Bill] -&gt; ShowS
+Bill -&gt; String
+(Int -&gt; Bill -&gt; ShowS)
+-&gt; (Bill -&gt; String) -&gt; ([Bill] -&gt; ShowS) -&gt; Show Bill
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Bill -&gt; ShowS
+showsPrec :: Int -&gt; Bill -&gt; ShowS
+$cshow :: Bill -&gt; String
+show :: Bill -&gt; String
+$cshowList :: [Bill] -&gt; ShowS
+showList :: [Bill] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680337002"><span id="local-6989586621680337021"><span class="annot"><span class="annottext">Bill -&gt; Bill -&gt; Bool
+(Bill -&gt; Bill -&gt; Bool) -&gt; (Bill -&gt; Bill -&gt; Bool) -&gt; Eq Bill
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Bill -&gt; Bill -&gt; Bool
+== :: Bill -&gt; Bill -&gt; Bool
+$c/= :: Bill -&gt; Bill -&gt; Bool
+/= :: Bill -&gt; Bill -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680337027"><span id="local-6989586621680337029"><span class="annot"><span class="annottext">(forall x. Bill -&gt; Rep Bill x)
+-&gt; (forall x. Rep Bill x -&gt; Bill) -&gt; Generic Bill
+forall x. Rep Bill x -&gt; Bill
+forall x. Bill -&gt; Rep Bill x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Bill -&gt; Rep Bill x
+from :: forall x. Bill -&gt; Rep Bill x
+$cto :: forall x. Rep Bill x -&gt; Bill
+to :: forall x. Rep Bill x -&gt; Bill
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680337036"><span id="local-6989586621680337040"><span id="local-6989586621680337043"><span id="local-6989586621680337046"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Bill.html#Bill"><span class="hs-identifier hs-type">Bill</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-37"></span><span>  </span><span id="local-6989586621680337271"><span class="annot"><span class="annottext">toJSON :: Bill -&gt; Value
+</span><a href="#local-6989586621680337271"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Bill -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#genericToJSON"><span class="hs-identifier hs-var">genericToJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680337278"><span id="local-6989586621680337282"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Bill.html#Bill"><span class="hs-identifier hs-type">Bill</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-40"></span><span>  </span><span id="local-6989586621680337426"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser Bill
+</span><a href="#local-6989586621680337426"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser Bill
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#genericParseJSON"><span class="hs-identifier hs-var">genericParseJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="hs-keyword">data</span><span> </span><span id="BillStatus"><span class="annot"><a href="Surypus.Types.Bill.html#BillStatus"><span class="hs-identifier hs-var">BillStatus</span></a></span></span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Draft"><span class="annot"><a href="Surypus.Types.Bill.html#Draft"><span class="hs-identifier hs-var">Draft</span></a></span></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Posted"><span class="annot"><a href="Surypus.Types.Bill.html#Posted"><span class="hs-identifier hs-var">Posted</span></a></span></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Cancelled"><span class="annot"><a href="Surypus.Types.Bill.html#Cancelled"><span class="hs-identifier hs-var">Cancelled</span></a></span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Archived"><span class="annot"><a href="Surypus.Types.Bill.html#Archived"><span class="hs-identifier hs-var">Archived</span></a></span></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680337433"><span id="local-6989586621680337435"><span id="local-6989586621680337438"><span class="annot"><span class="annottext">Int -&gt; BillStatus -&gt; ShowS
+[BillStatus] -&gt; ShowS
+BillStatus -&gt; String
+(Int -&gt; BillStatus -&gt; ShowS)
+-&gt; (BillStatus -&gt; String)
+-&gt; ([BillStatus] -&gt; ShowS)
+-&gt; Show BillStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BillStatus -&gt; ShowS
+showsPrec :: Int -&gt; BillStatus -&gt; ShowS
+$cshow :: BillStatus -&gt; String
+show :: BillStatus -&gt; String
+$cshowList :: [BillStatus] -&gt; ShowS
+showList :: [BillStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680337441"><span id="local-6989586621680337446"><span class="annot"><span class="annottext">BillStatus -&gt; BillStatus -&gt; Bool
+(BillStatus -&gt; BillStatus -&gt; Bool)
+-&gt; (BillStatus -&gt; BillStatus -&gt; Bool) -&gt; Eq BillStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BillStatus -&gt; BillStatus -&gt; Bool
+== :: BillStatus -&gt; BillStatus -&gt; Bool
+$c/= :: BillStatus -&gt; BillStatus -&gt; Bool
+/= :: BillStatus -&gt; BillStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680337449"><span id="local-6989586621680337451"><span class="annot"><span class="annottext">(forall x. BillStatus -&gt; Rep BillStatus x)
+-&gt; (forall x. Rep BillStatus x -&gt; BillStatus) -&gt; Generic BillStatus
+forall x. Rep BillStatus x -&gt; BillStatus
+forall x. BillStatus -&gt; Rep BillStatus x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. BillStatus -&gt; Rep BillStatus x
+from :: forall x. BillStatus -&gt; Rep BillStatus x
+$cto :: forall x. Rep BillStatus x -&gt; BillStatus
+to :: forall x. Rep BillStatus x -&gt; BillStatus
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680337454"><span id="local-6989586621680337463"><span id="local-6989586621680337470"><span id="local-6989586621680337479"><span id="local-6989586621680337482"><span id="local-6989586621680337487"><span id="local-6989586621680337493"><span id="local-6989586621680337497"><span class="annot"><span class="annottext">Int -&gt; BillStatus
+BillStatus -&gt; Int
+BillStatus -&gt; [BillStatus]
+BillStatus -&gt; BillStatus
+BillStatus -&gt; BillStatus -&gt; [BillStatus]
+BillStatus -&gt; BillStatus -&gt; BillStatus -&gt; [BillStatus]
+(BillStatus -&gt; BillStatus)
+-&gt; (BillStatus -&gt; BillStatus)
+-&gt; (Int -&gt; BillStatus)
+-&gt; (BillStatus -&gt; Int)
+-&gt; (BillStatus -&gt; [BillStatus])
+-&gt; (BillStatus -&gt; BillStatus -&gt; [BillStatus])
+-&gt; (BillStatus -&gt; BillStatus -&gt; [BillStatus])
+-&gt; (BillStatus -&gt; BillStatus -&gt; BillStatus -&gt; [BillStatus])
+-&gt; Enum BillStatus
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: BillStatus -&gt; BillStatus
+succ :: BillStatus -&gt; BillStatus
+$cpred :: BillStatus -&gt; BillStatus
+pred :: BillStatus -&gt; BillStatus
+$ctoEnum :: Int -&gt; BillStatus
+toEnum :: Int -&gt; BillStatus
+$cfromEnum :: BillStatus -&gt; Int
+fromEnum :: BillStatus -&gt; Int
+$cenumFrom :: BillStatus -&gt; [BillStatus]
+enumFrom :: BillStatus -&gt; [BillStatus]
+$cenumFromThen :: BillStatus -&gt; BillStatus -&gt; [BillStatus]
+enumFromThen :: BillStatus -&gt; BillStatus -&gt; [BillStatus]
+$cenumFromTo :: BillStatus -&gt; BillStatus -&gt; [BillStatus]
+enumFromTo :: BillStatus -&gt; BillStatus -&gt; [BillStatus]
+$cenumFromThenTo :: BillStatus -&gt; BillStatus -&gt; BillStatus -&gt; [BillStatus]
+enumFromThenTo :: BillStatus -&gt; BillStatus -&gt; BillStatus -&gt; [BillStatus]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680337505"><span id="local-6989586621680337507"><span class="annot"><span class="annottext">BillStatus
+BillStatus -&gt; BillStatus -&gt; Bounded BillStatus
+forall a. a -&gt; a -&gt; Bounded a
+$cminBound :: BillStatus
+minBound :: BillStatus
+$cmaxBound :: BillStatus
+maxBound :: BillStatus
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680337513"><span id="local-6989586621680337519"><span id="local-6989586621680337522"><span id="local-6989586621680337525"><span id="local-6989586621680337528"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Bill.html#BillStatus"><span class="hs-identifier hs-type">BillStatus</span></a></span></span></span></span></span></span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680337640"><span id="local-6989586621680337646"><span id="local-6989586621680337649"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Bill.html#BillStatus"><span class="hs-identifier hs-type">BillStatus</span></a></span></span></span></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="hs-keyword">data</span><span> </span><span id="BillLine"><span class="annot"><a href="Surypus.Types.Bill.html#BillLine"><span class="hs-identifier hs-var">BillLine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BillLine"><span class="annot"><a href="Surypus.Types.Bill.html#BillLine"><span class="hs-identifier hs-var">BillLine</span></a></span></span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="lineId"><span class="annot"><span class="annottext">BillLine -&gt; Int64
+</span><a href="Surypus.Types.Bill.html#lineId"><span class="hs-identifier hs-var hs-var">lineId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-55"></span><span>    </span><span id="lineBillId"><span class="annot"><span class="annottext">BillLine -&gt; Int64
+</span><a href="Surypus.Types.Bill.html#lineBillId"><span class="hs-identifier hs-var hs-var">lineBillId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-56"></span><span>    </span><span id="lineGoodId"><span class="annot"><span class="annottext">BillLine -&gt; Int64
+</span><a href="Surypus.Types.Bill.html#lineGoodId"><span class="hs-identifier hs-var hs-var">lineGoodId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-57"></span><span>    </span><span id="lineQuantity"><span class="annot"><span class="annottext">BillLine -&gt; Int
+</span><a href="Surypus.Types.Bill.html#lineQuantity"><span class="hs-identifier hs-var hs-var">lineQuantity</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-58"></span><span>    </span><span id="linePrice"><span class="annot"><span class="annottext">BillLine -&gt; Double
+</span><a href="Surypus.Types.Bill.html#linePrice"><span class="hs-identifier hs-var hs-var">linePrice</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-59"></span><span>    </span><span id="lineTotal"><span class="annot"><span class="annottext">BillLine -&gt; Double
+</span><a href="Surypus.Types.Bill.html#lineTotal"><span class="hs-identifier hs-var hs-var">lineTotal</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-60"></span><span>    </span><span id="lineTaxRate"><span class="annot"><span class="annottext">BillLine -&gt; Maybe Double
+</span><a href="Surypus.Types.Bill.html#lineTaxRate"><span class="hs-identifier hs-var hs-var">lineTaxRate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680337747"><span id="local-6989586621680337757"><span id="local-6989586621680337760"><span class="annot"><span class="annottext">Int -&gt; BillLine -&gt; ShowS
+[BillLine] -&gt; ShowS
+BillLine -&gt; String
+(Int -&gt; BillLine -&gt; ShowS)
+-&gt; (BillLine -&gt; String) -&gt; ([BillLine] -&gt; ShowS) -&gt; Show BillLine
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BillLine -&gt; ShowS
+showsPrec :: Int -&gt; BillLine -&gt; ShowS
+$cshow :: BillLine -&gt; String
+show :: BillLine -&gt; String
+$cshowList :: [BillLine] -&gt; ShowS
+showList :: [BillLine] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680337763"><span id="local-6989586621680337772"><span class="annot"><span class="annottext">BillLine -&gt; BillLine -&gt; Bool
+(BillLine -&gt; BillLine -&gt; Bool)
+-&gt; (BillLine -&gt; BillLine -&gt; Bool) -&gt; Eq BillLine
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BillLine -&gt; BillLine -&gt; Bool
+== :: BillLine -&gt; BillLine -&gt; Bool
+$c/= :: BillLine -&gt; BillLine -&gt; Bool
+/= :: BillLine -&gt; BillLine -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680337775"><span id="local-6989586621680337777"><span class="annot"><span class="annottext">(forall x. BillLine -&gt; Rep BillLine x)
+-&gt; (forall x. Rep BillLine x -&gt; BillLine) -&gt; Generic BillLine
+forall x. Rep BillLine x -&gt; BillLine
+forall x. BillLine -&gt; Rep BillLine x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. BillLine -&gt; Rep BillLine x
+from :: forall x. BillLine -&gt; Rep BillLine x
+$cto :: forall x. Rep BillLine x -&gt; BillLine
+to :: forall x. Rep BillLine x -&gt; BillLine
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680337781"><span id="local-6989586621680337784"><span id="local-6989586621680337787"><span id="local-6989586621680337790"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Bill.html#BillLine"><span class="hs-identifier hs-type">BillLine</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-65"></span><span>  </span><span id="local-6989586621680337930"><span class="annot"><span class="annottext">toJSON :: BillLine -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; BillLine -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#genericToJSON"><span class="hs-identifier hs-var">genericToJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680337933"><span id="local-6989586621680337936"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Bill.html#BillLine"><span class="hs-identifier hs-type">BillLine</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-68"></span><span>  </span><span id="local-6989586621680338032"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser BillLine
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#parseJSON"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser BillLine
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#genericParseJSON"><span class="hs-identifier hs-var">genericParseJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">4</span></span><span class="hs-special">}</span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="hs-keyword">data</span><span> </span><span id="BillInput"><span class="annot"><a href="Surypus.Types.Bill.html#BillInput"><span class="hs-identifier hs-var">BillInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BillInput"><span class="annot"><a href="Surypus.Types.Bill.html#BillInput"><span class="hs-identifier hs-var">BillInput</span></a></span></span><span>
+</span><span id="line-71"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="inputNumber"><span class="annot"><span class="annottext">BillInput -&gt; Text
+</span><a href="Surypus.Types.Bill.html#inputNumber"><span class="hs-identifier hs-var hs-var">inputNumber</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-72"></span><span>    </span><span id="inputAmount"><span class="annot"><span class="annottext">BillInput -&gt; Double
+</span><a href="Surypus.Types.Bill.html#inputAmount"><span class="hs-identifier hs-var hs-var">inputAmount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-73"></span><span>    </span><span id="inputStatus"><span class="annot"><span class="annottext">BillInput -&gt; Maybe BillStatus
+</span><a href="Surypus.Types.Bill.html#inputStatus"><span class="hs-identifier hs-var hs-var">inputStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Surypus.Types.Bill.html#BillStatus"><span class="hs-identifier hs-type">BillStatus</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-74"></span><span>    </span><span id="inputLines"><span class="annot"><span class="annottext">BillInput -&gt; [BillLineInput]
+</span><a href="Surypus.Types.Bill.html#inputLines"><span class="hs-identifier hs-var hs-var">inputLines</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">[</span><span class="annot"><a href="Surypus.Types.Bill.html#BillLineInput"><span class="hs-identifier hs-type">BillLineInput</span></a></span><span class="hs-special">]</span><span class="hs-special">,</span><span>
+</span><span id="line-75"></span><span>    </span><span id="inputPersonId"><span class="annot"><span class="annottext">BillInput -&gt; Maybe Int64
+</span><a href="Surypus.Types.Bill.html#inputPersonId"><span class="hs-identifier hs-var hs-var">inputPersonId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-76"></span><span>    </span><span id="inputLocationId"><span class="annot"><span class="annottext">BillInput -&gt; Maybe Int64
+</span><a href="Surypus.Types.Bill.html#inputLocationId"><span class="hs-identifier hs-var hs-var">inputLocationId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680338041"><span id="local-6989586621680338053"><span id="local-6989586621680338057"><span class="annot"><span class="annottext">Int -&gt; BillInput -&gt; ShowS
+[BillInput] -&gt; ShowS
+BillInput -&gt; String
+(Int -&gt; BillInput -&gt; ShowS)
+-&gt; (BillInput -&gt; String)
+-&gt; ([BillInput] -&gt; ShowS)
+-&gt; Show BillInput
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BillInput -&gt; ShowS
+showsPrec :: Int -&gt; BillInput -&gt; ShowS
+$cshow :: BillInput -&gt; String
+show :: BillInput -&gt; String
+$cshowList :: [BillInput] -&gt; ShowS
+showList :: [BillInput] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680338061"><span id="local-6989586621680338072"><span class="annot"><span class="annottext">BillInput -&gt; BillInput -&gt; Bool
+(BillInput -&gt; BillInput -&gt; Bool)
+-&gt; (BillInput -&gt; BillInput -&gt; Bool) -&gt; Eq BillInput
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BillInput -&gt; BillInput -&gt; Bool
+== :: BillInput -&gt; BillInput -&gt; Bool
+$c/= :: BillInput -&gt; BillInput -&gt; Bool
+/= :: BillInput -&gt; BillInput -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680338077"><span id="local-6989586621680338079"><span class="annot"><span class="annottext">(forall x. BillInput -&gt; Rep BillInput x)
+-&gt; (forall x. Rep BillInput x -&gt; BillInput) -&gt; Generic BillInput
+forall x. Rep BillInput x -&gt; BillInput
+forall x. BillInput -&gt; Rep BillInput x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. BillInput -&gt; Rep BillInput x
+from :: forall x. BillInput -&gt; Rep BillInput x
+$cto :: forall x. Rep BillInput x -&gt; BillInput
+to :: forall x. Rep BillInput x -&gt; BillInput
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680338083"><span id="local-6989586621680338087"><span id="local-6989586621680338090"><span id="local-6989586621680338093"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Bill.html#BillInput"><span class="hs-identifier hs-type">BillInput</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-81"></span><span>  </span><span id="local-6989586621680338226"><span class="annot"><span class="annottext">toJSON :: BillInput -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; BillInput -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#genericToJSON"><span class="hs-identifier hs-var">genericToJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">5</span></span><span class="hs-special">}</span><span>
+</span><span id="line-82"></span><span>
+</span><span id="line-83"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680338229"><span id="local-6989586621680338233"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Bill.html#BillInput"><span class="hs-identifier hs-type">BillInput</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-84"></span><span>  </span><span id="local-6989586621680338325"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser BillInput
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#parseJSON"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser BillInput
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#genericParseJSON"><span class="hs-identifier hs-var">genericParseJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">5</span></span><span class="hs-special">}</span><span>
+</span><span id="line-85"></span><span>
+</span><span id="line-86"></span><span class="hs-keyword">data</span><span> </span><span id="BillLineInput"><span class="annot"><a href="Surypus.Types.Bill.html#BillLineInput"><span class="hs-identifier hs-var">BillLineInput</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BillLineInput"><span class="annot"><a href="Surypus.Types.Bill.html#BillLineInput"><span class="hs-identifier hs-var">BillLineInput</span></a></span></span><span>
+</span><span id="line-87"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="lineInputGoodId"><span class="annot"><span class="annottext">BillLineInput -&gt; Int64
+</span><a href="Surypus.Types.Bill.html#lineInputGoodId"><span class="hs-identifier hs-var hs-var">lineInputGoodId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-88"></span><span>    </span><span id="lineInputQuantity"><span class="annot"><span class="annottext">BillLineInput -&gt; Int
+</span><a href="Surypus.Types.Bill.html#lineInputQuantity"><span class="hs-identifier hs-var hs-var">lineInputQuantity</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-89"></span><span>    </span><span id="lineInputPrice"><span class="annot"><span class="annottext">BillLineInput -&gt; Double
+</span><a href="Surypus.Types.Bill.html#lineInputPrice"><span class="hs-identifier hs-var hs-var">lineInputPrice</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-90"></span><span>    </span><span id="lineInputTaxRate"><span class="annot"><span class="annottext">BillLineInput -&gt; Maybe Double
+</span><a href="Surypus.Types.Bill.html#lineInputTaxRate"><span class="hs-identifier hs-var hs-var">lineInputTaxRate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span>
+</span><span id="line-91"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-92"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680338332"><span id="local-6989586621680338339"><span id="local-6989586621680338342"><span class="annot"><span class="annottext">Int -&gt; BillLineInput -&gt; ShowS
+[BillLineInput] -&gt; ShowS
+BillLineInput -&gt; String
+(Int -&gt; BillLineInput -&gt; ShowS)
+-&gt; (BillLineInput -&gt; String)
+-&gt; ([BillLineInput] -&gt; ShowS)
+-&gt; Show BillLineInput
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BillLineInput -&gt; ShowS
+showsPrec :: Int -&gt; BillLineInput -&gt; ShowS
+$cshow :: BillLineInput -&gt; String
+show :: BillLineInput -&gt; String
+$cshowList :: [BillLineInput] -&gt; ShowS
+showList :: [BillLineInput] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680338345"><span id="local-6989586621680338351"><span class="annot"><span class="annottext">BillLineInput -&gt; BillLineInput -&gt; Bool
+(BillLineInput -&gt; BillLineInput -&gt; Bool)
+-&gt; (BillLineInput -&gt; BillLineInput -&gt; Bool) -&gt; Eq BillLineInput
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BillLineInput -&gt; BillLineInput -&gt; Bool
+== :: BillLineInput -&gt; BillLineInput -&gt; Bool
+$c/= :: BillLineInput -&gt; BillLineInput -&gt; Bool
+/= :: BillLineInput -&gt; BillLineInput -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680338354"><span id="local-6989586621680338356"><span class="annot"><span class="annottext">(forall x. BillLineInput -&gt; Rep BillLineInput x)
+-&gt; (forall x. Rep BillLineInput x -&gt; BillLineInput)
+-&gt; Generic BillLineInput
+forall x. Rep BillLineInput x -&gt; BillLineInput
+forall x. BillLineInput -&gt; Rep BillLineInput x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. BillLineInput -&gt; Rep BillLineInput x
+from :: forall x. BillLineInput -&gt; Rep BillLineInput x
+$cto :: forall x. Rep BillLineInput x -&gt; BillLineInput
+to :: forall x. Rep BillLineInput x -&gt; BillLineInput
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-93"></span><span>
+</span><span id="line-94"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680338360"><span id="local-6989586621680338363"><span id="local-6989586621680338366"><span id="local-6989586621680338369"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Bill.html#BillLineInput"><span class="hs-identifier hs-type">BillLineInput</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-95"></span><span>  </span><span id="local-6989586621680338469"><span class="annot"><span class="annottext">toJSON :: BillLineInput -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; BillLineInput -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#genericToJSON"><span class="hs-identifier hs-var">genericToJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">9</span></span><span class="hs-special">}</span><span>
+</span><span id="line-96"></span><span>
+</span><span id="line-97"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680338472"><span id="local-6989586621680338475"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Bill.html#BillLineInput"><span class="hs-identifier hs-type">BillLineInput</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-98"></span><span>  </span><span id="local-6989586621680338546"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser BillLineInput
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#parseJSON"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser BillLineInput
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#genericParseJSON"><span class="hs-identifier hs-var">genericParseJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">9</span></span><span class="hs-special">}</span><span>
+</span><span id="line-99"></span><span>
+</span><span id="line-100"></span><span class="hs-keyword">data</span><span> </span><span id="BillSummary"><span class="annot"><a href="Surypus.Types.Bill.html#BillSummary"><span class="hs-identifier hs-var">BillSummary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BillSummary"><span class="annot"><a href="Surypus.Types.Bill.html#BillSummary"><span class="hs-identifier hs-var">BillSummary</span></a></span></span><span>
+</span><span id="line-101"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="summaryId"><span class="annot"><span class="annottext">BillSummary -&gt; Int64
+</span><a href="Surypus.Types.Bill.html#summaryId"><span class="hs-identifier hs-var hs-var">summaryId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-102"></span><span>    </span><span id="summaryNumber"><span class="annot"><span class="annottext">BillSummary -&gt; Text
+</span><a href="Surypus.Types.Bill.html#summaryNumber"><span class="hs-identifier hs-var hs-var">summaryNumber</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-103"></span><span>    </span><span id="summaryStatus"><span class="annot"><span class="annottext">BillSummary -&gt; BillStatus
+</span><a href="Surypus.Types.Bill.html#summaryStatus"><span class="hs-identifier hs-var hs-var">summaryStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Surypus.Types.Bill.html#BillStatus"><span class="hs-identifier hs-type">BillStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-104"></span><span>    </span><span id="summaryTotal"><span class="annot"><span class="annottext">BillSummary -&gt; Double
+</span><a href="Surypus.Types.Bill.html#summaryTotal"><span class="hs-identifier hs-var hs-var">summaryTotal</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-105"></span><span>    </span><span id="summaryItemCount"><span class="annot"><span class="annottext">BillSummary -&gt; Int
+</span><a href="Surypus.Types.Bill.html#summaryItemCount"><span class="hs-identifier hs-var hs-var">summaryItemCount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-106"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-107"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="annot"><span class="hs-keyword">stock</span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621680338554"><span id="local-6989586621680338562"><span id="local-6989586621680338566"><span class="annot"><span class="annottext">Int -&gt; BillSummary -&gt; ShowS
+[BillSummary] -&gt; ShowS
+BillSummary -&gt; String
+(Int -&gt; BillSummary -&gt; ShowS)
+-&gt; (BillSummary -&gt; String)
+-&gt; ([BillSummary] -&gt; ShowS)
+-&gt; Show BillSummary
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BillSummary -&gt; ShowS
+showsPrec :: Int -&gt; BillSummary -&gt; ShowS
+$cshow :: BillSummary -&gt; String
+show :: BillSummary -&gt; String
+$cshowList :: [BillSummary] -&gt; ShowS
+showList :: [BillSummary] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680338569"><span id="local-6989586621680338576"><span class="annot"><span class="annottext">BillSummary -&gt; BillSummary -&gt; Bool
+(BillSummary -&gt; BillSummary -&gt; Bool)
+-&gt; (BillSummary -&gt; BillSummary -&gt; Bool) -&gt; Eq BillSummary
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BillSummary -&gt; BillSummary -&gt; Bool
+== :: BillSummary -&gt; BillSummary -&gt; Bool
+$c/= :: BillSummary -&gt; BillSummary -&gt; Bool
+/= :: BillSummary -&gt; BillSummary -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680338580"><span id="local-6989586621680338582"><span class="annot"><span class="annottext">(forall x. BillSummary -&gt; Rep BillSummary x)
+-&gt; (forall x. Rep BillSummary x -&gt; BillSummary)
+-&gt; Generic BillSummary
+forall x. Rep BillSummary x -&gt; BillSummary
+forall x. BillSummary -&gt; Rep BillSummary x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. BillSummary -&gt; Rep BillSummary x
+from :: forall x. BillSummary -&gt; Rep BillSummary x
+$cto :: forall x. Rep BillSummary x -&gt; BillSummary
+to :: forall x. Rep BillSummary x -&gt; BillSummary
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-108"></span><span>
+</span><span id="line-109"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680338586"><span id="local-6989586621680338590"><span id="local-6989586621680338593"><span id="local-6989586621680338596"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Bill.html#BillSummary"><span class="hs-identifier hs-type">BillSummary</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-110"></span><span>  </span><span id="local-6989586621680338712"><span class="annot"><span class="annottext">toJSON :: BillSummary -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; BillSummary -&gt; Value
+forall a.
+(Generic a, GToJSON' Value Zero (Rep a)) =&gt;
+Options -&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#genericToJSON"><span class="hs-identifier hs-var">genericToJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">7</span></span><span class="hs-special">}</span><span>
+</span><span id="line-111"></span><span>
+</span><span id="line-112"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680338715"><span id="local-6989586621680338719"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Surypus.Types.Bill.html#BillSummary"><span class="hs-identifier hs-type">BillSummary</span></a></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-113"></span><span>  </span><span id="local-6989586621680338799"><span class="annot"><span class="annottext">parseJSON :: Value -&gt; Parser BillSummary
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#parseJSON"><span class="hs-identifier hs-var hs-var hs-var">parseJSON</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; Value -&gt; Parser BillSummary
+forall a.
+(Generic a, GFromJSON Zero (Rep a)) =&gt;
+Options -&gt; Value -&gt; Parser a
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#genericParseJSON"><span class="hs-identifier hs-var">genericParseJSON</span></a></span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#defaultOptions"><span class="hs-identifier hs-var">defaultOptions</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#fieldLabelModifier"><span class="hs-identifier hs-var">fieldLabelModifier</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Surypus.Types.Common.html#camelTo2"><span class="hs-identifier hs-type">camelTo2</span></a></span><span> </span><span class="annot"><span class="hs-char">'_'</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">.</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">drop</span></span><span> </span><span class="annot"><span class="hs-number">7</span></span><span class="hs-special">}</span><span>
+</span><span id="line-114"></span><span>
+</span><span id="line-115"></span><span class="hs-comment">-- Remove duplicate helper functions and use Data.Char</span><span>
+</span><span id="line-116"></span></pre></body></html>

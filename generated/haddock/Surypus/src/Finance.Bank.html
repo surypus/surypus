@@ -1,0 +1,854 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- | Finance.Bank - Enhanced bank management with type safety</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- This module provides type-safe bank operations with formal verification</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Finance.Bank.html"><span class="hs-identifier">Finance.Bank</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">diffDays</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="annot"><span class="hs-comment">-- | Bank with enhanced semantics</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">data</span><span> </span><span id="Bank"><span class="annot"><a href="Finance.Bank.html#Bank"><span class="hs-identifier hs-var">Bank</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Bank"><span class="annot"><a href="Finance.Bank.html#Bank"><span class="hs-identifier hs-var">Bank</span></a></span></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="bankId"><span class="annot"><span class="annottext">Bank -&gt; BankId
+</span><a href="Finance.Bank.html#bankId"><span class="hs-identifier hs-var hs-var">bankId</span></a></span></span><span>        </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankId"><span class="hs-identifier hs-type">BankId</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="bankCode"><span class="annot"><span class="annottext">Bank -&gt; BankCode
+</span><a href="Finance.Bank.html#bankCode"><span class="hs-identifier hs-var hs-var">bankCode</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankCode"><span class="hs-identifier hs-type">BankCode</span></a></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="bankName"><span class="annot"><span class="annottext">Bank -&gt; BankName
+</span><a href="Finance.Bank.html#bankName"><span class="hs-identifier hs-var hs-var">bankName</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankName"><span class="hs-identifier hs-type">BankName</span></a></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="bankBIC"><span class="annot"><span class="annottext">Bank -&gt; Maybe BICCode
+</span><a href="Finance.Bank.html#bankBIC"><span class="hs-identifier hs-var hs-var">bankBIC</span></a></span></span><span>       </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Finance.Bank.html#BICCode"><span class="hs-identifier hs-type">BICCode</span></a></span><span>  </span><span class="hs-comment">-- Bank Identifier Code</span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="bankSWIFT"><span class="annot"><span class="annottext">Bank -&gt; Maybe SWIFTCode
+</span><a href="Finance.Bank.html#bankSWIFT"><span class="hs-identifier hs-var hs-var">bankSWIFT</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Finance.Bank.html#SWIFTCode"><span class="hs-identifier hs-type">SWIFTCode</span></a></span><span> </span><span class="hs-comment">-- SWIFT code</span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="bankAddress"><span class="annot"><span class="annottext">Bank -&gt; Maybe Text
+</span><a href="Finance.Bank.html#bankAddress"><span class="hs-identifier hs-var hs-var">bankAddress</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="bankIsActive"><span class="annot"><span class="annottext">Bank -&gt; Bool
+</span><a href="Finance.Bank.html#bankIsActive"><span class="hs-identifier hs-var hs-var">bankIsActive</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="bankCreatedAt"><span class="annot"><span class="annottext">Bank -&gt; Day
+</span><a href="Finance.Bank.html#bankCreatedAt"><span class="hs-identifier hs-var hs-var">bankCreatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="bankUpdatedAt"><span class="annot"><span class="annottext">Bank -&gt; Maybe Day
+</span><a href="Finance.Bank.html#bankUpdatedAt"><span class="hs-identifier hs-var hs-var">bankUpdatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680248294"><span id="local-6989586621680248316"><span id="local-6989586621680248320"><span class="annot"><span class="annottext">Int -&gt; Bank -&gt; ShowS
+[Bank] -&gt; ShowS
+Bank -&gt; String
+(Int -&gt; Bank -&gt; ShowS)
+-&gt; (Bank -&gt; String) -&gt; ([Bank] -&gt; ShowS) -&gt; Show Bank
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Bank -&gt; ShowS
+showsPrec :: Int -&gt; Bank -&gt; ShowS
+$cshow :: Bank -&gt; String
+show :: Bank -&gt; String
+$cshowList :: [Bank] -&gt; ShowS
+showList :: [Bank] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248328"><span id="local-6989586621680248348"><span class="annot"><span class="annottext">Bank -&gt; Bank -&gt; Bool
+(Bank -&gt; Bank -&gt; Bool) -&gt; (Bank -&gt; Bank -&gt; Bool) -&gt; Eq Bank
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Bank -&gt; Bank -&gt; Bool
+== :: Bank -&gt; Bank -&gt; Bool
+$c/= :: Bank -&gt; Bank -&gt; Bool
+/= :: Bank -&gt; Bank -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248356"><span id="local-6989586621680248358"><span class="annot"><span class="annottext">(forall x. Bank -&gt; Rep Bank x)
+-&gt; (forall x. Rep Bank x -&gt; Bank) -&gt; Generic Bank
+forall x. Rep Bank x -&gt; Bank
+forall x. Bank -&gt; Rep Bank x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Bank -&gt; Rep Bank x
+from :: forall x. Bank -&gt; Rep Bank x
+$cto :: forall x. Rep Bank x -&gt; Bank
+to :: forall x. Rep Bank x -&gt; Bank
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="annot"><span class="hs-comment">-- | Newtypes for enhanced type safety</span></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">newtype</span><span> </span><span id="BankId"><span class="annot"><a href="Finance.Bank.html#BankId"><span class="hs-identifier hs-var">BankId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BankId"><span class="annot"><a href="Finance.Bank.html#BankId"><span class="hs-identifier hs-var">BankId</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unBankId"><span class="annot"><span class="annottext">BankId -&gt; Int64
+</span><a href="Finance.Bank.html#unBankId"><span class="hs-identifier hs-var hs-var">unBankId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680248366"><span id="local-6989586621680248371"><span id="local-6989586621680248374"><span class="annot"><span class="annottext">Int -&gt; BankId -&gt; ShowS
+[BankId] -&gt; ShowS
+BankId -&gt; String
+(Int -&gt; BankId -&gt; ShowS)
+-&gt; (BankId -&gt; String) -&gt; ([BankId] -&gt; ShowS) -&gt; Show BankId
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BankId -&gt; ShowS
+showsPrec :: Int -&gt; BankId -&gt; ShowS
+$cshow :: BankId -&gt; String
+show :: BankId -&gt; String
+$cshowList :: [BankId] -&gt; ShowS
+showList :: [BankId] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248377"><span id="local-6989586621680248382"><span class="annot"><span class="annottext">BankId -&gt; BankId -&gt; Bool
+(BankId -&gt; BankId -&gt; Bool)
+-&gt; (BankId -&gt; BankId -&gt; Bool) -&gt; Eq BankId
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BankId -&gt; BankId -&gt; Bool
+== :: BankId -&gt; BankId -&gt; Bool
+$c/= :: BankId -&gt; BankId -&gt; Bool
+/= :: BankId -&gt; BankId -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248389"><span id="local-6989586621680248394"><span id="local-6989586621680248398"><span id="local-6989586621680248402"><span id="local-6989586621680248406"><span id="local-6989586621680248410"><span id="local-6989586621680248414"><span class="annot"><span class="annottext">Eq BankId
+Eq BankId =&gt;
+(BankId -&gt; BankId -&gt; Ordering)
+-&gt; (BankId -&gt; BankId -&gt; Bool)
+-&gt; (BankId -&gt; BankId -&gt; Bool)
+-&gt; (BankId -&gt; BankId -&gt; Bool)
+-&gt; (BankId -&gt; BankId -&gt; Bool)
+-&gt; (BankId -&gt; BankId -&gt; BankId)
+-&gt; (BankId -&gt; BankId -&gt; BankId)
+-&gt; Ord BankId
+BankId -&gt; BankId -&gt; Bool
+BankId -&gt; BankId -&gt; Ordering
+BankId -&gt; BankId -&gt; BankId
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: BankId -&gt; BankId -&gt; Ordering
+compare :: BankId -&gt; BankId -&gt; Ordering
+$c&lt; :: BankId -&gt; BankId -&gt; Bool
+&lt; :: BankId -&gt; BankId -&gt; Bool
+$c&lt;= :: BankId -&gt; BankId -&gt; Bool
+&lt;= :: BankId -&gt; BankId -&gt; Bool
+$c&gt; :: BankId -&gt; BankId -&gt; Bool
+&gt; :: BankId -&gt; BankId -&gt; Bool
+$c&gt;= :: BankId -&gt; BankId -&gt; Bool
+&gt;= :: BankId -&gt; BankId -&gt; Bool
+$cmax :: BankId -&gt; BankId -&gt; BankId
+max :: BankId -&gt; BankId -&gt; BankId
+$cmin :: BankId -&gt; BankId -&gt; BankId
+min :: BankId -&gt; BankId -&gt; BankId
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">newtype</span><span> </span><span id="BankCode"><span class="annot"><a href="Finance.Bank.html#BankCode"><span class="hs-identifier hs-var">BankCode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BankCode"><span class="annot"><a href="Finance.Bank.html#BankCode"><span class="hs-identifier hs-var">BankCode</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unBankCode"><span class="annot"><span class="annottext">BankCode -&gt; Text
+</span><a href="Finance.Bank.html#unBankCode"><span class="hs-identifier hs-var hs-var">unBankCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680248428"><span id="local-6989586621680248432"><span id="local-6989586621680248435"><span class="annot"><span class="annottext">Int -&gt; BankCode -&gt; ShowS
+[BankCode] -&gt; ShowS
+BankCode -&gt; String
+(Int -&gt; BankCode -&gt; ShowS)
+-&gt; (BankCode -&gt; String) -&gt; ([BankCode] -&gt; ShowS) -&gt; Show BankCode
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BankCode -&gt; ShowS
+showsPrec :: Int -&gt; BankCode -&gt; ShowS
+$cshow :: BankCode -&gt; String
+show :: BankCode -&gt; String
+$cshowList :: [BankCode] -&gt; ShowS
+showList :: [BankCode] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248438"><span id="local-6989586621680248442"><span class="annot"><span class="annottext">BankCode -&gt; BankCode -&gt; Bool
+(BankCode -&gt; BankCode -&gt; Bool)
+-&gt; (BankCode -&gt; BankCode -&gt; Bool) -&gt; Eq BankCode
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BankCode -&gt; BankCode -&gt; Bool
+== :: BankCode -&gt; BankCode -&gt; Bool
+$c/= :: BankCode -&gt; BankCode -&gt; Bool
+/= :: BankCode -&gt; BankCode -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248448"><span id="local-6989586621680248453"><span id="local-6989586621680248457"><span id="local-6989586621680248461"><span id="local-6989586621680248465"><span id="local-6989586621680248469"><span id="local-6989586621680248473"><span class="annot"><span class="annottext">Eq BankCode
+Eq BankCode =&gt;
+(BankCode -&gt; BankCode -&gt; Ordering)
+-&gt; (BankCode -&gt; BankCode -&gt; Bool)
+-&gt; (BankCode -&gt; BankCode -&gt; Bool)
+-&gt; (BankCode -&gt; BankCode -&gt; Bool)
+-&gt; (BankCode -&gt; BankCode -&gt; Bool)
+-&gt; (BankCode -&gt; BankCode -&gt; BankCode)
+-&gt; (BankCode -&gt; BankCode -&gt; BankCode)
+-&gt; Ord BankCode
+BankCode -&gt; BankCode -&gt; Bool
+BankCode -&gt; BankCode -&gt; Ordering
+BankCode -&gt; BankCode -&gt; BankCode
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: BankCode -&gt; BankCode -&gt; Ordering
+compare :: BankCode -&gt; BankCode -&gt; Ordering
+$c&lt; :: BankCode -&gt; BankCode -&gt; Bool
+&lt; :: BankCode -&gt; BankCode -&gt; Bool
+$c&lt;= :: BankCode -&gt; BankCode -&gt; Bool
+&lt;= :: BankCode -&gt; BankCode -&gt; Bool
+$c&gt; :: BankCode -&gt; BankCode -&gt; Bool
+&gt; :: BankCode -&gt; BankCode -&gt; Bool
+$c&gt;= :: BankCode -&gt; BankCode -&gt; Bool
+&gt;= :: BankCode -&gt; BankCode -&gt; Bool
+$cmax :: BankCode -&gt; BankCode -&gt; BankCode
+max :: BankCode -&gt; BankCode -&gt; BankCode
+$cmin :: BankCode -&gt; BankCode -&gt; BankCode
+min :: BankCode -&gt; BankCode -&gt; BankCode
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span class="hs-keyword">newtype</span><span> </span><span id="BankName"><span class="annot"><a href="Finance.Bank.html#BankName"><span class="hs-identifier hs-var">BankName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BankName"><span class="annot"><a href="Finance.Bank.html#BankName"><span class="hs-identifier hs-var">BankName</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unBankName"><span class="annot"><span class="annottext">BankName -&gt; Text
+</span><a href="Finance.Bank.html#unBankName"><span class="hs-identifier hs-var hs-var">unBankName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680248480"><span id="local-6989586621680248484"><span id="local-6989586621680248487"><span class="annot"><span class="annottext">Int -&gt; BankName -&gt; ShowS
+[BankName] -&gt; ShowS
+BankName -&gt; String
+(Int -&gt; BankName -&gt; ShowS)
+-&gt; (BankName -&gt; String) -&gt; ([BankName] -&gt; ShowS) -&gt; Show BankName
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BankName -&gt; ShowS
+showsPrec :: Int -&gt; BankName -&gt; ShowS
+$cshow :: BankName -&gt; String
+show :: BankName -&gt; String
+$cshowList :: [BankName] -&gt; ShowS
+showList :: [BankName] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248490"><span id="local-6989586621680248494"><span class="annot"><span class="annottext">BankName -&gt; BankName -&gt; Bool
+(BankName -&gt; BankName -&gt; Bool)
+-&gt; (BankName -&gt; BankName -&gt; Bool) -&gt; Eq BankName
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BankName -&gt; BankName -&gt; Bool
+== :: BankName -&gt; BankName -&gt; Bool
+$c/= :: BankName -&gt; BankName -&gt; Bool
+/= :: BankName -&gt; BankName -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248500"><span id="local-6989586621680248504"><span id="local-6989586621680248508"><span id="local-6989586621680248512"><span id="local-6989586621680248516"><span id="local-6989586621680248520"><span id="local-6989586621680248524"><span class="annot"><span class="annottext">Eq BankName
+Eq BankName =&gt;
+(BankName -&gt; BankName -&gt; Ordering)
+-&gt; (BankName -&gt; BankName -&gt; Bool)
+-&gt; (BankName -&gt; BankName -&gt; Bool)
+-&gt; (BankName -&gt; BankName -&gt; Bool)
+-&gt; (BankName -&gt; BankName -&gt; Bool)
+-&gt; (BankName -&gt; BankName -&gt; BankName)
+-&gt; (BankName -&gt; BankName -&gt; BankName)
+-&gt; Ord BankName
+BankName -&gt; BankName -&gt; Bool
+BankName -&gt; BankName -&gt; Ordering
+BankName -&gt; BankName -&gt; BankName
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: BankName -&gt; BankName -&gt; Ordering
+compare :: BankName -&gt; BankName -&gt; Ordering
+$c&lt; :: BankName -&gt; BankName -&gt; Bool
+&lt; :: BankName -&gt; BankName -&gt; Bool
+$c&lt;= :: BankName -&gt; BankName -&gt; Bool
+&lt;= :: BankName -&gt; BankName -&gt; Bool
+$c&gt; :: BankName -&gt; BankName -&gt; Bool
+&gt; :: BankName -&gt; BankName -&gt; Bool
+$c&gt;= :: BankName -&gt; BankName -&gt; Bool
+&gt;= :: BankName -&gt; BankName -&gt; Bool
+$cmax :: BankName -&gt; BankName -&gt; BankName
+max :: BankName -&gt; BankName -&gt; BankName
+$cmin :: BankName -&gt; BankName -&gt; BankName
+min :: BankName -&gt; BankName -&gt; BankName
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">newtype</span><span> </span><span id="BICCode"><span class="annot"><a href="Finance.Bank.html#BICCode"><span class="hs-identifier hs-var">BICCode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BICCode"><span class="annot"><a href="Finance.Bank.html#BICCode"><span class="hs-identifier hs-var">BICCode</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unBICCode"><span class="annot"><span class="annottext">BICCode -&gt; Text
+</span><a href="Finance.Bank.html#unBICCode"><span class="hs-identifier hs-var hs-var">unBICCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680248531"><span id="local-6989586621680248535"><span id="local-6989586621680248538"><span class="annot"><span class="annottext">Int -&gt; BICCode -&gt; ShowS
+[BICCode] -&gt; ShowS
+BICCode -&gt; String
+(Int -&gt; BICCode -&gt; ShowS)
+-&gt; (BICCode -&gt; String) -&gt; ([BICCode] -&gt; ShowS) -&gt; Show BICCode
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BICCode -&gt; ShowS
+showsPrec :: Int -&gt; BICCode -&gt; ShowS
+$cshow :: BICCode -&gt; String
+show :: BICCode -&gt; String
+$cshowList :: [BICCode] -&gt; ShowS
+showList :: [BICCode] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248541"><span id="local-6989586621680248545"><span class="annot"><span class="annottext">BICCode -&gt; BICCode -&gt; Bool
+(BICCode -&gt; BICCode -&gt; Bool)
+-&gt; (BICCode -&gt; BICCode -&gt; Bool) -&gt; Eq BICCode
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BICCode -&gt; BICCode -&gt; Bool
+== :: BICCode -&gt; BICCode -&gt; Bool
+$c/= :: BICCode -&gt; BICCode -&gt; Bool
+/= :: BICCode -&gt; BICCode -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248551"><span id="local-6989586621680248555"><span id="local-6989586621680248559"><span id="local-6989586621680248563"><span id="local-6989586621680248567"><span id="local-6989586621680248571"><span id="local-6989586621680248575"><span class="annot"><span class="annottext">Eq BICCode
+Eq BICCode =&gt;
+(BICCode -&gt; BICCode -&gt; Ordering)
+-&gt; (BICCode -&gt; BICCode -&gt; Bool)
+-&gt; (BICCode -&gt; BICCode -&gt; Bool)
+-&gt; (BICCode -&gt; BICCode -&gt; Bool)
+-&gt; (BICCode -&gt; BICCode -&gt; Bool)
+-&gt; (BICCode -&gt; BICCode -&gt; BICCode)
+-&gt; (BICCode -&gt; BICCode -&gt; BICCode)
+-&gt; Ord BICCode
+BICCode -&gt; BICCode -&gt; Bool
+BICCode -&gt; BICCode -&gt; Ordering
+BICCode -&gt; BICCode -&gt; BICCode
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: BICCode -&gt; BICCode -&gt; Ordering
+compare :: BICCode -&gt; BICCode -&gt; Ordering
+$c&lt; :: BICCode -&gt; BICCode -&gt; Bool
+&lt; :: BICCode -&gt; BICCode -&gt; Bool
+$c&lt;= :: BICCode -&gt; BICCode -&gt; Bool
+&lt;= :: BICCode -&gt; BICCode -&gt; Bool
+$c&gt; :: BICCode -&gt; BICCode -&gt; Bool
+&gt; :: BICCode -&gt; BICCode -&gt; Bool
+$c&gt;= :: BICCode -&gt; BICCode -&gt; Bool
+&gt;= :: BICCode -&gt; BICCode -&gt; Bool
+$cmax :: BICCode -&gt; BICCode -&gt; BICCode
+max :: BICCode -&gt; BICCode -&gt; BICCode
+$cmin :: BICCode -&gt; BICCode -&gt; BICCode
+min :: BICCode -&gt; BICCode -&gt; BICCode
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span class="hs-keyword">newtype</span><span> </span><span id="SWIFTCode"><span class="annot"><a href="Finance.Bank.html#SWIFTCode"><span class="hs-identifier hs-var">SWIFTCode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="SWIFTCode"><span class="annot"><a href="Finance.Bank.html#SWIFTCode"><span class="hs-identifier hs-var">SWIFTCode</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unSWIFTCode"><span class="annot"><span class="annottext">SWIFTCode -&gt; Text
+</span><a href="Finance.Bank.html#unSWIFTCode"><span class="hs-identifier hs-var hs-var">unSWIFTCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680248582"><span id="local-6989586621680248586"><span id="local-6989586621680248589"><span class="annot"><span class="annottext">Int -&gt; SWIFTCode -&gt; ShowS
+[SWIFTCode] -&gt; ShowS
+SWIFTCode -&gt; String
+(Int -&gt; SWIFTCode -&gt; ShowS)
+-&gt; (SWIFTCode -&gt; String)
+-&gt; ([SWIFTCode] -&gt; ShowS)
+-&gt; Show SWIFTCode
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; SWIFTCode -&gt; ShowS
+showsPrec :: Int -&gt; SWIFTCode -&gt; ShowS
+$cshow :: SWIFTCode -&gt; String
+show :: SWIFTCode -&gt; String
+$cshowList :: [SWIFTCode] -&gt; ShowS
+showList :: [SWIFTCode] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248592"><span id="local-6989586621680248596"><span class="annot"><span class="annottext">SWIFTCode -&gt; SWIFTCode -&gt; Bool
+(SWIFTCode -&gt; SWIFTCode -&gt; Bool)
+-&gt; (SWIFTCode -&gt; SWIFTCode -&gt; Bool) -&gt; Eq SWIFTCode
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: SWIFTCode -&gt; SWIFTCode -&gt; Bool
+== :: SWIFTCode -&gt; SWIFTCode -&gt; Bool
+$c/= :: SWIFTCode -&gt; SWIFTCode -&gt; Bool
+/= :: SWIFTCode -&gt; SWIFTCode -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248602"><span id="local-6989586621680248606"><span id="local-6989586621680248610"><span id="local-6989586621680248614"><span id="local-6989586621680248618"><span id="local-6989586621680248622"><span id="local-6989586621680248626"><span class="annot"><span class="annottext">Eq SWIFTCode
+Eq SWIFTCode =&gt;
+(SWIFTCode -&gt; SWIFTCode -&gt; Ordering)
+-&gt; (SWIFTCode -&gt; SWIFTCode -&gt; Bool)
+-&gt; (SWIFTCode -&gt; SWIFTCode -&gt; Bool)
+-&gt; (SWIFTCode -&gt; SWIFTCode -&gt; Bool)
+-&gt; (SWIFTCode -&gt; SWIFTCode -&gt; Bool)
+-&gt; (SWIFTCode -&gt; SWIFTCode -&gt; SWIFTCode)
+-&gt; (SWIFTCode -&gt; SWIFTCode -&gt; SWIFTCode)
+-&gt; Ord SWIFTCode
+SWIFTCode -&gt; SWIFTCode -&gt; Bool
+SWIFTCode -&gt; SWIFTCode -&gt; Ordering
+SWIFTCode -&gt; SWIFTCode -&gt; SWIFTCode
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: SWIFTCode -&gt; SWIFTCode -&gt; Ordering
+compare :: SWIFTCode -&gt; SWIFTCode -&gt; Ordering
+$c&lt; :: SWIFTCode -&gt; SWIFTCode -&gt; Bool
+&lt; :: SWIFTCode -&gt; SWIFTCode -&gt; Bool
+$c&lt;= :: SWIFTCode -&gt; SWIFTCode -&gt; Bool
+&lt;= :: SWIFTCode -&gt; SWIFTCode -&gt; Bool
+$c&gt; :: SWIFTCode -&gt; SWIFTCode -&gt; Bool
+&gt; :: SWIFTCode -&gt; SWIFTCode -&gt; Bool
+$c&gt;= :: SWIFTCode -&gt; SWIFTCode -&gt; Bool
+&gt;= :: SWIFTCode -&gt; SWIFTCode -&gt; Bool
+$cmax :: SWIFTCode -&gt; SWIFTCode -&gt; SWIFTCode
+max :: SWIFTCode -&gt; SWIFTCode -&gt; SWIFTCode
+$cmin :: SWIFTCode -&gt; SWIFTCode -&gt; SWIFTCode
+min :: SWIFTCode -&gt; SWIFTCode -&gt; SWIFTCode
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="annot"><span class="hs-comment">-- | Bank account with richer types</span></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">data</span><span> </span><span id="BankAccount"><span class="annot"><a href="Finance.Bank.html#BankAccount"><span class="hs-identifier hs-var">BankAccount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BankAccount"><span class="annot"><a href="Finance.Bank.html#BankAccount"><span class="hs-identifier hs-var">BankAccount</span></a></span></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="baId"><span class="annot"><span class="annottext">BankAccount -&gt; BankAccountId
+</span><a href="Finance.Bank.html#baId"><span class="hs-identifier hs-var hs-var">baId</span></a></span></span><span>           </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankAccountId"><span class="hs-identifier hs-type">BankAccountId</span></a></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="baBankId"><span class="annot"><span class="annottext">BankAccount -&gt; BankId
+</span><a href="Finance.Bank.html#baBankId"><span class="hs-identifier hs-var hs-var">baBankId</span></a></span></span><span>       </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankId"><span class="hs-identifier hs-type">BankId</span></a></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="baAccountCode"><span class="annot"><span class="annottext">BankAccount -&gt; AccountCode
+</span><a href="Finance.Bank.html#baAccountCode"><span class="hs-identifier hs-var hs-var">baAccountCode</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Bank.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="baCurrency"><span class="annot"><span class="annottext">BankAccount -&gt; CurrencyCode
+</span><a href="Finance.Bank.html#baCurrency"><span class="hs-identifier hs-var hs-var">baCurrency</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Bank.html#CurrencyCode"><span class="hs-identifier hs-type">CurrencyCode</span></a></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="baBalance"><span class="annot"><span class="annottext">BankAccount -&gt; Double
+</span><a href="Finance.Bank.html#baBalance"><span class="hs-identifier hs-var hs-var">baBalance</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>        </span><span class="hs-comment">-- Always &gt;= 0</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="baOpenedAt"><span class="annot"><span class="annottext">BankAccount -&gt; Day
+</span><a href="Finance.Bank.html#baOpenedAt"><span class="hs-identifier hs-var hs-var">baOpenedAt</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="baClosedAt"><span class="annot"><span class="annottext">BankAccount -&gt; Maybe Day
+</span><a href="Finance.Bank.html#baClosedAt"><span class="hs-identifier hs-var hs-var">baClosedAt</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="baIsActive"><span class="annot"><span class="annottext">BankAccount -&gt; Bool
+</span><a href="Finance.Bank.html#baIsActive"><span class="hs-identifier hs-var hs-var">baIsActive</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680248640"><span id="local-6989586621680248654"><span id="local-6989586621680248658"><span class="annot"><span class="annottext">Int -&gt; BankAccount -&gt; ShowS
+[BankAccount] -&gt; ShowS
+BankAccount -&gt; String
+(Int -&gt; BankAccount -&gt; ShowS)
+-&gt; (BankAccount -&gt; String)
+-&gt; ([BankAccount] -&gt; ShowS)
+-&gt; Show BankAccount
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BankAccount -&gt; ShowS
+showsPrec :: Int -&gt; BankAccount -&gt; ShowS
+$cshow :: BankAccount -&gt; String
+show :: BankAccount -&gt; String
+$cshowList :: [BankAccount] -&gt; ShowS
+showList :: [BankAccount] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248661"><span id="local-6989586621680248674"><span class="annot"><span class="annottext">BankAccount -&gt; BankAccount -&gt; Bool
+(BankAccount -&gt; BankAccount -&gt; Bool)
+-&gt; (BankAccount -&gt; BankAccount -&gt; Bool) -&gt; Eq BankAccount
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BankAccount -&gt; BankAccount -&gt; Bool
+== :: BankAccount -&gt; BankAccount -&gt; Bool
+$c/= :: BankAccount -&gt; BankAccount -&gt; Bool
+/= :: BankAccount -&gt; BankAccount -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248678"><span id="local-6989586621680248680"><span class="annot"><span class="annottext">(forall x. BankAccount -&gt; Rep BankAccount x)
+-&gt; (forall x. Rep BankAccount x -&gt; BankAccount)
+-&gt; Generic BankAccount
+forall x. Rep BankAccount x -&gt; BankAccount
+forall x. BankAccount -&gt; Rep BankAccount x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. BankAccount -&gt; Rep BankAccount x
+from :: forall x. BankAccount -&gt; Rep BankAccount x
+$cto :: forall x. Rep BankAccount x -&gt; BankAccount
+to :: forall x. Rep BankAccount x -&gt; BankAccount
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span class="hs-keyword">newtype</span><span> </span><span id="BankAccountId"><span class="annot"><a href="Finance.Bank.html#BankAccountId"><span class="hs-identifier hs-var">BankAccountId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BankAccountId"><span class="annot"><a href="Finance.Bank.html#BankAccountId"><span class="hs-identifier hs-var">BankAccountId</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unBankAccountId"><span class="annot"><span class="annottext">BankAccountId -&gt; Int64
+</span><a href="Finance.Bank.html#unBankAccountId"><span class="hs-identifier hs-var hs-var">unBankAccountId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680248685"><span id="local-6989586621680248689"><span id="local-6989586621680248692"><span class="annot"><span class="annottext">Int -&gt; BankAccountId -&gt; ShowS
+[BankAccountId] -&gt; ShowS
+BankAccountId -&gt; String
+(Int -&gt; BankAccountId -&gt; ShowS)
+-&gt; (BankAccountId -&gt; String)
+-&gt; ([BankAccountId] -&gt; ShowS)
+-&gt; Show BankAccountId
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BankAccountId -&gt; ShowS
+showsPrec :: Int -&gt; BankAccountId -&gt; ShowS
+$cshow :: BankAccountId -&gt; String
+show :: BankAccountId -&gt; String
+$cshowList :: [BankAccountId] -&gt; ShowS
+showList :: [BankAccountId] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248695"><span id="local-6989586621680248699"><span class="annot"><span class="annottext">BankAccountId -&gt; BankAccountId -&gt; Bool
+(BankAccountId -&gt; BankAccountId -&gt; Bool)
+-&gt; (BankAccountId -&gt; BankAccountId -&gt; Bool) -&gt; Eq BankAccountId
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BankAccountId -&gt; BankAccountId -&gt; Bool
+== :: BankAccountId -&gt; BankAccountId -&gt; Bool
+$c/= :: BankAccountId -&gt; BankAccountId -&gt; Bool
+/= :: BankAccountId -&gt; BankAccountId -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248705"><span id="local-6989586621680248709"><span id="local-6989586621680248713"><span id="local-6989586621680248717"><span id="local-6989586621680248721"><span id="local-6989586621680248725"><span id="local-6989586621680248729"><span class="annot"><span class="annottext">Eq BankAccountId
+Eq BankAccountId =&gt;
+(BankAccountId -&gt; BankAccountId -&gt; Ordering)
+-&gt; (BankAccountId -&gt; BankAccountId -&gt; Bool)
+-&gt; (BankAccountId -&gt; BankAccountId -&gt; Bool)
+-&gt; (BankAccountId -&gt; BankAccountId -&gt; Bool)
+-&gt; (BankAccountId -&gt; BankAccountId -&gt; Bool)
+-&gt; (BankAccountId -&gt; BankAccountId -&gt; BankAccountId)
+-&gt; (BankAccountId -&gt; BankAccountId -&gt; BankAccountId)
+-&gt; Ord BankAccountId
+BankAccountId -&gt; BankAccountId -&gt; Bool
+BankAccountId -&gt; BankAccountId -&gt; Ordering
+BankAccountId -&gt; BankAccountId -&gt; BankAccountId
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: BankAccountId -&gt; BankAccountId -&gt; Ordering
+compare :: BankAccountId -&gt; BankAccountId -&gt; Ordering
+$c&lt; :: BankAccountId -&gt; BankAccountId -&gt; Bool
+&lt; :: BankAccountId -&gt; BankAccountId -&gt; Bool
+$c&lt;= :: BankAccountId -&gt; BankAccountId -&gt; Bool
+&lt;= :: BankAccountId -&gt; BankAccountId -&gt; Bool
+$c&gt; :: BankAccountId -&gt; BankAccountId -&gt; Bool
+&gt; :: BankAccountId -&gt; BankAccountId -&gt; Bool
+$c&gt;= :: BankAccountId -&gt; BankAccountId -&gt; Bool
+&gt;= :: BankAccountId -&gt; BankAccountId -&gt; Bool
+$cmax :: BankAccountId -&gt; BankAccountId -&gt; BankAccountId
+max :: BankAccountId -&gt; BankAccountId -&gt; BankAccountId
+$cmin :: BankAccountId -&gt; BankAccountId -&gt; BankAccountId
+min :: BankAccountId -&gt; BankAccountId -&gt; BankAccountId
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span class="hs-keyword">newtype</span><span> </span><span id="AccountCode"><span class="annot"><a href="Finance.Bank.html#AccountCode"><span class="hs-identifier hs-var">AccountCode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AccountCode"><span class="annot"><a href="Finance.Bank.html#AccountCode"><span class="hs-identifier hs-var">AccountCode</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unAccountCode"><span class="annot"><span class="annottext">AccountCode -&gt; Text
+</span><a href="Finance.Bank.html#unAccountCode"><span class="hs-identifier hs-var hs-var">unAccountCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680248736"><span id="local-6989586621680248740"><span id="local-6989586621680248743"><span class="annot"><span class="annottext">Int -&gt; AccountCode -&gt; ShowS
+[AccountCode] -&gt; ShowS
+AccountCode -&gt; String
+(Int -&gt; AccountCode -&gt; ShowS)
+-&gt; (AccountCode -&gt; String)
+-&gt; ([AccountCode] -&gt; ShowS)
+-&gt; Show AccountCode
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AccountCode -&gt; ShowS
+showsPrec :: Int -&gt; AccountCode -&gt; ShowS
+$cshow :: AccountCode -&gt; String
+show :: AccountCode -&gt; String
+$cshowList :: [AccountCode] -&gt; ShowS
+showList :: [AccountCode] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248746"><span id="local-6989586621680248750"><span class="annot"><span class="annottext">AccountCode -&gt; AccountCode -&gt; Bool
+(AccountCode -&gt; AccountCode -&gt; Bool)
+-&gt; (AccountCode -&gt; AccountCode -&gt; Bool) -&gt; Eq AccountCode
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AccountCode -&gt; AccountCode -&gt; Bool
+== :: AccountCode -&gt; AccountCode -&gt; Bool
+$c/= :: AccountCode -&gt; AccountCode -&gt; Bool
+/= :: AccountCode -&gt; AccountCode -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248756"><span id="local-6989586621680248760"><span id="local-6989586621680248764"><span id="local-6989586621680248768"><span id="local-6989586621680248772"><span id="local-6989586621680248776"><span id="local-6989586621680248780"><span class="annot"><span class="annottext">Eq AccountCode
+Eq AccountCode =&gt;
+(AccountCode -&gt; AccountCode -&gt; Ordering)
+-&gt; (AccountCode -&gt; AccountCode -&gt; Bool)
+-&gt; (AccountCode -&gt; AccountCode -&gt; Bool)
+-&gt; (AccountCode -&gt; AccountCode -&gt; Bool)
+-&gt; (AccountCode -&gt; AccountCode -&gt; Bool)
+-&gt; (AccountCode -&gt; AccountCode -&gt; AccountCode)
+-&gt; (AccountCode -&gt; AccountCode -&gt; AccountCode)
+-&gt; Ord AccountCode
+AccountCode -&gt; AccountCode -&gt; Bool
+AccountCode -&gt; AccountCode -&gt; Ordering
+AccountCode -&gt; AccountCode -&gt; AccountCode
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: AccountCode -&gt; AccountCode -&gt; Ordering
+compare :: AccountCode -&gt; AccountCode -&gt; Ordering
+$c&lt; :: AccountCode -&gt; AccountCode -&gt; Bool
+&lt; :: AccountCode -&gt; AccountCode -&gt; Bool
+$c&lt;= :: AccountCode -&gt; AccountCode -&gt; Bool
+&lt;= :: AccountCode -&gt; AccountCode -&gt; Bool
+$c&gt; :: AccountCode -&gt; AccountCode -&gt; Bool
+&gt; :: AccountCode -&gt; AccountCode -&gt; Bool
+$c&gt;= :: AccountCode -&gt; AccountCode -&gt; Bool
+&gt;= :: AccountCode -&gt; AccountCode -&gt; Bool
+$cmax :: AccountCode -&gt; AccountCode -&gt; AccountCode
+max :: AccountCode -&gt; AccountCode -&gt; AccountCode
+$cmin :: AccountCode -&gt; AccountCode -&gt; AccountCode
+min :: AccountCode -&gt; AccountCode -&gt; AccountCode
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span class="hs-keyword">newtype</span><span> </span><span id="CurrencyCode"><span class="annot"><a href="Finance.Bank.html#CurrencyCode"><span class="hs-identifier hs-var">CurrencyCode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CurrencyCode"><span class="annot"><a href="Finance.Bank.html#CurrencyCode"><span class="hs-identifier hs-var">CurrencyCode</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unCurrencyCode"><span class="annot"><span class="annottext">CurrencyCode -&gt; Text
+</span><a href="Finance.Bank.html#unCurrencyCode"><span class="hs-identifier hs-var hs-var">unCurrencyCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680248787"><span id="local-6989586621680248791"><span id="local-6989586621680248794"><span class="annot"><span class="annottext">Int -&gt; CurrencyCode -&gt; ShowS
+[CurrencyCode] -&gt; ShowS
+CurrencyCode -&gt; String
+(Int -&gt; CurrencyCode -&gt; ShowS)
+-&gt; (CurrencyCode -&gt; String)
+-&gt; ([CurrencyCode] -&gt; ShowS)
+-&gt; Show CurrencyCode
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CurrencyCode -&gt; ShowS
+showsPrec :: Int -&gt; CurrencyCode -&gt; ShowS
+$cshow :: CurrencyCode -&gt; String
+show :: CurrencyCode -&gt; String
+$cshowList :: [CurrencyCode] -&gt; ShowS
+showList :: [CurrencyCode] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248797"><span id="local-6989586621680248801"><span class="annot"><span class="annottext">CurrencyCode -&gt; CurrencyCode -&gt; Bool
+(CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool) -&gt; Eq CurrencyCode
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+== :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c/= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+/= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680248807"><span id="local-6989586621680248811"><span id="local-6989586621680248815"><span id="local-6989586621680248819"><span id="local-6989586621680248823"><span id="local-6989586621680248827"><span id="local-6989586621680248831"><span class="annot"><span class="annottext">Eq CurrencyCode
+Eq CurrencyCode =&gt;
+(CurrencyCode -&gt; CurrencyCode -&gt; Ordering)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode)
+-&gt; Ord CurrencyCode
+CurrencyCode -&gt; CurrencyCode -&gt; Bool
+CurrencyCode -&gt; CurrencyCode -&gt; Ordering
+CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: CurrencyCode -&gt; CurrencyCode -&gt; Ordering
+compare :: CurrencyCode -&gt; CurrencyCode -&gt; Ordering
+$c&lt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&lt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c&lt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&lt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c&gt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&gt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c&gt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&gt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$cmax :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+max :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+$cmin :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+min :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="annot"><span class="hs-comment">-- | Smart constructor with validation</span></span><span>
+</span><span id="line-53"></span><span class="annot"><a href="Finance.Bank.html#createBank"><span class="hs-identifier hs-type">createBank</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankId"><span class="hs-identifier hs-type">BankId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankCode"><span class="hs-identifier hs-type">BankCode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankName"><span class="hs-identifier hs-type">BankName</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Bank.html#Bank"><span class="hs-identifier hs-type">Bank</span></a></span><span>
+</span><span id="line-54"></span><span id="createBank"><span class="annot"><span class="annottext">createBank :: BankId -&gt; BankCode -&gt; BankName -&gt; Day -&gt; Bank
+</span><a href="Finance.Bank.html#createBank"><span class="hs-identifier hs-var hs-var">createBank</span></a></span></span><span> </span><span id="local-6989586621680248836"><span class="annot"><span class="annottext">BankId
+</span><a href="#local-6989586621680248836"><span class="hs-identifier hs-var">bid</span></a></span></span><span> </span><span id="local-6989586621680248837"><span class="annot"><span class="annottext">BankCode
+</span><a href="#local-6989586621680248837"><span class="hs-identifier hs-var">code</span></a></span></span><span> </span><span id="local-6989586621680248838"><span class="annot"><span class="annottext">BankName
+</span><a href="#local-6989586621680248838"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621680248839"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680248839"><span class="hs-identifier hs-var">today</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Bank.html#Bank"><span class="hs-identifier hs-type">Bank</span></a></span><span>
+</span><span id="line-55"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">bankId :: BankId
+</span><a href="Finance.Bank.html#bankId"><span class="hs-identifier hs-var">bankId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BankId
+</span><a href="#local-6989586621680248836"><span class="hs-identifier hs-var">bid</span></a></span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">bankCode :: BankCode
+</span><a href="Finance.Bank.html#bankCode"><span class="hs-identifier hs-var">bankCode</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BankCode
+</span><a href="#local-6989586621680248837"><span class="hs-identifier hs-var">code</span></a></span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">bankName :: BankName
+</span><a href="Finance.Bank.html#bankName"><span class="hs-identifier hs-var">bankName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BankName
+</span><a href="#local-6989586621680248838"><span class="hs-identifier hs-var">name</span></a></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">bankBIC :: Maybe BICCode
+</span><a href="Finance.Bank.html#bankBIC"><span class="hs-identifier hs-var">bankBIC</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe BICCode
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">bankSWIFT :: Maybe SWIFTCode
+</span><a href="Finance.Bank.html#bankSWIFT"><span class="hs-identifier hs-var">bankSWIFT</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe SWIFTCode
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">bankAddress :: Maybe Text
+</span><a href="Finance.Bank.html#bankAddress"><span class="hs-identifier hs-var">bankAddress</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">bankIsActive :: Bool
+</span><a href="Finance.Bank.html#bankIsActive"><span class="hs-identifier hs-var">bankIsActive</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">bankCreatedAt :: Day
+</span><a href="Finance.Bank.html#bankCreatedAt"><span class="hs-identifier hs-var">bankCreatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680248839"><span class="hs-identifier hs-var">today</span></a></span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">bankUpdatedAt :: Maybe Day
+</span><a href="Finance.Bank.html#bankUpdatedAt"><span class="hs-identifier hs-var">bankUpdatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Day
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-64"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-65"></span><span>
+</span><span id="line-66"></span><span class="annot"><span class="hs-comment">-- | Open bank account with validation</span></span><span>
+</span><span id="line-67"></span><span class="annot"><a href="Finance.Bank.html#openBankAccount"><span class="hs-identifier hs-type">openBankAccount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankAccountId"><span class="hs-identifier hs-type">BankAccountId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankId"><span class="hs-identifier hs-type">BankId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Bank.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Bank.html#CurrencyCode"><span class="hs-identifier hs-type">CurrencyCode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankAccount"><span class="hs-identifier hs-type">BankAccount</span></a></span><span>
+</span><span id="line-68"></span><span id="openBankAccount"><span class="annot"><span class="annottext">openBankAccount :: BankAccountId
+-&gt; BankId -&gt; AccountCode -&gt; CurrencyCode -&gt; Day -&gt; BankAccount
+</span><a href="Finance.Bank.html#openBankAccount"><span class="hs-identifier hs-var hs-var">openBankAccount</span></a></span></span><span> </span><span id="local-6989586621680248841"><span class="annot"><span class="annottext">BankAccountId
+</span><a href="#local-6989586621680248841"><span class="hs-identifier hs-var">baid</span></a></span></span><span> </span><span id="local-6989586621680248842"><span class="annot"><span class="annottext">BankId
+</span><a href="#local-6989586621680248842"><span class="hs-identifier hs-var">bid</span></a></span></span><span> </span><span id="local-6989586621680248843"><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680248843"><span class="hs-identifier hs-var">code</span></a></span></span><span> </span><span id="local-6989586621680248844"><span class="annot"><span class="annottext">CurrencyCode
+</span><a href="#local-6989586621680248844"><span class="hs-identifier hs-var">curr</span></a></span></span><span> </span><span id="local-6989586621680248845"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680248845"><span class="hs-identifier hs-var">today</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankAccount"><span class="hs-identifier hs-type">BankAccount</span></a></span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">baId :: BankAccountId
+</span><a href="Finance.Bank.html#baId"><span class="hs-identifier hs-var">baId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BankAccountId
+</span><a href="#local-6989586621680248841"><span class="hs-identifier hs-var">baid</span></a></span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">baBankId :: BankId
+</span><a href="Finance.Bank.html#baBankId"><span class="hs-identifier hs-var">baBankId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BankId
+</span><a href="#local-6989586621680248842"><span class="hs-identifier hs-var">bid</span></a></span><span>
+</span><span id="line-71"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">baAccountCode :: AccountCode
+</span><a href="Finance.Bank.html#baAccountCode"><span class="hs-identifier hs-var">baAccountCode</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680248843"><span class="hs-identifier hs-var">code</span></a></span><span>
+</span><span id="line-72"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">baCurrency :: CurrencyCode
+</span><a href="Finance.Bank.html#baCurrency"><span class="hs-identifier hs-var">baCurrency</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CurrencyCode
+</span><a href="#local-6989586621680248844"><span class="hs-identifier hs-var">curr</span></a></span><span>
+</span><span id="line-73"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">baBalance :: Double
+</span><a href="Finance.Bank.html#baBalance"><span class="hs-identifier hs-var">baBalance</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">baOpenedAt :: Day
+</span><a href="Finance.Bank.html#baOpenedAt"><span class="hs-identifier hs-var">baOpenedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680248845"><span class="hs-identifier hs-var">today</span></a></span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">baClosedAt :: Maybe Day
+</span><a href="Finance.Bank.html#baClosedAt"><span class="hs-identifier hs-var">baClosedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Day
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">baIsActive :: Bool
+</span><a href="Finance.Bank.html#baIsActive"><span class="hs-identifier hs-var">baIsActive</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-77"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-78"></span><span>
+</span><span id="line-79"></span><span class="annot"><span class="hs-comment">-- | Deposit with invariant: balance &gt;= 0</span></span><span>
+</span><span id="line-80"></span><span class="annot"><a href="Finance.Bank.html#deposit"><span class="hs-identifier hs-type">deposit</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankAccount"><span class="hs-identifier hs-type">BankAccount</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Finance.Bank.html#BankAccount"><span class="hs-identifier hs-type">BankAccount</span></a></span><span>
+</span><span id="line-81"></span><span id="deposit"><span class="annot"><span class="annottext">deposit :: Double -&gt; BankAccount -&gt; Maybe BankAccount
+</span><a href="Finance.Bank.html#deposit"><span class="hs-identifier hs-var hs-var">deposit</span></a></span></span><span> </span><span id="local-6989586621680248847"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680248847"><span class="hs-identifier hs-var">amount</span></a></span></span><span> </span><span id="local-6989586621680248848"><span class="annot"><span class="annottext">BankAccount
+</span><a href="#local-6989586621680248848"><span class="hs-identifier hs-var">account</span></a></span></span><span>
+</span><span id="line-82"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680248847"><span class="hs-identifier hs-var">amount</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe BankAccount
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-83"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BankAccount -&gt; Maybe BankAccount
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(BankAccount -&gt; Maybe BankAccount)
+-&gt; BankAccount -&gt; Maybe BankAccount
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">BankAccount
+</span><a href="#local-6989586621680248848"><span class="hs-identifier hs-var">account</span></a></span><span>
+</span><span id="line-84"></span><span>      </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.Bank.html#baBalance"><span class="hs-identifier hs-var">baBalance</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Bank.html#baBalance"><span class="hs-identifier hs-var">baBalance</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680248848"><span class="hs-identifier hs-type">account</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">+</span></span><span> </span><span class="annot"><a href="#local-6989586621680248847"><span class="hs-identifier hs-type">amount</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-85"></span><span>
+</span><span id="line-86"></span><span class="annot"><span class="hs-comment">-- | Withdraw with invariant: balance &gt;= amount</span></span><span>
+</span><span id="line-87"></span><span class="annot"><a href="Finance.Bank.html#withdraw"><span class="hs-identifier hs-type">withdraw</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankAccount"><span class="hs-identifier hs-type">BankAccount</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Finance.Bank.html#BankAccount"><span class="hs-identifier hs-type">BankAccount</span></a></span><span>
+</span><span id="line-88"></span><span id="withdraw"><span class="annot"><span class="annottext">withdraw :: Double -&gt; BankAccount -&gt; Maybe BankAccount
+</span><a href="Finance.Bank.html#withdraw"><span class="hs-identifier hs-var hs-var">withdraw</span></a></span></span><span> </span><span id="local-6989586621680248851"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680248851"><span class="hs-identifier hs-var">amount</span></a></span></span><span> </span><span id="local-6989586621680248852"><span class="annot"><span class="annottext">BankAccount
+</span><a href="#local-6989586621680248852"><span class="hs-identifier hs-var">account</span></a></span></span><span>
+</span><span id="line-89"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680248851"><span class="hs-identifier hs-var">amount</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe BankAccount
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-90"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680248851"><span class="hs-identifier hs-var">amount</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">BankAccount -&gt; Double
+</span><a href="Finance.Bank.html#baBalance"><span class="hs-identifier hs-var">baBalance</span></a></span><span> </span><span class="annot"><span class="annottext">BankAccount
+</span><a href="#local-6989586621680248852"><span class="hs-identifier hs-var">account</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe BankAccount
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>  </span><span class="hs-comment">-- Insufficient funds</span><span>
+</span><span id="line-91"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BankAccount -&gt; Maybe BankAccount
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(BankAccount -&gt; Maybe BankAccount)
+-&gt; BankAccount -&gt; Maybe BankAccount
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">BankAccount
+</span><a href="#local-6989586621680248852"><span class="hs-identifier hs-var">account</span></a></span><span>
+</span><span id="line-92"></span><span>      </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.Bank.html#baBalance"><span class="hs-identifier hs-var">baBalance</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Bank.html#baBalance"><span class="hs-identifier hs-var">baBalance</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680248852"><span class="hs-identifier hs-type">account</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">-</span></span><span> </span><span class="annot"><a href="#local-6989586621680248851"><span class="hs-identifier hs-type">amount</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-93"></span><span>
+</span><span id="line-94"></span><span class="annot"><span class="hs-comment">-- | Close bank account (must have zero balance)</span></span><span>
+</span><span id="line-95"></span><span class="annot"><a href="Finance.Bank.html#closeBankAccount"><span class="hs-identifier hs-type">closeBankAccount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankAccount"><span class="hs-identifier hs-type">BankAccount</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Finance.Bank.html#BankAccount"><span class="hs-identifier hs-type">BankAccount</span></a></span><span>
+</span><span id="line-96"></span><span id="closeBankAccount"><span class="annot"><span class="annottext">closeBankAccount :: Day -&gt; BankAccount -&gt; Maybe BankAccount
+</span><a href="Finance.Bank.html#closeBankAccount"><span class="hs-identifier hs-var hs-var">closeBankAccount</span></a></span></span><span> </span><span id="local-6989586621680248854"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680248854"><span class="hs-identifier hs-var">today</span></a></span></span><span> </span><span id="local-6989586621680248855"><span class="annot"><span class="annottext">BankAccount
+</span><a href="#local-6989586621680248855"><span class="hs-identifier hs-var">account</span></a></span></span><span>
+</span><span id="line-97"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">BankAccount -&gt; Double
+</span><a href="Finance.Bank.html#baBalance"><span class="hs-identifier hs-var">baBalance</span></a></span><span> </span><span class="annot"><span class="annottext">BankAccount
+</span><a href="#local-6989586621680248855"><span class="hs-identifier hs-var">account</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe BankAccount
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>  </span><span class="hs-comment">-- Cannot close with non-zero balance</span><span>
+</span><span id="line-98"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BankAccount -&gt; Maybe BankAccount
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(BankAccount -&gt; Maybe BankAccount)
+-&gt; BankAccount -&gt; Maybe BankAccount
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">BankAccount
+</span><a href="#local-6989586621680248855"><span class="hs-identifier hs-var">account</span></a></span><span>
+</span><span id="line-99"></span><span>      </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.Bank.html#baIsActive"><span class="hs-identifier hs-var">baIsActive</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">False</span></span><span>
+</span><span id="line-100"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Bank.html#baClosedAt"><span class="hs-identifier hs-var">baClosedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><a href="#local-6989586621680248854"><span class="hs-identifier hs-type">today</span></a></span><span>
+</span><span id="line-101"></span><span>      </span><span class="hs-special">}</span><span>
+</span><span id="line-102"></span><span>
+</span><span id="line-103"></span><span class="annot"><span class="hs-comment">-- | Check if bank account is active</span></span><span>
+</span><span id="line-104"></span><span class="annot"><a href="Finance.Bank.html#isActiveBankAccount"><span class="hs-identifier hs-type">isActiveBankAccount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankAccount"><span class="hs-identifier hs-type">BankAccount</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-105"></span><span id="isActiveBankAccount"><span class="annot"><span class="annottext">isActiveBankAccount :: BankAccount -&gt; Bool
+</span><a href="Finance.Bank.html#isActiveBankAccount"><span class="hs-identifier hs-var hs-var">isActiveBankAccount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BankAccount -&gt; Bool
+</span><a href="Finance.Bank.html#baIsActive"><span class="hs-identifier hs-var">baIsActive</span></a></span><span>
+</span><span id="line-106"></span><span>
+</span><span id="line-107"></span><span class="annot"><span class="hs-comment">-- | Calculate account age in days</span></span><span>
+</span><span id="line-108"></span><span class="annot"><a href="Finance.Bank.html#accountAge"><span class="hs-identifier hs-type">accountAge</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankAccount"><span class="hs-identifier hs-type">BankAccount</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-109"></span><span id="accountAge"><span class="annot"><span class="annottext">accountAge :: Day -&gt; BankAccount -&gt; Int
+</span><a href="Finance.Bank.html#accountAge"><span class="hs-identifier hs-var hs-var">accountAge</span></a></span></span><span> </span><span id="local-6989586621680248858"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680248858"><span class="hs-identifier hs-var">today</span></a></span></span><span> </span><span id="local-6989586621680248859"><span class="annot"><span class="annottext">BankAccount
+</span><a href="#local-6989586621680248859"><span class="hs-identifier hs-var">account</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Int
+forall b. Integral b =&gt; Double -&gt; b
+forall a b. (RealFrac a, Integral b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">truncate</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer -&gt; Double
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Day -&gt; Day -&gt; Integer
+</span><span class="hs-identifier hs-var">diffDays</span></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680248858"><span class="hs-identifier hs-var">today</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BankAccount -&gt; Day
+</span><a href="Finance.Bank.html#baOpenedAt"><span class="hs-identifier hs-var">baOpenedAt</span></a></span><span> </span><span class="annot"><span class="annottext">BankAccount
+</span><a href="#local-6989586621680248859"><span class="hs-identifier hs-var">account</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-110"></span><span>
+</span><span id="line-111"></span><span class="annot"><span class="hs-comment">-- | Pretty print bank</span></span><span>
+</span><span id="line-112"></span><span class="annot"><a href="Finance.Bank.html#prettyBank"><span class="hs-identifier hs-type">prettyBank</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Bank.html#Bank"><span class="hs-identifier hs-type">Bank</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-113"></span><span id="prettyBank"><span class="annot"><span class="annottext">prettyBank :: Bank -&gt; Text
+</span><a href="Finance.Bank.html#prettyBank"><span class="hs-identifier hs-var hs-var">prettyBank</span></a></span></span><span> </span><span id="local-6989586621680248863"><span class="annot"><span class="annottext">Bank
+</span><a href="#local-6989586621680248863"><span class="hs-identifier hs-var">bank</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BankCode -&gt; Text
+</span><a href="Finance.Bank.html#unBankCode"><span class="hs-identifier hs-var">unBankCode</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bank -&gt; BankCode
+</span><a href="Finance.Bank.html#bankCode"><span class="hs-identifier hs-var">bankCode</span></a></span><span> </span><span class="annot"><span class="annottext">Bank
+</span><a href="#local-6989586621680248863"><span class="hs-identifier hs-var">bank</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; - &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">BankName -&gt; Text
+</span><a href="Finance.Bank.html#unBankName"><span class="hs-identifier hs-var">unBankName</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bank -&gt; BankName
+</span><a href="Finance.Bank.html#bankName"><span class="hs-identifier hs-var">bankName</span></a></span><span> </span><span class="annot"><span class="annottext">Bank
+</span><a href="#local-6989586621680248863"><span class="hs-identifier hs-var">bank</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span>
+</span><span id="line-114"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Bank -&gt; Bool
+</span><a href="Finance.Bank.html#bankIsActive"><span class="hs-identifier hs-var">bankIsActive</span></a></span><span> </span><span class="annot"><span class="annottext">Bank
+</span><a href="#local-6989586621680248863"><span class="hs-identifier hs-var">bank</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; (Active)&quot;</span></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; (Inactive)&quot;</span></span><span>
+</span><span id="line-115"></span><span>
+</span><span id="line-116"></span><span class="annot"><span class="hs-comment">-- | Pretty print bank account</span></span><span>
+</span><span id="line-117"></span><span class="annot"><a href="Finance.Bank.html#prettyBankAccount"><span class="hs-identifier hs-type">prettyBankAccount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Bank.html#BankAccount"><span class="hs-identifier hs-type">BankAccount</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-118"></span><span id="prettyBankAccount"><span class="annot"><span class="annottext">prettyBankAccount :: BankAccount -&gt; Text
+</span><a href="Finance.Bank.html#prettyBankAccount"><span class="hs-identifier hs-var hs-var">prettyBankAccount</span></a></span></span><span> </span><span id="local-6989586621680248865"><span class="annot"><span class="annottext">BankAccount
+</span><a href="#local-6989586621680248865"><span class="hs-identifier hs-var">acc</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccountCode -&gt; Text
+</span><a href="Finance.Bank.html#unAccountCode"><span class="hs-identifier hs-var">unAccountCode</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BankAccount -&gt; AccountCode
+</span><a href="Finance.Bank.html#baAccountCode"><span class="hs-identifier hs-var">baAccountCode</span></a></span><span> </span><span class="annot"><span class="annottext">BankAccount
+</span><a href="#local-6989586621680248865"><span class="hs-identifier hs-var">acc</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; (&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">CurrencyCode -&gt; Text
+</span><a href="Finance.Bank.html#unCurrencyCode"><span class="hs-identifier hs-var">unCurrencyCode</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BankAccount -&gt; CurrencyCode
+</span><a href="Finance.Bank.html#baCurrency"><span class="hs-identifier hs-var">baCurrency</span></a></span><span> </span><span class="annot"><span class="annottext">BankAccount
+</span><a href="#local-6989586621680248865"><span class="hs-identifier hs-var">acc</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span>
+</span><span id="line-119"></span><span>  </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;, Balance: &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">BankAccount -&gt; Double
+</span><a href="Finance.Bank.html#baBalance"><span class="hs-identifier hs-var">baBalance</span></a></span><span> </span><span class="annot"><span class="annottext">BankAccount
+</span><a href="#local-6989586621680248865"><span class="hs-identifier hs-var">acc</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span>
+</span><span id="line-120"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">BankAccount -&gt; Bool
+</span><a href="Finance.Bank.html#baIsActive"><span class="hs-identifier hs-var">baIsActive</span></a></span><span> </span><span class="annot"><span class="annottext">BankAccount
+</span><a href="#local-6989586621680248865"><span class="hs-identifier hs-var">acc</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;&quot;</span></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; [CLOSED]&quot;</span></span><span>
+</span><span id="line-121"></span></pre></body></html>

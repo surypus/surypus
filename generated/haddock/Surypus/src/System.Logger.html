@@ -1,0 +1,261 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE RecordWildCards #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="System.Logger.html"><span class="hs-identifier">System.Logger</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Concurrent.STM</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">TVar</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">newTVarIO</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">readTVar</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">readTVarIO</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">writeTVar</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">atomically</span></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier">ToJSON</span></a></span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier">toJSON</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#object"><span class="hs-identifier">object</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#.%3D"><span class="hs-operator">(.=)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time.Clock</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">getCurrentTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">System.IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="annot"><span class="hs-comment">-- | Log levels</span></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">data</span><span> </span><span id="LogLevel"><span class="annot"><a href="System.Logger.html#LogLevel"><span class="hs-identifier hs-var">LogLevel</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Debug"><span class="annot"><a href="System.Logger.html#Debug"><span class="hs-identifier hs-var">Debug</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Info"><span class="annot"><a href="System.Logger.html#Info"><span class="hs-identifier hs-var">Info</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Warn"><span class="annot"><a href="System.Logger.html#Warn"><span class="hs-identifier hs-var">Warn</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Error"><span class="annot"><a href="System.Logger.html#Error"><span class="hs-identifier hs-var">Error</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Critical"><span class="annot"><a href="System.Logger.html#Critical"><span class="hs-identifier hs-var">Critical</span></a></span></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680360702"><span id="local-6989586621680360704"><span id="local-6989586621680360708"><span class="annot"><span class="annottext">Int -&gt; LogLevel -&gt; ShowS
+[LogLevel] -&gt; ShowS
+LogLevel -&gt; String
+(Int -&gt; LogLevel -&gt; ShowS)
+-&gt; (LogLevel -&gt; String) -&gt; ([LogLevel] -&gt; ShowS) -&gt; Show LogLevel
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LogLevel -&gt; ShowS
+showsPrec :: Int -&gt; LogLevel -&gt; ShowS
+$cshow :: LogLevel -&gt; String
+show :: LogLevel -&gt; String
+$cshowList :: [LogLevel] -&gt; ShowS
+showList :: [LogLevel] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680360713"><span id="local-6989586621680360718"><span class="annot"><span class="annottext">LogLevel -&gt; LogLevel -&gt; Bool
+(LogLevel -&gt; LogLevel -&gt; Bool)
+-&gt; (LogLevel -&gt; LogLevel -&gt; Bool) -&gt; Eq LogLevel
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LogLevel -&gt; LogLevel -&gt; Bool
+== :: LogLevel -&gt; LogLevel -&gt; Bool
+$c/= :: LogLevel -&gt; LogLevel -&gt; Bool
+/= :: LogLevel -&gt; LogLevel -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680360725"><span id="local-6989586621680360729"><span id="local-6989586621680360733"><span id="local-6989586621680360737"><span id="local-6989586621680360740"><span id="local-6989586621680360743"><span id="local-6989586621680360746"><span class="annot"><span class="annottext">Eq LogLevel
+Eq LogLevel =&gt;
+(LogLevel -&gt; LogLevel -&gt; Ordering)
+-&gt; (LogLevel -&gt; LogLevel -&gt; Bool)
+-&gt; (LogLevel -&gt; LogLevel -&gt; Bool)
+-&gt; (LogLevel -&gt; LogLevel -&gt; Bool)
+-&gt; (LogLevel -&gt; LogLevel -&gt; Bool)
+-&gt; (LogLevel -&gt; LogLevel -&gt; LogLevel)
+-&gt; (LogLevel -&gt; LogLevel -&gt; LogLevel)
+-&gt; Ord LogLevel
+LogLevel -&gt; LogLevel -&gt; Bool
+LogLevel -&gt; LogLevel -&gt; Ordering
+LogLevel -&gt; LogLevel -&gt; LogLevel
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: LogLevel -&gt; LogLevel -&gt; Ordering
+compare :: LogLevel -&gt; LogLevel -&gt; Ordering
+$c&lt; :: LogLevel -&gt; LogLevel -&gt; Bool
+&lt; :: LogLevel -&gt; LogLevel -&gt; Bool
+$c&lt;= :: LogLevel -&gt; LogLevel -&gt; Bool
+&lt;= :: LogLevel -&gt; LogLevel -&gt; Bool
+$c&gt; :: LogLevel -&gt; LogLevel -&gt; Bool
+&gt; :: LogLevel -&gt; LogLevel -&gt; Bool
+$c&gt;= :: LogLevel -&gt; LogLevel -&gt; Bool
+&gt;= :: LogLevel -&gt; LogLevel -&gt; Bool
+$cmax :: LogLevel -&gt; LogLevel -&gt; LogLevel
+max :: LogLevel -&gt; LogLevel -&gt; LogLevel
+$cmin :: LogLevel -&gt; LogLevel -&gt; LogLevel
+min :: LogLevel -&gt; LogLevel -&gt; LogLevel
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="annot"><span class="hs-comment">-- | Log entry</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">data</span><span> </span><span id="LogEntry"><span class="annot"><a href="System.Logger.html#LogEntry"><span class="hs-identifier hs-var">LogEntry</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="LogEntry"><span class="annot"><a href="System.Logger.html#LogEntry"><span class="hs-identifier hs-var">LogEntry</span></a></span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="logTimestamp"><span class="annot"><span class="annottext">LogEntry -&gt; UTCTime
+</span><a href="System.Logger.html#logTimestamp"><span class="hs-identifier hs-var hs-var">logTimestamp</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>    </span><span id="logLevel"><span class="annot"><span class="annottext">LogEntry -&gt; LogLevel
+</span><a href="System.Logger.html#logLevel"><span class="hs-identifier hs-var hs-var">logLevel</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Logger.html#LogLevel"><span class="hs-identifier hs-type">LogLevel</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-20"></span><span>    </span><span id="logSource"><span class="annot"><span class="annottext">LogEntry -&gt; Text
+</span><a href="System.Logger.html#logSource"><span class="hs-identifier hs-var hs-var">logSource</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-21"></span><span>    </span><span id="logMessage"><span class="annot"><span class="annottext">LogEntry -&gt; Text
+</span><a href="System.Logger.html#logMessage"><span class="hs-identifier hs-var hs-var">logMessage</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-22"></span><span>    </span><span id="logContext"><span class="annot"><span class="annottext">LogEntry -&gt; [(Text, Text)]
+</span><a href="System.Logger.html#logContext"><span class="hs-identifier hs-var hs-var">logContext</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="annot"><span class="hs-comment">-- | Logger state</span></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">newtype</span><span> </span><span id="Logger"><span class="annot"><a href="System.Logger.html#Logger"><span class="hs-identifier hs-var">Logger</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Logger"><span class="annot"><a href="System.Logger.html#Logger"><span class="hs-identifier hs-var">Logger</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">TVar</span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="System.Logger.html#LogEntry"><span class="hs-identifier hs-type">LogEntry</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="annot"><span class="hs-comment">-- | Initialize logger</span></span><span>
+</span><span id="line-29"></span><span class="annot"><a href="System.Logger.html#initLogger"><span class="hs-identifier hs-type">initLogger</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="System.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span>
+</span><span id="line-30"></span><span id="initLogger"><span class="annot"><span class="annottext">initLogger :: IO Logger
+</span><a href="System.Logger.html#initLogger"><span class="hs-identifier hs-var hs-var">initLogger</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TVar [LogEntry] -&gt; Logger
+</span><a href="System.Logger.html#Logger"><span class="hs-identifier hs-var">Logger</span></a></span><span> </span><span class="annot"><span class="annottext">(TVar [LogEntry] -&gt; Logger) -&gt; IO (TVar [LogEntry]) -&gt; IO Logger
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">[LogEntry] -&gt; IO (TVar [LogEntry])
+forall a. a -&gt; IO (TVar a)
+</span><span class="hs-identifier hs-var">newTVarIO</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="annot"><span class="hs-comment">-- | Log a message</span></span><span>
+</span><span id="line-33"></span><span class="annot"><a href="System.Logger.html#writeLogMessage"><span class="hs-identifier hs-type">writeLogMessage</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="System.Logger.html#LogLevel"><span class="hs-identifier hs-type">LogLevel</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span id="writeLogMessage"><span class="annot"><span class="annottext">writeLogMessage :: Logger -&gt; LogLevel -&gt; Text -&gt; Text -&gt; [(Text, Text)] -&gt; IO ()
+</span><a href="System.Logger.html#writeLogMessage"><span class="hs-identifier hs-var hs-var">writeLogMessage</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span> </span><span id="local-6989586621680360763"><span class="annot"><span class="annottext">TVar [LogEntry]
+</span><a href="#local-6989586621680360763"><span class="hs-identifier hs-var">var</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621680360764"><span class="annot"><span class="annottext">LogLevel
+</span><a href="#local-6989586621680360764"><span class="hs-identifier hs-var">level</span></a></span></span><span> </span><span id="local-6989586621680360765"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680360765"><span class="hs-identifier hs-var">source</span></a></span></span><span> </span><span id="local-6989586621680360766"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680360766"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span id="local-6989586621680360767"><span class="annot"><span class="annottext">[(Text, Text)]
+</span><a href="#local-6989586621680360767"><span class="hs-identifier hs-var">context</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-35"></span><span>  </span><span id="local-6989586621680360768"><span class="annot"><a href="#local-6989586621680360768"><span class="hs-identifier hs-var">entry</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">UTCTime -&gt; LogLevel -&gt; Text -&gt; Text -&gt; [(Text, Text)] -&gt; LogEntry
+</span><a href="System.Logger.html#LogEntry"><span class="hs-identifier hs-var">LogEntry</span></a></span><span> </span><span class="annot"><span class="annottext">(UTCTime -&gt; LogLevel -&gt; Text -&gt; Text -&gt; [(Text, Text)] -&gt; LogEntry)
+-&gt; IO UTCTime
+-&gt; IO (LogLevel -&gt; Text -&gt; Text -&gt; [(Text, Text)] -&gt; LogEntry)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">IO UTCTime
+</span><span class="hs-identifier hs-var">getCurrentTime</span></span><span> </span><span class="annot"><span class="annottext">IO (LogLevel -&gt; Text -&gt; Text -&gt; [(Text, Text)] -&gt; LogEntry)
+-&gt; IO LogLevel -&gt; IO (Text -&gt; Text -&gt; [(Text, Text)] -&gt; LogEntry)
+forall a b. IO (a -&gt; b) -&gt; IO a -&gt; IO b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">LogLevel -&gt; IO LogLevel
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="#local-6989586621680360764"><span class="hs-identifier hs-var">level</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Text -&gt; Text -&gt; [(Text, Text)] -&gt; LogEntry)
+-&gt; IO Text -&gt; IO (Text -&gt; [(Text, Text)] -&gt; LogEntry)
+forall a b. IO (a -&gt; b) -&gt; IO a -&gt; IO b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; IO Text
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680360765"><span class="hs-identifier hs-var">source</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Text -&gt; [(Text, Text)] -&gt; LogEntry)
+-&gt; IO Text -&gt; IO ([(Text, Text)] -&gt; LogEntry)
+forall a b. IO (a -&gt; b) -&gt; IO a -&gt; IO b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; IO Text
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680360766"><span class="hs-identifier hs-var">msg</span></a></span><span> </span><span class="annot"><span class="annottext">IO ([(Text, Text)] -&gt; LogEntry) -&gt; IO [(Text, Text)] -&gt; IO LogEntry
+forall a b. IO (a -&gt; b) -&gt; IO a -&gt; IO b
+forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">[(Text, Text)] -&gt; IO [(Text, Text)]
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">[(Text, Text)]
+</span><a href="#local-6989586621680360767"><span class="hs-identifier hs-var">context</span></a></span><span>
+</span><span id="line-36"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">atomically</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-37"></span><span>    </span><span id="local-6989586621680360769"><span class="annot"><a href="#local-6989586621680360769"><span class="hs-identifier hs-var">entries</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="hs-identifier hs-type">readTVar</span></span><span> </span><span class="annot"><a href="#local-6989586621680360763"><span class="hs-identifier hs-type">var</span></a></span><span>
+</span><span id="line-38"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">writeTVar</span></span><span> </span><span class="annot"><a href="#local-6989586621680360763"><span class="hs-identifier hs-type">var</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="#local-6989586621680360768"><span class="hs-identifier hs-type">entry</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span class="annot"><a href="#local-6989586621680360769"><span class="hs-identifier hs-type">entries</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="annot"><span class="hs-comment">-- | Get logs since a timestamp</span></span><span>
+</span><span id="line-41"></span><span class="annot"><a href="System.Logger.html#getLogsSince"><span class="hs-identifier hs-type">getLogsSince</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="annot"><a href="System.Logger.html#LogEntry"><span class="hs-identifier hs-type">LogEntry</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-42"></span><span id="getLogsSince"><span class="annot"><span class="annottext">getLogsSince :: Logger -&gt; UTCTime -&gt; IO [LogEntry]
+</span><a href="System.Logger.html#getLogsSince"><span class="hs-identifier hs-var hs-var">getLogsSince</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="System.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span> </span><span id="local-6989586621680360771"><span class="annot"><span class="annottext">TVar [LogEntry]
+</span><a href="#local-6989586621680360771"><span class="hs-identifier hs-var">var</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621680360772"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680360772"><span class="hs-identifier hs-var">sinceTime</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-43"></span><span>  </span><span id="local-6989586621680360773"><span class="annot"><a href="#local-6989586621680360773"><span class="hs-identifier hs-var">entries</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">TVar [LogEntry] -&gt; IO [LogEntry]
+forall a. TVar a -&gt; IO a
+</span><span class="hs-identifier hs-var">readTVarIO</span></span><span> </span><span class="annot"><span class="annottext">TVar [LogEntry]
+</span><a href="#local-6989586621680360771"><span class="hs-identifier hs-var">var</span></a></span><span>
+</span><span id="line-44"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">filter</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680360774"><span class="annot"><span class="annottext">LogEntry
+</span><a href="#local-6989586621680360774"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">LogEntry -&gt; UTCTime
+</span><a href="System.Logger.html#logTimestamp"><span class="hs-identifier hs-var">logTimestamp</span></a></span><span> </span><span class="annot"><span class="annottext">LogEntry
+</span><a href="#local-6989586621680360774"><span class="hs-identifier hs-var">e</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime -&gt; UTCTime -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680360772"><span class="hs-identifier hs-var">sinceTime</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621680360773"><span class="hs-identifier hs-type">entries</span></a></span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="annot"><span class="hs-comment">-- | Set log level filter</span></span><span>
+</span><span id="line-47"></span><span class="annot"><a href="System.Logger.html#setLogLevel"><span class="hs-identifier hs-type">setLogLevel</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="System.Logger.html#LogLevel"><span class="hs-identifier hs-type">LogLevel</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span id="setLogLevel"><span class="annot"><span class="annottext">setLogLevel :: Logger -&gt; LogLevel -&gt; IO ()
+</span><a href="System.Logger.html#setLogLevel"><span class="hs-identifier hs-var hs-var">setLogLevel</span></a></span></span><span> </span><span id="local-6989586621680360776"><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680360776"><span class="hs-identifier hs-var">_logger</span></a></span></span><span> </span><span id="local-6989586621680360777"><span class="annot"><span class="annottext">LogLevel
+</span><a href="#local-6989586621680360777"><span class="hs-identifier hs-var">_newLevel</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-comment">-- Implementation for filtering</span><span>
+</span><span id="line-50"></span><span>  </span><span class="annot"><span class="annottext">() -&gt; IO ()
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="annot"><span class="hs-comment">-- | JSON serialization helper</span></span><span>
+</span><span id="line-53"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680360780"><span id="local-6989586621680360784"><span id="local-6989586621680360787"><span id="local-6989586621680360790"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="System.Logger.html#LogLevel"><span class="hs-identifier hs-type">LogLevel</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-54"></span><span>  </span><span id="local-6989586621680360805"><span class="annot"><span class="annottext">toJSON :: LogLevel -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="System.Logger.html#Debug"><span class="hs-identifier hs-var">Debug</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Value
+forall a. ToJSON a =&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;DEBUG&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>  </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="System.Logger.html#Info"><span class="hs-identifier hs-var">Info</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Value
+forall a. ToJSON a =&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;INFO&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span>  </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="System.Logger.html#Warn"><span class="hs-identifier hs-var">Warn</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Value
+forall a. ToJSON a =&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;WARN&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-57"></span><span>  </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="System.Logger.html#Error"><span class="hs-identifier hs-var">Error</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Value
+forall a. ToJSON a =&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;ERROR&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span>  </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="System.Logger.html#Critical"><span class="hs-identifier hs-var">Critical</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Value
+forall a. ToJSON a =&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;CRITICAL&quot;</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680360808"><span id="local-6989586621680360812"><span id="local-6989586621680360815"><span id="local-6989586621680360818"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="System.Logger.html#LogEntry"><span class="hs-identifier hs-type">LogEntry</span></a></span></span></span></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-61"></span><span>  </span><span id="local-6989586621680360843"><span class="annot"><span class="annottext">toJSON :: LogEntry -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var hs-var hs-var">toJSON</span></a></span></span><span> </span><span class="annot"><a href="System.Logger.html#LogEntry"><span class="hs-identifier hs-type">LogEntry</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621680360844"><span id="local-6989586621680360845"><span id="local-6989586621680360846"><span id="local-6989586621680360847"><span id="local-6989586621680360848"><span class="annot"><span class="annottext">[(Text, Text)]
+Text
+UTCTime
+LogLevel
+logTimestamp :: LogEntry -&gt; UTCTime
+logLevel :: LogEntry -&gt; LogLevel
+logSource :: LogEntry -&gt; Text
+logMessage :: LogEntry -&gt; Text
+logContext :: LogEntry -&gt; [(Text, Text)]
+logTimestamp :: UTCTime
+logLevel :: LogLevel
+logSource :: Text
+logMessage :: Text
+logContext :: [(Text, Text)]
+</span><a href="System.Logger.html#logTimestamp"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span><span class="hs-special">}</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-62"></span><span>    </span><span class="annot"><span class="annottext">[Pair] -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#object"><span class="hs-identifier hs-var">object</span></a></span><span>
+</span><span id="line-63"></span><span>      </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Key
+</span><span class="hs-string">&quot;timestamp&quot;</span></span><span> </span><span class="annot"><span class="annottext">Key -&gt; UTCTime -&gt; Pair
+forall v. ToJSON v =&gt; Key -&gt; v -&gt; Pair
+forall e kv v. (KeyValue e kv, ToJSON v) =&gt; Key -&gt; v -&gt; kv
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#.%3D"><span class="hs-operator hs-var">.=</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680360844"><span class="hs-identifier hs-var">logTimestamp</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-64"></span><span>        </span><span class="annot"><span class="annottext">Key
+</span><span class="hs-string">&quot;level&quot;</span></span><span> </span><span class="annot"><span class="annottext">Key -&gt; LogLevel -&gt; Pair
+forall v. ToJSON v =&gt; Key -&gt; v -&gt; Pair
+forall e kv v. (KeyValue e kv, ToJSON v) =&gt; Key -&gt; v -&gt; kv
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#.%3D"><span class="hs-operator hs-var">.=</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="#local-6989586621680360845"><span class="hs-identifier hs-var">logLevel</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-65"></span><span>        </span><span class="annot"><span class="annottext">Key
+</span><span class="hs-string">&quot;source&quot;</span></span><span> </span><span class="annot"><span class="annottext">Key -&gt; Text -&gt; Pair
+forall v. ToJSON v =&gt; Key -&gt; v -&gt; Pair
+forall e kv v. (KeyValue e kv, ToJSON v) =&gt; Key -&gt; v -&gt; kv
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#.%3D"><span class="hs-operator hs-var">.=</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680360846"><span class="hs-identifier hs-var">logSource</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-66"></span><span>        </span><span class="annot"><span class="annottext">Key
+</span><span class="hs-string">&quot;message&quot;</span></span><span> </span><span class="annot"><span class="annottext">Key -&gt; Text -&gt; Pair
+forall v. ToJSON v =&gt; Key -&gt; v -&gt; Pair
+forall e kv v. (KeyValue e kv, ToJSON v) =&gt; Key -&gt; v -&gt; kv
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#.%3D"><span class="hs-operator hs-var">.=</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680360847"><span class="hs-identifier hs-var">logMessage</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-67"></span><span>        </span><span class="annot"><span class="annottext">Key
+</span><span class="hs-string">&quot;context&quot;</span></span><span> </span><span class="annot"><span class="annottext">Key -&gt; [(Text, Text)] -&gt; Pair
+forall v. ToJSON v =&gt; Key -&gt; v -&gt; Pair
+forall e kv v. (KeyValue e kv, ToJSON v) =&gt; Key -&gt; v -&gt; kv
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#.%3D"><span class="hs-operator hs-var">.=</span></a></span><span> </span><span class="annot"><span class="annottext">[(Text, Text)]
+</span><a href="#local-6989586621680360848"><span class="hs-identifier hs-var">logContext</span></a></span><span>
+</span><span id="line-68"></span><span>      </span><span class="hs-special">]</span><span>
+</span><span id="line-69"></span></pre></body></html>

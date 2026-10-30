@@ -1,0 +1,452 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE DataKinds #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveAnyClass #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE TypeOperators #-}</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.API.GraphQL.html"><span class="hs-identifier">Surypus.API.GraphQL</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Surypus.API.GraphQL.html#GraphQLAPI"><span class="hs-identifier">GraphQLAPI</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.GraphQL.html#GraphQLQuery"><span class="hs-identifier">GraphQLQuery</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.GraphQL.html#GraphQLResponse"><span class="hs-identifier">GraphQLResponse</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.GraphQL.html#graphqlHandler"><span class="hs-identifier">graphqlHandler</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.API.GraphQL.html#resolveQuery"><span class="hs-identifier">resolveQuery</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.IO.Class</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">liftIO</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.Pool.html"><span class="hs-identifier">DAL.Pool</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier">ConnectionPool</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier">Value</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier">FromJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier">ToJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#object"><span class="hs-identifier">object</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#.%3D"><span class="hs-operator">(.=)</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier">toJSON</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/servant-server-0.20.3.0-5e23ab7c151ac52e4166ba17f90a5aa8b03d4904ac513501a9dae677cbe4aa3d/share/doc/html/src/Servant.html"><span class="hs-identifier">Servant</span></a></span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Surypus.API.Bills.html"><span class="hs-identifier">Surypus.API.Bills</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Bills</span></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Surypus.API.Goods.html"><span class="hs-identifier">Surypus.API.Goods</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Goods</span></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Surypus.API.Persons.html"><span class="hs-identifier">Surypus.API.Persons</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Persons</span></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Surypus.API.Payment.html"><span class="hs-identifier">Surypus.API.Payment</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Payments</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Surypus.API.CRM.html"><span class="hs-identifier">Surypus.API.CRM</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">CRM</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Surypus.API.Dashboard.html"><span class="hs-identifier">Surypus.API.Dashboard</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Dashboard</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Surypus.API.Orders.html"><span class="hs-identifier">Surypus.API.Orders</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Orders</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Surypus.html"><span class="hs-identifier">Surypus</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier">QueryResult</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">data</span><span> </span><span id="GraphQLQuery"><span class="annot"><a href="Surypus.API.GraphQL.html#GraphQLQuery"><span class="hs-identifier hs-var">GraphQLQuery</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="GraphQLQuery"><span class="annot"><a href="Surypus.API.GraphQL.html#GraphQLQuery"><span class="hs-identifier hs-var">GraphQLQuery</span></a></span></span><span>
+</span><span id="line-27"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="gqQuery"><span class="annot"><span class="annottext">GraphQLQuery -&gt; Text
+</span><a href="Surypus.API.GraphQL.html#gqQuery"><span class="hs-identifier hs-var hs-var">gqQuery</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="gqVariables"><span class="annot"><span class="annottext">GraphQLQuery -&gt; Maybe Value
+</span><a href="Surypus.API.GraphQL.html#gqVariables"><span class="hs-identifier hs-var hs-var">gqVariables</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier hs-type">Value</span></a></span><span>
+</span><span id="line-29"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680334100"><span id="local-6989586621680334106"><span class="annot"><span class="annottext">GraphQLQuery -&gt; GraphQLQuery -&gt; Bool
+(GraphQLQuery -&gt; GraphQLQuery -&gt; Bool)
+-&gt; (GraphQLQuery -&gt; GraphQLQuery -&gt; Bool) -&gt; Eq GraphQLQuery
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: GraphQLQuery -&gt; GraphQLQuery -&gt; Bool
+== :: GraphQLQuery -&gt; GraphQLQuery -&gt; Bool
+$c/= :: GraphQLQuery -&gt; GraphQLQuery -&gt; Bool
+/= :: GraphQLQuery -&gt; GraphQLQuery -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680334112"><span id="local-6989586621680334121"><span id="local-6989586621680334125"><span class="annot"><span class="annottext">Int -&gt; GraphQLQuery -&gt; ShowS
+[GraphQLQuery] -&gt; ShowS
+GraphQLQuery -&gt; String
+(Int -&gt; GraphQLQuery -&gt; ShowS)
+-&gt; (GraphQLQuery -&gt; String)
+-&gt; ([GraphQLQuery] -&gt; ShowS)
+-&gt; Show GraphQLQuery
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; GraphQLQuery -&gt; ShowS
+showsPrec :: Int -&gt; GraphQLQuery -&gt; ShowS
+$cshow :: GraphQLQuery -&gt; String
+show :: GraphQLQuery -&gt; String
+$cshowList :: [GraphQLQuery] -&gt; ShowS
+showList :: [GraphQLQuery] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680334131"><span id="local-6989586621680334133"><span class="annot"><span class="annottext">(forall x. GraphQLQuery -&gt; Rep GraphQLQuery x)
+-&gt; (forall x. Rep GraphQLQuery x -&gt; GraphQLQuery)
+-&gt; Generic GraphQLQuery
+forall x. Rep GraphQLQuery x -&gt; GraphQLQuery
+forall x. GraphQLQuery -&gt; Rep GraphQLQuery x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. GraphQLQuery -&gt; Rep GraphQLQuery x
+from :: forall x. GraphQLQuery -&gt; Rep GraphQLQuery x
+$cto :: forall x. Rep GraphQLQuery x -&gt; GraphQLQuery
+to :: forall x. Rep GraphQLQuery x -&gt; GraphQLQuery
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680334139"><span id="local-6989586621680334146"><span id="local-6989586621680334149"><span class="annot"><span class="annottext">Maybe GraphQLQuery
+Value -&gt; Parser [GraphQLQuery]
+Value -&gt; Parser GraphQLQuery
+(Value -&gt; Parser GraphQLQuery)
+-&gt; (Value -&gt; Parser [GraphQLQuery])
+-&gt; Maybe GraphQLQuery
+-&gt; FromJSON GraphQLQuery
+forall a.
+(Value -&gt; Parser a)
+-&gt; (Value -&gt; Parser [a]) -&gt; Maybe a -&gt; FromJSON a
+$cparseJSON :: Value -&gt; Parser GraphQLQuery
+parseJSON :: Value -&gt; Parser GraphQLQuery
+$cparseJSONList :: Value -&gt; Parser [GraphQLQuery]
+parseJSONList :: Value -&gt; Parser [GraphQLQuery]
+$comittedField :: Maybe GraphQLQuery
+omittedField :: Maybe GraphQLQuery
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">FromJSON</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680334234"><span id="local-6989586621680334241"><span id="local-6989586621680334244"><span id="local-6989586621680334247"><span id="local-6989586621680334250"><span class="annot"><span class="annottext">[GraphQLQuery] -&gt; Value
+[GraphQLQuery] -&gt; Encoding
+GraphQLQuery -&gt; Bool
+GraphQLQuery -&gt; Value
+GraphQLQuery -&gt; Encoding
+(GraphQLQuery -&gt; Value)
+-&gt; (GraphQLQuery -&gt; Encoding)
+-&gt; ([GraphQLQuery] -&gt; Value)
+-&gt; ([GraphQLQuery] -&gt; Encoding)
+-&gt; (GraphQLQuery -&gt; Bool)
+-&gt; ToJSON GraphQLQuery
+forall a.
+(a -&gt; Value)
+-&gt; (a -&gt; Encoding)
+-&gt; ([a] -&gt; Value)
+-&gt; ([a] -&gt; Encoding)
+-&gt; (a -&gt; Bool)
+-&gt; ToJSON a
+$ctoJSON :: GraphQLQuery -&gt; Value
+toJSON :: GraphQLQuery -&gt; Value
+$ctoEncoding :: GraphQLQuery -&gt; Encoding
+toEncoding :: GraphQLQuery -&gt; Encoding
+$ctoJSONList :: [GraphQLQuery] -&gt; Value
+toJSONList :: [GraphQLQuery] -&gt; Value
+$ctoEncodingList :: [GraphQLQuery] -&gt; Encoding
+toEncodingList :: [GraphQLQuery] -&gt; Encoding
+$comitField :: GraphQLQuery -&gt; Bool
+omitField :: GraphQLQuery -&gt; Bool
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></a></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">data</span><span> </span><span id="GraphQLResponse"><span class="annot"><a href="Surypus.API.GraphQL.html#GraphQLResponse"><span class="hs-identifier hs-var">GraphQLResponse</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="GraphQLResponse"><span class="annot"><a href="Surypus.API.GraphQL.html#GraphQLResponse"><span class="hs-identifier hs-var">GraphQLResponse</span></a></span></span><span>
+</span><span id="line-33"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="grData"><span class="annot"><span class="annottext">GraphQLResponse -&gt; Maybe Value
+</span><a href="Surypus.API.GraphQL.html#grData"><span class="hs-identifier hs-var hs-var">grData</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier hs-type">Value</span></a></span><span>
+</span><span id="line-34"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="grErrors"><span class="annot"><span class="annottext">GraphQLResponse -&gt; Maybe [Text]
+</span><a href="Surypus.API.GraphQL.html#grErrors"><span class="hs-identifier hs-var hs-var">grErrors</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">]</span><span>
+</span><span id="line-35"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-36"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680334339"><span id="local-6989586621680334345"><span class="annot"><span class="annottext">GraphQLResponse -&gt; GraphQLResponse -&gt; Bool
+(GraphQLResponse -&gt; GraphQLResponse -&gt; Bool)
+-&gt; (GraphQLResponse -&gt; GraphQLResponse -&gt; Bool)
+-&gt; Eq GraphQLResponse
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: GraphQLResponse -&gt; GraphQLResponse -&gt; Bool
+== :: GraphQLResponse -&gt; GraphQLResponse -&gt; Bool
+$c/= :: GraphQLResponse -&gt; GraphQLResponse -&gt; Bool
+/= :: GraphQLResponse -&gt; GraphQLResponse -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680334350"><span id="local-6989586621680334357"><span id="local-6989586621680334361"><span class="annot"><span class="annottext">Int -&gt; GraphQLResponse -&gt; ShowS
+[GraphQLResponse] -&gt; ShowS
+GraphQLResponse -&gt; String
+(Int -&gt; GraphQLResponse -&gt; ShowS)
+-&gt; (GraphQLResponse -&gt; String)
+-&gt; ([GraphQLResponse] -&gt; ShowS)
+-&gt; Show GraphQLResponse
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; GraphQLResponse -&gt; ShowS
+showsPrec :: Int -&gt; GraphQLResponse -&gt; ShowS
+$cshow :: GraphQLResponse -&gt; String
+show :: GraphQLResponse -&gt; String
+$cshowList :: [GraphQLResponse] -&gt; ShowS
+showList :: [GraphQLResponse] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680334366"><span id="local-6989586621680334368"><span class="annot"><span class="annottext">(forall x. GraphQLResponse -&gt; Rep GraphQLResponse x)
+-&gt; (forall x. Rep GraphQLResponse x -&gt; GraphQLResponse)
+-&gt; Generic GraphQLResponse
+forall x. Rep GraphQLResponse x -&gt; GraphQLResponse
+forall x. GraphQLResponse -&gt; Rep GraphQLResponse x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. GraphQLResponse -&gt; Rep GraphQLResponse x
+from :: forall x. GraphQLResponse -&gt; Rep GraphQLResponse x
+$cto :: forall x. Rep GraphQLResponse x -&gt; GraphQLResponse
+to :: forall x. Rep GraphQLResponse x -&gt; GraphQLResponse
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680334371"><span id="local-6989586621680334378"><span id="local-6989586621680334381"><span class="annot"><span class="annottext">Maybe GraphQLResponse
+Value -&gt; Parser [GraphQLResponse]
+Value -&gt; Parser GraphQLResponse
+(Value -&gt; Parser GraphQLResponse)
+-&gt; (Value -&gt; Parser [GraphQLResponse])
+-&gt; Maybe GraphQLResponse
+-&gt; FromJSON GraphQLResponse
+forall a.
+(Value -&gt; Parser a)
+-&gt; (Value -&gt; Parser [a]) -&gt; Maybe a -&gt; FromJSON a
+$cparseJSON :: Value -&gt; Parser GraphQLResponse
+parseJSON :: Value -&gt; Parser GraphQLResponse
+$cparseJSONList :: Value -&gt; Parser [GraphQLResponse]
+parseJSONList :: Value -&gt; Parser [GraphQLResponse]
+$comittedField :: Maybe GraphQLResponse
+omittedField :: Maybe GraphQLResponse
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">FromJSON</span></a></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680334434"><span id="local-6989586621680334441"><span id="local-6989586621680334444"><span id="local-6989586621680334447"><span id="local-6989586621680334450"><span class="annot"><span class="annottext">[GraphQLResponse] -&gt; Value
+[GraphQLResponse] -&gt; Encoding
+GraphQLResponse -&gt; Bool
+GraphQLResponse -&gt; Value
+GraphQLResponse -&gt; Encoding
+(GraphQLResponse -&gt; Value)
+-&gt; (GraphQLResponse -&gt; Encoding)
+-&gt; ([GraphQLResponse] -&gt; Value)
+-&gt; ([GraphQLResponse] -&gt; Encoding)
+-&gt; (GraphQLResponse -&gt; Bool)
+-&gt; ToJSON GraphQLResponse
+forall a.
+(a -&gt; Value)
+-&gt; (a -&gt; Encoding)
+-&gt; ([a] -&gt; Value)
+-&gt; ([a] -&gt; Encoding)
+-&gt; (a -&gt; Bool)
+-&gt; ToJSON a
+$ctoJSON :: GraphQLResponse -&gt; Value
+toJSON :: GraphQLResponse -&gt; Value
+$ctoEncoding :: GraphQLResponse -&gt; Encoding
+toEncoding :: GraphQLResponse -&gt; Encoding
+$ctoJSONList :: [GraphQLResponse] -&gt; Value
+toJSONList :: [GraphQLResponse] -&gt; Value
+$ctoEncodingList :: [GraphQLResponse] -&gt; Encoding
+toEncodingList :: [GraphQLResponse] -&gt; Encoding
+$comitField :: GraphQLResponse -&gt; Bool
+omitField :: GraphQLResponse -&gt; Bool
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></a></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="hs-keyword">type</span><span> </span><span id="GraphQLAPI"><span class="annot"><a href="Surypus.API.GraphQL.html#GraphQLAPI"><span class="hs-identifier hs-var">GraphQLAPI</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/servant-0.20.3.0-0e92ee56e74f45091f328aff20f2ade3005a26769e733870087bd8ac60418ac4/share/doc/html/src/Servant.API.ReqBody.html#ReqBody"><span class="hs-identifier hs-type">ReqBody</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/servant-0.20.3.0-0e92ee56e74f45091f328aff20f2ade3005a26769e733870087bd8ac60418ac4/share/doc/html/src/Servant.API.ContentTypes.html#JSON"><span class="hs-identifier hs-type">JSON</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><a href="Surypus.API.GraphQL.html#GraphQLQuery"><span class="hs-identifier hs-type">GraphQLQuery</span></a></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/servant-0.20.3.0-0e92ee56e74f45091f328aff20f2ade3005a26769e733870087bd8ac60418ac4/share/doc/html/src/Servant.API.Sub.html#%3A%3E"><span class="hs-operator hs-type">:&gt;</span></a></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/servant-0.20.3.0-0e92ee56e74f45091f328aff20f2ade3005a26769e733870087bd8ac60418ac4/share/doc/html/src/Servant.API.Verbs.html#Post"><span class="hs-identifier hs-type">Post</span></a></span><span> </span><span class="hs-special">'</span><span class="hs-special">[</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/servant-0.20.3.0-0e92ee56e74f45091f328aff20f2ade3005a26769e733870087bd8ac60418ac4/share/doc/html/src/Servant.API.ContentTypes.html#JSON"><span class="hs-identifier hs-type">JSON</span></a></span><span class="hs-special">]</span><span> </span><span class="annot"><a href="Surypus.API.GraphQL.html#GraphQLResponse"><span class="hs-identifier hs-type">GraphQLResponse</span></a></span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="annot"><a href="Surypus.API.GraphQL.html#graphqlHandler"><span class="hs-identifier hs-type">graphqlHandler</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.API.GraphQL.html#GraphQLQuery"><span class="hs-identifier hs-type">GraphQLQuery</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/servant-server-0.20.3.0-5e23ab7c151ac52e4166ba17f90a5aa8b03d4904ac513501a9dae677cbe4aa3d/share/doc/html/src/Servant.Server.Internal.Handler.html#Handler"><span class="hs-identifier hs-type">Handler</span></a></span><span> </span><span class="annot"><a href="Surypus.API.GraphQL.html#GraphQLResponse"><span class="hs-identifier hs-type">GraphQLResponse</span></a></span><span>
+</span><span id="line-41"></span><span id="graphqlHandler"><span class="annot"><span class="annottext">graphqlHandler :: ConnectionPool -&gt; GraphQLQuery -&gt; Handler GraphQLResponse
+</span><a href="Surypus.API.GraphQL.html#graphqlHandler"><span class="hs-identifier hs-var hs-var">graphqlHandler</span></a></span></span><span> </span><span id="local-6989586621680334519"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334519"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680334520"><span class="annot"><span class="annottext">GraphQLQuery
+</span><a href="#local-6989586621680334520"><span class="hs-identifier hs-var">query</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-42"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680334521"><span class="annot"><span class="annottext">q :: Text
+</span><a href="#local-6989586621680334521"><span class="hs-identifier hs-var hs-var hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">GraphQLQuery -&gt; Text
+</span><a href="Surypus.API.GraphQL.html#gqQuery"><span class="hs-identifier hs-var">gqQuery</span></a></span><span> </span><span class="annot"><span class="annottext">GraphQLQuery
+</span><a href="#local-6989586621680334520"><span class="hs-identifier hs-var">query</span></a></span><span>
+</span><span id="line-43"></span><span>    </span><span id="local-6989586621680334522"><span class="annot"><a href="#local-6989586621680334522"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO (Either Text Value) -&gt; Handler (Either Text Value)
+forall a. IO a -&gt; Handler a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO (Either Text Value) -&gt; Handler (Either Text Value))
+-&gt; IO (Either Text Value) -&gt; Handler (Either Text Value)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ConnectionPool -&gt; Text -&gt; IO (Either Text Value)
+</span><a href="Surypus.API.GraphQL.html#resolveQuery"><span class="hs-identifier hs-var">resolveQuery</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334519"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680334521"><span class="hs-identifier hs-var">q</span></a></span><span>
+</span><span id="line-44"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680334522"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-45"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621680334523"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680334523"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">GraphQLResponse -&gt; Handler GraphQLResponse
+forall a. a -&gt; Handler a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(GraphQLResponse -&gt; Handler GraphQLResponse)
+-&gt; GraphQLResponse -&gt; Handler GraphQLResponse
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Maybe Value -&gt; Maybe [Text] -&gt; GraphQLResponse
+</span><a href="Surypus.API.GraphQL.html#GraphQLResponse"><span class="hs-identifier hs-var">GraphQLResponse</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Value
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Text] -&gt; Maybe [Text]
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680334523"><span class="hs-identifier hs-var">err</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span><span>        </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621680334524"><span class="annot"><span class="annottext">Value
+</span><a href="#local-6989586621680334524"><span class="hs-identifier hs-var">val</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">GraphQLResponse -&gt; Handler GraphQLResponse
+forall a. a -&gt; Handler a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(GraphQLResponse -&gt; Handler GraphQLResponse)
+-&gt; GraphQLResponse -&gt; Handler GraphQLResponse
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Maybe Value -&gt; Maybe [Text] -&gt; GraphQLResponse
+</span><a href="Surypus.API.GraphQL.html#GraphQLResponse"><span class="hs-identifier hs-var">GraphQLResponse</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Value -&gt; Maybe Value
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Value
+</span><a href="#local-6989586621680334524"><span class="hs-identifier hs-var">val</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Maybe [Text]
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span class="annot"><a href="Surypus.API.GraphQL.html#resolveQuery"><span class="hs-identifier hs-type">resolveQuery</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier hs-type">Value</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span id="resolveQuery"><span class="annot"><span class="annottext">resolveQuery :: ConnectionPool -&gt; Text -&gt; IO (Either Text Value)
+</span><a href="Surypus.API.GraphQL.html#resolveQuery"><span class="hs-identifier hs-var hs-var">resolveQuery</span></a></span></span><span> </span><span id="local-6989586621680334525"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334525"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680334526"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680334526"><span class="hs-identifier hs-var">q</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-50"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680334527"><span class="annot"><span class="annottext">clean :: Text
+</span><a href="#local-6989586621680334527"><span class="hs-identifier hs-var hs-var">clean</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text
+</span><span class="hs-identifier hs-var">T.strip</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680334526"><span class="hs-identifier hs-var">q</span></a></span><span>
+</span><span id="line-51"></span><span>    </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><span class="hs-identifier hs-var">T.null</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680334527"><span class="hs-identifier hs-var">clean</span></a></span><span>
+</span><span id="line-52"></span><span>        </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Either Text Value -&gt; IO (Either Text Value)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Either Text Value -&gt; IO (Either Text Value))
+-&gt; Either Text Value -&gt; IO (Either Text Value)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text Value
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Empty query&quot;</span></span><span>
+</span><span id="line-53"></span><span>        </span><span class="hs-keyword">else</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; [Text]
+</span><span class="hs-identifier hs-var">T.words</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680334527"><span class="hs-identifier hs-var">clean</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-54"></span><span>            </span><span class="hs-special">(</span><span id="local-6989586621680334531"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680334531"><span class="hs-identifier hs-var">op</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span class="annot"><span class="annottext">[Text]
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">ConnectionPool -&gt; Text -&gt; IO (Either Text Value)
+</span><a href="Surypus.API.GraphQL.html#resolveOperation"><span class="hs-identifier hs-var">resolveOperation</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334525"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680334531"><span class="hs-identifier hs-var">op</span></a></span><span>
+</span><span id="line-55"></span><span>            </span><span class="hs-special">[</span><span class="hs-special">]</span><span>     </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text Value -&gt; IO (Either Text Value)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Either Text Value -&gt; IO (Either Text Value))
+-&gt; Either Text Value -&gt; IO (Either Text Value)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text Value
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Empty query&quot;</span></span><span>
+</span><span id="line-56"></span><span>
+</span><span id="line-57"></span><span class="annot"><a href="Surypus.API.GraphQL.html#resolveOperation"><span class="hs-identifier hs-type">resolveOperation</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier hs-type">Value</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span><span id="resolveOperation"><span class="annot"><span class="annottext">resolveOperation :: ConnectionPool -&gt; Text -&gt; IO (Either Text Value)
+</span><a href="Surypus.API.GraphQL.html#resolveOperation"><span class="hs-identifier hs-var hs-var">resolveOperation</span></a></span></span><span> </span><span id="local-6989586621680334533"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334533"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680334534"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680334534"><span class="hs-identifier hs-var">op</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span>
+</span><span id="line-59"></span><span>    </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680334534"><span class="hs-identifier hs-var">op</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-60"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;bills&quot;</span></span><span>         </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult [Bill] -&gt; Either Text Value
+forall a. ToJSON a =&gt; QueryResult a -&gt; Either Text Value
+</span><a href="Surypus.API.GraphQL.html#toJSON%27"><span class="hs-identifier hs-var">toJSON'</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult [Bill] -&gt; Either Text Value)
+-&gt; IO (QueryResult [Bill]) -&gt; IO (Either Text Value)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">ConnectionPool -&gt; IO (QueryResult [Bill])
+</span><a href="Surypus.API.Bills.html#listBills"><span class="hs-identifier hs-var">Bills.listBills</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334533"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-61"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;goods&quot;</span></span><span>         </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult [Goods] -&gt; Either Text Value
+forall a. ToJSON a =&gt; QueryResult a -&gt; Either Text Value
+</span><a href="Surypus.API.GraphQL.html#toJSON%27"><span class="hs-identifier hs-var">toJSON'</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult [Goods] -&gt; Either Text Value)
+-&gt; IO (QueryResult [Goods]) -&gt; IO (Either Text Value)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">ConnectionPool -&gt; IO (QueryResult [Goods])
+</span><a href="Surypus.API.Goods.html#listGoods"><span class="hs-identifier hs-var">Goods.listGoods</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334533"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-62"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;persons&quot;</span></span><span>       </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult [Person] -&gt; Either Text Value
+forall a. ToJSON a =&gt; QueryResult a -&gt; Either Text Value
+</span><a href="Surypus.API.GraphQL.html#toJSON%27"><span class="hs-identifier hs-var">toJSON'</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult [Person] -&gt; Either Text Value)
+-&gt; IO (QueryResult [Person]) -&gt; IO (Either Text Value)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+-&gt; Maybe Text
+-&gt; Maybe Text
+-&gt; Maybe Int
+-&gt; Maybe Int
+-&gt; Maybe Int
+-&gt; IO (QueryResult [Person])
+</span><a href="Surypus.API.Persons.html#listPersons"><span class="hs-identifier hs-var">Persons.listPersons</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334533"><span class="hs-identifier hs-var">pool</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="annot"><span class="annottext">Maybe Int
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="annot"><span class="annottext">Maybe Int
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="annot"><span class="annottext">Maybe Int
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-63"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;payments&quot;</span></span><span>      </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult [Payment] -&gt; Either Text Value
+forall a. ToJSON a =&gt; QueryResult a -&gt; Either Text Value
+</span><a href="Surypus.API.GraphQL.html#toJSON%27"><span class="hs-identifier hs-var">toJSON'</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult [Payment] -&gt; Either Text Value)
+-&gt; IO (QueryResult [Payment]) -&gt; IO (Either Text Value)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">ConnectionPool -&gt; IO (QueryResult [Payment])
+</span><a href="Surypus.API.Payment.html#listPayments"><span class="hs-identifier hs-var">Payments.listPayments</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334533"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-64"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;deals&quot;</span></span><span>         </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult [Deal] -&gt; Either Text Value
+forall a. ToJSON a =&gt; QueryResult a -&gt; Either Text Value
+</span><a href="Surypus.API.GraphQL.html#toJSON%27"><span class="hs-identifier hs-var">toJSON'</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult [Deal] -&gt; Either Text Value)
+-&gt; IO (QueryResult [Deal]) -&gt; IO (Either Text Value)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">ConnectionPool -&gt; IO (QueryResult [Deal])
+</span><a href="Surypus.API.CRM.html#listDeals"><span class="hs-identifier hs-var">CRM.listDeals</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334533"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-65"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;contacts&quot;</span></span><span>      </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult [Contact] -&gt; Either Text Value
+forall a. ToJSON a =&gt; QueryResult a -&gt; Either Text Value
+</span><a href="Surypus.API.GraphQL.html#toJSON%27"><span class="hs-identifier hs-var">toJSON'</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult [Contact] -&gt; Either Text Value)
+-&gt; IO (QueryResult [Contact]) -&gt; IO (Either Text Value)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">ConnectionPool -&gt; IO (QueryResult [Contact])
+</span><a href="Surypus.API.CRM.html#listContacts"><span class="hs-identifier hs-var">CRM.listContacts</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334533"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-66"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;companies&quot;</span></span><span>     </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult [Company] -&gt; Either Text Value
+forall a. ToJSON a =&gt; QueryResult a -&gt; Either Text Value
+</span><a href="Surypus.API.GraphQL.html#toJSON%27"><span class="hs-identifier hs-var">toJSON'</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult [Company] -&gt; Either Text Value)
+-&gt; IO (QueryResult [Company]) -&gt; IO (Either Text Value)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">ConnectionPool -&gt; IO (QueryResult [Company])
+</span><a href="Surypus.API.CRM.html#listCompanies"><span class="hs-identifier hs-var">CRM.listCompanies</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334533"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-67"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;orders&quot;</span></span><span>        </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult [Order] -&gt; Either Text Value
+forall a. ToJSON a =&gt; QueryResult a -&gt; Either Text Value
+</span><a href="Surypus.API.GraphQL.html#toJSON%27"><span class="hs-identifier hs-var">toJSON'</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult [Order] -&gt; Either Text Value)
+-&gt; IO (QueryResult [Order]) -&gt; IO (Either Text Value)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">ConnectionPool -&gt; IO (QueryResult [Order])
+</span><a href="Surypus.API.Orders.html#listOrders"><span class="hs-identifier hs-var">Orders.listOrders</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334533"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-68"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;dashboardKPI&quot;</span></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult DashboardKPI -&gt; Either Text Value
+forall a. ToJSON a =&gt; QueryResult a -&gt; Either Text Value
+</span><a href="Surypus.API.GraphQL.html#toJSON%27"><span class="hs-identifier hs-var">toJSON'</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult DashboardKPI -&gt; Either Text Value)
+-&gt; IO (QueryResult DashboardKPI) -&gt; IO (Either Text Value)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">ConnectionPool -&gt; IO (QueryResult DashboardKPI)
+</span><a href="Surypus.API.Dashboard.html#getDashboardKPI"><span class="hs-identifier hs-var">Dashboard.getDashboardKPI</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334533"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-69"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;pipelineForecast&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult [PipelineForecast] -&gt; Either Text Value
+forall a. ToJSON a =&gt; QueryResult a -&gt; Either Text Value
+</span><a href="Surypus.API.GraphQL.html#toJSON%27"><span class="hs-identifier hs-var">toJSON'</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult [PipelineForecast] -&gt; Either Text Value)
+-&gt; IO (QueryResult [PipelineForecast]) -&gt; IO (Either Text Value)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">ConnectionPool -&gt; IO (QueryResult [PipelineForecast])
+</span><a href="Surypus.API.CRM.html#getPipelineForecast"><span class="hs-identifier hs-var">CRM.getPipelineForecast</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334533"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-70"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;pipelineStages&quot;</span></span><span>   </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">QueryResult [PipelineStage] -&gt; Either Text Value
+forall a. ToJSON a =&gt; QueryResult a -&gt; Either Text Value
+</span><a href="Surypus.API.GraphQL.html#toJSON%27"><span class="hs-identifier hs-var">toJSON'</span></a></span><span> </span><span class="annot"><span class="annottext">(QueryResult [PipelineStage] -&gt; Either Text Value)
+-&gt; IO (QueryResult [PipelineStage]) -&gt; IO (Either Text Value)
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">ConnectionPool -&gt; IO (QueryResult [PipelineStage])
+</span><a href="Surypus.API.CRM.html#listPipelineStages"><span class="hs-identifier hs-var">CRM.listPipelineStages</span></a></span><span> </span><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680334533"><span class="hs-identifier hs-var">pool</span></a></span><span>
+</span><span id="line-71"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span>               </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text Value -&gt; IO (Either Text Value)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Either Text Value -&gt; IO (Either Text Value))
+-&gt; Either Text Value -&gt; IO (Either Text Value)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Value -&gt; Either Text Value
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">(Value -&gt; Either Text Value) -&gt; Value -&gt; Either Text Value
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[Pair] -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#object"><span class="hs-identifier hs-var">object</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Key
+</span><span class="hs-string">&quot;message&quot;</span></span><span> </span><span class="annot"><span class="annottext">Key -&gt; Text -&gt; Pair
+forall v. ToJSON v =&gt; Key -&gt; v -&gt; Pair
+forall e kv v. (KeyValue e kv, ToJSON v) =&gt; Key -&gt; v -&gt; kv
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#.%3D"><span class="hs-operator hs-var">.=</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Unknown operation: &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680334534"><span class="hs-identifier hs-var">op</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span id="local-6989586621680333988"><span class="annot"><a href="Surypus.API.GraphQL.html#toJSON%27"><span class="hs-identifier hs-type">toJSON'</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680333988"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><a href="DAL.Types.html#QueryResult"><span class="hs-identifier hs-type">QueryResult</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680333988"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#Value"><span class="hs-identifier hs-type">Value</span></a></span></span><span>
+</span><span id="line-74"></span><span id="toJSON%27"><span class="annot"><span class="annottext">toJSON' :: forall a. ToJSON a =&gt; QueryResult a -&gt; Either Text Value
+</span><a href="Surypus.API.GraphQL.html#toJSON%27"><span class="hs-identifier hs-var hs-var">toJSON'</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QuerySuccess"><span class="hs-identifier hs-type">QuerySuccess</span></a></span><span> </span><span id="local-6989586621680334551"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621680334551"><span class="hs-identifier hs-var">a</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Value -&gt; Either Text Value
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">(Value -&gt; Either Text Value) -&gt; Value -&gt; Either Text Value
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">a -&gt; Value
+forall a. ToJSON a =&gt; a -&gt; Value
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#toJSON"><span class="hs-identifier hs-var">toJSON</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621680334551"><span class="hs-identifier hs-var">a</span></a></span><span>
+</span><span id="line-75"></span><span class="annot"><a href="Surypus.API.GraphQL.html#toJSON%27"><span class="hs-identifier hs-var">toJSON'</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#QueryError"><span class="hs-identifier hs-type">QueryError</span></a></span><span> </span><span id="local-6989586621680334553"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680334553"><span class="hs-identifier hs-var">e</span></a></span></span><span class="hs-special">)</span><span>   </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text Value
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680334553"><span class="hs-identifier hs-var">e</span></a></span><span>
+</span><span id="line-76"></span></pre></body></html>

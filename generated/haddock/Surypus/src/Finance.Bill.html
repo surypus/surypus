@@ -1,0 +1,448 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE DeriveAnyClass #-}</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="annot"><span class="hs-comment">-- | Bill posting business logic</span></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Finance.Bill.html"><span class="hs-identifier">Finance.Bill</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Finance.Bill.html#Bill"><span class="hs-identifier">Bill</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Bill.html#BillLine"><span class="hs-identifier">BillLine</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Bill.html#BillStatus"><span class="hs-identifier">BillStatus</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Bill.html#BillPostingResult"><span class="hs-identifier">BillPostingResult</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Bill.html#createBill"><span class="hs-identifier">createBill</span></a></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Bill.html#postBill"><span class="hs-identifier">postBill</span></a></span><span>
+</span><span id="line-13"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Bill.html#validateBill"><span class="hs-identifier">validateBill</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Bill.html#calculateBillTotal"><span class="hs-identifier">calculateBillTotal</span></a></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-16"></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier">ToJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier">FromJSON</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="annot"><span class="hs-comment">-- | Bill status</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">data</span><span> </span><span id="BillStatus"><span class="annot"><a href="Finance.Bill.html#BillStatus"><span class="hs-identifier hs-var">BillStatus</span></a></span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="BillDraft"><span class="annot"><a href="Finance.Bill.html#BillDraft"><span class="hs-identifier hs-var">BillDraft</span></a></span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="BillPosted"><span class="annot"><a href="Finance.Bill.html#BillPosted"><span class="hs-identifier hs-var">BillPosted</span></a></span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="BillCancelled"><span class="annot"><a href="Finance.Bill.html#BillCancelled"><span class="hs-identifier hs-var">BillCancelled</span></a></span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680249740"><span id="local-6989586621680249742"><span id="local-6989586621680249746"><span class="annot"><span class="annottext">Int -&gt; BillStatus -&gt; ShowS
+[BillStatus] -&gt; ShowS
+BillStatus -&gt; String
+(Int -&gt; BillStatus -&gt; ShowS)
+-&gt; (BillStatus -&gt; String)
+-&gt; ([BillStatus] -&gt; ShowS)
+-&gt; Show BillStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BillStatus -&gt; ShowS
+showsPrec :: Int -&gt; BillStatus -&gt; ShowS
+$cshow :: BillStatus -&gt; String
+show :: BillStatus -&gt; String
+$cshowList :: [BillStatus] -&gt; ShowS
+showList :: [BillStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680249751"><span id="local-6989586621680249756"><span class="annot"><span class="annottext">BillStatus -&gt; BillStatus -&gt; Bool
+(BillStatus -&gt; BillStatus -&gt; Bool)
+-&gt; (BillStatus -&gt; BillStatus -&gt; Bool) -&gt; Eq BillStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BillStatus -&gt; BillStatus -&gt; Bool
+== :: BillStatus -&gt; BillStatus -&gt; Bool
+$c/= :: BillStatus -&gt; BillStatus -&gt; Bool
+/= :: BillStatus -&gt; BillStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680249761"><span id="local-6989586621680249763"><span class="annot"><span class="annottext">(forall x. BillStatus -&gt; Rep BillStatus x)
+-&gt; (forall x. Rep BillStatus x -&gt; BillStatus) -&gt; Generic BillStatus
+forall x. Rep BillStatus x -&gt; BillStatus
+forall x. BillStatus -&gt; Rep BillStatus x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. BillStatus -&gt; Rep BillStatus x
+from :: forall x. BillStatus -&gt; Rep BillStatus x
+$cto :: forall x. Rep BillStatus x -&gt; BillStatus
+to :: forall x. Rep BillStatus x -&gt; BillStatus
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680249769"><span id="local-6989586621680249776"><span id="local-6989586621680249779"><span id="local-6989586621680249782"><span id="local-6989586621680249785"><span class="annot"><span class="annottext">[BillStatus] -&gt; Value
+[BillStatus] -&gt; Encoding
+BillStatus -&gt; Bool
+BillStatus -&gt; Value
+BillStatus -&gt; Encoding
+(BillStatus -&gt; Value)
+-&gt; (BillStatus -&gt; Encoding)
+-&gt; ([BillStatus] -&gt; Value)
+-&gt; ([BillStatus] -&gt; Encoding)
+-&gt; (BillStatus -&gt; Bool)
+-&gt; ToJSON BillStatus
+forall a.
+(a -&gt; Value)
+-&gt; (a -&gt; Encoding)
+-&gt; ([a] -&gt; Value)
+-&gt; ([a] -&gt; Encoding)
+-&gt; (a -&gt; Bool)
+-&gt; ToJSON a
+$ctoJSON :: BillStatus -&gt; Value
+toJSON :: BillStatus -&gt; Value
+$ctoEncoding :: BillStatus -&gt; Encoding
+toEncoding :: BillStatus -&gt; Encoding
+$ctoJSONList :: [BillStatus] -&gt; Value
+toJSONList :: [BillStatus] -&gt; Value
+$ctoEncodingList :: [BillStatus] -&gt; Encoding
+toEncodingList :: [BillStatus] -&gt; Encoding
+$comitField :: BillStatus -&gt; Bool
+omitField :: BillStatus -&gt; Bool
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></a></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680249888"><span id="local-6989586621680249895"><span id="local-6989586621680249898"><span class="annot"><span class="annottext">Maybe BillStatus
+Value -&gt; Parser [BillStatus]
+Value -&gt; Parser BillStatus
+(Value -&gt; Parser BillStatus)
+-&gt; (Value -&gt; Parser [BillStatus])
+-&gt; Maybe BillStatus
+-&gt; FromJSON BillStatus
+forall a.
+(Value -&gt; Parser a)
+-&gt; (Value -&gt; Parser [a]) -&gt; Maybe a -&gt; FromJSON a
+$cparseJSON :: Value -&gt; Parser BillStatus
+parseJSON :: Value -&gt; Parser BillStatus
+$cparseJSONList :: Value -&gt; Parser [BillStatus]
+parseJSONList :: Value -&gt; Parser [BillStatus]
+$comittedField :: Maybe BillStatus
+omittedField :: Maybe BillStatus
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">FromJSON</span></a></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="annot"><span class="hs-comment">-- | Bill line item</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="BillLine"><span class="annot"><a href="Finance.Bill.html#BillLine"><span class="hs-identifier hs-var">BillLine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BillLine"><span class="annot"><a href="Finance.Bill.html#BillLine"><span class="hs-identifier hs-var">BillLine</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="billLineDescription"><span class="annot"><span class="annottext">BillLine -&gt; Text
+</span><a href="Finance.Bill.html#billLineDescription"><span class="hs-identifier hs-var hs-var">billLineDescription</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="billLineQuantity"><span class="annot"><span class="annottext">BillLine -&gt; Double
+</span><a href="Finance.Bill.html#billLineQuantity"><span class="hs-identifier hs-var hs-var">billLineQuantity</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="billLineUnitPrice"><span class="annot"><span class="annottext">BillLine -&gt; Double
+</span><a href="Finance.Bill.html#billLineUnitPrice"><span class="hs-identifier hs-var hs-var">billLineUnitPrice</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="billLineTaxRate"><span class="annot"><span class="annottext">BillLine -&gt; Double
+</span><a href="Finance.Bill.html#billLineTaxRate"><span class="hs-identifier hs-var hs-var">billLineTaxRate</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680249982"><span id="local-6989586621680249992"><span id="local-6989586621680249996"><span class="annot"><span class="annottext">Int -&gt; BillLine -&gt; ShowS
+[BillLine] -&gt; ShowS
+BillLine -&gt; String
+(Int -&gt; BillLine -&gt; ShowS)
+-&gt; (BillLine -&gt; String) -&gt; ([BillLine] -&gt; ShowS) -&gt; Show BillLine
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BillLine -&gt; ShowS
+showsPrec :: Int -&gt; BillLine -&gt; ShowS
+$cshow :: BillLine -&gt; String
+show :: BillLine -&gt; String
+$cshowList :: [BillLine] -&gt; ShowS
+showList :: [BillLine] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680249999"><span id="local-6989586621680250007"><span class="annot"><span class="annottext">BillLine -&gt; BillLine -&gt; Bool
+(BillLine -&gt; BillLine -&gt; Bool)
+-&gt; (BillLine -&gt; BillLine -&gt; Bool) -&gt; Eq BillLine
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BillLine -&gt; BillLine -&gt; Bool
+== :: BillLine -&gt; BillLine -&gt; Bool
+$c/= :: BillLine -&gt; BillLine -&gt; Bool
+/= :: BillLine -&gt; BillLine -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680250011"><span id="local-6989586621680250013"><span class="annot"><span class="annottext">(forall x. BillLine -&gt; Rep BillLine x)
+-&gt; (forall x. Rep BillLine x -&gt; BillLine) -&gt; Generic BillLine
+forall x. Rep BillLine x -&gt; BillLine
+forall x. BillLine -&gt; Rep BillLine x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. BillLine -&gt; Rep BillLine x
+from :: forall x. BillLine -&gt; Rep BillLine x
+$cto :: forall x. Rep BillLine x -&gt; BillLine
+to :: forall x. Rep BillLine x -&gt; BillLine
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680250016"><span id="local-6989586621680250023"><span id="local-6989586621680250026"><span id="local-6989586621680250029"><span id="local-6989586621680250032"><span class="annot"><span class="annottext">[BillLine] -&gt; Value
+[BillLine] -&gt; Encoding
+BillLine -&gt; Bool
+BillLine -&gt; Value
+BillLine -&gt; Encoding
+(BillLine -&gt; Value)
+-&gt; (BillLine -&gt; Encoding)
+-&gt; ([BillLine] -&gt; Value)
+-&gt; ([BillLine] -&gt; Encoding)
+-&gt; (BillLine -&gt; Bool)
+-&gt; ToJSON BillLine
+forall a.
+(a -&gt; Value)
+-&gt; (a -&gt; Encoding)
+-&gt; ([a] -&gt; Value)
+-&gt; ([a] -&gt; Encoding)
+-&gt; (a -&gt; Bool)
+-&gt; ToJSON a
+$ctoJSON :: BillLine -&gt; Value
+toJSON :: BillLine -&gt; Value
+$ctoEncoding :: BillLine -&gt; Encoding
+toEncoding :: BillLine -&gt; Encoding
+$ctoJSONList :: [BillLine] -&gt; Value
+toJSONList :: [BillLine] -&gt; Value
+$ctoEncodingList :: [BillLine] -&gt; Encoding
+toEncodingList :: [BillLine] -&gt; Encoding
+$comitField :: BillLine -&gt; Bool
+omitField :: BillLine -&gt; Bool
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></a></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680250150"><span id="local-6989586621680250157"><span id="local-6989586621680250160"><span class="annot"><span class="annottext">Maybe BillLine
+Value -&gt; Parser [BillLine]
+Value -&gt; Parser BillLine
+(Value -&gt; Parser BillLine)
+-&gt; (Value -&gt; Parser [BillLine])
+-&gt; Maybe BillLine
+-&gt; FromJSON BillLine
+forall a.
+(Value -&gt; Parser a)
+-&gt; (Value -&gt; Parser [a]) -&gt; Maybe a -&gt; FromJSON a
+$cparseJSON :: Value -&gt; Parser BillLine
+parseJSON :: Value -&gt; Parser BillLine
+$cparseJSONList :: Value -&gt; Parser [BillLine]
+parseJSONList :: Value -&gt; Parser [BillLine]
+$comittedField :: Maybe BillLine
+omittedField :: Maybe BillLine
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">FromJSON</span></a></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="annot"><span class="hs-comment">-- | Bill</span></span><span>
+</span><span id="line-38"></span><span class="hs-keyword">data</span><span> </span><span id="Bill"><span class="annot"><a href="Finance.Bill.html#Bill"><span class="hs-identifier hs-var">Bill</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Bill"><span class="annot"><a href="Finance.Bill.html#Bill"><span class="hs-identifier hs-var">Bill</span></a></span></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="billId"><span class="annot"><span class="annottext">Bill -&gt; Maybe Int
+</span><a href="Finance.Bill.html#billId"><span class="hs-identifier hs-var hs-var">billId</span></a></span></span><span>          </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="billNumber"><span class="annot"><span class="annottext">Bill -&gt; Text
+</span><a href="Finance.Bill.html#billNumber"><span class="hs-identifier hs-var hs-var">billNumber</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="billStatus"><span class="annot"><span class="annottext">Bill -&gt; BillStatus
+</span><a href="Finance.Bill.html#billStatus"><span class="hs-identifier hs-var hs-var">billStatus</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="Finance.Bill.html#BillStatus"><span class="hs-identifier hs-type">BillStatus</span></a></span><span>
+</span><span id="line-42"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="billDate"><span class="annot"><span class="annottext">Bill -&gt; Day
+</span><a href="Finance.Bill.html#billDate"><span class="hs-identifier hs-var hs-var">billDate</span></a></span></span><span>        </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="billCustomerName"><span class="annot"><span class="annottext">Bill -&gt; Text
+</span><a href="Finance.Bill.html#billCustomerName"><span class="hs-identifier hs-var hs-var">billCustomerName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="billLines"><span class="annot"><span class="annottext">Bill -&gt; [BillLine]
+</span><a href="Finance.Bill.html#billLines"><span class="hs-identifier hs-var hs-var">billLines</span></a></span></span><span>       </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Finance.Bill.html#BillLine"><span class="hs-identifier hs-type">BillLine</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="billTotal"><span class="annot"><span class="annottext">Bill -&gt; Double
+</span><a href="Finance.Bill.html#billTotal"><span class="hs-identifier hs-var hs-var">billTotal</span></a></span></span><span>       </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="billTaxAmount"><span class="annot"><span class="annottext">Bill -&gt; Double
+</span><a href="Finance.Bill.html#billTaxAmount"><span class="hs-identifier hs-var hs-var">billTaxAmount</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680250248"><span id="local-6989586621680250264"><span id="local-6989586621680250268"><span class="annot"><span class="annottext">Int -&gt; Bill -&gt; ShowS
+[Bill] -&gt; ShowS
+Bill -&gt; String
+(Int -&gt; Bill -&gt; ShowS)
+-&gt; (Bill -&gt; String) -&gt; ([Bill] -&gt; ShowS) -&gt; Show Bill
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Bill -&gt; ShowS
+showsPrec :: Int -&gt; Bill -&gt; ShowS
+$cshow :: Bill -&gt; String
+show :: Bill -&gt; String
+$cshowList :: [Bill] -&gt; ShowS
+showList :: [Bill] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680250272"><span id="local-6989586621680250287"><span class="annot"><span class="annottext">Bill -&gt; Bill -&gt; Bool
+(Bill -&gt; Bill -&gt; Bool) -&gt; (Bill -&gt; Bill -&gt; Bool) -&gt; Eq Bill
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Bill -&gt; Bill -&gt; Bool
+== :: Bill -&gt; Bill -&gt; Bool
+$c/= :: Bill -&gt; Bill -&gt; Bool
+/= :: Bill -&gt; Bill -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680250292"><span id="local-6989586621680250294"><span class="annot"><span class="annottext">(forall x. Bill -&gt; Rep Bill x)
+-&gt; (forall x. Rep Bill x -&gt; Bill) -&gt; Generic Bill
+forall x. Rep Bill x -&gt; Bill
+forall x. Bill -&gt; Rep Bill x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Bill -&gt; Rep Bill x
+from :: forall x. Bill -&gt; Rep Bill x
+$cto :: forall x. Rep Bill x -&gt; Bill
+to :: forall x. Rep Bill x -&gt; Bill
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680250297"><span id="local-6989586621680250304"><span id="local-6989586621680250307"><span id="local-6989586621680250310"><span id="local-6989586621680250313"><span class="annot"><span class="annottext">[Bill] -&gt; Value
+[Bill] -&gt; Encoding
+Bill -&gt; Bool
+Bill -&gt; Value
+Bill -&gt; Encoding
+(Bill -&gt; Value)
+-&gt; (Bill -&gt; Encoding)
+-&gt; ([Bill] -&gt; Value)
+-&gt; ([Bill] -&gt; Encoding)
+-&gt; (Bill -&gt; Bool)
+-&gt; ToJSON Bill
+forall a.
+(a -&gt; Value)
+-&gt; (a -&gt; Encoding)
+-&gt; ([a] -&gt; Value)
+-&gt; ([a] -&gt; Encoding)
+-&gt; (a -&gt; Bool)
+-&gt; ToJSON a
+$ctoJSON :: Bill -&gt; Value
+toJSON :: Bill -&gt; Value
+$ctoEncoding :: Bill -&gt; Encoding
+toEncoding :: Bill -&gt; Encoding
+$ctoJSONList :: [Bill] -&gt; Value
+toJSONList :: [Bill] -&gt; Value
+$ctoEncodingList :: [Bill] -&gt; Encoding
+toEncodingList :: [Bill] -&gt; Encoding
+$comitField :: Bill -&gt; Bool
+omitField :: Bill -&gt; Bool
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">ToJSON</span></a></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680250481"><span id="local-6989586621680250488"><span id="local-6989586621680250491"><span class="annot"><span class="annottext">Maybe Bill
+Value -&gt; Parser [Bill]
+Value -&gt; Parser Bill
+(Value -&gt; Parser Bill)
+-&gt; (Value -&gt; Parser [Bill]) -&gt; Maybe Bill -&gt; FromJSON Bill
+forall a.
+(Value -&gt; Parser a)
+-&gt; (Value -&gt; Parser [a]) -&gt; Maybe a -&gt; FromJSON a
+$cparseJSON :: Value -&gt; Parser Bill
+parseJSON :: Value -&gt; Parser Bill
+$cparseJSONList :: Value -&gt; Parser [Bill]
+parseJSONList :: Value -&gt; Parser [Bill]
+$comittedField :: Maybe Bill
+omittedField :: Maybe Bill
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">FromJSON</span></a></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="annot"><span class="hs-comment">-- | Bill posting result</span></span><span>
+</span><span id="line-50"></span><span class="hs-keyword">data</span><span> </span><span id="BillPostingResult"><span class="annot"><a href="Finance.Bill.html#BillPostingResult"><span class="hs-identifier hs-var">BillPostingResult</span></a></span></span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="BillPostedOk"><span class="annot"><a href="Finance.Bill.html#BillPostedOk"><span class="hs-identifier hs-var">BillPostedOk</span></a></span></span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="BillValidationFailed"><span class="annot"><a href="Finance.Bill.html#BillValidationFailed"><span class="hs-identifier hs-var">BillValidationFailed</span></a></span></span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="BillAlreadyPosted"><span class="annot"><a href="Finance.Bill.html#BillAlreadyPosted"><span class="hs-identifier hs-var">BillAlreadyPosted</span></a></span></span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680250607"><span id="local-6989586621680250611"><span id="local-6989586621680250615"><span class="annot"><span class="annottext">Int -&gt; BillPostingResult -&gt; ShowS
+[BillPostingResult] -&gt; ShowS
+BillPostingResult -&gt; String
+(Int -&gt; BillPostingResult -&gt; ShowS)
+-&gt; (BillPostingResult -&gt; String)
+-&gt; ([BillPostingResult] -&gt; ShowS)
+-&gt; Show BillPostingResult
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BillPostingResult -&gt; ShowS
+showsPrec :: Int -&gt; BillPostingResult -&gt; ShowS
+$cshow :: BillPostingResult -&gt; String
+show :: BillPostingResult -&gt; String
+$cshowList :: [BillPostingResult] -&gt; ShowS
+showList :: [BillPostingResult] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680250618"><span id="local-6989586621680250623"><span class="annot"><span class="annottext">BillPostingResult -&gt; BillPostingResult -&gt; Bool
+(BillPostingResult -&gt; BillPostingResult -&gt; Bool)
+-&gt; (BillPostingResult -&gt; BillPostingResult -&gt; Bool)
+-&gt; Eq BillPostingResult
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BillPostingResult -&gt; BillPostingResult -&gt; Bool
+== :: BillPostingResult -&gt; BillPostingResult -&gt; Bool
+$c/= :: BillPostingResult -&gt; BillPostingResult -&gt; Bool
+/= :: BillPostingResult -&gt; BillPostingResult -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="annot"><span class="hs-comment">-- | Create a new bill (draft)</span></span><span>
+</span><span id="line-57"></span><span class="annot"><a href="Finance.Bill.html#createBill"><span class="hs-identifier hs-type">createBill</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Finance.Bill.html#BillLine"><span class="hs-identifier hs-type">BillLine</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Bill.html#Bill"><span class="hs-identifier hs-type">Bill</span></a></span><span>
+</span><span id="line-58"></span><span id="createBill"><span class="annot"><span class="annottext">createBill :: Text -&gt; Day -&gt; Text -&gt; [BillLine] -&gt; Bill
+</span><a href="Finance.Bill.html#createBill"><span class="hs-identifier hs-var hs-var">createBill</span></a></span></span><span> </span><span id="local-6989586621680250626"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680250626"><span class="hs-identifier hs-var">number</span></a></span></span><span> </span><span id="local-6989586621680250627"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680250627"><span class="hs-identifier hs-var">date</span></a></span></span><span> </span><span id="local-6989586621680250628"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680250628"><span class="hs-identifier hs-var">customer</span></a></span></span><span> </span><span id="local-6989586621680250629"><span class="annot"><span class="annottext">[BillLine]
+</span><a href="#local-6989586621680250629"><span class="hs-identifier hs-var">lines</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680250630"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680250630"><span class="hs-identifier hs-var">total</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680250631"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680250631"><span class="hs-identifier hs-var">tax</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[BillLine] -&gt; (Double, Double)
+</span><a href="Finance.Bill.html#calculateBillTotal"><span class="hs-identifier hs-var">calculateBillTotal</span></a></span><span> </span><span class="annot"><span class="annottext">[BillLine]
+</span><a href="#local-6989586621680250629"><span class="hs-identifier hs-var">lines</span></a></span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="annot"><a href="Finance.Bill.html#Bill"><span class="hs-identifier hs-type">Bill</span></a></span><span>
+</span><span id="line-61"></span><span>       </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">billId :: Maybe Int
+</span><a href="Finance.Bill.html#billId"><span class="hs-identifier hs-var">billId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Int
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-62"></span><span>       </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">billNumber :: Text
+</span><a href="Finance.Bill.html#billNumber"><span class="hs-identifier hs-var">billNumber</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680250626"><span class="hs-identifier hs-var">number</span></a></span><span>
+</span><span id="line-63"></span><span>       </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">billStatus :: BillStatus
+</span><a href="Finance.Bill.html#billStatus"><span class="hs-identifier hs-var">billStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BillStatus
+</span><a href="Finance.Bill.html#BillDraft"><span class="hs-identifier hs-var">BillDraft</span></a></span><span>
+</span><span id="line-64"></span><span>       </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">billDate :: Day
+</span><a href="Finance.Bill.html#billDate"><span class="hs-identifier hs-var">billDate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680250627"><span class="hs-identifier hs-var">date</span></a></span><span>
+</span><span id="line-65"></span><span>       </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">billCustomerName :: Text
+</span><a href="Finance.Bill.html#billCustomerName"><span class="hs-identifier hs-var">billCustomerName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680250628"><span class="hs-identifier hs-var">customer</span></a></span><span>
+</span><span id="line-66"></span><span>       </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">billLines :: [BillLine]
+</span><a href="Finance.Bill.html#billLines"><span class="hs-identifier hs-var">billLines</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[BillLine]
+</span><a href="#local-6989586621680250629"><span class="hs-identifier hs-var">lines</span></a></span><span>
+</span><span id="line-67"></span><span>       </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">billTotal :: Double
+</span><a href="Finance.Bill.html#billTotal"><span class="hs-identifier hs-var">billTotal</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680250630"><span class="hs-identifier hs-var">total</span></a></span><span>
+</span><span id="line-68"></span><span>       </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">billTaxAmount :: Double
+</span><a href="Finance.Bill.html#billTaxAmount"><span class="hs-identifier hs-var">billTaxAmount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680250631"><span class="hs-identifier hs-var">tax</span></a></span><span>
+</span><span id="line-69"></span><span>       </span><span class="hs-special">}</span><span>
+</span><span id="line-70"></span><span>
+</span><span id="line-71"></span><span class="annot"><span class="hs-comment">-- | Validate bill before posting</span></span><span>
+</span><span id="line-72"></span><span class="annot"><a href="Finance.Bill.html#validateBill"><span class="hs-identifier hs-type">validateBill</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Bill.html#Bill"><span class="hs-identifier hs-type">Bill</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-73"></span><span id="validateBill"><span class="annot"><span class="annottext">validateBill :: Bill -&gt; Either Text ()
+</span><a href="Finance.Bill.html#validateBill"><span class="hs-identifier hs-var hs-var">validateBill</span></a></span></span><span> </span><span id="local-6989586621680250632"><span class="annot"><span class="annottext">Bill
+</span><a href="#local-6989586621680250632"><span class="hs-identifier hs-var">bill</span></a></span></span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">[BillLine] -&gt; Bool
+forall a. [a] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">null</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bill -&gt; [BillLine]
+</span><a href="Finance.Bill.html#billLines"><span class="hs-identifier hs-var">billLines</span></a></span><span> </span><span class="annot"><span class="annottext">Bill
+</span><a href="#local-6989586621680250632"><span class="hs-identifier hs-var">bill</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text ()
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Bill must have at least one line&quot;</span></span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bill -&gt; Double
+</span><a href="Finance.Bill.html#billTotal"><span class="hs-identifier hs-var">billTotal</span></a></span><span> </span><span class="annot"><span class="annottext">Bill
+</span><a href="#local-6989586621680250632"><span class="hs-identifier hs-var">bill</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>     </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text ()
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Bill total cannot be negative&quot;</span></span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span>              </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">() -&gt; Either Text ()
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span>
+</span><span id="line-78"></span><span class="annot"><span class="hs-comment">-- | Calculate total and tax for bill lines</span></span><span>
+</span><span id="line-79"></span><span class="annot"><a href="Finance.Bill.html#calculateBillTotal"><span class="hs-identifier hs-type">calculateBillTotal</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Finance.Bill.html#BillLine"><span class="hs-identifier hs-type">BillLine</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span>
+</span><span id="line-80"></span><span id="calculateBillTotal"><span class="annot"><span class="annottext">calculateBillTotal :: [BillLine] -&gt; (Double, Double)
+</span><a href="Finance.Bill.html#calculateBillTotal"><span class="hs-identifier hs-var hs-var">calculateBillTotal</span></a></span></span><span> </span><span id="local-6989586621680250635"><span class="annot"><span class="annottext">[BillLine]
+</span><a href="#local-6989586621680250635"><span class="hs-identifier hs-var">lines</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-81"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680250639"><span class="annot"><span class="annottext">subtotal :: Double
+</span><a href="#local-6989586621680250639"><span class="hs-identifier hs-var hs-var">subtotal</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Double] -&gt; Double
+forall a. Num a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">sum</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">BillLine -&gt; Double
+</span><a href="Finance.Bill.html#billLineQuantity"><span class="hs-identifier hs-var">billLineQuantity</span></a></span><span> </span><span class="annot"><span class="annottext">BillLine
+</span><a href="#local-6989586621680250641"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">BillLine -&gt; Double
+</span><a href="Finance.Bill.html#billLineUnitPrice"><span class="hs-identifier hs-var">billLineUnitPrice</span></a></span><span> </span><span class="annot"><span class="annottext">BillLine
+</span><a href="#local-6989586621680250641"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="local-6989586621680250641"><span class="annot"><span class="annottext">BillLine
+</span><a href="#local-6989586621680250641"><span class="hs-identifier hs-var">l</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[BillLine]
+</span><a href="#local-6989586621680250635"><span class="hs-identifier hs-var">lines</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-82"></span><span>      </span><span id="local-6989586621680250650"><span class="annot"><span class="annottext">tax :: Double
+</span><a href="#local-6989586621680250650"><span class="hs-identifier hs-var hs-var">tax</span></a></span></span><span>      </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Double] -&gt; Double
+forall a. Num a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">sum</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">BillLine -&gt; Double
+</span><a href="Finance.Bill.html#billLineQuantity"><span class="hs-identifier hs-var">billLineQuantity</span></a></span><span> </span><span class="annot"><span class="annottext">BillLine
+</span><a href="#local-6989586621680250651"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">BillLine -&gt; Double
+</span><a href="Finance.Bill.html#billLineUnitPrice"><span class="hs-identifier hs-var">billLineUnitPrice</span></a></span><span> </span><span class="annot"><span class="annottext">BillLine
+</span><a href="#local-6989586621680250651"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">BillLine -&gt; Double
+</span><a href="Finance.Bill.html#billLineTaxRate"><span class="hs-identifier hs-var">billLineTaxRate</span></a></span><span> </span><span class="annot"><span class="annottext">BillLine
+</span><a href="#local-6989586621680250651"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">100</span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="local-6989586621680250651"><span class="annot"><span class="annottext">BillLine
+</span><a href="#local-6989586621680250651"><span class="hs-identifier hs-var">l</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[BillLine]
+</span><a href="#local-6989586621680250635"><span class="hs-identifier hs-var">lines</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-83"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680250639"><span class="hs-identifier hs-var">subtotal</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680250650"><span class="hs-identifier hs-var">tax</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680250650"><span class="hs-identifier hs-var">tax</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-84"></span><span>
+</span><span id="line-85"></span><span class="annot"><span class="hs-comment">-- | Post a bill (transition from Draft to Posted)</span></span><span>
+</span><span id="line-86"></span><span class="annot"><a href="Finance.Bill.html#postBill"><span class="hs-identifier hs-type">postBill</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Bill.html#Bill"><span class="hs-identifier hs-type">Bill</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Bill.html#BillPostingResult"><span class="hs-identifier hs-type">BillPostingResult</span></a></span><span>
+</span><span id="line-87"></span><span id="postBill"><span class="annot"><span class="annottext">postBill :: Bill -&gt; BillPostingResult
+</span><a href="Finance.Bill.html#postBill"><span class="hs-identifier hs-var hs-var">postBill</span></a></span></span><span> </span><span id="local-6989586621680250654"><span class="annot"><span class="annottext">bill :: Bill
+</span><a href="#local-6989586621680250654"><span class="hs-identifier hs-var">bill</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="Finance.Bill.html#Bill"><span class="hs-identifier hs-type">Bill</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">billStatus :: Bill -&gt; BillStatus
+</span><a href="Finance.Bill.html#billStatus"><span class="hs-identifier hs-var">billStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BillStatus
+</span><a href="Finance.Bill.html#BillPosted"><span class="hs-identifier hs-var">BillPosted</span></a></span><span> </span><span class="hs-special">}</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">BillPostingResult
+</span><a href="Finance.Bill.html#BillAlreadyPosted"><span class="hs-identifier hs-var">BillAlreadyPosted</span></a></span><span>
+</span><span id="line-88"></span><span class="annot"><a href="Finance.Bill.html#postBill"><span class="hs-identifier hs-var">postBill</span></a></span><span> </span><span id="local-6989586621680250655"><span class="annot"><span class="annottext">Bill
+</span><a href="#local-6989586621680250655"><span class="hs-identifier hs-var">bill</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Bill -&gt; Either Text ()
+</span><a href="Finance.Bill.html#validateBill"><span class="hs-identifier hs-var">validateBill</span></a></span><span> </span><span class="annot"><span class="annottext">Bill
+</span><a href="#local-6989586621680250655"><span class="hs-identifier hs-var">bill</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-89"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621680250656"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680250656"><span class="hs-identifier hs-var">err</span></a></span></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Text -&gt; BillPostingResult
+</span><a href="Finance.Bill.html#BillValidationFailed"><span class="hs-identifier hs-var">BillValidationFailed</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680250656"><span class="hs-identifier hs-var">err</span></a></span><span>
+</span><span id="line-90"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">BillPostingResult
+</span><a href="Finance.Bill.html#BillPostedOk"><span class="hs-identifier hs-var">BillPostedOk</span></a></span><span>
+</span><span id="line-91"></span></pre></body></html>

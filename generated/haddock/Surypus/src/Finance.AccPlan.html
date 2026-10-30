@@ -1,0 +1,408 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- | Finance.AccPlan - Enhanced accounting plan with type safety</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- This module provides structured accounting plans with formal verification</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Finance.AccPlan.html"><span class="hs-identifier">Finance.AccPlan</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">fromGregorian</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="annot"><span class="hs-comment">-- | Accounting plan with richer semantics</span></span><span>
+</span><span id="line-15"></span><span class="hs-keyword">data</span><span> </span><span id="AccPlan"><span class="annot"><a href="Finance.AccPlan.html#AccPlan"><span class="hs-identifier hs-var">AccPlan</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AccPlan"><span class="annot"><a href="Finance.AccPlan.html#AccPlan"><span class="hs-identifier hs-var">AccPlan</span></a></span></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="apId"><span class="annot"><span class="annottext">AccPlan -&gt; AccPlanId
+</span><a href="Finance.AccPlan.html#apId"><span class="hs-identifier hs-var hs-var">apId</span></a></span></span><span>          </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#AccPlanId"><span class="hs-identifier hs-type">AccPlanId</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="apCode"><span class="annot"><span class="annottext">AccPlan -&gt; PlanCode
+</span><a href="Finance.AccPlan.html#apCode"><span class="hs-identifier hs-var hs-var">apCode</span></a></span></span><span>        </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#PlanCode"><span class="hs-identifier hs-type">PlanCode</span></a></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="apName"><span class="annot"><span class="annottext">AccPlan -&gt; PlanName
+</span><a href="Finance.AccPlan.html#apName"><span class="hs-identifier hs-var hs-var">apName</span></a></span></span><span>        </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#PlanName"><span class="hs-identifier hs-type">PlanName</span></a></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="apParentId"><span class="annot"><span class="annottext">AccPlan -&gt; Maybe AccPlanId
+</span><a href="Finance.AccPlan.html#apParentId"><span class="hs-identifier hs-var hs-var">apParentId</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Finance.AccPlan.html#AccPlanId"><span class="hs-identifier hs-type">AccPlanId</span></a></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="apIsActive"><span class="annot"><span class="annottext">AccPlan -&gt; Bool
+</span><a href="Finance.AccPlan.html#apIsActive"><span class="hs-identifier hs-var hs-var">apIsActive</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="apCreatedAt"><span class="annot"><span class="annottext">AccPlan -&gt; Day
+</span><a href="Finance.AccPlan.html#apCreatedAt"><span class="hs-identifier hs-var hs-var">apCreatedAt</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="apUpdatedAt"><span class="annot"><span class="annottext">AccPlan -&gt; Maybe Day
+</span><a href="Finance.AccPlan.html#apUpdatedAt"><span class="hs-identifier hs-var hs-var">apUpdatedAt</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680246530"><span id="local-6989586621680246547"><span id="local-6989586621680246551"><span class="annot"><span class="annottext">Int -&gt; AccPlan -&gt; ShowS
+[AccPlan] -&gt; ShowS
+AccPlan -&gt; String
+(Int -&gt; AccPlan -&gt; ShowS)
+-&gt; (AccPlan -&gt; String) -&gt; ([AccPlan] -&gt; ShowS) -&gt; Show AccPlan
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AccPlan -&gt; ShowS
+showsPrec :: Int -&gt; AccPlan -&gt; ShowS
+$cshow :: AccPlan -&gt; String
+show :: AccPlan -&gt; String
+$cshowList :: [AccPlan] -&gt; ShowS
+showList :: [AccPlan] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680246556"><span id="local-6989586621680246571"><span class="annot"><span class="annottext">AccPlan -&gt; AccPlan -&gt; Bool
+(AccPlan -&gt; AccPlan -&gt; Bool)
+-&gt; (AccPlan -&gt; AccPlan -&gt; Bool) -&gt; Eq AccPlan
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AccPlan -&gt; AccPlan -&gt; Bool
+== :: AccPlan -&gt; AccPlan -&gt; Bool
+$c/= :: AccPlan -&gt; AccPlan -&gt; Bool
+/= :: AccPlan -&gt; AccPlan -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680246576"><span id="local-6989586621680246578"><span class="annot"><span class="annottext">(forall x. AccPlan -&gt; Rep AccPlan x)
+-&gt; (forall x. Rep AccPlan x -&gt; AccPlan) -&gt; Generic AccPlan
+forall x. Rep AccPlan x -&gt; AccPlan
+forall x. AccPlan -&gt; Rep AccPlan x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. AccPlan -&gt; Rep AccPlan x
+from :: forall x. AccPlan -&gt; Rep AccPlan x
+$cto :: forall x. Rep AccPlan x -&gt; AccPlan
+to :: forall x. Rep AccPlan x -&gt; AccPlan
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="annot"><span class="hs-comment">-- | Newtypes for enhanced type safety</span></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">newtype</span><span> </span><span id="AccPlanId"><span class="annot"><a href="Finance.AccPlan.html#AccPlanId"><span class="hs-identifier hs-var">AccPlanId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AccPlanId"><span class="annot"><a href="Finance.AccPlan.html#AccPlanId"><span class="hs-identifier hs-var">AccPlanId</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unAccPlanId"><span class="annot"><span class="annottext">AccPlanId -&gt; Int64
+</span><a href="Finance.AccPlan.html#unAccPlanId"><span class="hs-identifier hs-var hs-var">unAccPlanId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680246586"><span id="local-6989586621680246591"><span id="local-6989586621680246594"><span class="annot"><span class="annottext">Int -&gt; AccPlanId -&gt; ShowS
+[AccPlanId] -&gt; ShowS
+AccPlanId -&gt; String
+(Int -&gt; AccPlanId -&gt; ShowS)
+-&gt; (AccPlanId -&gt; String)
+-&gt; ([AccPlanId] -&gt; ShowS)
+-&gt; Show AccPlanId
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AccPlanId -&gt; ShowS
+showsPrec :: Int -&gt; AccPlanId -&gt; ShowS
+$cshow :: AccPlanId -&gt; String
+show :: AccPlanId -&gt; String
+$cshowList :: [AccPlanId] -&gt; ShowS
+showList :: [AccPlanId] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680246597"><span id="local-6989586621680246602"><span class="annot"><span class="annottext">AccPlanId -&gt; AccPlanId -&gt; Bool
+(AccPlanId -&gt; AccPlanId -&gt; Bool)
+-&gt; (AccPlanId -&gt; AccPlanId -&gt; Bool) -&gt; Eq AccPlanId
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AccPlanId -&gt; AccPlanId -&gt; Bool
+== :: AccPlanId -&gt; AccPlanId -&gt; Bool
+$c/= :: AccPlanId -&gt; AccPlanId -&gt; Bool
+/= :: AccPlanId -&gt; AccPlanId -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680246609"><span id="local-6989586621680246614"><span id="local-6989586621680246618"><span id="local-6989586621680246622"><span id="local-6989586621680246626"><span id="local-6989586621680246630"><span id="local-6989586621680246634"><span class="annot"><span class="annottext">Eq AccPlanId
+Eq AccPlanId =&gt;
+(AccPlanId -&gt; AccPlanId -&gt; Ordering)
+-&gt; (AccPlanId -&gt; AccPlanId -&gt; Bool)
+-&gt; (AccPlanId -&gt; AccPlanId -&gt; Bool)
+-&gt; (AccPlanId -&gt; AccPlanId -&gt; Bool)
+-&gt; (AccPlanId -&gt; AccPlanId -&gt; Bool)
+-&gt; (AccPlanId -&gt; AccPlanId -&gt; AccPlanId)
+-&gt; (AccPlanId -&gt; AccPlanId -&gt; AccPlanId)
+-&gt; Ord AccPlanId
+AccPlanId -&gt; AccPlanId -&gt; Bool
+AccPlanId -&gt; AccPlanId -&gt; Ordering
+AccPlanId -&gt; AccPlanId -&gt; AccPlanId
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: AccPlanId -&gt; AccPlanId -&gt; Ordering
+compare :: AccPlanId -&gt; AccPlanId -&gt; Ordering
+$c&lt; :: AccPlanId -&gt; AccPlanId -&gt; Bool
+&lt; :: AccPlanId -&gt; AccPlanId -&gt; Bool
+$c&lt;= :: AccPlanId -&gt; AccPlanId -&gt; Bool
+&lt;= :: AccPlanId -&gt; AccPlanId -&gt; Bool
+$c&gt; :: AccPlanId -&gt; AccPlanId -&gt; Bool
+&gt; :: AccPlanId -&gt; AccPlanId -&gt; Bool
+$c&gt;= :: AccPlanId -&gt; AccPlanId -&gt; Bool
+&gt;= :: AccPlanId -&gt; AccPlanId -&gt; Bool
+$cmax :: AccPlanId -&gt; AccPlanId -&gt; AccPlanId
+max :: AccPlanId -&gt; AccPlanId -&gt; AccPlanId
+$cmin :: AccPlanId -&gt; AccPlanId -&gt; AccPlanId
+min :: AccPlanId -&gt; AccPlanId -&gt; AccPlanId
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">newtype</span><span> </span><span id="PlanCode"><span class="annot"><a href="Finance.AccPlan.html#PlanCode"><span class="hs-identifier hs-var">PlanCode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PlanCode"><span class="annot"><a href="Finance.AccPlan.html#PlanCode"><span class="hs-identifier hs-var">PlanCode</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unPlanCode"><span class="annot"><span class="annottext">PlanCode -&gt; Text
+</span><a href="Finance.AccPlan.html#unPlanCode"><span class="hs-identifier hs-var hs-var">unPlanCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680246648"><span id="local-6989586621680246653"><span id="local-6989586621680246656"><span class="annot"><span class="annottext">Int -&gt; PlanCode -&gt; ShowS
+[PlanCode] -&gt; ShowS
+PlanCode -&gt; String
+(Int -&gt; PlanCode -&gt; ShowS)
+-&gt; (PlanCode -&gt; String) -&gt; ([PlanCode] -&gt; ShowS) -&gt; Show PlanCode
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PlanCode -&gt; ShowS
+showsPrec :: Int -&gt; PlanCode -&gt; ShowS
+$cshow :: PlanCode -&gt; String
+show :: PlanCode -&gt; String
+$cshowList :: [PlanCode] -&gt; ShowS
+showList :: [PlanCode] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680246659"><span id="local-6989586621680246664"><span class="annot"><span class="annottext">PlanCode -&gt; PlanCode -&gt; Bool
+(PlanCode -&gt; PlanCode -&gt; Bool)
+-&gt; (PlanCode -&gt; PlanCode -&gt; Bool) -&gt; Eq PlanCode
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PlanCode -&gt; PlanCode -&gt; Bool
+== :: PlanCode -&gt; PlanCode -&gt; Bool
+$c/= :: PlanCode -&gt; PlanCode -&gt; Bool
+/= :: PlanCode -&gt; PlanCode -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680246670"><span id="local-6989586621680246675"><span id="local-6989586621680246679"><span id="local-6989586621680246683"><span id="local-6989586621680246687"><span id="local-6989586621680246691"><span id="local-6989586621680246695"><span class="annot"><span class="annottext">Eq PlanCode
+Eq PlanCode =&gt;
+(PlanCode -&gt; PlanCode -&gt; Ordering)
+-&gt; (PlanCode -&gt; PlanCode -&gt; Bool)
+-&gt; (PlanCode -&gt; PlanCode -&gt; Bool)
+-&gt; (PlanCode -&gt; PlanCode -&gt; Bool)
+-&gt; (PlanCode -&gt; PlanCode -&gt; Bool)
+-&gt; (PlanCode -&gt; PlanCode -&gt; PlanCode)
+-&gt; (PlanCode -&gt; PlanCode -&gt; PlanCode)
+-&gt; Ord PlanCode
+PlanCode -&gt; PlanCode -&gt; Bool
+PlanCode -&gt; PlanCode -&gt; Ordering
+PlanCode -&gt; PlanCode -&gt; PlanCode
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: PlanCode -&gt; PlanCode -&gt; Ordering
+compare :: PlanCode -&gt; PlanCode -&gt; Ordering
+$c&lt; :: PlanCode -&gt; PlanCode -&gt; Bool
+&lt; :: PlanCode -&gt; PlanCode -&gt; Bool
+$c&lt;= :: PlanCode -&gt; PlanCode -&gt; Bool
+&lt;= :: PlanCode -&gt; PlanCode -&gt; Bool
+$c&gt; :: PlanCode -&gt; PlanCode -&gt; Bool
+&gt; :: PlanCode -&gt; PlanCode -&gt; Bool
+$c&gt;= :: PlanCode -&gt; PlanCode -&gt; Bool
+&gt;= :: PlanCode -&gt; PlanCode -&gt; Bool
+$cmax :: PlanCode -&gt; PlanCode -&gt; PlanCode
+max :: PlanCode -&gt; PlanCode -&gt; PlanCode
+$cmin :: PlanCode -&gt; PlanCode -&gt; PlanCode
+min :: PlanCode -&gt; PlanCode -&gt; PlanCode
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">newtype</span><span> </span><span id="PlanName"><span class="annot"><a href="Finance.AccPlan.html#PlanName"><span class="hs-identifier hs-var">PlanName</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="PlanName"><span class="annot"><a href="Finance.AccPlan.html#PlanName"><span class="hs-identifier hs-var">PlanName</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unPlanName"><span class="annot"><span class="annottext">PlanName -&gt; Text
+</span><a href="Finance.AccPlan.html#unPlanName"><span class="hs-identifier hs-var hs-var">unPlanName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680246702"><span id="local-6989586621680246706"><span id="local-6989586621680246709"><span class="annot"><span class="annottext">Int -&gt; PlanName -&gt; ShowS
+[PlanName] -&gt; ShowS
+PlanName -&gt; String
+(Int -&gt; PlanName -&gt; ShowS)
+-&gt; (PlanName -&gt; String) -&gt; ([PlanName] -&gt; ShowS) -&gt; Show PlanName
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; PlanName -&gt; ShowS
+showsPrec :: Int -&gt; PlanName -&gt; ShowS
+$cshow :: PlanName -&gt; String
+show :: PlanName -&gt; String
+$cshowList :: [PlanName] -&gt; ShowS
+showList :: [PlanName] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680246712"><span id="local-6989586621680246716"><span class="annot"><span class="annottext">PlanName -&gt; PlanName -&gt; Bool
+(PlanName -&gt; PlanName -&gt; Bool)
+-&gt; (PlanName -&gt; PlanName -&gt; Bool) -&gt; Eq PlanName
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: PlanName -&gt; PlanName -&gt; Bool
+== :: PlanName -&gt; PlanName -&gt; Bool
+$c/= :: PlanName -&gt; PlanName -&gt; Bool
+/= :: PlanName -&gt; PlanName -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680246722"><span id="local-6989586621680246726"><span id="local-6989586621680246730"><span id="local-6989586621680246734"><span id="local-6989586621680246738"><span id="local-6989586621680246742"><span id="local-6989586621680246746"><span class="annot"><span class="annottext">Eq PlanName
+Eq PlanName =&gt;
+(PlanName -&gt; PlanName -&gt; Ordering)
+-&gt; (PlanName -&gt; PlanName -&gt; Bool)
+-&gt; (PlanName -&gt; PlanName -&gt; Bool)
+-&gt; (PlanName -&gt; PlanName -&gt; Bool)
+-&gt; (PlanName -&gt; PlanName -&gt; Bool)
+-&gt; (PlanName -&gt; PlanName -&gt; PlanName)
+-&gt; (PlanName -&gt; PlanName -&gt; PlanName)
+-&gt; Ord PlanName
+PlanName -&gt; PlanName -&gt; Bool
+PlanName -&gt; PlanName -&gt; Ordering
+PlanName -&gt; PlanName -&gt; PlanName
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: PlanName -&gt; PlanName -&gt; Ordering
+compare :: PlanName -&gt; PlanName -&gt; Ordering
+$c&lt; :: PlanName -&gt; PlanName -&gt; Bool
+&lt; :: PlanName -&gt; PlanName -&gt; Bool
+$c&lt;= :: PlanName -&gt; PlanName -&gt; Bool
+&lt;= :: PlanName -&gt; PlanName -&gt; Bool
+$c&gt; :: PlanName -&gt; PlanName -&gt; Bool
+&gt; :: PlanName -&gt; PlanName -&gt; Bool
+$c&gt;= :: PlanName -&gt; PlanName -&gt; Bool
+&gt;= :: PlanName -&gt; PlanName -&gt; Bool
+$cmax :: PlanName -&gt; PlanName -&gt; PlanName
+max :: PlanName -&gt; PlanName -&gt; PlanName
+$cmin :: PlanName -&gt; PlanName -&gt; PlanName
+min :: PlanName -&gt; PlanName -&gt; PlanName
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="annot"><span class="hs-comment">-- | Decimal type alias</span></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">type</span><span> </span><span id="Decimal"><span class="annot"><a href="Finance.AccPlan.html#Decimal"><span class="hs-identifier hs-var">Decimal</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="annot"><span class="hs-comment">-- | Non-negative decimal</span></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">newtype</span><span> </span><span id="NonNeg"><span class="annot"><a href="Finance.AccPlan.html#NonNeg"><span class="hs-identifier hs-var">NonNeg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="NonNeg"><span class="annot"><a href="Finance.AccPlan.html#NonNeg"><span class="hs-identifier hs-var">NonNeg</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unNonNeg"><span class="annot"><span class="annottext">NonNeg -&gt; Decimal
+</span><a href="Finance.AccPlan.html#unNonNeg"><span class="hs-identifier hs-var hs-var">unNonNeg</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680246753"><span id="local-6989586621680246758"><span id="local-6989586621680246762"><span class="annot"><span class="annottext">Int -&gt; NonNeg -&gt; ShowS
+[NonNeg] -&gt; ShowS
+NonNeg -&gt; String
+(Int -&gt; NonNeg -&gt; ShowS)
+-&gt; (NonNeg -&gt; String) -&gt; ([NonNeg] -&gt; ShowS) -&gt; Show NonNeg
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; NonNeg -&gt; ShowS
+showsPrec :: Int -&gt; NonNeg -&gt; ShowS
+$cshow :: NonNeg -&gt; String
+show :: NonNeg -&gt; String
+$cshowList :: [NonNeg] -&gt; ShowS
+showList :: [NonNeg] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680246765"><span id="local-6989586621680246770"><span class="annot"><span class="annottext">NonNeg -&gt; NonNeg -&gt; Bool
+(NonNeg -&gt; NonNeg -&gt; Bool)
+-&gt; (NonNeg -&gt; NonNeg -&gt; Bool) -&gt; Eq NonNeg
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: NonNeg -&gt; NonNeg -&gt; Bool
+== :: NonNeg -&gt; NonNeg -&gt; Bool
+$c/= :: NonNeg -&gt; NonNeg -&gt; Bool
+/= :: NonNeg -&gt; NonNeg -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680246777"><span id="local-6989586621680246781"><span id="local-6989586621680246785"><span id="local-6989586621680246789"><span id="local-6989586621680246793"><span id="local-6989586621680246797"><span id="local-6989586621680246801"><span class="annot"><span class="annottext">Eq NonNeg
+Eq NonNeg =&gt;
+(NonNeg -&gt; NonNeg -&gt; Ordering)
+-&gt; (NonNeg -&gt; NonNeg -&gt; Bool)
+-&gt; (NonNeg -&gt; NonNeg -&gt; Bool)
+-&gt; (NonNeg -&gt; NonNeg -&gt; Bool)
+-&gt; (NonNeg -&gt; NonNeg -&gt; Bool)
+-&gt; (NonNeg -&gt; NonNeg -&gt; NonNeg)
+-&gt; (NonNeg -&gt; NonNeg -&gt; NonNeg)
+-&gt; Ord NonNeg
+NonNeg -&gt; NonNeg -&gt; Bool
+NonNeg -&gt; NonNeg -&gt; Ordering
+NonNeg -&gt; NonNeg -&gt; NonNeg
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: NonNeg -&gt; NonNeg -&gt; Ordering
+compare :: NonNeg -&gt; NonNeg -&gt; Ordering
+$c&lt; :: NonNeg -&gt; NonNeg -&gt; Bool
+&lt; :: NonNeg -&gt; NonNeg -&gt; Bool
+$c&lt;= :: NonNeg -&gt; NonNeg -&gt; Bool
+&lt;= :: NonNeg -&gt; NonNeg -&gt; Bool
+$c&gt; :: NonNeg -&gt; NonNeg -&gt; Bool
+&gt; :: NonNeg -&gt; NonNeg -&gt; Bool
+$c&gt;= :: NonNeg -&gt; NonNeg -&gt; Bool
+&gt;= :: NonNeg -&gt; NonNeg -&gt; Bool
+$cmax :: NonNeg -&gt; NonNeg -&gt; NonNeg
+max :: NonNeg -&gt; NonNeg -&gt; NonNeg
+$cmin :: NonNeg -&gt; NonNeg -&gt; NonNeg
+min :: NonNeg -&gt; NonNeg -&gt; NonNeg
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="annot"><a href="Finance.AccPlan.html#mkNonNeg"><span class="hs-identifier hs-type">mkNonNeg</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><a href="Finance.AccPlan.html#NonNeg"><span class="hs-identifier hs-type">NonNeg</span></a></span><span>
+</span><span id="line-39"></span><span id="mkNonNeg"><span class="annot"><span class="annottext">mkNonNeg :: Decimal -&gt; Either Text NonNeg
+</span><a href="Finance.AccPlan.html#mkNonNeg"><span class="hs-identifier hs-var hs-var">mkNonNeg</span></a></span></span><span> </span><span id="local-6989586621680246806"><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680246806"><span class="hs-identifier hs-var">d</span></a></span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680246806"><span class="hs-identifier hs-var">d</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">0</span></span><span>    </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">NonNeg -&gt; Either Text NonNeg
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Decimal -&gt; NonNeg
+</span><a href="Finance.AccPlan.html#NonNeg"><span class="hs-identifier hs-var">NonNeg</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680246806"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text NonNeg
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Value must be non-negative&quot;</span></span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><span class="hs-comment">-- | Smart constructor with validation</span></span><span>
+</span><span id="line-44"></span><span class="annot"><a href="Finance.AccPlan.html#createAccPlan"><span class="hs-identifier hs-type">createAccPlan</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#AccPlanId"><span class="hs-identifier hs-type">AccPlanId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#PlanCode"><span class="hs-identifier hs-type">PlanCode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#PlanName"><span class="hs-identifier hs-type">PlanName</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#AccPlan"><span class="hs-identifier hs-type">AccPlan</span></a></span><span>
+</span><span id="line-45"></span><span id="createAccPlan"><span class="annot"><span class="annottext">createAccPlan :: AccPlanId -&gt; PlanCode -&gt; PlanName -&gt; Day -&gt; AccPlan
+</span><a href="Finance.AccPlan.html#createAccPlan"><span class="hs-identifier hs-var hs-var">createAccPlan</span></a></span></span><span> </span><span id="local-6989586621680246808"><span class="annot"><span class="annottext">AccPlanId
+</span><a href="#local-6989586621680246808"><span class="hs-identifier hs-var">apid</span></a></span></span><span> </span><span id="local-6989586621680246809"><span class="annot"><span class="annottext">PlanCode
+</span><a href="#local-6989586621680246809"><span class="hs-identifier hs-var">code</span></a></span></span><span> </span><span id="local-6989586621680246810"><span class="annot"><span class="annottext">PlanName
+</span><a href="#local-6989586621680246810"><span class="hs-identifier hs-var">name</span></a></span></span><span> </span><span id="local-6989586621680246811"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680246811"><span class="hs-identifier hs-var">today</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#AccPlan"><span class="hs-identifier hs-type">AccPlan</span></a></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">apId :: AccPlanId
+</span><a href="Finance.AccPlan.html#apId"><span class="hs-identifier hs-var">apId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccPlanId
+</span><a href="#local-6989586621680246808"><span class="hs-identifier hs-var">apid</span></a></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">apCode :: PlanCode
+</span><a href="Finance.AccPlan.html#apCode"><span class="hs-identifier hs-var">apCode</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PlanCode
+</span><a href="#local-6989586621680246809"><span class="hs-identifier hs-var">code</span></a></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">apName :: PlanName
+</span><a href="Finance.AccPlan.html#apName"><span class="hs-identifier hs-var">apName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PlanName
+</span><a href="#local-6989586621680246810"><span class="hs-identifier hs-var">name</span></a></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">apParentId :: Maybe AccPlanId
+</span><a href="Finance.AccPlan.html#apParentId"><span class="hs-identifier hs-var">apParentId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe AccPlanId
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">apIsActive :: Bool
+</span><a href="Finance.AccPlan.html#apIsActive"><span class="hs-identifier hs-var">apIsActive</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">apCreatedAt :: Day
+</span><a href="Finance.AccPlan.html#apCreatedAt"><span class="hs-identifier hs-var">apCreatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680246811"><span class="hs-identifier hs-var">today</span></a></span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">apUpdatedAt :: Maybe Day
+</span><a href="Finance.AccPlan.html#apUpdatedAt"><span class="hs-identifier hs-var">apUpdatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Day
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="annot"><span class="hs-comment">-- | Activate plan</span></span><span>
+</span><span id="line-56"></span><span class="annot"><a href="Finance.AccPlan.html#activateAccPlan"><span class="hs-identifier hs-type">activateAccPlan</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#AccPlan"><span class="hs-identifier hs-type">AccPlan</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#AccPlan"><span class="hs-identifier hs-type">AccPlan</span></a></span><span>
+</span><span id="line-57"></span><span id="activateAccPlan"><span class="annot"><span class="annottext">activateAccPlan :: AccPlan -&gt; AccPlan
+</span><a href="Finance.AccPlan.html#activateAccPlan"><span class="hs-identifier hs-var hs-var">activateAccPlan</span></a></span></span><span> </span><span id="local-6989586621680246813"><span class="annot"><span class="annottext">AccPlan
+</span><a href="#local-6989586621680246813"><span class="hs-identifier hs-var">plan</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccPlan
+</span><a href="#local-6989586621680246813"><span class="hs-identifier hs-var">plan</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#apIsActive"><span class="hs-identifier hs-var">apIsActive</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">True</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#apUpdatedAt"><span class="hs-identifier hs-var">apUpdatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">fromGregorian</span></span><span> </span><span class="annot"><span class="hs-number">2024</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-58"></span><span>
+</span><span id="line-59"></span><span class="annot"><span class="hs-comment">-- | Deactivate plan</span></span><span>
+</span><span id="line-60"></span><span class="annot"><a href="Finance.AccPlan.html#deactivateAccPlan"><span class="hs-identifier hs-type">deactivateAccPlan</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#AccPlan"><span class="hs-identifier hs-type">AccPlan</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#AccPlan"><span class="hs-identifier hs-type">AccPlan</span></a></span><span>
+</span><span id="line-61"></span><span id="deactivateAccPlan"><span class="annot"><span class="annottext">deactivateAccPlan :: AccPlan -&gt; AccPlan
+</span><a href="Finance.AccPlan.html#deactivateAccPlan"><span class="hs-identifier hs-var hs-var">deactivateAccPlan</span></a></span></span><span> </span><span id="local-6989586621680246815"><span class="annot"><span class="annottext">AccPlan
+</span><a href="#local-6989586621680246815"><span class="hs-identifier hs-var">plan</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccPlan
+</span><a href="#local-6989586621680246815"><span class="hs-identifier hs-var">plan</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#apIsActive"><span class="hs-identifier hs-var">apIsActive</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">False</span></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#apUpdatedAt"><span class="hs-identifier hs-var">apUpdatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">fromGregorian</span></span><span> </span><span class="annot"><span class="hs-number">2024</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-62"></span><span>
+</span><span id="line-63"></span><span class="annot"><span class="hs-comment">-- | Check if plan is active</span></span><span>
+</span><span id="line-64"></span><span class="annot"><a href="Finance.AccPlan.html#isActivePlan"><span class="hs-identifier hs-type">isActivePlan</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#AccPlan"><span class="hs-identifier hs-type">AccPlan</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-65"></span><span id="isActivePlan"><span class="annot"><span class="annottext">isActivePlan :: AccPlan -&gt; Bool
+</span><a href="Finance.AccPlan.html#isActivePlan"><span class="hs-identifier hs-var hs-var">isActivePlan</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccPlan -&gt; Bool
+</span><a href="Finance.AccPlan.html#apIsActive"><span class="hs-identifier hs-var">apIsActive</span></a></span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span class="annot"><span class="hs-comment">-- | Pretty print accounting plan</span></span><span>
+</span><span id="line-68"></span><span class="annot"><a href="Finance.AccPlan.html#prettyAccPlan"><span class="hs-identifier hs-type">prettyAccPlan</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.AccPlan.html#AccPlan"><span class="hs-identifier hs-type">AccPlan</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-69"></span><span id="prettyAccPlan"><span class="annot"><span class="annottext">prettyAccPlan :: AccPlan -&gt; Text
+</span><a href="Finance.AccPlan.html#prettyAccPlan"><span class="hs-identifier hs-var hs-var">prettyAccPlan</span></a></span></span><span> </span><span id="local-6989586621680246818"><span class="annot"><span class="annottext">AccPlan
+</span><a href="#local-6989586621680246818"><span class="hs-identifier hs-var">plan</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">PlanCode -&gt; Text
+</span><a href="Finance.AccPlan.html#unPlanCode"><span class="hs-identifier hs-var">unPlanCode</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccPlan -&gt; PlanCode
+</span><a href="Finance.AccPlan.html#apCode"><span class="hs-identifier hs-var">apCode</span></a></span><span> </span><span class="annot"><span class="annottext">AccPlan
+</span><a href="#local-6989586621680246818"><span class="hs-identifier hs-var">plan</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; - &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">PlanName -&gt; Text
+</span><a href="Finance.AccPlan.html#unPlanName"><span class="hs-identifier hs-var">unPlanName</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccPlan -&gt; PlanName
+</span><a href="Finance.AccPlan.html#apName"><span class="hs-identifier hs-var">apName</span></a></span><span> </span><span class="annot"><span class="annottext">AccPlan
+</span><a href="#local-6989586621680246818"><span class="hs-identifier hs-var">plan</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">AccPlan -&gt; Bool
+</span><a href="Finance.AccPlan.html#apIsActive"><span class="hs-identifier hs-var">apIsActive</span></a></span><span> </span><span class="annot"><span class="annottext">AccPlan
+</span><a href="#local-6989586621680246818"><span class="hs-identifier hs-var">plan</span></a></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; (Active)&quot;</span></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; (Inactive)&quot;</span></span></pre></body></html>

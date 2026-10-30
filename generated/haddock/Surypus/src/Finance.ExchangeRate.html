@@ -1,0 +1,543 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680251839"><span id="local-6989586621680251840"></span></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- | Finance.ExchangeRate - Enhanced currency exchange rate management</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- This module provides type-safe exchange rate operations with temporal validity</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html"><span class="hs-identifier">Finance.ExchangeRate</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">fromGregorian</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-comment">-- import Surypus.Types (Decimal, NonNeg, mkNonNeg, unNonNeg)</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="annot"><span class="hs-comment">-- | Exchange rate with validation (rate &gt; 0)</span></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">data</span><span> </span><span id="ExchangeRate"><span class="annot"><a href="Finance.ExchangeRate.html#ExchangeRate"><span class="hs-identifier hs-var">ExchangeRate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ExchangeRate"><span class="annot"><a href="Finance.ExchangeRate.html#ExchangeRate"><span class="hs-identifier hs-var">ExchangeRate</span></a></span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="erId"><span class="annot"><span class="annottext">ExchangeRate -&gt; RateId
+</span><a href="Finance.ExchangeRate.html#erId"><span class="hs-identifier hs-var hs-var">erId</span></a></span></span><span>             </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#RateId"><span class="hs-identifier hs-type">RateId</span></a></span><span>
+</span><span id="line-18"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="erFromCurrency"><span class="annot"><span class="annottext">ExchangeRate -&gt; CurrencyCode
+</span><a href="Finance.ExchangeRate.html#erFromCurrency"><span class="hs-identifier hs-var hs-var">erFromCurrency</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#CurrencyCode"><span class="hs-identifier hs-type">CurrencyCode</span></a></span><span>
+</span><span id="line-19"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="erToCurrency"><span class="annot"><span class="annottext">ExchangeRate -&gt; CurrencyCode
+</span><a href="Finance.ExchangeRate.html#erToCurrency"><span class="hs-identifier hs-var hs-var">erToCurrency</span></a></span></span><span>     </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#CurrencyCode"><span class="hs-identifier hs-type">CurrencyCode</span></a></span><span>
+</span><span id="line-20"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="erRate"><span class="annot"><span class="annottext">ExchangeRate -&gt; Double
+</span><a href="Finance.ExchangeRate.html#erRate"><span class="hs-identifier hs-var hs-var">erRate</span></a></span></span><span>           </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-comment">-- Rate value (must be &gt; 0)</span><span>
+</span><span id="line-21"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="erEffectiveFrom"><span class="annot"><span class="annottext">ExchangeRate -&gt; Day
+</span><a href="Finance.ExchangeRate.html#erEffectiveFrom"><span class="hs-identifier hs-var hs-var">erEffectiveFrom</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span>           </span><span class="hs-comment">-- Valid from date</span><span>
+</span><span id="line-22"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="erEffectiveTo"><span class="annot"><span class="annottext">ExchangeRate -&gt; Maybe Day
+</span><a href="Finance.ExchangeRate.html#erEffectiveTo"><span class="hs-identifier hs-var hs-var">erEffectiveTo</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span>     </span><span class="hs-comment">-- Valid until (Nothing = open-ended)</span><span>
+</span><span id="line-23"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="erSource"><span class="annot"><span class="annottext">ExchangeRate -&gt; RateSource
+</span><a href="Finance.ExchangeRate.html#erSource"><span class="hs-identifier hs-var hs-var">erSource</span></a></span></span><span>         </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#RateSource"><span class="hs-identifier hs-type">RateSource</span></a></span><span>
+</span><span id="line-24"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="erIsActive"><span class="annot"><span class="annottext">ExchangeRate -&gt; Bool
+</span><a href="Finance.ExchangeRate.html#erIsActive"><span class="hs-identifier hs-var hs-var">erIsActive</span></a></span></span><span>       </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-25"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="erCreatedAt"><span class="annot"><span class="annottext">ExchangeRate -&gt; Day
+</span><a href="Finance.ExchangeRate.html#erCreatedAt"><span class="hs-identifier hs-var hs-var">erCreatedAt</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span>
+</span><span id="line-26"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="erUpdatedAt"><span class="annot"><span class="annottext">ExchangeRate -&gt; Maybe Day
+</span><a href="Finance.ExchangeRate.html#erUpdatedAt"><span class="hs-identifier hs-var hs-var">erUpdatedAt</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680251887"><span id="local-6989586621680251906"><span id="local-6989586621680251910"><span class="annot"><span class="annottext">Int -&gt; ExchangeRate -&gt; ShowS
+[ExchangeRate] -&gt; ShowS
+ExchangeRate -&gt; String
+(Int -&gt; ExchangeRate -&gt; ShowS)
+-&gt; (ExchangeRate -&gt; String)
+-&gt; ([ExchangeRate] -&gt; ShowS)
+-&gt; Show ExchangeRate
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ExchangeRate -&gt; ShowS
+showsPrec :: Int -&gt; ExchangeRate -&gt; ShowS
+$cshow :: ExchangeRate -&gt; String
+show :: ExchangeRate -&gt; String
+$cshowList :: [ExchangeRate] -&gt; ShowS
+showList :: [ExchangeRate] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680251915"><span id="local-6989586621680251932"><span class="annot"><span class="annottext">ExchangeRate -&gt; ExchangeRate -&gt; Bool
+(ExchangeRate -&gt; ExchangeRate -&gt; Bool)
+-&gt; (ExchangeRate -&gt; ExchangeRate -&gt; Bool) -&gt; Eq ExchangeRate
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ExchangeRate -&gt; ExchangeRate -&gt; Bool
+== :: ExchangeRate -&gt; ExchangeRate -&gt; Bool
+$c/= :: ExchangeRate -&gt; ExchangeRate -&gt; Bool
+/= :: ExchangeRate -&gt; ExchangeRate -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680251937"><span id="local-6989586621680251939"><span class="annot"><span class="annottext">(forall x. ExchangeRate -&gt; Rep ExchangeRate x)
+-&gt; (forall x. Rep ExchangeRate x -&gt; ExchangeRate)
+-&gt; Generic ExchangeRate
+forall x. Rep ExchangeRate x -&gt; ExchangeRate
+forall x. ExchangeRate -&gt; Rep ExchangeRate x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. ExchangeRate -&gt; Rep ExchangeRate x
+from :: forall x. ExchangeRate -&gt; Rep ExchangeRate x
+$cto :: forall x. Rep ExchangeRate x -&gt; ExchangeRate
+to :: forall x. Rep ExchangeRate x -&gt; ExchangeRate
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="annot"><span class="hs-comment">-- | Newtypes for type safety</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">newtype</span><span> </span><span id="RateId"><span class="annot"><a href="Finance.ExchangeRate.html#RateId"><span class="hs-identifier hs-var">RateId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RateId"><span class="annot"><a href="Finance.ExchangeRate.html#RateId"><span class="hs-identifier hs-var">RateId</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unRateId"><span class="annot"><span class="annottext">RateId -&gt; Int64
+</span><a href="Finance.ExchangeRate.html#unRateId"><span class="hs-identifier hs-var hs-var">unRateId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680251947"><span id="local-6989586621680251952"><span id="local-6989586621680251955"><span class="annot"><span class="annottext">Int -&gt; RateId -&gt; ShowS
+[RateId] -&gt; ShowS
+RateId -&gt; String
+(Int -&gt; RateId -&gt; ShowS)
+-&gt; (RateId -&gt; String) -&gt; ([RateId] -&gt; ShowS) -&gt; Show RateId
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; RateId -&gt; ShowS
+showsPrec :: Int -&gt; RateId -&gt; ShowS
+$cshow :: RateId -&gt; String
+show :: RateId -&gt; String
+$cshowList :: [RateId] -&gt; ShowS
+showList :: [RateId] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680251958"><span id="local-6989586621680251963"><span class="annot"><span class="annottext">RateId -&gt; RateId -&gt; Bool
+(RateId -&gt; RateId -&gt; Bool)
+-&gt; (RateId -&gt; RateId -&gt; Bool) -&gt; Eq RateId
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: RateId -&gt; RateId -&gt; Bool
+== :: RateId -&gt; RateId -&gt; Bool
+$c/= :: RateId -&gt; RateId -&gt; Bool
+/= :: RateId -&gt; RateId -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680251970"><span id="local-6989586621680251975"><span id="local-6989586621680251979"><span id="local-6989586621680251983"><span id="local-6989586621680251987"><span id="local-6989586621680251991"><span id="local-6989586621680251995"><span class="annot"><span class="annottext">Eq RateId
+Eq RateId =&gt;
+(RateId -&gt; RateId -&gt; Ordering)
+-&gt; (RateId -&gt; RateId -&gt; Bool)
+-&gt; (RateId -&gt; RateId -&gt; Bool)
+-&gt; (RateId -&gt; RateId -&gt; Bool)
+-&gt; (RateId -&gt; RateId -&gt; Bool)
+-&gt; (RateId -&gt; RateId -&gt; RateId)
+-&gt; (RateId -&gt; RateId -&gt; RateId)
+-&gt; Ord RateId
+RateId -&gt; RateId -&gt; Bool
+RateId -&gt; RateId -&gt; Ordering
+RateId -&gt; RateId -&gt; RateId
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: RateId -&gt; RateId -&gt; Ordering
+compare :: RateId -&gt; RateId -&gt; Ordering
+$c&lt; :: RateId -&gt; RateId -&gt; Bool
+&lt; :: RateId -&gt; RateId -&gt; Bool
+$c&lt;= :: RateId -&gt; RateId -&gt; Bool
+&lt;= :: RateId -&gt; RateId -&gt; Bool
+$c&gt; :: RateId -&gt; RateId -&gt; Bool
+&gt; :: RateId -&gt; RateId -&gt; Bool
+$c&gt;= :: RateId -&gt; RateId -&gt; Bool
+&gt;= :: RateId -&gt; RateId -&gt; Bool
+$cmax :: RateId -&gt; RateId -&gt; RateId
+max :: RateId -&gt; RateId -&gt; RateId
+$cmin :: RateId -&gt; RateId -&gt; RateId
+min :: RateId -&gt; RateId -&gt; RateId
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="hs-keyword">newtype</span><span> </span><span id="CurrencyCode"><span class="annot"><a href="Finance.ExchangeRate.html#CurrencyCode"><span class="hs-identifier hs-var">CurrencyCode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CurrencyCode"><span class="annot"><a href="Finance.ExchangeRate.html#CurrencyCode"><span class="hs-identifier hs-var">CurrencyCode</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unCurrencyCode"><span class="annot"><span class="annottext">CurrencyCode -&gt; Text
+</span><a href="Finance.ExchangeRate.html#unCurrencyCode"><span class="hs-identifier hs-var hs-var">unCurrencyCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680252009"><span id="local-6989586621680252014"><span id="local-6989586621680252017"><span class="annot"><span class="annottext">Int -&gt; CurrencyCode -&gt; ShowS
+[CurrencyCode] -&gt; ShowS
+CurrencyCode -&gt; String
+(Int -&gt; CurrencyCode -&gt; ShowS)
+-&gt; (CurrencyCode -&gt; String)
+-&gt; ([CurrencyCode] -&gt; ShowS)
+-&gt; Show CurrencyCode
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CurrencyCode -&gt; ShowS
+showsPrec :: Int -&gt; CurrencyCode -&gt; ShowS
+$cshow :: CurrencyCode -&gt; String
+show :: CurrencyCode -&gt; String
+$cshowList :: [CurrencyCode] -&gt; ShowS
+showList :: [CurrencyCode] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252020"><span id="local-6989586621680252025"><span class="annot"><span class="annottext">CurrencyCode -&gt; CurrencyCode -&gt; Bool
+(CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool) -&gt; Eq CurrencyCode
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+== :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c/= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+/= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252031"><span id="local-6989586621680252036"><span id="local-6989586621680252040"><span id="local-6989586621680252044"><span id="local-6989586621680252048"><span id="local-6989586621680252052"><span id="local-6989586621680252056"><span class="annot"><span class="annottext">Eq CurrencyCode
+Eq CurrencyCode =&gt;
+(CurrencyCode -&gt; CurrencyCode -&gt; Ordering)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode)
+-&gt; Ord CurrencyCode
+CurrencyCode -&gt; CurrencyCode -&gt; Bool
+CurrencyCode -&gt; CurrencyCode -&gt; Ordering
+CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: CurrencyCode -&gt; CurrencyCode -&gt; Ordering
+compare :: CurrencyCode -&gt; CurrencyCode -&gt; Ordering
+$c&lt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&lt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c&lt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&lt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c&gt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&gt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c&gt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&gt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$cmax :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+max :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+$cmin :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+min :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="annot"><span class="hs-comment">-- | Rate source for audit trail</span></span><span>
+</span><span id="line-36"></span><span class="hs-keyword">data</span><span> </span><span id="RateSource"><span class="annot"><a href="Finance.ExchangeRate.html#RateSource"><span class="hs-identifier hs-var">RateSource</span></a></span></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="CentralBank"><span class="annot"><a href="Finance.ExchangeRate.html#CentralBank"><span class="hs-identifier hs-var">CentralBank</span></a></span></span><span>    </span><span class="hs-comment">-- Central bank rate</span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="CommercialBank"><span class="annot"><a href="Finance.ExchangeRate.html#CommercialBank"><span class="hs-identifier hs-var">CommercialBank</span></a></span></span><span> </span><span class="hs-comment">-- Commercial bank rate</span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="MarketRate"><span class="annot"><a href="Finance.ExchangeRate.html#MarketRate"><span class="hs-identifier hs-var">MarketRate</span></a></span></span><span>     </span><span class="hs-comment">-- Market-driven rate</span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="ManualRate"><span class="annot"><a href="Finance.ExchangeRate.html#ManualRate"><span class="hs-identifier hs-var">ManualRate</span></a></span></span><span>     </span><span class="hs-comment">-- Manually set rate</span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680252065"><span id="local-6989586621680252067"><span id="local-6989586621680252070"><span class="annot"><span class="annottext">Int -&gt; RateSource -&gt; ShowS
+[RateSource] -&gt; ShowS
+RateSource -&gt; String
+(Int -&gt; RateSource -&gt; ShowS)
+-&gt; (RateSource -&gt; String)
+-&gt; ([RateSource] -&gt; ShowS)
+-&gt; Show RateSource
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; RateSource -&gt; ShowS
+showsPrec :: Int -&gt; RateSource -&gt; ShowS
+$cshow :: RateSource -&gt; String
+show :: RateSource -&gt; String
+$cshowList :: [RateSource] -&gt; ShowS
+showList :: [RateSource] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252073"><span id="local-6989586621680252078"><span class="annot"><span class="annottext">RateSource -&gt; RateSource -&gt; Bool
+(RateSource -&gt; RateSource -&gt; Bool)
+-&gt; (RateSource -&gt; RateSource -&gt; Bool) -&gt; Eq RateSource
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: RateSource -&gt; RateSource -&gt; Bool
+== :: RateSource -&gt; RateSource -&gt; Bool
+$c/= :: RateSource -&gt; RateSource -&gt; Bool
+/= :: RateSource -&gt; RateSource -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252081"><span id="local-6989586621680252090"><span id="local-6989586621680252097"><span id="local-6989586621680252110"><span id="local-6989586621680252113"><span id="local-6989586621680252118"><span id="local-6989586621680252124"><span id="local-6989586621680252128"><span class="annot"><span class="annottext">Int -&gt; RateSource
+RateSource -&gt; Int
+RateSource -&gt; [RateSource]
+RateSource -&gt; RateSource
+RateSource -&gt; RateSource -&gt; [RateSource]
+RateSource -&gt; RateSource -&gt; RateSource -&gt; [RateSource]
+(RateSource -&gt; RateSource)
+-&gt; (RateSource -&gt; RateSource)
+-&gt; (Int -&gt; RateSource)
+-&gt; (RateSource -&gt; Int)
+-&gt; (RateSource -&gt; [RateSource])
+-&gt; (RateSource -&gt; RateSource -&gt; [RateSource])
+-&gt; (RateSource -&gt; RateSource -&gt; [RateSource])
+-&gt; (RateSource -&gt; RateSource -&gt; RateSource -&gt; [RateSource])
+-&gt; Enum RateSource
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: RateSource -&gt; RateSource
+succ :: RateSource -&gt; RateSource
+$cpred :: RateSource -&gt; RateSource
+pred :: RateSource -&gt; RateSource
+$ctoEnum :: Int -&gt; RateSource
+toEnum :: Int -&gt; RateSource
+$cfromEnum :: RateSource -&gt; Int
+fromEnum :: RateSource -&gt; Int
+$cenumFrom :: RateSource -&gt; [RateSource]
+enumFrom :: RateSource -&gt; [RateSource]
+$cenumFromThen :: RateSource -&gt; RateSource -&gt; [RateSource]
+enumFromThen :: RateSource -&gt; RateSource -&gt; [RateSource]
+$cenumFromTo :: RateSource -&gt; RateSource -&gt; [RateSource]
+enumFromTo :: RateSource -&gt; RateSource -&gt; [RateSource]
+$cenumFromThenTo :: RateSource -&gt; RateSource -&gt; RateSource -&gt; [RateSource]
+enumFromThenTo :: RateSource -&gt; RateSource -&gt; RateSource -&gt; [RateSource]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252136"><span id="local-6989586621680252138"><span class="annot"><span class="annottext">RateSource
+RateSource -&gt; RateSource -&gt; Bounded RateSource
+forall a. a -&gt; a -&gt; Bounded a
+$cminBound :: RateSource
+minBound :: RateSource
+$cmaxBound :: RateSource
+maxBound :: RateSource
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252146"><span id="local-6989586621680252150"><span id="local-6989586621680252154"><span id="local-6989586621680252158"><span id="local-6989586621680252161"><span id="local-6989586621680252164"><span id="local-6989586621680252167"><span class="annot"><span class="annottext">Eq RateSource
+Eq RateSource =&gt;
+(RateSource -&gt; RateSource -&gt; Ordering)
+-&gt; (RateSource -&gt; RateSource -&gt; Bool)
+-&gt; (RateSource -&gt; RateSource -&gt; Bool)
+-&gt; (RateSource -&gt; RateSource -&gt; Bool)
+-&gt; (RateSource -&gt; RateSource -&gt; Bool)
+-&gt; (RateSource -&gt; RateSource -&gt; RateSource)
+-&gt; (RateSource -&gt; RateSource -&gt; RateSource)
+-&gt; Ord RateSource
+RateSource -&gt; RateSource -&gt; Bool
+RateSource -&gt; RateSource -&gt; Ordering
+RateSource -&gt; RateSource -&gt; RateSource
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: RateSource -&gt; RateSource -&gt; Ordering
+compare :: RateSource -&gt; RateSource -&gt; Ordering
+$c&lt; :: RateSource -&gt; RateSource -&gt; Bool
+&lt; :: RateSource -&gt; RateSource -&gt; Bool
+$c&lt;= :: RateSource -&gt; RateSource -&gt; Bool
+&lt;= :: RateSource -&gt; RateSource -&gt; Bool
+$c&gt; :: RateSource -&gt; RateSource -&gt; Bool
+&gt; :: RateSource -&gt; RateSource -&gt; Bool
+$c&gt;= :: RateSource -&gt; RateSource -&gt; Bool
+&gt;= :: RateSource -&gt; RateSource -&gt; Bool
+$cmax :: RateSource -&gt; RateSource -&gt; RateSource
+max :: RateSource -&gt; RateSource -&gt; RateSource
+$cmin :: RateSource -&gt; RateSource -&gt; RateSource
+min :: RateSource -&gt; RateSource -&gt; RateSource
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><span class="hs-comment">-- | Smart constructor with validation</span></span><span>
+</span><span id="line-44"></span><span class="annot"><a href="Finance.ExchangeRate.html#createExchangeRate"><span class="hs-identifier hs-type">createExchangeRate</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#RateId"><span class="hs-identifier hs-type">RateId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#CurrencyCode"><span class="hs-identifier hs-type">CurrencyCode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#CurrencyCode"><span class="hs-identifier hs-type">CurrencyCode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#RateSource"><span class="hs-identifier hs-type">RateSource</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#ExchangeRate"><span class="hs-identifier hs-type">ExchangeRate</span></a></span><span>
+</span><span id="line-45"></span><span id="createExchangeRate"><span class="annot"><span class="annottext">createExchangeRate :: RateId
+-&gt; CurrencyCode
+-&gt; CurrencyCode
+-&gt; Double
+-&gt; Day
+-&gt; RateSource
+-&gt; ExchangeRate
+</span><a href="Finance.ExchangeRate.html#createExchangeRate"><span class="hs-identifier hs-var hs-var">createExchangeRate</span></a></span></span><span> </span><span id="local-6989586621680252170"><span class="annot"><span class="annottext">RateId
+</span><a href="#local-6989586621680252170"><span class="hs-identifier hs-var">rid</span></a></span></span><span> </span><span id="local-6989586621680252171"><span class="annot"><span class="annottext">CurrencyCode
+</span><a href="#local-6989586621680252171"><span class="hs-identifier hs-var">from</span></a></span></span><span> </span><span id="local-6989586621680252172"><span class="annot"><span class="annottext">CurrencyCode
+</span><a href="#local-6989586621680252172"><span class="hs-identifier hs-var">to</span></a></span></span><span> </span><span id="local-6989586621680252173"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680252173"><span class="hs-identifier hs-var">rate</span></a></span></span><span> </span><span id="local-6989586621680252174"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680252174"><span class="hs-identifier hs-var">date</span></a></span></span><span> </span><span id="local-6989586621680252175"><span class="annot"><span class="annottext">RateSource
+</span><a href="#local-6989586621680252175"><span class="hs-identifier hs-var">src</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#ExchangeRate"><span class="hs-identifier hs-type">ExchangeRate</span></a></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">erId :: RateId
+</span><a href="Finance.ExchangeRate.html#erId"><span class="hs-identifier hs-var">erId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">RateId
+</span><a href="#local-6989586621680252170"><span class="hs-identifier hs-var">rid</span></a></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">erFromCurrency :: CurrencyCode
+</span><a href="Finance.ExchangeRate.html#erFromCurrency"><span class="hs-identifier hs-var">erFromCurrency</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CurrencyCode
+</span><a href="#local-6989586621680252171"><span class="hs-identifier hs-var">from</span></a></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">erToCurrency :: CurrencyCode
+</span><a href="Finance.ExchangeRate.html#erToCurrency"><span class="hs-identifier hs-var">erToCurrency</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">CurrencyCode
+</span><a href="#local-6989586621680252172"><span class="hs-identifier hs-var">to</span></a></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">erRate :: Double
+</span><a href="Finance.ExchangeRate.html#erRate"><span class="hs-identifier hs-var">erRate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680252173"><span class="hs-identifier hs-var">rate</span></a></span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">erEffectiveFrom :: Day
+</span><a href="Finance.ExchangeRate.html#erEffectiveFrom"><span class="hs-identifier hs-var">erEffectiveFrom</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680252174"><span class="hs-identifier hs-var">date</span></a></span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">erEffectiveTo :: Maybe Day
+</span><a href="Finance.ExchangeRate.html#erEffectiveTo"><span class="hs-identifier hs-var">erEffectiveTo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Day
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">erSource :: RateSource
+</span><a href="Finance.ExchangeRate.html#erSource"><span class="hs-identifier hs-var">erSource</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">RateSource
+</span><a href="#local-6989586621680252175"><span class="hs-identifier hs-var">src</span></a></span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">erIsActive :: Bool
+</span><a href="Finance.ExchangeRate.html#erIsActive"><span class="hs-identifier hs-var">erIsActive</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">erCreatedAt :: Day
+</span><a href="Finance.ExchangeRate.html#erCreatedAt"><span class="hs-identifier hs-var">erCreatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680252174"><span class="hs-identifier hs-var">date</span></a></span><span>
+</span><span id="line-55"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">erUpdatedAt :: Maybe Day
+</span><a href="Finance.ExchangeRate.html#erUpdatedAt"><span class="hs-identifier hs-var">erUpdatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Day
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="annot"><span class="hs-comment">-- | Check if rate is valid on a given date</span></span><span>
+</span><span id="line-59"></span><span class="annot"><a href="Finance.ExchangeRate.html#isValidOnDate"><span class="hs-identifier hs-type">isValidOnDate</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#ExchangeRate"><span class="hs-identifier hs-type">ExchangeRate</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-60"></span><span id="isValidOnDate"><span class="annot"><span class="annottext">isValidOnDate :: Day -&gt; ExchangeRate -&gt; Bool
+</span><a href="Finance.ExchangeRate.html#isValidOnDate"><span class="hs-identifier hs-var hs-var">isValidOnDate</span></a></span></span><span> </span><span id="local-6989586621680252177"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680252177"><span class="hs-identifier hs-var">date</span></a></span></span><span> </span><span id="local-6989586621680252178"><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252178"><span class="hs-identifier hs-var">rate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680252181"><span class="annot"><span class="annottext">startOk :: Bool
+</span><a href="#local-6989586621680252181"><span class="hs-identifier hs-var hs-var">startOk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ExchangeRate -&gt; Day
+</span><a href="Finance.ExchangeRate.html#erEffectiveFrom"><span class="hs-identifier hs-var">erEffectiveFrom</span></a></span><span> </span><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252178"><span class="hs-identifier hs-var">rate</span></a></span><span> </span><span class="annot"><span class="annottext">Day -&gt; Day -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680252177"><span class="hs-identifier hs-var">date</span></a></span><span>
+</span><span id="line-62"></span><span>      </span><span id="local-6989586621680252183"><span class="annot"><span class="annottext">endOk :: Bool
+</span><a href="#local-6989586621680252183"><span class="hs-identifier hs-var hs-var">endOk</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; (Day -&gt; Bool) -&gt; Maybe Day -&gt; Bool
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680252177"><span class="hs-identifier hs-var">date</span></a></span><span> </span><span class="annot"><span class="annottext">Day -&gt; Day -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ExchangeRate -&gt; Maybe Day
+</span><a href="Finance.ExchangeRate.html#erEffectiveTo"><span class="hs-identifier hs-var">erEffectiveTo</span></a></span><span> </span><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252178"><span class="hs-identifier hs-var">rate</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621680252181"><span class="hs-identifier hs-var">startOk</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621680252183"><span class="hs-identifier hs-var">endOk</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">ExchangeRate -&gt; Bool
+</span><a href="Finance.ExchangeRate.html#erIsActive"><span class="hs-identifier hs-var">erIsActive</span></a></span><span> </span><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252178"><span class="hs-identifier hs-var">rate</span></a></span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span class="annot"><span class="hs-comment">-- | Close rate (set end date)</span></span><span>
+</span><span id="line-66"></span><span class="annot"><a href="Finance.ExchangeRate.html#closeExchangeRate"><span class="hs-identifier hs-type">closeExchangeRate</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#ExchangeRate"><span class="hs-identifier hs-type">ExchangeRate</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#ExchangeRate"><span class="hs-identifier hs-type">ExchangeRate</span></a></span><span>
+</span><span id="line-67"></span><span id="closeExchangeRate"><span class="annot"><span class="annottext">closeExchangeRate :: Day -&gt; ExchangeRate -&gt; ExchangeRate
+</span><a href="Finance.ExchangeRate.html#closeExchangeRate"><span class="hs-identifier hs-var hs-var">closeExchangeRate</span></a></span></span><span> </span><span id="local-6989586621680252187"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680252187"><span class="hs-identifier hs-var">closeDate</span></a></span></span><span> </span><span id="local-6989586621680252188"><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252188"><span class="hs-identifier hs-var">rate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252188"><span class="hs-identifier hs-var">rate</span></a></span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#erEffectiveTo"><span class="hs-identifier hs-var">erEffectiveTo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><a href="#local-6989586621680252187"><span class="hs-identifier hs-type">closeDate</span></a></span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#erIsActive"><span class="hs-identifier hs-var">erIsActive</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">False</span></span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#erUpdatedAt"><span class="hs-identifier hs-var">erUpdatedAt</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><a href="#local-6989586621680252187"><span class="hs-identifier hs-type">closeDate</span></a></span><span>
+</span><span id="line-71"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="hs-comment">-- | Convert amount between currencies</span><span>
+</span><span id="line-74"></span><span class="hs-comment">-- Invariant: result &gt; 0 if amount &gt; 0</span><span>
+</span><span id="line-75"></span><span class="annot"><a href="Finance.ExchangeRate.html#convertCurrency"><span class="hs-identifier hs-type">convertCurrency</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#ExchangeRate"><span class="hs-identifier hs-type">ExchangeRate</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-76"></span><span id="convertCurrency"><span class="annot"><span class="annottext">convertCurrency :: Double -&gt; ExchangeRate -&gt; Maybe Double
+</span><a href="Finance.ExchangeRate.html#convertCurrency"><span class="hs-identifier hs-var hs-var">convertCurrency</span></a></span></span><span> </span><span id="local-6989586621680252190"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680252190"><span class="hs-identifier hs-var">amount</span></a></span></span><span> </span><span id="local-6989586621680252191"><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252191"><span class="hs-identifier hs-var">rate</span></a></span></span><span>
+</span><span id="line-77"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680252190"><span class="hs-identifier hs-var">amount</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Double
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Maybe Double
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(Double -&gt; Maybe Double) -&gt; Double -&gt; Maybe Double
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680252190"><span class="hs-identifier hs-var">amount</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">ExchangeRate -&gt; Double
+</span><a href="Finance.ExchangeRate.html#erRate"><span class="hs-identifier hs-var">erRate</span></a></span><span> </span><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252191"><span class="hs-identifier hs-var">rate</span></a></span><span>
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span class="hs-comment">-- | Calculate inverse rate (1/rate)</span><span>
+</span><span id="line-81"></span><span class="hs-comment">-- Invariant: inverseRate * rate &#8776; 1</span><span>
+</span><span id="line-82"></span><span class="annot"><a href="Finance.ExchangeRate.html#inverseRate"><span class="hs-identifier hs-type">inverseRate</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#ExchangeRate"><span class="hs-identifier hs-type">ExchangeRate</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-83"></span><span id="inverseRate"><span class="annot"><span class="annottext">inverseRate :: ExchangeRate -&gt; Maybe Double
+</span><a href="Finance.ExchangeRate.html#inverseRate"><span class="hs-identifier hs-var hs-var">inverseRate</span></a></span></span><span> </span><span id="local-6989586621680252194"><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252194"><span class="hs-identifier hs-var">rate</span></a></span></span><span>
+</span><span id="line-84"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">ExchangeRate -&gt; Double
+</span><a href="Finance.ExchangeRate.html#erRate"><span class="hs-identifier hs-var">erRate</span></a></span><span> </span><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252194"><span class="hs-identifier hs-var">rate</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Double
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Maybe Double
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(Double -&gt; Maybe Double) -&gt; Double -&gt; Maybe Double
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="annottext">ExchangeRate -&gt; Double
+</span><a href="Finance.ExchangeRate.html#erRate"><span class="hs-identifier hs-var">erRate</span></a></span><span> </span><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252194"><span class="hs-identifier hs-var">rate</span></a></span><span>
+</span><span id="line-86"></span><span>
+</span><span id="line-87"></span><span class="annot"><span class="hs-comment">-- | Pretty print exchange rate</span></span><span>
+</span><span id="line-88"></span><span class="annot"><a href="Finance.ExchangeRate.html#prettyExchangeRate"><span class="hs-identifier hs-type">prettyExchangeRate</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#ExchangeRate"><span class="hs-identifier hs-type">ExchangeRate</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-89"></span><span id="prettyExchangeRate"><span class="annot"><span class="annottext">prettyExchangeRate :: ExchangeRate -&gt; Text
+</span><a href="Finance.ExchangeRate.html#prettyExchangeRate"><span class="hs-identifier hs-var hs-var">prettyExchangeRate</span></a></span></span><span> </span><span id="local-6989586621680252197"><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252197"><span class="hs-identifier hs-var">rate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-90"></span><span>  </span><span class="annot"><span class="annottext">CurrencyCode -&gt; Text
+</span><a href="Finance.ExchangeRate.html#unCurrencyCode"><span class="hs-identifier hs-var">unCurrencyCode</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ExchangeRate -&gt; CurrencyCode
+</span><a href="Finance.ExchangeRate.html#erFromCurrency"><span class="hs-identifier hs-var">erFromCurrency</span></a></span><span> </span><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252197"><span class="hs-identifier hs-var">rate</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; -&gt; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">CurrencyCode -&gt; Text
+</span><a href="Finance.ExchangeRate.html#unCurrencyCode"><span class="hs-identifier hs-var">unCurrencyCode</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ExchangeRate -&gt; CurrencyCode
+</span><a href="Finance.ExchangeRate.html#erToCurrency"><span class="hs-identifier hs-var">erToCurrency</span></a></span><span> </span><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252197"><span class="hs-identifier hs-var">rate</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span>
+</span><span id="line-91"></span><span>  </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;: &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ExchangeRate -&gt; Double
+</span><a href="Finance.ExchangeRate.html#erRate"><span class="hs-identifier hs-var">erRate</span></a></span><span> </span><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252197"><span class="hs-identifier hs-var">rate</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span>
+</span><span id="line-92"></span><span>  </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; (Active: &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ExchangeRate -&gt; Bool
+</span><a href="Finance.ExchangeRate.html#erIsActive"><span class="hs-identifier hs-var">erIsActive</span></a></span><span> </span><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252197"><span class="hs-identifier hs-var">rate</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;)&quot;</span></span><span>
+</span><span id="line-93"></span><span>
+</span><span id="line-94"></span><span class="annot"><span class="hs-comment">-- | Calculate cross rate between two currencies via USD (simplified)</span></span><span>
+</span><span id="line-95"></span><span class="annot"><a href="Finance.ExchangeRate.html#calculateCrossRate"><span class="hs-identifier hs-type">calculateCrossRate</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#ExchangeRate"><span class="hs-identifier hs-type">ExchangeRate</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.ExchangeRate.html#ExchangeRate"><span class="hs-identifier hs-type">ExchangeRate</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-96"></span><span id="calculateCrossRate"><span class="annot"><span class="annottext">calculateCrossRate :: ExchangeRate -&gt; ExchangeRate -&gt; Maybe Double
+</span><a href="Finance.ExchangeRate.html#calculateCrossRate"><span class="hs-identifier hs-var hs-var">calculateCrossRate</span></a></span></span><span> </span><span id="local-6989586621680252201"><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252201"><span class="hs-identifier hs-var">rate1</span></a></span></span><span> </span><span id="local-6989586621680252202"><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252202"><span class="hs-identifier hs-var">rate2</span></a></span></span><span>
+</span><span id="line-97"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">ExchangeRate -&gt; CurrencyCode
+</span><a href="Finance.ExchangeRate.html#erToCurrency"><span class="hs-identifier hs-var">erToCurrency</span></a></span><span> </span><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252201"><span class="hs-identifier hs-var">rate1</span></a></span><span> </span><span class="annot"><span class="annottext">CurrencyCode -&gt; CurrencyCode -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">ExchangeRate -&gt; CurrencyCode
+</span><a href="Finance.ExchangeRate.html#erFromCurrency"><span class="hs-identifier hs-var">erFromCurrency</span></a></span><span> </span><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252202"><span class="hs-identifier hs-var">rate2</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Double
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>  </span><span class="hs-comment">-- Must chain: FROM1 -&gt; TO1/FROM2 -&gt; TO2</span><span>
+</span><span id="line-98"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-99"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680252203"><span class="annot"><span class="annottext">r1 :: Double
+</span><a href="#local-6989586621680252203"><span class="hs-identifier hs-var hs-var">r1</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ExchangeRate -&gt; Double
+</span><a href="Finance.ExchangeRate.html#erRate"><span class="hs-identifier hs-var">erRate</span></a></span><span> </span><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252201"><span class="hs-identifier hs-var">rate1</span></a></span><span>
+</span><span id="line-100"></span><span>          </span><span id="local-6989586621680252204"><span class="annot"><span class="annottext">r2 :: Double
+</span><a href="#local-6989586621680252204"><span class="hs-identifier hs-var hs-var">r2</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ExchangeRate -&gt; Double
+</span><a href="Finance.ExchangeRate.html#erRate"><span class="hs-identifier hs-var">erRate</span></a></span><span> </span><span class="annot"><span class="annottext">ExchangeRate
+</span><a href="#local-6989586621680252202"><span class="hs-identifier hs-var">rate2</span></a></span><span>
+</span><span id="line-101"></span><span>      </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680252204"><span class="hs-identifier hs-var">r2</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Maybe Double
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Maybe Double
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(Double -&gt; Maybe Double) -&gt; Double -&gt; Maybe Double
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680252203"><span class="hs-identifier hs-var">r1</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680252204"><span class="hs-identifier hs-var">r2</span></a></span><span>
+</span><span id="line-102"></span></pre></body></html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE AllowAmbiguousTypes #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE FlexibleContexts #-}</span><span>
+</span><span id="line-4"></span><span class="hs-pragma">{-# LANGUAGE FlexibleInstances #-}</span><span>
+</span><span id="line-5"></span><span class="hs-pragma">{-# LANGUAGE FunctionalDependencies #-}</span><span>
+</span><span id="line-6"></span><span class="hs-pragma">{-# LANGUAGE MultiParamTypeClasses #-}</span><span>
+</span><span id="line-7"></span><span class="hs-pragma">{-# LANGUAGE TypeFamilies #-}</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="DAL.Repository.html"><span class="hs-identifier">DAL.Repository</span></a></span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="DAL.Repository.html#DALAppError"><span class="hs-identifier">DALAppError</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="DAL.Repository.html#RepositoryError"><span class="hs-identifier">RepositoryError</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="DAL.Repository.html#HasRepository"><span class="hs-identifier">HasRepository</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="DAL.Repository.html#RepositoryT"><span class="hs-identifier">RepositoryT</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="DAL.Repository.html#Id"><span class="hs-identifier">Id</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="DAL.Repository.html#isNotFoundMessage"><span class="hs-identifier">isNotFoundMessage</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="DAL.Types.html"><span class="hs-identifier">DAL.Types</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">where</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad.Trans.Except</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">ExceptT</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.Types.html"><span class="hs-identifier">DAL.Types</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Types.html#Pagination"><span class="hs-identifier">Pagination</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">newtype</span><span> </span><span id="DALAppError"><span class="annot"><a href="DAL.Repository.html#DALAppError"><span class="hs-identifier hs-var">DALAppError</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="DALAppError"><span class="annot"><a href="DAL.Repository.html#DALAppError"><span class="hs-identifier hs-var">DALAppError</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680242838"><span id="local-6989586621680242844"><span id="local-6989586621680242848"><span class="annot"><span class="annottext">Int -&gt; DALAppError -&gt; ShowS
+[DALAppError] -&gt; ShowS
+DALAppError -&gt; String
+(Int -&gt; DALAppError -&gt; ShowS)
+-&gt; (DALAppError -&gt; String)
+-&gt; ([DALAppError] -&gt; ShowS)
+-&gt; Show DALAppError
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; DALAppError -&gt; ShowS
+showsPrec :: Int -&gt; DALAppError -&gt; ShowS
+$cshow :: DALAppError -&gt; String
+show :: DALAppError -&gt; String
+$cshowList :: [DALAppError] -&gt; ShowS
+showList :: [DALAppError] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680242853"><span id="local-6989586621680242858"><span class="annot"><span class="annottext">DALAppError -&gt; DALAppError -&gt; Bool
+(DALAppError -&gt; DALAppError -&gt; Bool)
+-&gt; (DALAppError -&gt; DALAppError -&gt; Bool) -&gt; Eq DALAppError
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: DALAppError -&gt; DALAppError -&gt; Bool
+== :: DALAppError -&gt; DALAppError -&gt; Bool
+$c/= :: DALAppError -&gt; DALAppError -&gt; Bool
+/= :: DALAppError -&gt; DALAppError -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">data</span><span> </span><span id="RepositoryError"><span class="annot"><a href="DAL.Repository.html#RepositoryError"><span class="hs-identifier hs-var">RepositoryError</span></a></span></span><span>
+</span><span id="line-28"></span><span>    </span><span class="hs-glyph">=</span><span> </span><span id="NotFound"><span class="annot"><a href="DAL.Repository.html#NotFound"><span class="hs-identifier hs-var">NotFound</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-29"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="DatabaseError"><span class="annot"><a href="DAL.Repository.html#DatabaseError"><span class="hs-identifier hs-var">DatabaseError</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-30"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="ValidationError"><span class="annot"><a href="DAL.Repository.html#ValidationError"><span class="hs-identifier hs-var">ValidationError</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-31"></span><span>    </span><span class="hs-glyph">|</span><span> </span><span id="ConstraintError"><span class="annot"><a href="DAL.Repository.html#ConstraintError"><span class="hs-identifier hs-var">ConstraintError</span></a></span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-32"></span><span>    </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680242869"><span id="local-6989586621680242879"><span id="local-6989586621680242883"><span class="annot"><span class="annottext">Int -&gt; RepositoryError -&gt; ShowS
+[RepositoryError] -&gt; ShowS
+RepositoryError -&gt; String
+(Int -&gt; RepositoryError -&gt; ShowS)
+-&gt; (RepositoryError -&gt; String)
+-&gt; ([RepositoryError] -&gt; ShowS)
+-&gt; Show RepositoryError
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; RepositoryError -&gt; ShowS
+showsPrec :: Int -&gt; RepositoryError -&gt; ShowS
+$cshow :: RepositoryError -&gt; String
+show :: RepositoryError -&gt; String
+$cshowList :: [RepositoryError] -&gt; ShowS
+showList :: [RepositoryError] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680242886"><span id="local-6989586621680242895"><span class="annot"><span class="annottext">RepositoryError -&gt; RepositoryError -&gt; Bool
+(RepositoryError -&gt; RepositoryError -&gt; Bool)
+-&gt; (RepositoryError -&gt; RepositoryError -&gt; Bool)
+-&gt; Eq RepositoryError
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: RepositoryError -&gt; RepositoryError -&gt; Bool
+== :: RepositoryError -&gt; RepositoryError -&gt; Bool
+$c/= :: RepositoryError -&gt; RepositoryError -&gt; Bool
+/= :: RepositoryError -&gt; RepositoryError -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">class</span><span> </span><span id="HasRepository"><span class="annot"><a href="DAL.Repository.html#HasRepository"><span class="hs-identifier hs-var">HasRepository</span></a></span></span><span> </span><span id="local-6989586621680242898"><span class="annot"><a href="#local-6989586621680242898"><span class="hs-identifier hs-type">repo</span></a></span></span><span> </span><span id="local-6989586621680242899"><span class="annot"><a href="#local-6989586621680242899"><span class="hs-identifier hs-type">pool</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><a href="#local-6989586621680242898"><span class="hs-identifier hs-type">repo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621680242899"><span class="hs-identifier hs-type">pool</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-35"></span><span>    </span><span id="getPool"><span class="annot"><a href="DAL.Repository.html#getPool"><span class="hs-identifier hs-type">getPool</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="#local-6989586621680242898"><span class="hs-identifier hs-type">repo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621680242899"><span class="hs-identifier hs-type">pool</span></a></span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">type</span><span> </span><span id="RepositoryT"><span class="annot"><a href="DAL.Repository.html#RepositoryT"><span class="hs-identifier hs-var">RepositoryT</span></a></span></span><span> </span><span id="local-6989586621680242901"><span class="annot"><a href="#local-6989586621680242901"><span class="hs-identifier hs-type">m</span></a></span></span><span> </span><span id="local-6989586621680242902"><span class="annot"><a href="#local-6989586621680242902"><span class="hs-identifier hs-type">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">ExceptT</span></span><span> </span><span class="annot"><a href="DAL.Repository.html#RepositoryError"><span class="hs-identifier hs-type">RepositoryError</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680242901"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680242902"><span class="hs-identifier hs-type">a</span></a></span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="hs-keyword">type</span><span> </span><span class="hs-keyword">family</span><span> </span><span id="Id"><span class="annot"><a href="DAL.Repository.html#Id"><span class="hs-identifier hs-var">Id</span></a></span></span><span> </span><span id="local-6989586621680242903"><span class="annot"><a href="#local-6989586621680242903"><span class="hs-identifier hs-type">entity</span></a></span></span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="annot"><a href="DAL.Repository.html#isNotFoundMessage"><span class="hs-identifier hs-type">isNotFoundMessage</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-42"></span><span id="isNotFoundMessage"><span class="annot"><span class="annottext">isNotFoundMessage :: Text -&gt; Bool
+</span><a href="DAL.Repository.html#isNotFoundMessage"><span class="hs-identifier hs-var hs-var">isNotFoundMessage</span></a></span></span><span> </span><span id="local-6989586621680242904"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680242904"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Bool
+</span><span class="hs-identifier hs-var">T.isInfixOf</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;not found&quot;</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text
+</span><span class="hs-identifier hs-var">T.toLower</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680242904"><span class="hs-identifier hs-var">msg</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span></pre></body></html>

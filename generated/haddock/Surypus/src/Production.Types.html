@@ -1,0 +1,687 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680290338"><span id="local-6989586621680290339"></span></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE RecordWildCards #-}</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="hs-comment">{-@ LIQUID &quot;--reflection&quot; @-}</span><span>
+</span><span id="line-6"></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Production.Types.html"><span class="hs-identifier">Production.Types</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Production.Types.html#TechCard"><span class="hs-identifier">TechCard</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Production.Types.html#TechLine"><span class="hs-identifier">TechLine</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Production.Types.html#WorkOrder"><span class="hs-identifier">WorkOrder</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Production.Types.html#WorkOrderStatusCode"><span class="hs-identifier">WorkOrderStatusCode</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Production.Types.html#mkWorkOrder"><span class="hs-identifier">mkWorkOrder</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="Production.Types.html#validateTechCard"><span class="hs-identifier">validateTechCard</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="Production.Types.html#validateTechLine"><span class="hs-identifier">validateTechLine</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="Production.Types.html#validateWorkOrderCore"><span class="hs-identifier">validateWorkOrderCore</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span class="annot"><a href="Production.Types.html#toWorkOrderStatus"><span class="hs-identifier">toWorkOrderStatus</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier">FromJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier">ToJSON</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span>
+</span><span id="line-26"></span><span class="hs-comment">{-@ type NonNegQty = {v:Double | v &gt;= 0} @-}</span><span>
+</span><span id="line-27"></span><span class="hs-comment">{-@ type NonNegCost = {v:Double | v &gt;= 0} @-}</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="hs-comment">{-@ data TechCard = TechCard
+  { tcId :: Maybe Int64
+  , tcGoodsId :: Int64
+  , tcName :: Text
+  , tcVersion :: Text
+  , tcStatus :: {v:Int | v &gt;= 0 &amp;&amp; v &lt;= 2}
+  , tcCreatedAt :: UTCTime
+  , tcUpdatedAt :: UTCTime
+  , tcCreatedBy :: Maybe Text
+  } @-}</span><span>
+</span><span id="line-39"></span><span class="hs-keyword">data</span><span> </span><span id="TechCard"><span class="annot"><a href="Production.Types.html#TechCard"><span class="hs-identifier hs-var">TechCard</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TechCard"><span class="annot"><a href="Production.Types.html#TechCard"><span class="hs-identifier hs-var">TechCard</span></a></span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tcId"><span class="annot"><span class="annottext">TechCard -&gt; Maybe Int64
+</span><a href="Production.Types.html#tcId"><span class="hs-identifier hs-var hs-var">tcId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-41"></span><span>    </span><span id="tcGoodsId"><span class="annot"><span class="annottext">TechCard -&gt; Int64
+</span><a href="Production.Types.html#tcGoodsId"><span class="hs-identifier hs-var hs-var">tcGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-42"></span><span>    </span><span id="tcName"><span class="annot"><span class="annottext">TechCard -&gt; Text
+</span><a href="Production.Types.html#tcName"><span class="hs-identifier hs-var hs-var">tcName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-43"></span><span>    </span><span id="tcVersion"><span class="annot"><span class="annottext">TechCard -&gt; Text
+</span><a href="Production.Types.html#tcVersion"><span class="hs-identifier hs-var hs-var">tcVersion</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-44"></span><span>    </span><span id="tcStatus"><span class="annot"><span class="annottext">TechCard -&gt; Int
+</span><a href="Production.Types.html#tcStatus"><span class="hs-identifier hs-var hs-var">tcStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-45"></span><span>    </span><span id="tcCreatedAt"><span class="annot"><span class="annottext">TechCard -&gt; UTCTime
+</span><a href="Production.Types.html#tcCreatedAt"><span class="hs-identifier hs-var hs-var">tcCreatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-46"></span><span>    </span><span id="tcUpdatedAt"><span class="annot"><span class="annottext">TechCard -&gt; UTCTime
+</span><a href="Production.Types.html#tcUpdatedAt"><span class="hs-identifier hs-var hs-var">tcUpdatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-47"></span><span>    </span><span id="tcCreatedBy"><span class="annot"><span class="annottext">TechCard -&gt; Maybe Text
+</span><a href="Production.Types.html#tcCreatedBy"><span class="hs-identifier hs-var hs-var">tcCreatedBy</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680290415"><span id="local-6989586621680290431"><span id="local-6989586621680290435"><span class="annot"><span class="annottext">Int -&gt; TechCard -&gt; ShowS
+[TechCard] -&gt; ShowS
+TechCard -&gt; String
+(Int -&gt; TechCard -&gt; ShowS)
+-&gt; (TechCard -&gt; String) -&gt; ([TechCard] -&gt; ShowS) -&gt; Show TechCard
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TechCard -&gt; ShowS
+showsPrec :: Int -&gt; TechCard -&gt; ShowS
+$cshow :: TechCard -&gt; String
+show :: TechCard -&gt; String
+$cshowList :: [TechCard] -&gt; ShowS
+showList :: [TechCard] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680290441"><span id="local-6989586621680290456"><span class="annot"><span class="annottext">TechCard -&gt; TechCard -&gt; Bool
+(TechCard -&gt; TechCard -&gt; Bool)
+-&gt; (TechCard -&gt; TechCard -&gt; Bool) -&gt; Eq TechCard
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TechCard -&gt; TechCard -&gt; Bool
+== :: TechCard -&gt; TechCard -&gt; Bool
+$c/= :: TechCard -&gt; TechCard -&gt; Bool
+/= :: TechCard -&gt; TechCard -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680290462"><span id="local-6989586621680290464"><span class="annot"><span class="annottext">(forall x. TechCard -&gt; Rep TechCard x)
+-&gt; (forall x. Rep TechCard x -&gt; TechCard) -&gt; Generic TechCard
+forall x. Rep TechCard x -&gt; TechCard
+forall x. TechCard -&gt; Rep TechCard x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. TechCard -&gt; Rep TechCard x
+from :: forall x. TechCard -&gt; Rep TechCard x
+$cto :: forall x. Rep TechCard x -&gt; TechCard
+to :: forall x. Rep TechCard x -&gt; TechCard
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680290470"><span id="local-6989586621680290477"><span id="local-6989586621680290480"><span id="local-6989586621680290483"><span id="local-6989586621680290486"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Production.Types.html#TechCard"><span class="hs-identifier hs-type">TechCard</span></a></span></span></span></span></span></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680290685"><span id="local-6989586621680290692"><span id="local-6989586621680290695"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Production.Types.html#TechCard"><span class="hs-identifier hs-type">TechCard</span></a></span></span></span></span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="hs-comment">{-@ data TechLine = TechLine
+  { tlId :: Maybe Int64
+  , tlTechCardId :: Int64
+  , tlLineNum :: Int
+  , tlGoodsId :: Int64
+  , tlQtyPlan :: NonNegQty
+  , tlUnitId :: Maybe Int64
+  , tlScrapPercent :: {v:Double | v &gt;= 0.0 &amp;&amp; v &lt;= 100.0}
+  , tlNotes :: Maybe Text
+  , tlCreatedAt :: UTCTime
+  , tlUpdatedAt :: UTCTime
+  , tlCreatedBy :: Maybe Text
+  } @-}</span><span>
+</span><span id="line-68"></span><span class="hs-keyword">data</span><span> </span><span id="TechLine"><span class="annot"><a href="Production.Types.html#TechLine"><span class="hs-identifier hs-var">TechLine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TechLine"><span class="annot"><a href="Production.Types.html#TechLine"><span class="hs-identifier hs-var">TechLine</span></a></span></span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tlId"><span class="annot"><span class="annottext">TechLine -&gt; Maybe Int64
+</span><a href="Production.Types.html#tlId"><span class="hs-identifier hs-var hs-var">tlId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-70"></span><span>    </span><span id="tlTechCardId"><span class="annot"><span class="annottext">TechLine -&gt; Int64
+</span><a href="Production.Types.html#tlTechCardId"><span class="hs-identifier hs-var hs-var">tlTechCardId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-71"></span><span>    </span><span id="tlLineNum"><span class="annot"><span class="annottext">TechLine -&gt; Int
+</span><a href="Production.Types.html#tlLineNum"><span class="hs-identifier hs-var hs-var">tlLineNum</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-72"></span><span>    </span><span id="tlGoodsId"><span class="annot"><span class="annottext">TechLine -&gt; Int64
+</span><a href="Production.Types.html#tlGoodsId"><span class="hs-identifier hs-var hs-var">tlGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-73"></span><span>    </span><span id="tlQtyPlan"><span class="annot"><span class="annottext">TechLine -&gt; Double
+</span><a href="Production.Types.html#tlQtyPlan"><span class="hs-identifier hs-var hs-var">tlQtyPlan</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-74"></span><span>    </span><span id="tlUnitId"><span class="annot"><span class="annottext">TechLine -&gt; Maybe Int64
+</span><a href="Production.Types.html#tlUnitId"><span class="hs-identifier hs-var hs-var">tlUnitId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-75"></span><span>    </span><span id="tlScrapPercent"><span class="annot"><span class="annottext">TechLine -&gt; Double
+</span><a href="Production.Types.html#tlScrapPercent"><span class="hs-identifier hs-var hs-var">tlScrapPercent</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-76"></span><span>    </span><span id="tlNotes"><span class="annot"><span class="annottext">TechLine -&gt; Maybe Text
+</span><a href="Production.Types.html#tlNotes"><span class="hs-identifier hs-var hs-var">tlNotes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-77"></span><span>    </span><span id="tlCreatedAt"><span class="annot"><span class="annottext">TechLine -&gt; UTCTime
+</span><a href="Production.Types.html#tlCreatedAt"><span class="hs-identifier hs-var hs-var">tlCreatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-78"></span><span>    </span><span id="tlUpdatedAt"><span class="annot"><span class="annottext">TechLine -&gt; UTCTime
+</span><a href="Production.Types.html#tlUpdatedAt"><span class="hs-identifier hs-var hs-var">tlUpdatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-79"></span><span>    </span><span id="tlCreatedBy"><span class="annot"><span class="annottext">TechLine -&gt; Maybe Text
+</span><a href="Production.Types.html#tlCreatedBy"><span class="hs-identifier hs-var hs-var">tlCreatedBy</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-80"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-81"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680290835"><span id="local-6989586621680290852"><span id="local-6989586621680290856"><span class="annot"><span class="annottext">Int -&gt; TechLine -&gt; ShowS
+[TechLine] -&gt; ShowS
+TechLine -&gt; String
+(Int -&gt; TechLine -&gt; ShowS)
+-&gt; (TechLine -&gt; String) -&gt; ([TechLine] -&gt; ShowS) -&gt; Show TechLine
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TechLine -&gt; ShowS
+showsPrec :: Int -&gt; TechLine -&gt; ShowS
+$cshow :: TechLine -&gt; String
+show :: TechLine -&gt; String
+$cshowList :: [TechLine] -&gt; ShowS
+showList :: [TechLine] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680290859"><span id="local-6989586621680290875"><span class="annot"><span class="annottext">TechLine -&gt; TechLine -&gt; Bool
+(TechLine -&gt; TechLine -&gt; Bool)
+-&gt; (TechLine -&gt; TechLine -&gt; Bool) -&gt; Eq TechLine
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TechLine -&gt; TechLine -&gt; Bool
+== :: TechLine -&gt; TechLine -&gt; Bool
+$c/= :: TechLine -&gt; TechLine -&gt; Bool
+/= :: TechLine -&gt; TechLine -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680290879"><span id="local-6989586621680290881"><span class="annot"><span class="annottext">(forall x. TechLine -&gt; Rep TechLine x)
+-&gt; (forall x. Rep TechLine x -&gt; TechLine) -&gt; Generic TechLine
+forall x. Rep TechLine x -&gt; TechLine
+forall x. TechLine -&gt; Rep TechLine x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. TechLine -&gt; Rep TechLine x
+from :: forall x. TechLine -&gt; Rep TechLine x
+$cto :: forall x. Rep TechLine x -&gt; TechLine
+to :: forall x. Rep TechLine x -&gt; TechLine
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-82"></span><span>
+</span><span id="line-83"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680290884"><span id="local-6989586621680290891"><span id="local-6989586621680290894"><span id="local-6989586621680290897"><span id="local-6989586621680290900"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Production.Types.html#TechLine"><span class="hs-identifier hs-type">TechLine</span></a></span></span></span></span></span></span><span>
+</span><span id="line-84"></span><span>
+</span><span id="line-85"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680291098"><span id="local-6989586621680291105"><span id="local-6989586621680291108"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Production.Types.html#TechLine"><span class="hs-identifier hs-type">TechLine</span></a></span></span></span></span><span>
+</span><span id="line-86"></span><span>
+</span><span id="line-87"></span><span class="hs-comment">{-@ data WorkOrderStatusCode = WODraft | WOReleased | WOInProgress | WOCompleted | WOCancelled @-}</span><span>
+</span><span id="line-88"></span><span class="hs-keyword">data</span><span> </span><span id="WorkOrderStatusCode"><span class="annot"><a href="Production.Types.html#WorkOrderStatusCode"><span class="hs-identifier hs-var">WorkOrderStatusCode</span></a></span></span><span>
+</span><span id="line-89"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="WODraft"><span class="annot"><a href="Production.Types.html#WODraft"><span class="hs-identifier hs-var">WODraft</span></a></span></span><span>
+</span><span id="line-90"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="WOReleased"><span class="annot"><a href="Production.Types.html#WOReleased"><span class="hs-identifier hs-var">WOReleased</span></a></span></span><span>
+</span><span id="line-91"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="WOInProgress"><span class="annot"><a href="Production.Types.html#WOInProgress"><span class="hs-identifier hs-var">WOInProgress</span></a></span></span><span>
+</span><span id="line-92"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="WOCompleted"><span class="annot"><a href="Production.Types.html#WOCompleted"><span class="hs-identifier hs-var">WOCompleted</span></a></span></span><span>
+</span><span id="line-93"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="WOCancelled"><span class="annot"><a href="Production.Types.html#WOCancelled"><span class="hs-identifier hs-var">WOCancelled</span></a></span></span><span>
+</span><span id="line-94"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680291244"><span id="local-6989586621680291249"><span class="annot"><span class="annottext">WorkOrderStatusCode -&gt; WorkOrderStatusCode -&gt; Bool
+(WorkOrderStatusCode -&gt; WorkOrderStatusCode -&gt; Bool)
+-&gt; (WorkOrderStatusCode -&gt; WorkOrderStatusCode -&gt; Bool)
+-&gt; Eq WorkOrderStatusCode
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: WorkOrderStatusCode -&gt; WorkOrderStatusCode -&gt; Bool
+== :: WorkOrderStatusCode -&gt; WorkOrderStatusCode -&gt; Bool
+$c/= :: WorkOrderStatusCode -&gt; WorkOrderStatusCode -&gt; Bool
+/= :: WorkOrderStatusCode -&gt; WorkOrderStatusCode -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680291253"><span id="local-6989586621680291255"><span id="local-6989586621680291259"><span class="annot"><span class="annottext">Int -&gt; WorkOrderStatusCode -&gt; ShowS
+[WorkOrderStatusCode] -&gt; ShowS
+WorkOrderStatusCode -&gt; String
+(Int -&gt; WorkOrderStatusCode -&gt; ShowS)
+-&gt; (WorkOrderStatusCode -&gt; String)
+-&gt; ([WorkOrderStatusCode] -&gt; ShowS)
+-&gt; Show WorkOrderStatusCode
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; WorkOrderStatusCode -&gt; ShowS
+showsPrec :: Int -&gt; WorkOrderStatusCode -&gt; ShowS
+$cshow :: WorkOrderStatusCode -&gt; String
+show :: WorkOrderStatusCode -&gt; String
+$cshowList :: [WorkOrderStatusCode] -&gt; ShowS
+showList :: [WorkOrderStatusCode] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680291262"><span id="local-6989586621680291269"><span id="local-6989586621680291276"><span id="local-6989586621680291288"><span id="local-6989586621680291291"><span id="local-6989586621680291296"><span id="local-6989586621680291302"><span id="local-6989586621680291305"><span class="annot"><span class="annottext">Int -&gt; WorkOrderStatusCode
+WorkOrderStatusCode -&gt; Int
+WorkOrderStatusCode -&gt; [WorkOrderStatusCode]
+WorkOrderStatusCode -&gt; WorkOrderStatusCode
+WorkOrderStatusCode -&gt; WorkOrderStatusCode -&gt; [WorkOrderStatusCode]
+WorkOrderStatusCode
+-&gt; WorkOrderStatusCode
+-&gt; WorkOrderStatusCode
+-&gt; [WorkOrderStatusCode]
+(WorkOrderStatusCode -&gt; WorkOrderStatusCode)
+-&gt; (WorkOrderStatusCode -&gt; WorkOrderStatusCode)
+-&gt; (Int -&gt; WorkOrderStatusCode)
+-&gt; (WorkOrderStatusCode -&gt; Int)
+-&gt; (WorkOrderStatusCode -&gt; [WorkOrderStatusCode])
+-&gt; (WorkOrderStatusCode
+    -&gt; WorkOrderStatusCode -&gt; [WorkOrderStatusCode])
+-&gt; (WorkOrderStatusCode
+    -&gt; WorkOrderStatusCode -&gt; [WorkOrderStatusCode])
+-&gt; (WorkOrderStatusCode
+    -&gt; WorkOrderStatusCode
+    -&gt; WorkOrderStatusCode
+    -&gt; [WorkOrderStatusCode])
+-&gt; Enum WorkOrderStatusCode
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: WorkOrderStatusCode -&gt; WorkOrderStatusCode
+succ :: WorkOrderStatusCode -&gt; WorkOrderStatusCode
+$cpred :: WorkOrderStatusCode -&gt; WorkOrderStatusCode
+pred :: WorkOrderStatusCode -&gt; WorkOrderStatusCode
+$ctoEnum :: Int -&gt; WorkOrderStatusCode
+toEnum :: Int -&gt; WorkOrderStatusCode
+$cfromEnum :: WorkOrderStatusCode -&gt; Int
+fromEnum :: WorkOrderStatusCode -&gt; Int
+$cenumFrom :: WorkOrderStatusCode -&gt; [WorkOrderStatusCode]
+enumFrom :: WorkOrderStatusCode -&gt; [WorkOrderStatusCode]
+$cenumFromThen :: WorkOrderStatusCode -&gt; WorkOrderStatusCode -&gt; [WorkOrderStatusCode]
+enumFromThen :: WorkOrderStatusCode -&gt; WorkOrderStatusCode -&gt; [WorkOrderStatusCode]
+$cenumFromTo :: WorkOrderStatusCode -&gt; WorkOrderStatusCode -&gt; [WorkOrderStatusCode]
+enumFromTo :: WorkOrderStatusCode -&gt; WorkOrderStatusCode -&gt; [WorkOrderStatusCode]
+$cenumFromThenTo :: WorkOrderStatusCode
+-&gt; WorkOrderStatusCode
+-&gt; WorkOrderStatusCode
+-&gt; [WorkOrderStatusCode]
+enumFromThenTo :: WorkOrderStatusCode
+-&gt; WorkOrderStatusCode
+-&gt; WorkOrderStatusCode
+-&gt; [WorkOrderStatusCode]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680291313"><span id="local-6989586621680291315"><span class="annot"><span class="annottext">(forall x. WorkOrderStatusCode -&gt; Rep WorkOrderStatusCode x)
+-&gt; (forall x. Rep WorkOrderStatusCode x -&gt; WorkOrderStatusCode)
+-&gt; Generic WorkOrderStatusCode
+forall x. Rep WorkOrderStatusCode x -&gt; WorkOrderStatusCode
+forall x. WorkOrderStatusCode -&gt; Rep WorkOrderStatusCode x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. WorkOrderStatusCode -&gt; Rep WorkOrderStatusCode x
+from :: forall x. WorkOrderStatusCode -&gt; Rep WorkOrderStatusCode x
+$cto :: forall x. Rep WorkOrderStatusCode x -&gt; WorkOrderStatusCode
+to :: forall x. Rep WorkOrderStatusCode x -&gt; WorkOrderStatusCode
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-95"></span><span>
+</span><span id="line-96"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680291318"><span id="local-6989586621680291325"><span id="local-6989586621680291328"><span id="local-6989586621680291331"><span id="local-6989586621680291334"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Production.Types.html#WorkOrderStatusCode"><span class="hs-identifier hs-type">WorkOrderStatusCode</span></a></span></span></span></span></span></span><span>
+</span><span id="line-97"></span><span>
+</span><span id="line-98"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680291469"><span id="local-6989586621680291476"><span id="local-6989586621680291479"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Production.Types.html#WorkOrderStatusCode"><span class="hs-identifier hs-type">WorkOrderStatusCode</span></a></span></span></span></span><span>
+</span><span id="line-99"></span><span>
+</span><span id="line-100"></span><span class="hs-comment">{-@ data WorkOrder = WorkOrder
+  { woId :: Maybe Int64
+  , woCode :: Text
+  , woGoodsId :: Int64
+  , woTechCardId :: Maybe Int64
+  , woQtyPlan :: NonNegQty
+  , woQtyReleased :: NonNegQty
+  , woStatus :: {v:Int | v &gt;= 0 &amp;&amp; v &lt;= 4}
+  , woStartDate :: Maybe UTCTime
+  , woEndDate :: Maybe UTCTime
+  , woProcessorId :: Maybe Int64
+  , woNotes :: Maybe Text
+  , woCreatedAt :: UTCTime
+  , woUpdatedAt :: UTCTime
+  , woCreatedBy :: Maybe Text
+  } @-}</span><span>
+</span><span id="line-116"></span><span class="hs-keyword">data</span><span> </span><span id="WorkOrder"><span class="annot"><a href="Production.Types.html#WorkOrder"><span class="hs-identifier hs-var">WorkOrder</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="WorkOrder"><span class="annot"><a href="Production.Types.html#WorkOrder"><span class="hs-identifier hs-var">WorkOrder</span></a></span></span><span>
+</span><span id="line-117"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="woId"><span class="annot"><span class="annottext">WorkOrder -&gt; Maybe Int64
+</span><a href="Production.Types.html#woId"><span class="hs-identifier hs-var hs-var">woId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-118"></span><span>    </span><span id="woCode"><span class="annot"><span class="annottext">WorkOrder -&gt; Text
+</span><a href="Production.Types.html#woCode"><span class="hs-identifier hs-var hs-var">woCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-119"></span><span>    </span><span id="woGoodsId"><span class="annot"><span class="annottext">WorkOrder -&gt; Int64
+</span><a href="Production.Types.html#woGoodsId"><span class="hs-identifier hs-var hs-var">woGoodsId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-120"></span><span>    </span><span id="woTechCardId"><span class="annot"><span class="annottext">WorkOrder -&gt; Maybe Int64
+</span><a href="Production.Types.html#woTechCardId"><span class="hs-identifier hs-var hs-var">woTechCardId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-121"></span><span>    </span><span id="woQtyPlan"><span class="annot"><span class="annottext">WorkOrder -&gt; Double
+</span><a href="Production.Types.html#woQtyPlan"><span class="hs-identifier hs-var hs-var">woQtyPlan</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-122"></span><span>    </span><span id="woQtyReleased"><span class="annot"><span class="annottext">WorkOrder -&gt; Double
+</span><a href="Production.Types.html#woQtyReleased"><span class="hs-identifier hs-var hs-var">woQtyReleased</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-123"></span><span>    </span><span id="woStatus"><span class="annot"><span class="annottext">WorkOrder -&gt; Int
+</span><a href="Production.Types.html#woStatus"><span class="hs-identifier hs-var hs-var">woStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-124"></span><span>    </span><span id="woStartDate"><span class="annot"><span class="annottext">WorkOrder -&gt; Maybe UTCTime
+</span><a href="Production.Types.html#woStartDate"><span class="hs-identifier hs-var hs-var">woStartDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-125"></span><span>    </span><span id="woEndDate"><span class="annot"><span class="annottext">WorkOrder -&gt; Maybe UTCTime
+</span><a href="Production.Types.html#woEndDate"><span class="hs-identifier hs-var hs-var">woEndDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-126"></span><span>    </span><span id="woProcessorId"><span class="annot"><span class="annottext">WorkOrder -&gt; Maybe Int64
+</span><a href="Production.Types.html#woProcessorId"><span class="hs-identifier hs-var hs-var">woProcessorId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-127"></span><span>    </span><span id="woNotes"><span class="annot"><span class="annottext">WorkOrder -&gt; Maybe Text
+</span><a href="Production.Types.html#woNotes"><span class="hs-identifier hs-var hs-var">woNotes</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-128"></span><span>    </span><span id="woCreatedAt"><span class="annot"><span class="annottext">WorkOrder -&gt; UTCTime
+</span><a href="Production.Types.html#woCreatedAt"><span class="hs-identifier hs-var hs-var">woCreatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-129"></span><span>    </span><span id="woUpdatedAt"><span class="annot"><span class="annottext">WorkOrder -&gt; UTCTime
+</span><a href="Production.Types.html#woUpdatedAt"><span class="hs-identifier hs-var hs-var">woUpdatedAt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-130"></span><span>    </span><span id="woCreatedBy"><span class="annot"><span class="annottext">WorkOrder -&gt; Maybe Text
+</span><a href="Production.Types.html#woCreatedBy"><span class="hs-identifier hs-var hs-var">woCreatedBy</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-131"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-132"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680291602"><span id="local-6989586621680291621"><span id="local-6989586621680291625"><span class="annot"><span class="annottext">Int -&gt; WorkOrder -&gt; ShowS
+[WorkOrder] -&gt; ShowS
+WorkOrder -&gt; String
+(Int -&gt; WorkOrder -&gt; ShowS)
+-&gt; (WorkOrder -&gt; String)
+-&gt; ([WorkOrder] -&gt; ShowS)
+-&gt; Show WorkOrder
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; WorkOrder -&gt; ShowS
+showsPrec :: Int -&gt; WorkOrder -&gt; ShowS
+$cshow :: WorkOrder -&gt; String
+show :: WorkOrder -&gt; String
+$cshowList :: [WorkOrder] -&gt; ShowS
+showList :: [WorkOrder] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680291628"><span id="local-6989586621680291646"><span class="annot"><span class="annottext">WorkOrder -&gt; WorkOrder -&gt; Bool
+(WorkOrder -&gt; WorkOrder -&gt; Bool)
+-&gt; (WorkOrder -&gt; WorkOrder -&gt; Bool) -&gt; Eq WorkOrder
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: WorkOrder -&gt; WorkOrder -&gt; Bool
+== :: WorkOrder -&gt; WorkOrder -&gt; Bool
+$c/= :: WorkOrder -&gt; WorkOrder -&gt; Bool
+/= :: WorkOrder -&gt; WorkOrder -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680291650"><span id="local-6989586621680291652"><span class="annot"><span class="annottext">(forall x. WorkOrder -&gt; Rep WorkOrder x)
+-&gt; (forall x. Rep WorkOrder x -&gt; WorkOrder) -&gt; Generic WorkOrder
+forall x. Rep WorkOrder x -&gt; WorkOrder
+forall x. WorkOrder -&gt; Rep WorkOrder x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. WorkOrder -&gt; Rep WorkOrder x
+from :: forall x. WorkOrder -&gt; Rep WorkOrder x
+$cto :: forall x. Rep WorkOrder x -&gt; WorkOrder
+to :: forall x. Rep WorkOrder x -&gt; WorkOrder
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-133"></span><span>
+</span><span id="line-134"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680291655"><span id="local-6989586621680291662"><span id="local-6989586621680291665"><span id="local-6989586621680291668"><span id="local-6989586621680291671"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="Production.Types.html#WorkOrder"><span class="hs-identifier hs-type">WorkOrder</span></a></span></span></span></span></span></span><span>
+</span><span id="line-135"></span><span>
+</span><span id="line-136"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680291911"><span id="local-6989586621680291918"><span id="local-6989586621680291921"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="Production.Types.html#WorkOrder"><span class="hs-identifier hs-type">WorkOrder</span></a></span></span></span></span><span>
+</span><span id="line-137"></span><span>
+</span><span id="line-138"></span><span class="annot"><a href="Production.Types.html#validateTechCard"><span class="hs-identifier hs-type">validateTechCard</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.Types.html#TechCard"><span class="hs-identifier hs-type">TechCard</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><a href="Production.Types.html#TechCard"><span class="hs-identifier hs-type">TechCard</span></a></span><span>
+</span><span id="line-139"></span><span id="validateTechCard"><span class="annot"><span class="annottext">validateTechCard :: TechCard -&gt; Either Text TechCard
+</span><a href="Production.Types.html#validateTechCard"><span class="hs-identifier hs-var hs-var">validateTechCard</span></a></span></span><span> </span><span id="local-6989586621680292075"><span class="annot"><span class="annottext">tc :: TechCard
+</span><a href="#local-6989586621680292075"><span class="hs-identifier hs-var">tc</span></a></span></span><span class="hs-glyph">@</span><span class="annot"><a href="Production.Types.html#TechCard"><span class="hs-identifier hs-type">TechCard</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621680292076"><span id="local-6989586621680292077"><span id="local-6989586621680292078"><span id="local-6989586621680292079"><span id="local-6989586621680292080"><span id="local-6989586621680292081"><span id="local-6989586621680292082"><span id="local-6989586621680292083"><span class="annot"><span class="annottext">Int
+Int64
+Maybe Int64
+Maybe Text
+Text
+UTCTime
+tcId :: TechCard -&gt; Maybe Int64
+tcGoodsId :: TechCard -&gt; Int64
+tcName :: TechCard -&gt; Text
+tcVersion :: TechCard -&gt; Text
+tcStatus :: TechCard -&gt; Int
+tcCreatedAt :: TechCard -&gt; UTCTime
+tcUpdatedAt :: TechCard -&gt; UTCTime
+tcCreatedBy :: TechCard -&gt; Maybe Text
+tcId :: Maybe Int64
+tcGoodsId :: Int64
+tcName :: Text
+tcVersion :: Text
+tcStatus :: Int
+tcCreatedAt :: UTCTime
+tcUpdatedAt :: UTCTime
+tcCreatedBy :: Maybe Text
+</span><a href="Production.Types.html#tcId"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span></span></span></span><span class="hs-special">}</span><span>
+</span><span id="line-140"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><span class="hs-identifier hs-var">T.null</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text
+</span><span class="hs-identifier hs-var">T.strip</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680292078"><span class="hs-identifier hs-var">tcName</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text TechCard
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;tech card name cannot be empty&quot;</span></span><span>
+</span><span id="line-141"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680292077"><span class="hs-identifier hs-var">tcGoodsId</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text TechCard
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;goods id must be positive&quot;</span></span><span>
+</span><span id="line-142"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680292080"><span class="hs-identifier hs-var">tcStatus</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680292080"><span class="hs-identifier hs-var">tcStatus</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">2</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text TechCard
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;status must be 0 (draft), 1 (active), or 2 (archived)&quot;</span></span><span>
+</span><span id="line-143"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><span class="hs-identifier hs-var">T.null</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text
+</span><span class="hs-identifier hs-var">T.strip</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680292079"><span class="hs-identifier hs-var">tcVersion</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text TechCard
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;version cannot be empty&quot;</span></span><span>
+</span><span id="line-144"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TechCard -&gt; Either Text TechCard
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">TechCard
+</span><a href="#local-6989586621680292075"><span class="hs-identifier hs-var">tc</span></a></span><span>
+</span><span id="line-145"></span><span>
+</span><span id="line-146"></span><span class="annot"><a href="Production.Types.html#validateTechLine"><span class="hs-identifier hs-type">validateTechLine</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.Types.html#TechLine"><span class="hs-identifier hs-type">TechLine</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><a href="Production.Types.html#TechLine"><span class="hs-identifier hs-type">TechLine</span></a></span><span>
+</span><span id="line-147"></span><span id="validateTechLine"><span class="annot"><span class="annottext">validateTechLine :: TechLine -&gt; Either Text TechLine
+</span><a href="Production.Types.html#validateTechLine"><span class="hs-identifier hs-var hs-var">validateTechLine</span></a></span></span><span> </span><span id="local-6989586621680292090"><span class="annot"><span class="annottext">line :: TechLine
+</span><a href="#local-6989586621680292090"><span class="hs-identifier hs-var">line</span></a></span></span><span class="hs-glyph">@</span><span class="annot"><a href="Production.Types.html#TechLine"><span class="hs-identifier hs-type">TechLine</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621680292091"><span id="local-6989586621680292092"><span id="local-6989586621680292093"><span id="local-6989586621680292094"><span id="local-6989586621680292095"><span id="local-6989586621680292096"><span id="local-6989586621680292097"><span id="local-6989586621680292098"><span id="local-6989586621680292099"><span id="local-6989586621680292100"><span id="local-6989586621680292101"><span class="annot"><span class="annottext">Double
+Int
+Int64
+Maybe Int64
+Maybe Text
+UTCTime
+tlId :: TechLine -&gt; Maybe Int64
+tlTechCardId :: TechLine -&gt; Int64
+tlLineNum :: TechLine -&gt; Int
+tlGoodsId :: TechLine -&gt; Int64
+tlQtyPlan :: TechLine -&gt; Double
+tlUnitId :: TechLine -&gt; Maybe Int64
+tlScrapPercent :: TechLine -&gt; Double
+tlNotes :: TechLine -&gt; Maybe Text
+tlCreatedAt :: TechLine -&gt; UTCTime
+tlUpdatedAt :: TechLine -&gt; UTCTime
+tlCreatedBy :: TechLine -&gt; Maybe Text
+tlId :: Maybe Int64
+tlTechCardId :: Int64
+tlLineNum :: Int
+tlGoodsId :: Int64
+tlQtyPlan :: Double
+tlUnitId :: Maybe Int64
+tlScrapPercent :: Double
+tlNotes :: Maybe Text
+tlCreatedAt :: UTCTime
+tlUpdatedAt :: UTCTime
+tlCreatedBy :: Maybe Text
+</span><a href="Production.Types.html#tlId"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">}</span><span>
+</span><span id="line-148"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680292092"><span class="hs-identifier hs-var">tlTechCardId</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text TechLine
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;tech card id must be positive&quot;</span></span><span>
+</span><span id="line-149"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680292093"><span class="hs-identifier hs-var">tlLineNum</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text TechLine
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;line number must be positive&quot;</span></span><span>
+</span><span id="line-150"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680292094"><span class="hs-identifier hs-var">tlGoodsId</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text TechLine
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;goods id must be positive&quot;</span></span><span>
+</span><span id="line-151"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680292095"><span class="hs-identifier hs-var">tlQtyPlan</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text TechLine
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;quantity must be non-negative&quot;</span></span><span>
+</span><span id="line-152"></span><span>   </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; (Int64 -&gt; Bool) -&gt; Maybe Int64 -&gt; Bool
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Maybe Int64
+</span><a href="#local-6989586621680292096"><span class="hs-identifier hs-var">tlUnitId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text TechLine
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;unit id must be positive when present&quot;</span></span><span>
+</span><span id="line-153"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680292097"><span class="hs-identifier hs-var">tlScrapPercent</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680292097"><span class="hs-identifier hs-var">tlScrapPercent</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">100</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text TechLine
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;scrap percent must be between 0 and 100&quot;</span></span><span>
+</span><span id="line-154"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TechLine -&gt; Either Text TechLine
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">TechLine
+</span><a href="#local-6989586621680292090"><span class="hs-identifier hs-var">line</span></a></span><span>
+</span><span id="line-155"></span><span>
+</span><span id="line-156"></span><span class="annot"><a href="Production.Types.html#validateWorkOrderCore"><span class="hs-identifier hs-type">validateWorkOrderCore</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Production.Types.html#WorkOrder"><span class="hs-identifier hs-type">WorkOrder</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><a href="Production.Types.html#WorkOrder"><span class="hs-identifier hs-type">WorkOrder</span></a></span><span>
+</span><span id="line-157"></span><span id="validateWorkOrderCore"><span class="annot"><span class="annottext">validateWorkOrderCore :: WorkOrder -&gt; Either Text WorkOrder
+</span><a href="Production.Types.html#validateWorkOrderCore"><span class="hs-identifier hs-var hs-var">validateWorkOrderCore</span></a></span></span><span> </span><span id="local-6989586621680292103"><span class="annot"><span class="annottext">wo :: WorkOrder
+</span><a href="#local-6989586621680292103"><span class="hs-identifier hs-var">wo</span></a></span></span><span class="hs-glyph">@</span><span class="annot"><a href="Production.Types.html#WorkOrder"><span class="hs-identifier hs-type">WorkOrder</span></a></span><span> </span><span class="hs-special">{</span><span id="local-6989586621680292104"><span id="local-6989586621680292105"><span id="local-6989586621680292106"><span id="local-6989586621680292107"><span id="local-6989586621680292108"><span id="local-6989586621680292109"><span id="local-6989586621680292110"><span id="local-6989586621680292111"><span id="local-6989586621680292112"><span id="local-6989586621680292113"><span id="local-6989586621680292114"><span id="local-6989586621680292115"><span id="local-6989586621680292116"><span id="local-6989586621680292117"><span class="annot"><span class="annottext">Double
+Int
+Int64
+Maybe Int64
+Maybe Text
+Maybe UTCTime
+Text
+UTCTime
+woId :: WorkOrder -&gt; Maybe Int64
+woCode :: WorkOrder -&gt; Text
+woGoodsId :: WorkOrder -&gt; Int64
+woTechCardId :: WorkOrder -&gt; Maybe Int64
+woQtyPlan :: WorkOrder -&gt; Double
+woQtyReleased :: WorkOrder -&gt; Double
+woStatus :: WorkOrder -&gt; Int
+woStartDate :: WorkOrder -&gt; Maybe UTCTime
+woEndDate :: WorkOrder -&gt; Maybe UTCTime
+woProcessorId :: WorkOrder -&gt; Maybe Int64
+woNotes :: WorkOrder -&gt; Maybe Text
+woCreatedAt :: WorkOrder -&gt; UTCTime
+woUpdatedAt :: WorkOrder -&gt; UTCTime
+woCreatedBy :: WorkOrder -&gt; Maybe Text
+woId :: Maybe Int64
+woCode :: Text
+woGoodsId :: Int64
+woTechCardId :: Maybe Int64
+woQtyPlan :: Double
+woQtyReleased :: Double
+woStatus :: Int
+woStartDate :: Maybe UTCTime
+woEndDate :: Maybe UTCTime
+woProcessorId :: Maybe Int64
+woNotes :: Maybe Text
+woCreatedAt :: UTCTime
+woUpdatedAt :: UTCTime
+woCreatedBy :: Maybe Text
+</span><a href="Production.Types.html#woId"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span><span class="hs-special">}</span><span>
+</span><span id="line-158"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><span class="hs-identifier hs-var">T.null</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Text
+</span><span class="hs-identifier hs-var">T.strip</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680292105"><span class="hs-identifier hs-var">woCode</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text WorkOrder
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;work order code must be set&quot;</span></span><span>
+</span><span id="line-159"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680292106"><span class="hs-identifier hs-var">woGoodsId</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text WorkOrder
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;goods id must be positive&quot;</span></span><span>
+</span><span id="line-160"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680292108"><span class="hs-identifier hs-var">woQtyPlan</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text WorkOrder
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;planned quantity must be non-negative&quot;</span></span><span>
+</span><span id="line-161"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680292109"><span class="hs-identifier hs-var">woQtyReleased</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text WorkOrder
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;released quantity cannot be negative&quot;</span></span><span>
+</span><span id="line-162"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680292109"><span class="hs-identifier hs-var">woQtyReleased</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680292108"><span class="hs-identifier hs-var">woQtyPlan</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text WorkOrder
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;released cannot exceed planned&quot;</span></span><span>
+</span><span id="line-163"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680292110"><span class="hs-identifier hs-var">woStatus</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680292110"><span class="hs-identifier hs-var">woStatus</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">4</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text WorkOrder
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;status must be between 0 and 4&quot;</span></span><span>
+</span><span id="line-164"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">WorkOrder -&gt; Either Text WorkOrder
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">WorkOrder
+</span><a href="#local-6989586621680292103"><span class="hs-identifier hs-var">wo</span></a></span><span>
+</span><span id="line-165"></span><span>
+</span><span id="line-166"></span><span class="annot"><a href="Production.Types.html#mkWorkOrder"><span class="hs-identifier hs-type">mkWorkOrder</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Production.Types.html#WorkOrder"><span class="hs-identifier hs-type">WorkOrder</span></a></span><span>
+</span><span id="line-167"></span><span id="mkWorkOrder"><span class="annot"><span class="annottext">mkWorkOrder :: Text -&gt; Int64 -&gt; Double -&gt; UTCTime -&gt; WorkOrder
+</span><a href="Production.Types.html#mkWorkOrder"><span class="hs-identifier hs-var hs-var">mkWorkOrder</span></a></span></span><span> </span><span id="local-6989586621680292118"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680292118"><span class="hs-identifier hs-var">code</span></a></span></span><span> </span><span id="local-6989586621680292119"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680292119"><span class="hs-identifier hs-var">goodsId</span></a></span></span><span> </span><span id="local-6989586621680292120"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680292120"><span class="hs-identifier hs-var">qtyPlan</span></a></span></span><span> </span><span id="local-6989586621680292121"><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680292121"><span class="hs-identifier hs-var">scheduled</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-168"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680292122"><span class="annot"><span class="annottext">now :: UTCTime
+</span><a href="#local-6989586621680292122"><span class="hs-identifier hs-var hs-var">now</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680292121"><span class="hs-identifier hs-var">scheduled</span></a></span><span>
+</span><span id="line-169"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Maybe Int64
+-&gt; Text
+-&gt; Int64
+-&gt; Maybe Int64
+-&gt; Double
+-&gt; Double
+-&gt; Int
+-&gt; Maybe UTCTime
+-&gt; Maybe UTCTime
+-&gt; Maybe Int64
+-&gt; Maybe Text
+-&gt; UTCTime
+-&gt; UTCTime
+-&gt; Maybe Text
+-&gt; WorkOrder
+</span><a href="Production.Types.html#WorkOrder"><span class="hs-identifier hs-var">WorkOrder</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Int64
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680292118"><span class="hs-identifier hs-var">code</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680292119"><span class="hs-identifier hs-var">goodsId</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Int64
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680292120"><span class="hs-identifier hs-var">qtyPlan</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">UTCTime -&gt; Maybe UTCTime
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680292121"><span class="hs-identifier hs-var">scheduled</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Maybe UTCTime
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="annot"><span class="annottext">Maybe Int64
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680292122"><span class="hs-identifier hs-var">now</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime
+</span><a href="#local-6989586621680292122"><span class="hs-identifier hs-var">now</span></a></span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-170"></span><span>
+</span><span id="line-171"></span><span class="annot"><a href="Production.Types.html#toWorkOrderStatus"><span class="hs-identifier hs-type">toWorkOrderStatus</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Production.Types.html#WorkOrderStatusCode"><span class="hs-identifier hs-type">WorkOrderStatusCode</span></a></span><span>
+</span><span id="line-172"></span><span id="toWorkOrderStatus"><span class="annot"><span class="annottext">toWorkOrderStatus :: Int -&gt; Maybe WorkOrderStatusCode
+</span><a href="Production.Types.html#toWorkOrderStatus"><span class="hs-identifier hs-var hs-var">toWorkOrderStatus</span></a></span></span><span> </span><span id="local-6989586621680292123"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680292123"><span class="hs-identifier hs-var">n</span></a></span></span><span>
+</span><span id="line-173"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680292123"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680292123"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">4</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">WorkOrderStatusCode -&gt; Maybe WorkOrderStatusCode
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; WorkOrderStatusCode
+forall a. Enum a =&gt; Int -&gt; a
+</span><span class="hs-identifier hs-var">toEnum</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621680292123"><span class="hs-identifier hs-var">n</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-174"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe WorkOrderStatusCode
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-175"></span></pre></body></html>

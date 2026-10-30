@@ -1,0 +1,348 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680308054"><span id="local-6989586621680308055"></span></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="annot"><span class="hs-comment">-- | Structured JSON logging module using katip</span></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.API.Logger.html"><span class="hs-identifier">Surypus.API.Logger</span></a></span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-5"></span><span>    </span><span class="annot"><a href="Surypus.API.Logger.html#LogLevel"><span class="hs-identifier">LogLevel</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Surypus.API.Logger.html#LogField"><span class="hs-identifier">LogField</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Surypus.API.Logger.html#Logger"><span class="hs-identifier">Logger</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Surypus.API.Logger.html#initLogger"><span class="hs-identifier">initLogger</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Surypus.API.Logger.html#logMessage"><span class="hs-identifier">logMessage</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Surypus.API.Logger.html#logDebug"><span class="hs-identifier">logDebug</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Surypus.API.Logger.html#logInfo"><span class="hs-identifier">logInfo</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Surypus.API.Logger.html#logWarn"><span class="hs-identifier">logWarn</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="Surypus.API.Logger.html#logError"><span class="hs-identifier">logError</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span class="annot"><a href="Surypus.API.Logger.html#withCorrelationId"><span class="hs-identifier">withCorrelationId</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span class="annot"><a href="Surypus.API.Logger.html#getCorrelationId"><span class="hs-identifier">getCorrelationId</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span class="annot"><a href="Surypus.API.Logger.html#logDBQuery"><span class="hs-identifier">logDBQuery</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Monad</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">when</span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.Internal.html#object"><span class="hs-identifier">object</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#.%3D"><span class="hs-operator">(.=)</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">A</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Key.html"><span class="hs-identifier">Data.Aeson.Key</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Key.html#fromText"><span class="hs-identifier">fromText</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.IORef</span></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-25"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-26"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time.Clock</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">getCurrentTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time.Format</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">formatTime</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">defaultTimeLocale</span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString.Lazy.Char8</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">LBC</span></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.html"><span class="hs-identifier">Katip</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">K</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Scribes.Handle.html"><span class="hs-identifier">Katip.Scribes.Handle</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">KS</span></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">System.IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">stdout</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">hFlush</span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-keyword">data</span><span> </span><span id="LogLevel"><span class="annot"><a href="Surypus.API.Logger.html#LogLevel"><span class="hs-identifier hs-var">LogLevel</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Debug"><span class="annot"><a href="Surypus.API.Logger.html#Debug"><span class="hs-identifier hs-var">Debug</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Info"><span class="annot"><a href="Surypus.API.Logger.html#Info"><span class="hs-identifier hs-var">Info</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Warn"><span class="annot"><a href="Surypus.API.Logger.html#Warn"><span class="hs-identifier hs-var">Warn</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="Error"><span class="annot"><a href="Surypus.API.Logger.html#Error"><span class="hs-identifier hs-var">Error</span></a></span></span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680308099"><span id="local-6989586621680308101"><span id="local-6989586621680308105"><span class="annot"><span class="annottext">Int -&gt; LogLevel -&gt; ShowS
+[LogLevel] -&gt; ShowS
+LogLevel -&gt; [Char]
+(Int -&gt; LogLevel -&gt; ShowS)
+-&gt; (LogLevel -&gt; [Char]) -&gt; ([LogLevel] -&gt; ShowS) -&gt; Show LogLevel
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; [Char]) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; LogLevel -&gt; ShowS
+showsPrec :: Int -&gt; LogLevel -&gt; ShowS
+$cshow :: LogLevel -&gt; [Char]
+show :: LogLevel -&gt; [Char]
+$cshowList :: [LogLevel] -&gt; ShowS
+showList :: [LogLevel] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680308110"><span id="local-6989586621680308115"><span class="annot"><span class="annottext">LogLevel -&gt; LogLevel -&gt; Bool
+(LogLevel -&gt; LogLevel -&gt; Bool)
+-&gt; (LogLevel -&gt; LogLevel -&gt; Bool) -&gt; Eq LogLevel
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: LogLevel -&gt; LogLevel -&gt; Bool
+== :: LogLevel -&gt; LogLevel -&gt; Bool
+$c/= :: LogLevel -&gt; LogLevel -&gt; Bool
+/= :: LogLevel -&gt; LogLevel -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680308122"><span id="local-6989586621680308126"><span id="local-6989586621680308130"><span id="local-6989586621680308133"><span id="local-6989586621680308136"><span id="local-6989586621680308139"><span id="local-6989586621680308142"><span class="annot"><span class="annottext">Eq LogLevel
+Eq LogLevel =&gt;
+(LogLevel -&gt; LogLevel -&gt; Ordering)
+-&gt; (LogLevel -&gt; LogLevel -&gt; Bool)
+-&gt; (LogLevel -&gt; LogLevel -&gt; Bool)
+-&gt; (LogLevel -&gt; LogLevel -&gt; Bool)
+-&gt; (LogLevel -&gt; LogLevel -&gt; Bool)
+-&gt; (LogLevel -&gt; LogLevel -&gt; LogLevel)
+-&gt; (LogLevel -&gt; LogLevel -&gt; LogLevel)
+-&gt; Ord LogLevel
+LogLevel -&gt; LogLevel -&gt; Bool
+LogLevel -&gt; LogLevel -&gt; Ordering
+LogLevel -&gt; LogLevel -&gt; LogLevel
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: LogLevel -&gt; LogLevel -&gt; Ordering
+compare :: LogLevel -&gt; LogLevel -&gt; Ordering
+$c&lt; :: LogLevel -&gt; LogLevel -&gt; Bool
+&lt; :: LogLevel -&gt; LogLevel -&gt; Bool
+$c&lt;= :: LogLevel -&gt; LogLevel -&gt; Bool
+&lt;= :: LogLevel -&gt; LogLevel -&gt; Bool
+$c&gt; :: LogLevel -&gt; LogLevel -&gt; Bool
+&gt; :: LogLevel -&gt; LogLevel -&gt; Bool
+$c&gt;= :: LogLevel -&gt; LogLevel -&gt; Bool
+&gt;= :: LogLevel -&gt; LogLevel -&gt; Bool
+$cmax :: LogLevel -&gt; LogLevel -&gt; LogLevel
+max :: LogLevel -&gt; LogLevel -&gt; LogLevel
+$cmin :: LogLevel -&gt; LogLevel -&gt; LogLevel
+min :: LogLevel -&gt; LogLevel -&gt; LogLevel
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680308150"><span id="local-6989586621680308159"><span id="local-6989586621680308166"><span id="local-6989586621680308178"><span id="local-6989586621680308181"><span id="local-6989586621680308186"><span id="local-6989586621680308192"><span id="local-6989586621680308196"><span class="annot"><span class="annottext">Int -&gt; LogLevel
+LogLevel -&gt; Int
+LogLevel -&gt; [LogLevel]
+LogLevel -&gt; LogLevel
+LogLevel -&gt; LogLevel -&gt; [LogLevel]
+LogLevel -&gt; LogLevel -&gt; LogLevel -&gt; [LogLevel]
+(LogLevel -&gt; LogLevel)
+-&gt; (LogLevel -&gt; LogLevel)
+-&gt; (Int -&gt; LogLevel)
+-&gt; (LogLevel -&gt; Int)
+-&gt; (LogLevel -&gt; [LogLevel])
+-&gt; (LogLevel -&gt; LogLevel -&gt; [LogLevel])
+-&gt; (LogLevel -&gt; LogLevel -&gt; [LogLevel])
+-&gt; (LogLevel -&gt; LogLevel -&gt; LogLevel -&gt; [LogLevel])
+-&gt; Enum LogLevel
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: LogLevel -&gt; LogLevel
+succ :: LogLevel -&gt; LogLevel
+$cpred :: LogLevel -&gt; LogLevel
+pred :: LogLevel -&gt; LogLevel
+$ctoEnum :: Int -&gt; LogLevel
+toEnum :: Int -&gt; LogLevel
+$cfromEnum :: LogLevel -&gt; Int
+fromEnum :: LogLevel -&gt; Int
+$cenumFrom :: LogLevel -&gt; [LogLevel]
+enumFrom :: LogLevel -&gt; [LogLevel]
+$cenumFromThen :: LogLevel -&gt; LogLevel -&gt; [LogLevel]
+enumFromThen :: LogLevel -&gt; LogLevel -&gt; [LogLevel]
+$cenumFromTo :: LogLevel -&gt; LogLevel -&gt; [LogLevel]
+enumFromTo :: LogLevel -&gt; LogLevel -&gt; [LogLevel]
+$cenumFromThenTo :: LogLevel -&gt; LogLevel -&gt; LogLevel -&gt; [LogLevel]
+enumFromThenTo :: LogLevel -&gt; LogLevel -&gt; LogLevel -&gt; [LogLevel]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680308204"><span id="local-6989586621680308206"><span class="annot"><span class="annottext">LogLevel
+LogLevel -&gt; LogLevel -&gt; Bounded LogLevel
+forall a. a -&gt; a -&gt; Bounded a
+$cminBound :: LogLevel
+minBound :: LogLevel
+$cmaxBound :: LogLevel
+maxBound :: LogLevel
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Bounded</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="hs-keyword">type</span><span> </span><span id="LogField"><span class="annot"><a href="Surypus.API.Logger.html#LogField"><span class="hs-identifier hs-var">LogField</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">data</span><span> </span><span id="Logger"><span class="annot"><a href="Surypus.API.Logger.html#Logger"><span class="hs-identifier hs-var">Logger</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Logger"><span class="annot"><a href="Surypus.API.Logger.html#Logger"><span class="hs-identifier hs-var">Logger</span></a></span></span><span>
+</span><span id="line-38"></span><span>    </span><span class="hs-special">{</span><span> </span><span id="loggerLevel"><span class="annot"><span class="annottext">Logger -&gt; LogLevel
+</span><a href="Surypus.API.Logger.html#loggerLevel"><span class="hs-identifier hs-var hs-var">loggerLevel</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#LogLevel"><span class="hs-identifier hs-type">LogLevel</span></a></span><span>
+</span><span id="line-39"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="loggerCorrId"><span class="annot"><span class="annottext">Logger -&gt; IORef (Maybe [Char])
+</span><a href="Surypus.API.Logger.html#loggerCorrId"><span class="hs-identifier hs-var hs-var">loggerCorrId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IORef</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span>    </span><span class="hs-special">,</span><span> </span><span id="katipEnv"><span class="annot"><span class="annottext">Logger -&gt; LogEnv
+</span><a href="Surypus.API.Logger.html#katipEnv"><span class="hs-identifier hs-var hs-var">katipEnv</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Core.html#LogEnv"><span class="hs-identifier hs-type">K.LogEnv</span></a></span><span>
+</span><span id="line-41"></span><span>    </span><span class="hs-special">}</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><a href="Surypus.API.Logger.html#initLogger"><span class="hs-identifier hs-type">initLogger</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#LogLevel"><span class="hs-identifier hs-type">LogLevel</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span>
+</span><span id="line-44"></span><span id="initLogger"><span class="annot"><span class="annottext">initLogger :: LogLevel -&gt; IO Logger
+</span><a href="Surypus.API.Logger.html#initLogger"><span class="hs-identifier hs-var hs-var">initLogger</span></a></span></span><span> </span><span id="local-6989586621680308215"><span class="annot"><span class="annottext">LogLevel
+</span><a href="#local-6989586621680308215"><span class="hs-identifier hs-var">level</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-45"></span><span>    </span><span id="local-6989586621680308216"><span class="annot"><a href="#local-6989586621680308216"><span class="hs-identifier hs-var">corrId</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Maybe [Char] -&gt; IO (IORef (Maybe [Char]))
+forall a. a -&gt; IO (IORef a)
+</span><span class="hs-identifier hs-var">newIORef</span></span><span> </span><span class="annot"><span class="annottext">Maybe [Char]
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-46"></span><span>    </span><span id="local-6989586621680308218"><span class="annot"><a href="#local-6989586621680308218"><span class="hs-identifier hs-var">le</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Core.html#initLogEnv"><span class="hs-identifier hs-type">K.initLogEnv</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;Surypus&quot;</span></span><span> </span><span class="annot"><span class="hs-string">&quot;production&quot;</span></span><span>
+</span><span id="line-47"></span><span>    </span><span class="hs-comment">-- Use fast-logger backend (text format for stdout)</span><span>
+</span><span id="line-48"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680308015"><span class="annot"><a href="#local-6989586621680308220"><span class="hs-identifier hs-type">permitFunc</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Core.html#Item"><span class="hs-identifier hs-type">K.Item</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680308015"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span></span><span>
+</span><span id="line-49"></span><span>        </span><span id="local-6989586621680308220"><span class="annot"><a href="#local-6989586621680308220"><span class="hs-identifier hs-var hs-var">permitFunc</span></a></span></span><span> </span><span class="annot"><span class="annottext">Item a
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; IO Bool
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-50"></span><span>    </span><span id="local-6989586621680308222"><span class="annot"><a href="#local-6989586621680308222"><span class="hs-identifier hs-var">scribe</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Scribes.Handle.html#mkHandleScribe"><span class="hs-identifier hs-type">KS.mkHandleScribe</span></a></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Scribes.Handle.html#ColorIfTerminal"><span class="hs-identifier hs-type">KS.ColorIfTerminal</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">stdout</span></span><span> </span><span class="annot"><a href="#local-6989586621680308220"><span class="hs-identifier hs-type">permitFunc</span></a></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Core.html#V2"><span class="hs-identifier hs-type">K.V2</span></a></span><span>
+</span><span id="line-51"></span><span>    </span><span id="local-6989586621680308226"><span class="annot"><a href="#local-6989586621680308226"><span class="hs-identifier hs-var">le'</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Core.html#registerScribe"><span class="hs-identifier hs-type">K.registerScribe</span></a></span><span> </span><span class="annot"><span class="hs-string">&quot;stdout&quot;</span></span><span> </span><span class="annot"><a href="#local-6989586621680308222"><span class="hs-identifier hs-type">scribe</span></a></span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Core.html#defaultScribeSettings"><span class="hs-identifier hs-type">K.defaultScribeSettings</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680308218"><span class="hs-identifier hs-type">le</span></a></span><span>
+</span><span id="line-52"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">pure</span></span><span> </span><span class="annot"><span class="hs-operator hs-type">$</span></span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680308215"><span class="hs-identifier hs-type">level</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680308216"><span class="hs-identifier hs-type">corrId</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680308226"><span class="hs-identifier hs-type">le'</span></a></span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span class="annot"><a href="Surypus.API.Logger.html#levelToKatip"><span class="hs-identifier hs-type">levelToKatip</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#LogLevel"><span class="hs-identifier hs-type">LogLevel</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Core.html#Severity"><span class="hs-identifier hs-type">K.Severity</span></a></span><span>
+</span><span id="line-55"></span><span id="levelToKatip"><span class="annot"><span class="annottext">levelToKatip :: LogLevel -&gt; Severity
+</span><a href="Surypus.API.Logger.html#levelToKatip"><span class="hs-identifier hs-var hs-var">levelToKatip</span></a></span></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="Surypus.API.Logger.html#Debug"><span class="hs-identifier hs-var">Debug</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Severity
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Core.html#DebugS"><span class="hs-identifier hs-var">K.DebugS</span></a></span><span>
+</span><span id="line-56"></span><span class="annot"><a href="Surypus.API.Logger.html#levelToKatip"><span class="hs-identifier hs-var">levelToKatip</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="Surypus.API.Logger.html#Info"><span class="hs-identifier hs-var">Info</span></a></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Severity
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Core.html#InfoS"><span class="hs-identifier hs-var">K.InfoS</span></a></span><span>
+</span><span id="line-57"></span><span class="annot"><a href="Surypus.API.Logger.html#levelToKatip"><span class="hs-identifier hs-var">levelToKatip</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="Surypus.API.Logger.html#Warn"><span class="hs-identifier hs-var">Warn</span></a></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Severity
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Core.html#WarningS"><span class="hs-identifier hs-var">K.WarningS</span></a></span><span>
+</span><span id="line-58"></span><span class="annot"><a href="Surypus.API.Logger.html#levelToKatip"><span class="hs-identifier hs-var">levelToKatip</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="Surypus.API.Logger.html#Error"><span class="hs-identifier hs-var">Error</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Severity
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Core.html#ErrorS"><span class="hs-identifier hs-var">K.ErrorS</span></a></span><span>
+</span><span id="line-59"></span><span>
+</span><span id="line-60"></span><span class="annot"><a href="Surypus.API.Logger.html#logKatip"><span class="hs-identifier hs-type">logKatip</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#LogLevel"><span class="hs-identifier hs-type">LogLevel</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Surypus.API.Logger.html#LogField"><span class="hs-identifier hs-type">LogField</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-61"></span><span id="logKatip"><span class="annot"><span class="annottext">logKatip :: Logger -&gt; LogLevel -&gt; [Char] -&gt; [LogField] -&gt; IO ()
+</span><a href="Surypus.API.Logger.html#logKatip"><span class="hs-identifier hs-var hs-var">logKatip</span></a></span></span><span> </span><span id="local-6989586621680308235"><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308235"><span class="hs-identifier hs-var">logger</span></a></span></span><span> </span><span id="local-6989586621680308236"><span class="annot"><span class="annottext">LogLevel
+</span><a href="#local-6989586621680308236"><span class="hs-identifier hs-var">lvl</span></a></span></span><span> </span><span id="local-6989586621680308237"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308237"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span id="local-6989586621680308238"><span class="annot"><span class="annottext">[LogField]
+</span><a href="#local-6989586621680308238"><span class="hs-identifier hs-var">fields</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-62"></span><span>    </span><span id="local-6989586621680308239"><span class="annot"><a href="#local-6989586621680308239"><span class="hs-identifier hs-var">mCorrId</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IORef (Maybe [Char]) -&gt; IO (Maybe [Char])
+forall a. IORef a -&gt; IO a
+</span><span class="hs-identifier hs-var">readIORef</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Logger -&gt; IORef (Maybe [Char])
+</span><a href="Surypus.API.Logger.html#loggerCorrId"><span class="hs-identifier hs-var">loggerCorrId</span></a></span><span> </span><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308235"><span class="hs-identifier hs-var">logger</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-63"></span><span>    </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680308242"><span class="annot"><a href="#local-6989586621680308242"><span class="hs-identifier hs-var hs-var">ns</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Text] -&gt; Namespace
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Core.html#Namespace"><span class="hs-identifier hs-var">K.Namespace</span></a></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;surypus&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-64"></span><span>        </span><span id="local-6989586621680308244"><span class="annot"><a href="#local-6989586621680308244"><span class="hs-identifier hs-var hs-var">severity</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">LogLevel -&gt; Severity
+</span><a href="Surypus.API.Logger.html#levelToKatip"><span class="hs-identifier hs-var">levelToKatip</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="#local-6989586621680308236"><span class="hs-identifier hs-var">lvl</span></a></span><span>
+</span><span id="line-65"></span><span>        </span><span id="local-6989586621680308248"><span class="annot"><a href="#local-6989586621680308248"><span class="hs-identifier hs-var hs-var">msgWithCorr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Maybe [Char]
+</span><a href="#local-6989586621680308239"><span class="hs-identifier hs-var">mCorrId</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-66"></span><span>            </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680308249"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308249"><span class="hs-identifier hs-var">cid</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308237"><span class="hs-identifier hs-var">msg</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot; [correlation_id=&quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308249"><span class="hs-identifier hs-var">cid</span></a></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;]&quot;</span></span><span>
+</span><span id="line-67"></span><span>            </span><span class="annot"><span class="annottext">Maybe [Char]
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>  </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308237"><span class="hs-identifier hs-var">msg</span></a></span><span>
+</span><span id="line-68"></span><span>        </span><span id="local-6989586621680308268"><span class="annot"><a href="#local-6989586621680308268"><span class="hs-identifier hs-var hs-var">logAction</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Namespace -&gt; Severity -&gt; LogStr -&gt; KatipT IO ()
+forall (m :: * -&gt; *).
+(Applicative m, Katip m) =&gt;
+Namespace -&gt; Severity -&gt; LogStr -&gt; m ()
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Core.html#logMsg"><span class="hs-identifier hs-var">K.logMsg</span></a></span><span> </span><span class="annot"><span class="annottext">Namespace
+</span><a href="#local-6989586621680308242"><span class="hs-identifier hs-var">ns</span></a></span><span> </span><span class="annot"><span class="annottext">Severity
+</span><a href="#local-6989586621680308244"><span class="hs-identifier hs-var">severity</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; LogStr
+forall a. StringConv a Text =&gt; a -&gt; LogStr
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Core.html#logStr"><span class="hs-identifier hs-var">K.logStr</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Char] -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308248"><span class="hs-identifier hs-var">msgWithCorr</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span>    </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/katip-0.8.8.4-6e4c439c5f7e6ec1d070d27fe8d15e8728f2446d538167f1ad196ed86393c000/share/doc/html/src/Katip.Core.html#runKatipT"><span class="hs-identifier hs-type">K.runKatipT</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Surypus.API.Logger.html#katipEnv"><span class="hs-identifier hs-var">katipEnv</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680308235"><span class="hs-identifier hs-type">logger</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621680308268"><span class="hs-identifier hs-type">logAction</span></a></span><span>
+</span><span id="line-70"></span><span>
+</span><span id="line-71"></span><span class="annot"><a href="Surypus.API.Logger.html#logMessage"><span class="hs-identifier hs-type">logMessage</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#LogLevel"><span class="hs-identifier hs-type">LogLevel</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Surypus.API.Logger.html#LogField"><span class="hs-identifier hs-type">LogField</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span id="logMessage"><span class="annot"><span class="annottext">logMessage :: Logger -&gt; LogLevel -&gt; [Char] -&gt; [LogField] -&gt; IO ()
+</span><a href="Surypus.API.Logger.html#logMessage"><span class="hs-identifier hs-var hs-var">logMessage</span></a></span></span><span> </span><span id="local-6989586621680308273"><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308273"><span class="hs-identifier hs-var">logger</span></a></span></span><span> </span><span id="local-6989586621680308274"><span class="annot"><span class="annottext">LogLevel
+</span><a href="#local-6989586621680308274"><span class="hs-identifier hs-var">lvl</span></a></span></span><span> </span><span id="local-6989586621680308275"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308275"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span id="local-6989586621680308276"><span class="annot"><span class="annottext">[LogField]
+</span><a href="#local-6989586621680308276"><span class="hs-identifier hs-var">fields</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-73"></span><span>    </span><span class="annot"><span class="annottext">Bool -&gt; IO () -&gt; IO ()
+forall (f :: * -&gt; *). Applicative f =&gt; Bool -&gt; f () -&gt; f ()
+</span><span class="hs-identifier hs-var">when</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">LogLevel
+</span><a href="#local-6989586621680308274"><span class="hs-identifier hs-var">lvl</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel -&gt; LogLevel -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Logger -&gt; LogLevel
+</span><a href="Surypus.API.Logger.html#loggerLevel"><span class="hs-identifier hs-var">loggerLevel</span></a></span><span> </span><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308273"><span class="hs-identifier hs-var">logger</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(IO () -&gt; IO ()) -&gt; IO () -&gt; IO ()
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-74"></span><span>        </span><span class="annot"><span class="annottext">Logger -&gt; LogLevel -&gt; [Char] -&gt; [LogField] -&gt; IO ()
+</span><a href="Surypus.API.Logger.html#logKatip"><span class="hs-identifier hs-var">logKatip</span></a></span><span> </span><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308273"><span class="hs-identifier hs-var">logger</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="#local-6989586621680308274"><span class="hs-identifier hs-var">lvl</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308275"><span class="hs-identifier hs-var">msg</span></a></span><span> </span><span class="annot"><span class="annottext">[LogField]
+</span><a href="#local-6989586621680308276"><span class="hs-identifier hs-var">fields</span></a></span><span>
+</span><span id="line-75"></span><span>
+</span><span id="line-76"></span><span class="annot"><a href="Surypus.API.Logger.html#logDebug"><span class="hs-identifier hs-type">logDebug</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Surypus.API.Logger.html#LogField"><span class="hs-identifier hs-type">LogField</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span id="logDebug"><span class="annot"><span class="annottext">logDebug :: Logger -&gt; [Char] -&gt; [LogField] -&gt; IO ()
+</span><a href="Surypus.API.Logger.html#logDebug"><span class="hs-identifier hs-var hs-var">logDebug</span></a></span></span><span> </span><span id="local-6989586621680308277"><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308277"><span class="hs-identifier hs-var">logger</span></a></span></span><span> </span><span id="local-6989586621680308278"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308278"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span id="local-6989586621680308279"><span class="annot"><span class="annottext">[LogField]
+</span><a href="#local-6989586621680308279"><span class="hs-identifier hs-var">fields</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Logger -&gt; LogLevel -&gt; [Char] -&gt; [LogField] -&gt; IO ()
+</span><a href="Surypus.API.Logger.html#logMessage"><span class="hs-identifier hs-var">logMessage</span></a></span><span> </span><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308277"><span class="hs-identifier hs-var">logger</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="Surypus.API.Logger.html#Debug"><span class="hs-identifier hs-var">Debug</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308278"><span class="hs-identifier hs-var">msg</span></a></span><span> </span><span class="annot"><span class="annottext">[LogField]
+</span><a href="#local-6989586621680308279"><span class="hs-identifier hs-var">fields</span></a></span><span>
+</span><span id="line-78"></span><span>
+</span><span id="line-79"></span><span class="annot"><a href="Surypus.API.Logger.html#logInfo"><span class="hs-identifier hs-type">logInfo</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Surypus.API.Logger.html#LogField"><span class="hs-identifier hs-type">LogField</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-80"></span><span id="logInfo"><span class="annot"><span class="annottext">logInfo :: Logger -&gt; [Char] -&gt; [LogField] -&gt; IO ()
+</span><a href="Surypus.API.Logger.html#logInfo"><span class="hs-identifier hs-var hs-var">logInfo</span></a></span></span><span> </span><span id="local-6989586621680308280"><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308280"><span class="hs-identifier hs-var">logger</span></a></span></span><span> </span><span id="local-6989586621680308281"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308281"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span id="local-6989586621680308282"><span class="annot"><span class="annottext">[LogField]
+</span><a href="#local-6989586621680308282"><span class="hs-identifier hs-var">fields</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Logger -&gt; LogLevel -&gt; [Char] -&gt; [LogField] -&gt; IO ()
+</span><a href="Surypus.API.Logger.html#logMessage"><span class="hs-identifier hs-var">logMessage</span></a></span><span> </span><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308280"><span class="hs-identifier hs-var">logger</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="Surypus.API.Logger.html#Info"><span class="hs-identifier hs-var">Info</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308281"><span class="hs-identifier hs-var">msg</span></a></span><span> </span><span class="annot"><span class="annottext">[LogField]
+</span><a href="#local-6989586621680308282"><span class="hs-identifier hs-var">fields</span></a></span><span>
+</span><span id="line-81"></span><span>
+</span><span id="line-82"></span><span class="annot"><a href="Surypus.API.Logger.html#logWarn"><span class="hs-identifier hs-type">logWarn</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Surypus.API.Logger.html#LogField"><span class="hs-identifier hs-type">LogField</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-83"></span><span id="logWarn"><span class="annot"><span class="annottext">logWarn :: Logger -&gt; [Char] -&gt; [LogField] -&gt; IO ()
+</span><a href="Surypus.API.Logger.html#logWarn"><span class="hs-identifier hs-var hs-var">logWarn</span></a></span></span><span> </span><span id="local-6989586621680308283"><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308283"><span class="hs-identifier hs-var">logger</span></a></span></span><span> </span><span id="local-6989586621680308284"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308284"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span id="local-6989586621680308285"><span class="annot"><span class="annottext">[LogField]
+</span><a href="#local-6989586621680308285"><span class="hs-identifier hs-var">fields</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Logger -&gt; LogLevel -&gt; [Char] -&gt; [LogField] -&gt; IO ()
+</span><a href="Surypus.API.Logger.html#logMessage"><span class="hs-identifier hs-var">logMessage</span></a></span><span> </span><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308283"><span class="hs-identifier hs-var">logger</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="Surypus.API.Logger.html#Warn"><span class="hs-identifier hs-var">Warn</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308284"><span class="hs-identifier hs-var">msg</span></a></span><span> </span><span class="annot"><span class="annottext">[LogField]
+</span><a href="#local-6989586621680308285"><span class="hs-identifier hs-var">fields</span></a></span><span>
+</span><span id="line-84"></span><span>
+</span><span id="line-85"></span><span class="annot"><a href="Surypus.API.Logger.html#logError"><span class="hs-identifier hs-type">logError</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Surypus.API.Logger.html#LogField"><span class="hs-identifier hs-type">LogField</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-86"></span><span id="logError"><span class="annot"><span class="annottext">logError :: Logger -&gt; [Char] -&gt; [LogField] -&gt; IO ()
+</span><a href="Surypus.API.Logger.html#logError"><span class="hs-identifier hs-var hs-var">logError</span></a></span></span><span> </span><span id="local-6989586621680308286"><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308286"><span class="hs-identifier hs-var">logger</span></a></span></span><span> </span><span id="local-6989586621680308287"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308287"><span class="hs-identifier hs-var">msg</span></a></span></span><span> </span><span id="local-6989586621680308288"><span class="annot"><span class="annottext">[LogField]
+</span><a href="#local-6989586621680308288"><span class="hs-identifier hs-var">fields</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Logger -&gt; LogLevel -&gt; [Char] -&gt; [LogField] -&gt; IO ()
+</span><a href="Surypus.API.Logger.html#logMessage"><span class="hs-identifier hs-var">logMessage</span></a></span><span> </span><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308286"><span class="hs-identifier hs-var">logger</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="Surypus.API.Logger.html#Error"><span class="hs-identifier hs-var">Error</span></a></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308287"><span class="hs-identifier hs-var">msg</span></a></span><span> </span><span class="annot"><span class="annottext">[LogField]
+</span><a href="#local-6989586621680308288"><span class="hs-identifier hs-var">fields</span></a></span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span id="local-6989586621680308051"><span class="annot"><a href="Surypus.API.Logger.html#withCorrelationId"><span class="hs-identifier hs-type">withCorrelationId</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621680308051"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="#local-6989586621680308051"><span class="hs-identifier hs-type">a</span></a></span></span><span>
+</span><span id="line-89"></span><span id="withCorrelationId"><span class="annot"><span class="annottext">withCorrelationId :: forall a. Logger -&gt; [Char] -&gt; IO a -&gt; IO a
+</span><a href="Surypus.API.Logger.html#withCorrelationId"><span class="hs-identifier hs-var hs-var">withCorrelationId</span></a></span></span><span> </span><span id="local-6989586621680308294"><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308294"><span class="hs-identifier hs-var">logger</span></a></span></span><span> </span><span id="local-6989586621680308295"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308295"><span class="hs-identifier hs-var">cid</span></a></span></span><span> </span><span id="local-6989586621680308296"><span class="annot"><span class="annottext">IO a
+</span><a href="#local-6989586621680308296"><span class="hs-identifier hs-var">action</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-90"></span><span>    </span><span id="local-6989586621680308297"><span class="annot"><a href="#local-6989586621680308297"><span class="hs-identifier hs-var">old</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IORef (Maybe [Char]) -&gt; IO (Maybe [Char])
+forall a. IORef a -&gt; IO a
+</span><span class="hs-identifier hs-var">readIORef</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Logger -&gt; IORef (Maybe [Char])
+</span><a href="Surypus.API.Logger.html#loggerCorrId"><span class="hs-identifier hs-var">loggerCorrId</span></a></span><span> </span><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308294"><span class="hs-identifier hs-var">logger</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-91"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">writeIORef</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Surypus.API.Logger.html#loggerCorrId"><span class="hs-identifier hs-var">loggerCorrId</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680308294"><span class="hs-identifier hs-type">logger</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><a href="#local-6989586621680308295"><span class="hs-identifier hs-type">cid</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-92"></span><span>    </span><span id="local-6989586621680308299"><span class="annot"><a href="#local-6989586621680308299"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><a href="#local-6989586621680308296"><span class="hs-identifier hs-type">action</span></a></span><span>
+</span><span id="line-93"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">writeIORef</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Surypus.API.Logger.html#loggerCorrId"><span class="hs-identifier hs-var">loggerCorrId</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680308294"><span class="hs-identifier hs-type">logger</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621680308297"><span class="hs-identifier hs-type">old</span></a></span><span>
+</span><span id="line-94"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">return</span></span><span> </span><span class="annot"><a href="#local-6989586621680308299"><span class="hs-identifier hs-type">result</span></a></span><span>
+</span><span id="line-95"></span><span>
+</span><span id="line-96"></span><span class="annot"><a href="Surypus.API.Logger.html#getCorrelationId"><span class="hs-identifier hs-type">getCorrelationId</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">)</span><span>
+</span><span id="line-97"></span><span id="getCorrelationId"><span class="annot"><span class="annottext">getCorrelationId :: Logger -&gt; IO (Maybe [Char])
+</span><a href="Surypus.API.Logger.html#getCorrelationId"><span class="hs-identifier hs-var hs-var">getCorrelationId</span></a></span></span><span> </span><span id="local-6989586621680308300"><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308300"><span class="hs-identifier hs-var">logger</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">IORef (Maybe [Char]) -&gt; IO (Maybe [Char])
+forall a. IORef a -&gt; IO a
+</span><span class="hs-identifier hs-var">readIORef</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Logger -&gt; IORef (Maybe [Char])
+</span><a href="Surypus.API.Logger.html#loggerCorrId"><span class="hs-identifier hs-var">loggerCorrId</span></a></span><span> </span><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308300"><span class="hs-identifier hs-var">logger</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-98"></span><span>
+</span><span id="line-99"></span><span class="annot"><a href="Surypus.API.Logger.html#logDBQuery"><span class="hs-identifier hs-type">logDBQuery</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Surypus.API.Logger.html#Logger"><span class="hs-identifier hs-type">Logger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Surypus.API.Logger.html#LogField"><span class="hs-identifier hs-type">LogField</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-100"></span><span id="logDBQuery"><span class="annot"><span class="annottext">logDBQuery :: Logger -&gt; [Char] -&gt; [LogField] -&gt; IO ()
+</span><a href="Surypus.API.Logger.html#logDBQuery"><span class="hs-identifier hs-var hs-var">logDBQuery</span></a></span></span><span> </span><span id="local-6989586621680308301"><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308301"><span class="hs-identifier hs-var">logger</span></a></span></span><span> </span><span id="local-6989586621680308302"><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308302"><span class="hs-identifier hs-var">query</span></a></span></span><span> </span><span id="local-6989586621680308303"><span class="annot"><span class="annottext">[LogField]
+</span><a href="#local-6989586621680308303"><span class="hs-identifier hs-var">fields</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-101"></span><span>    </span><span class="annot"><span class="annottext">Logger -&gt; LogLevel -&gt; [Char] -&gt; [LogField] -&gt; IO ()
+</span><a href="Surypus.API.Logger.html#logMessage"><span class="hs-identifier hs-var">logMessage</span></a></span><span> </span><span class="annot"><span class="annottext">Logger
+</span><a href="#local-6989586621680308301"><span class="hs-identifier hs-var">logger</span></a></span><span> </span><span class="annot"><span class="annottext">LogLevel
+</span><a href="Surypus.API.Logger.html#Debug"><span class="hs-identifier hs-var">Debug</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;DB: &quot;</span></span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; ShowS
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">[Char]
+</span><a href="#local-6989586621680308302"><span class="hs-identifier hs-var">query</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[LogField]
+</span><a href="#local-6989586621680308303"><span class="hs-identifier hs-var">fields</span></a></span></pre></body></html>

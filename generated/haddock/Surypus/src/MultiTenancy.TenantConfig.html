@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="MultiTenancy.TenantConfig.html"><span class="hs-identifier">MultiTenancy.TenantConfig</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="MultiTenancy.TenantConfig.html#TenantConfig"><span class="hs-identifier">TenantConfig</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="MultiTenancy.TenantConfig.html#TenantBranding"><span class="hs-identifier">TenantBranding</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="MultiTenancy.TenantConfig.html#loadTenantConfig"><span class="hs-identifier">loadTenantConfig</span></a></span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="MultiTenancy.TenantConfig.html#tenantSchema"><span class="hs-identifier">tenantSchema</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="MultiTenancy.TenantConfig.html#defaultTenant"><span class="hs-identifier">defaultTenant</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map.Strict</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Map</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map.Strict</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">Map</span></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-postgresql-2.14.3.0-c75b10320c6f8f59cbd6644ed24c4440802693869114296703324544f324ffff/share/doc/html/src/Database.Persist.Postgresql.html"><span class="hs-identifier">Database.Persist.Postgresql</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier">ConnectionPool</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">data</span><span> </span><span id="TenantConfig"><span class="annot"><a href="MultiTenancy.TenantConfig.html#TenantConfig"><span class="hs-identifier hs-var">TenantConfig</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TenantConfig"><span class="annot"><a href="MultiTenancy.TenantConfig.html#TenantConfig"><span class="hs-identifier hs-var">TenantConfig</span></a></span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tcTenantId"><span class="annot"><span class="annottext">TenantConfig -&gt; Int64
+</span><a href="MultiTenancy.TenantConfig.html#tcTenantId"><span class="hs-identifier hs-var hs-var">tcTenantId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="tcName"><span class="annot"><span class="annottext">TenantConfig -&gt; Text
+</span><a href="MultiTenancy.TenantConfig.html#tcName"><span class="hs-identifier hs-var hs-var">tcName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="tcDatabaseSchema"><span class="annot"><span class="annottext">TenantConfig -&gt; Text
+</span><a href="MultiTenancy.TenantConfig.html#tcDatabaseSchema"><span class="hs-identifier hs-var hs-var">tcDatabaseSchema</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="tcFeatures"><span class="annot"><span class="annottext">TenantConfig -&gt; Map Text Bool
+</span><a href="MultiTenancy.TenantConfig.html#tcFeatures"><span class="hs-identifier hs-var hs-var">tcFeatures</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Map</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="tcBranding"><span class="annot"><span class="annottext">TenantConfig -&gt; TenantBranding
+</span><a href="MultiTenancy.TenantConfig.html#tcBranding"><span class="hs-identifier hs-var hs-var">tcBranding</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><a href="MultiTenancy.TenantConfig.html#TenantBranding"><span class="hs-identifier hs-type">TenantBranding</span></a></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680287561"><span id="local-6989586621680287572"><span class="annot"><span class="annottext">TenantConfig -&gt; TenantConfig -&gt; Bool
+(TenantConfig -&gt; TenantConfig -&gt; Bool)
+-&gt; (TenantConfig -&gt; TenantConfig -&gt; Bool) -&gt; Eq TenantConfig
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TenantConfig -&gt; TenantConfig -&gt; Bool
+== :: TenantConfig -&gt; TenantConfig -&gt; Bool
+$c/= :: TenantConfig -&gt; TenantConfig -&gt; Bool
+/= :: TenantConfig -&gt; TenantConfig -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680287578"><span id="local-6989586621680287592"><span id="local-6989586621680287596"><span class="annot"><span class="annottext">Int -&gt; TenantConfig -&gt; ShowS
+[TenantConfig] -&gt; ShowS
+TenantConfig -&gt; String
+(Int -&gt; TenantConfig -&gt; ShowS)
+-&gt; (TenantConfig -&gt; String)
+-&gt; ([TenantConfig] -&gt; ShowS)
+-&gt; Show TenantConfig
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TenantConfig -&gt; ShowS
+showsPrec :: Int -&gt; TenantConfig -&gt; ShowS
+$cshow :: TenantConfig -&gt; String
+show :: TenantConfig -&gt; String
+$cshowList :: [TenantConfig] -&gt; ShowS
+showList :: [TenantConfig] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-keyword">data</span><span> </span><span id="TenantBranding"><span class="annot"><a href="MultiTenancy.TenantConfig.html#TenantBranding"><span class="hs-identifier hs-var">TenantBranding</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TenantBranding"><span class="annot"><a href="MultiTenancy.TenantConfig.html#TenantBranding"><span class="hs-identifier hs-var">TenantBranding</span></a></span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tbLogoUrl"><span class="annot"><span class="annottext">TenantBranding -&gt; Maybe Text
+</span><a href="MultiTenancy.TenantConfig.html#tbLogoUrl"><span class="hs-identifier hs-var hs-var">tbLogoUrl</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="tbPrimaryColor"><span class="annot"><span class="annottext">TenantBranding -&gt; Text
+</span><a href="MultiTenancy.TenantConfig.html#tbPrimaryColor"><span class="hs-identifier hs-var hs-var">tbPrimaryColor</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="tbCompanyName"><span class="annot"><span class="annottext">TenantBranding -&gt; Text
+</span><a href="MultiTenancy.TenantConfig.html#tbCompanyName"><span class="hs-identifier hs-var hs-var">tbCompanyName</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680287606"><span id="local-6989586621680287613"><span class="annot"><span class="annottext">TenantBranding -&gt; TenantBranding -&gt; Bool
+(TenantBranding -&gt; TenantBranding -&gt; Bool)
+-&gt; (TenantBranding -&gt; TenantBranding -&gt; Bool) -&gt; Eq TenantBranding
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TenantBranding -&gt; TenantBranding -&gt; Bool
+== :: TenantBranding -&gt; TenantBranding -&gt; Bool
+$c/= :: TenantBranding -&gt; TenantBranding -&gt; Bool
+/= :: TenantBranding -&gt; TenantBranding -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680287616"><span id="local-6989586621680287624"><span id="local-6989586621680287627"><span class="annot"><span class="annottext">Int -&gt; TenantBranding -&gt; ShowS
+[TenantBranding] -&gt; ShowS
+TenantBranding -&gt; String
+(Int -&gt; TenantBranding -&gt; ShowS)
+-&gt; (TenantBranding -&gt; String)
+-&gt; ([TenantBranding] -&gt; ShowS)
+-&gt; Show TenantBranding
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TenantBranding -&gt; ShowS
+showsPrec :: Int -&gt; TenantBranding -&gt; ShowS
+$cshow :: TenantBranding -&gt; String
+show :: TenantBranding -&gt; String
+$cshowList :: [TenantBranding] -&gt; ShowS
+showList :: [TenantBranding] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>
+</span><span id="line-30"></span><span class="annot"><a href="MultiTenancy.TenantConfig.html#defaultTenant"><span class="hs-identifier hs-type">defaultTenant</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="MultiTenancy.TenantConfig.html#TenantConfig"><span class="hs-identifier hs-type">TenantConfig</span></a></span><span>
+</span><span id="line-31"></span><span id="defaultTenant"><span class="annot"><span class="annottext">defaultTenant :: TenantConfig
+</span><a href="MultiTenancy.TenantConfig.html#defaultTenant"><span class="hs-identifier hs-var hs-var">defaultTenant</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="MultiTenancy.TenantConfig.html#TenantConfig"><span class="hs-identifier hs-type">TenantConfig</span></a></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">tcTenantId :: Int64
+</span><a href="MultiTenancy.TenantConfig.html#tcTenantId"><span class="hs-identifier hs-var">tcTenantId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tcName :: Text
+</span><a href="MultiTenancy.TenantConfig.html#tcName"><span class="hs-identifier hs-var">tcName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Default Tenant&quot;</span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tcDatabaseSchema :: Text
+</span><a href="MultiTenancy.TenantConfig.html#tcDatabaseSchema"><span class="hs-identifier hs-var">tcDatabaseSchema</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;public&quot;</span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tcFeatures :: Map Text Bool
+</span><a href="MultiTenancy.TenantConfig.html#tcFeatures"><span class="hs-identifier hs-var">tcFeatures</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Map Text Bool
+forall k a. Map k a
+</span><span class="hs-identifier hs-var">Map.empty</span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tcBranding :: TenantBranding
+</span><a href="MultiTenancy.TenantConfig.html#tcBranding"><span class="hs-identifier hs-var">tcBranding</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="MultiTenancy.TenantConfig.html#TenantBranding"><span class="hs-identifier hs-type">TenantBranding</span></a></span><span>
+</span><span id="line-37"></span><span>      </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">tbLogoUrl :: Maybe Text
+</span><a href="MultiTenancy.TenantConfig.html#tbLogoUrl"><span class="hs-identifier hs-var">tbLogoUrl</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-38"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tbPrimaryColor :: Text
+</span><a href="MultiTenancy.TenantConfig.html#tbPrimaryColor"><span class="hs-identifier hs-var">tbPrimaryColor</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;#1890ff&quot;</span></span><span>
+</span><span id="line-39"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tbCompanyName :: Text
+</span><a href="MultiTenancy.TenantConfig.html#tbCompanyName"><span class="hs-identifier hs-var">tbCompanyName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Default Tenant&quot;</span></span><span>
+</span><span id="line-40"></span><span>      </span><span class="hs-special">}</span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="annot"><a href="MultiTenancy.TenantConfig.html#loadTenantConfig"><span class="hs-identifier hs-type">loadTenantConfig</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="MultiTenancy.TenantConfig.html#TenantConfig"><span class="hs-identifier hs-type">TenantConfig</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span id="loadTenantConfig"><span class="annot"><span class="annottext">loadTenantConfig :: ConnectionPool -&gt; Int64 -&gt; IO (Maybe TenantConfig)
+</span><a href="MultiTenancy.TenantConfig.html#loadTenantConfig"><span class="hs-identifier hs-var hs-var">loadTenantConfig</span></a></span></span><span> </span><span id="local-6989586621680287630"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680287630"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680287631"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680287631"><span class="hs-identifier hs-var">tenantId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-comment">-- TODO: Implement DB-backed tenant config lookup</span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-comment">-- Future implementation will query tenant_config table for given tenant_id</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-comment">-- Should return TenantConfig with features and branding settings</span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-comment">-- For now, return default tenant for testing</span><span>
+</span><span id="line-49"></span><span>  </span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680287631"><span class="hs-identifier hs-var">tenantId</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-51"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Maybe TenantConfig -&gt; IO (Maybe TenantConfig)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Maybe TenantConfig -&gt; IO (Maybe TenantConfig))
+-&gt; Maybe TenantConfig -&gt; IO (Maybe TenantConfig)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TenantConfig -&gt; Maybe TenantConfig
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">TenantConfig
+</span><a href="MultiTenancy.TenantConfig.html#defaultTenant"><span class="hs-identifier hs-var">defaultTenant</span></a></span><span>
+</span><span id="line-52"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Maybe TenantConfig -&gt; IO (Maybe TenantConfig)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Maybe TenantConfig
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-53"></span><span>
+</span><span id="line-54"></span><span class="annot"><a href="MultiTenancy.TenantConfig.html#tenantSchema"><span class="hs-identifier hs-type">tenantSchema</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="MultiTenancy.TenantConfig.html#TenantConfig"><span class="hs-identifier hs-type">TenantConfig</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-55"></span><span id="tenantSchema"><span class="annot"><span class="annottext">tenantSchema :: TenantConfig -&gt; Text
+</span><a href="MultiTenancy.TenantConfig.html#tenantSchema"><span class="hs-identifier hs-var hs-var">tenantSchema</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TenantConfig -&gt; Text
+</span><a href="MultiTenancy.TenantConfig.html#tcDatabaseSchema"><span class="hs-identifier hs-var">tcDatabaseSchema</span></a></span><span>
+</span><span id="line-56"></span><span>
+</span><span id="line-57"></span><span class="annot"><span class="hs-comment">-- | Get all tenant IDs for current connection</span></span><span>
+</span><span id="line-58"></span><span class="annot"><a href="MultiTenancy.TenantConfig.html#getTenantIds"><span class="hs-identifier hs-type">getTenantIds</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">]</span><span>
+</span><span id="line-59"></span><span id="getTenantIds"><span class="annot"><span class="annottext">getTenantIds :: ConnectionPool -&gt; IO [Int64]
+</span><a href="MultiTenancy.TenantConfig.html#getTenantIds"><span class="hs-identifier hs-var hs-var">getTenantIds</span></a></span></span><span> </span><span id="local-6989586621680287633"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680287633"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-comment">-- TODO: Query tenant_config table to get all tenant IDs</span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-comment">-- This is needed for tenant switching functionality</span><span>
+</span><span id="line-62"></span><span>  </span><span class="annot"><span class="annottext">[Int64] -&gt; IO [Int64]
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span class="hs-special">]</span><span>  </span><span class="hs-comment">-- Default tenant for now</span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="annot"><span class="hs-comment">-- | Update tenant configuration</span></span><span>
+</span><span id="line-65"></span><span class="annot"><a href="MultiTenancy.TenantConfig.html#updateTenantConfig"><span class="hs-identifier hs-type">updateTenantConfig</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/persistent-2.18.1.0-0f3ee5efba9ae1237743a9767b08f6a8546a7174e95a59484b646afa63e75503/share/doc/html/src/Database.Persist.Sql.Types.html#ConnectionPool"><span class="hs-identifier hs-type">ConnectionPool</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="MultiTenancy.TenantConfig.html#TenantConfig"><span class="hs-identifier hs-type">TenantConfig</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-66"></span><span id="updateTenantConfig"><span class="annot"><span class="annottext">updateTenantConfig :: ConnectionPool -&gt; TenantConfig -&gt; IO Bool
+</span><a href="MultiTenancy.TenantConfig.html#updateTenantConfig"><span class="hs-identifier hs-var hs-var">updateTenantConfig</span></a></span></span><span> </span><span id="local-6989586621680287635"><span class="annot"><span class="annottext">ConnectionPool
+</span><a href="#local-6989586621680287635"><span class="hs-identifier hs-var">pool</span></a></span></span><span> </span><span id="local-6989586621680287636"><span class="annot"><span class="annottext">TenantConfig
+</span><a href="#local-6989586621680287636"><span class="hs-identifier hs-var">config</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-comment">-- TODO: Implement update functionality</span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-comment">-- Will update tenant_config table with new settings</span><span>
+</span><span id="line-69"></span><span>  </span><span class="annot"><span class="annottext">Bool -&gt; IO Bool
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Assume success for now</span><span>
+</span><span id="line-70"></span></pre></body></html>

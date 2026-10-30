@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">{-@ LIQUID &quot;--no-termination&quot; @-}</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="annot"><span class="hs-comment">-- | Temporary cash check accumulator inspired by AddTempCheckAmounts.</span></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Commerce.CashSessionTemp.html"><span class="hs-identifier">Commerce.CashSessionTemp</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCashCheck"><span class="hs-identifier">TempCashCheck</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-6"></span><span>    </span><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCheckLine"><span class="hs-identifier">TempCheckLine</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-7"></span><span>    </span><span class="annot"><a href="Commerce.CashSessionTemp.html#emptyTempCashCheck"><span class="hs-identifier">emptyTempCashCheck</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-8"></span><span>    </span><span class="annot"><a href="Commerce.CashSessionTemp.html#mkTempCheckLine"><span class="hs-identifier">mkTempCheckLine</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-9"></span><span>    </span><span class="annot"><a href="Commerce.CashSessionTemp.html#addTempCheckLine"><span class="hs-identifier">addTempCheckLine</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-10"></span><span>    </span><span class="annot"><a href="Commerce.CashSessionTemp.html#totalAmount"><span class="hs-identifier">totalAmount</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span class="annot"><a href="Commerce.CashSessionTemp.html#totalDiscount"><span class="hs-identifier">totalDiscount</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span class="annot"><a href="Commerce.CashSessionTemp.html#netAmount"><span class="hs-identifier">netAmount</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span class="annot"><a href="Commerce.CashSessionTemp.html#verifyCheck"><span class="hs-identifier">verifyCheck</span></a></span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-comment">{-@ type NonNeg = {v:Double | v &gt;= 0} @-}</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-comment">{-@ data TempCheckLine = TempCheckLine
+      { tclLineId   :: Int64
+      , tclAmount   :: NonNeg
+      , tclDiscount :: NonNeg
+      }
+  @-}</span><span>
+</span><span id="line-26"></span><span class="hs-keyword">data</span><span> </span><span id="TempCheckLine"><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCheckLine"><span class="hs-identifier hs-var">TempCheckLine</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TempCheckLine"><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCheckLine"><span class="hs-identifier hs-var">TempCheckLine</span></a></span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tclLineId"><span class="annot"><span class="annottext">TempCheckLine -&gt; Int64
+</span><a href="Commerce.CashSessionTemp.html#tclLineId"><span class="hs-identifier hs-var hs-var">tclLineId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-28"></span><span>    </span><span id="tclAmount"><span class="annot"><span class="annottext">TempCheckLine -&gt; Double
+</span><a href="Commerce.CashSessionTemp.html#tclAmount"><span class="hs-identifier hs-var hs-var">tclAmount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-29"></span><span>    </span><span id="tclDiscount"><span class="annot"><span class="annottext">TempCheckLine -&gt; Double
+</span><a href="Commerce.CashSessionTemp.html#tclDiscount"><span class="hs-identifier hs-var hs-var">tclDiscount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680208357"><span id="local-6989586621680208364"><span class="annot"><span class="annottext">TempCheckLine -&gt; TempCheckLine -&gt; Bool
+(TempCheckLine -&gt; TempCheckLine -&gt; Bool)
+-&gt; (TempCheckLine -&gt; TempCheckLine -&gt; Bool) -&gt; Eq TempCheckLine
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TempCheckLine -&gt; TempCheckLine -&gt; Bool
+== :: TempCheckLine -&gt; TempCheckLine -&gt; Bool
+$c/= :: TempCheckLine -&gt; TempCheckLine -&gt; Bool
+/= :: TempCheckLine -&gt; TempCheckLine -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680208369"><span id="local-6989586621680208378"><span id="local-6989586621680208382"><span class="annot"><span class="annottext">Int -&gt; TempCheckLine -&gt; ShowS
+[TempCheckLine] -&gt; ShowS
+TempCheckLine -&gt; String
+(Int -&gt; TempCheckLine -&gt; ShowS)
+-&gt; (TempCheckLine -&gt; String)
+-&gt; ([TempCheckLine] -&gt; ShowS)
+-&gt; Show TempCheckLine
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TempCheckLine -&gt; ShowS
+showsPrec :: Int -&gt; TempCheckLine -&gt; ShowS
+$cshow :: TempCheckLine -&gt; String
+show :: TempCheckLine -&gt; String
+$cshowList :: [TempCheckLine] -&gt; ShowS
+showList :: [TempCheckLine] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="hs-comment">{-@ mkTempCheckLine :: Int64 -&gt; NonNeg -&gt; NonNeg -&gt; Maybe TempCheckLine @-}</span><span>
+</span><span id="line-34"></span><span class="annot"><a href="Commerce.CashSessionTemp.html#mkTempCheckLine"><span class="hs-identifier hs-type">mkTempCheckLine</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCheckLine"><span class="hs-identifier hs-type">TempCheckLine</span></a></span><span>
+</span><span id="line-35"></span><span id="mkTempCheckLine"><span class="annot"><span class="annottext">mkTempCheckLine :: Int64 -&gt; Double -&gt; Double -&gt; Maybe TempCheckLine
+</span><a href="Commerce.CashSessionTemp.html#mkTempCheckLine"><span class="hs-identifier hs-var hs-var">mkTempCheckLine</span></a></span></span><span> </span><span id="local-6989586621680208386"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680208386"><span class="hs-identifier hs-var">lineId</span></a></span></span><span> </span><span id="local-6989586621680208387"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680208387"><span class="hs-identifier hs-var">amount</span></a></span></span><span> </span><span id="local-6989586621680208388"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680208388"><span class="hs-identifier hs-var">discount</span></a></span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680208387"><span class="hs-identifier hs-var">amount</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680208388"><span class="hs-identifier hs-var">discount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TempCheckLine -&gt; Maybe TempCheckLine
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(TempCheckLine -&gt; Maybe TempCheckLine)
+-&gt; TempCheckLine -&gt; Maybe TempCheckLine
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Double -&gt; Double -&gt; TempCheckLine
+</span><a href="Commerce.CashSessionTemp.html#TempCheckLine"><span class="hs-identifier hs-var">TempCheckLine</span></a></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680208386"><span class="hs-identifier hs-var">lineId</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680208387"><span class="hs-identifier hs-var">amount</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680208388"><span class="hs-identifier hs-var">discount</span></a></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe TempCheckLine
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-38"></span><span>
+</span><span id="line-39"></span><span class="hs-comment">{-@ data TempCashCheck = TempCashCheck
+      { tchCheckId    :: Int64
+      , tchRegisterId :: Int64
+      , tchLines      :: [TempCheckLine]
+      }
+  @-}</span><span>
+</span><span id="line-45"></span><span class="hs-keyword">data</span><span> </span><span id="TempCashCheck"><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCashCheck"><span class="hs-identifier hs-var">TempCashCheck</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TempCashCheck"><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCashCheck"><span class="hs-identifier hs-var">TempCashCheck</span></a></span></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="tchCheckId"><span class="annot"><span class="annottext">TempCashCheck -&gt; Int64
+</span><a href="Commerce.CashSessionTemp.html#tchCheckId"><span class="hs-identifier hs-var hs-var">tchCheckId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-47"></span><span>    </span><span id="tchRegisterId"><span class="annot"><span class="annottext">TempCashCheck -&gt; Int64
+</span><a href="Commerce.CashSessionTemp.html#tchRegisterId"><span class="hs-identifier hs-var hs-var">tchRegisterId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-48"></span><span>    </span><span id="tchLines"><span class="annot"><span class="annottext">TempCashCheck -&gt; [TempCheckLine]
+</span><a href="Commerce.CashSessionTemp.html#tchLines"><span class="hs-identifier hs-var hs-var">tchLines</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCheckLine"><span class="hs-identifier hs-type">TempCheckLine</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680208394"><span id="local-6989586621680208401"><span class="annot"><span class="annottext">TempCashCheck -&gt; TempCashCheck -&gt; Bool
+(TempCashCheck -&gt; TempCashCheck -&gt; Bool)
+-&gt; (TempCashCheck -&gt; TempCashCheck -&gt; Bool) -&gt; Eq TempCashCheck
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TempCashCheck -&gt; TempCashCheck -&gt; Bool
+== :: TempCashCheck -&gt; TempCashCheck -&gt; Bool
+$c/= :: TempCashCheck -&gt; TempCashCheck -&gt; Bool
+/= :: TempCashCheck -&gt; TempCashCheck -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680208405"><span id="local-6989586621680208413"><span id="local-6989586621680208417"><span class="annot"><span class="annottext">Int -&gt; TempCashCheck -&gt; ShowS
+[TempCashCheck] -&gt; ShowS
+TempCashCheck -&gt; String
+(Int -&gt; TempCashCheck -&gt; ShowS)
+-&gt; (TempCashCheck -&gt; String)
+-&gt; ([TempCashCheck] -&gt; ShowS)
+-&gt; Show TempCashCheck
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TempCashCheck -&gt; ShowS
+showsPrec :: Int -&gt; TempCashCheck -&gt; ShowS
+$cshow :: TempCashCheck -&gt; String
+show :: TempCashCheck -&gt; String
+$cshowList :: [TempCashCheck] -&gt; ShowS
+showList :: [TempCashCheck] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="annot"><span class="hs-comment">-- | Create an empty accumulator for a check.</span></span><span>
+</span><span id="line-53"></span><span class="annot"><a href="Commerce.CashSessionTemp.html#emptyTempCashCheck"><span class="hs-identifier hs-type">emptyTempCashCheck</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCashCheck"><span class="hs-identifier hs-type">TempCashCheck</span></a></span><span>
+</span><span id="line-54"></span><span id="emptyTempCashCheck"><span class="annot"><span class="annottext">emptyTempCashCheck :: Int64 -&gt; Int64 -&gt; TempCashCheck
+</span><a href="Commerce.CashSessionTemp.html#emptyTempCashCheck"><span class="hs-identifier hs-var hs-var">emptyTempCashCheck</span></a></span></span><span> </span><span id="local-6989586621680208419"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680208419"><span class="hs-identifier hs-var">checkId</span></a></span></span><span> </span><span id="local-6989586621680208420"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680208420"><span class="hs-identifier hs-var">regId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-55"></span><span>  </span><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCashCheck"><span class="hs-identifier hs-type">TempCashCheck</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><span class="annottext">tchCheckId :: Int64
+</span><a href="Commerce.CashSessionTemp.html#tchCheckId"><span class="hs-identifier hs-var">tchCheckId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680208419"><span class="hs-identifier hs-var">checkId</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tchRegisterId :: Int64
+</span><a href="Commerce.CashSessionTemp.html#tchRegisterId"><span class="hs-identifier hs-var">tchRegisterId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680208420"><span class="hs-identifier hs-var">regId</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tchLines :: [TempCheckLine]
+</span><a href="Commerce.CashSessionTemp.html#tchLines"><span class="hs-identifier hs-var">tchLines</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span class="hs-special">}</span><span>
+</span><span id="line-56"></span><span>
+</span><span id="line-57"></span><span class="annot"><span class="hs-comment">-- | Append a validated line to the temporary check.</span></span><span>
+</span><span id="line-58"></span><span class="annot"><a href="Commerce.CashSessionTemp.html#addTempCheckLine"><span class="hs-identifier hs-type">addTempCheckLine</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCashCheck"><span class="hs-identifier hs-type">TempCashCheck</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCheckLine"><span class="hs-identifier hs-type">TempCheckLine</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCashCheck"><span class="hs-identifier hs-type">TempCashCheck</span></a></span><span>
+</span><span id="line-59"></span><span id="addTempCheckLine"><span class="annot"><span class="annottext">addTempCheckLine :: TempCashCheck -&gt; TempCheckLine -&gt; TempCashCheck
+</span><a href="Commerce.CashSessionTemp.html#addTempCheckLine"><span class="hs-identifier hs-var hs-var">addTempCheckLine</span></a></span></span><span> </span><span id="local-6989586621680208421"><span class="annot"><span class="annottext">TempCashCheck
+</span><a href="#local-6989586621680208421"><span class="hs-identifier hs-var">check</span></a></span></span><span> </span><span id="local-6989586621680208422"><span class="annot"><span class="annottext">TempCheckLine
+</span><a href="#local-6989586621680208422"><span class="hs-identifier hs-var">line</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-60"></span><span>  </span><span class="annot"><span class="annottext">TempCashCheck
+</span><a href="#local-6989586621680208421"><span class="hs-identifier hs-var">check</span></a></span><span> </span><span class="hs-special">{</span><span class="annot"><a href="Commerce.CashSessionTemp.html#tchLines"><span class="hs-identifier hs-var">tchLines</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621680208422"><span class="hs-identifier hs-type">line</span></a></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span class="annot"><a href="Commerce.CashSessionTemp.html#tchLines"><span class="hs-identifier hs-var">tchLines</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680208421"><span class="hs-identifier hs-type">check</span></a></span><span class="hs-special">}</span><span>
+</span><span id="line-61"></span><span>
+</span><span id="line-62"></span><span class="hs-comment">{-@ totalAmount :: TempCashCheck -&gt; NonNeg @-}</span><span>
+</span><span id="line-63"></span><span class="annot"><a href="Commerce.CashSessionTemp.html#totalAmount"><span class="hs-identifier hs-type">totalAmount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCashCheck"><span class="hs-identifier hs-type">TempCashCheck</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-64"></span><span id="totalAmount"><span class="annot"><span class="annottext">totalAmount :: TempCashCheck -&gt; Double
+</span><a href="Commerce.CashSessionTemp.html#totalAmount"><span class="hs-identifier hs-var hs-var">totalAmount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(TempCheckLine -&gt; Double -&gt; Double)
+-&gt; Double -&gt; [TempCheckLine] -&gt; Double
+forall a b. (a -&gt; b -&gt; b) -&gt; b -&gt; [a] -&gt; b
+forall (t :: * -&gt; *) a b.
+Foldable t =&gt;
+(a -&gt; b -&gt; b) -&gt; b -&gt; t a -&gt; b
+</span><span class="hs-identifier hs-var">foldr</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680208424"><span class="annot"><span class="annottext">TempCheckLine
+</span><a href="#local-6989586621680208424"><span class="hs-identifier hs-var">l</span></a></span></span><span> </span><span id="local-6989586621680208425"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680208425"><span class="hs-identifier hs-var">acc</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">TempCheckLine -&gt; Double
+</span><a href="Commerce.CashSessionTemp.html#tclAmount"><span class="hs-identifier hs-var">tclAmount</span></a></span><span> </span><span class="annot"><span class="annottext">TempCheckLine
+</span><a href="#local-6989586621680208424"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680208425"><span class="hs-identifier hs-var">acc</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">([TempCheckLine] -&gt; Double)
+-&gt; (TempCashCheck -&gt; [TempCheckLine]) -&gt; TempCashCheck -&gt; Double
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">TempCashCheck -&gt; [TempCheckLine]
+</span><a href="Commerce.CashSessionTemp.html#tchLines"><span class="hs-identifier hs-var">tchLines</span></a></span><span>
+</span><span id="line-65"></span><span>
+</span><span id="line-66"></span><span class="hs-comment">{-@ totalDiscount :: TempCashCheck -&gt; NonNeg @-}</span><span>
+</span><span id="line-67"></span><span class="annot"><a href="Commerce.CashSessionTemp.html#totalDiscount"><span class="hs-identifier hs-type">totalDiscount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCashCheck"><span class="hs-identifier hs-type">TempCashCheck</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-68"></span><span id="totalDiscount"><span class="annot"><span class="annottext">totalDiscount :: TempCashCheck -&gt; Double
+</span><a href="Commerce.CashSessionTemp.html#totalDiscount"><span class="hs-identifier hs-var hs-var">totalDiscount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(TempCheckLine -&gt; Double -&gt; Double)
+-&gt; Double -&gt; [TempCheckLine] -&gt; Double
+forall a b. (a -&gt; b -&gt; b) -&gt; b -&gt; [a] -&gt; b
+forall (t :: * -&gt; *) a b.
+Foldable t =&gt;
+(a -&gt; b -&gt; b) -&gt; b -&gt; t a -&gt; b
+</span><span class="hs-identifier hs-var">foldr</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span id="local-6989586621680208428"><span class="annot"><span class="annottext">TempCheckLine
+</span><a href="#local-6989586621680208428"><span class="hs-identifier hs-var">l</span></a></span></span><span> </span><span id="local-6989586621680208429"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680208429"><span class="hs-identifier hs-var">acc</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">TempCheckLine -&gt; Double
+</span><a href="Commerce.CashSessionTemp.html#tclDiscount"><span class="hs-identifier hs-var">tclDiscount</span></a></span><span> </span><span class="annot"><span class="annottext">TempCheckLine
+</span><a href="#local-6989586621680208428"><span class="hs-identifier hs-var">l</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680208429"><span class="hs-identifier hs-var">acc</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">([TempCheckLine] -&gt; Double)
+-&gt; (TempCashCheck -&gt; [TempCheckLine]) -&gt; TempCashCheck -&gt; Double
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">TempCashCheck -&gt; [TempCheckLine]
+</span><a href="Commerce.CashSessionTemp.html#tchLines"><span class="hs-identifier hs-var">tchLines</span></a></span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="hs-comment">{-@ netAmount :: TempCashCheck -&gt; NonNeg @-}</span><span>
+</span><span id="line-71"></span><span class="annot"><a href="Commerce.CashSessionTemp.html#netAmount"><span class="hs-identifier hs-type">netAmount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCashCheck"><span class="hs-identifier hs-type">TempCashCheck</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-72"></span><span id="netAmount"><span class="annot"><span class="annottext">netAmount :: TempCashCheck -&gt; Double
+</span><a href="Commerce.CashSessionTemp.html#netAmount"><span class="hs-identifier hs-var hs-var">netAmount</span></a></span></span><span> </span><span id="local-6989586621680208430"><span class="annot"><span class="annottext">TempCashCheck
+</span><a href="#local-6989586621680208430"><span class="hs-identifier hs-var">check</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-73"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680208432"><span class="annot"><span class="annottext">diff :: Double
+</span><a href="#local-6989586621680208432"><span class="hs-identifier hs-var hs-var">diff</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TempCashCheck -&gt; Double
+</span><a href="Commerce.CashSessionTemp.html#totalAmount"><span class="hs-identifier hs-var">totalAmount</span></a></span><span> </span><span class="annot"><span class="annottext">TempCashCheck
+</span><a href="#local-6989586621680208430"><span class="hs-identifier hs-var">check</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">TempCashCheck -&gt; Double
+</span><a href="Commerce.CashSessionTemp.html#totalDiscount"><span class="hs-identifier hs-var">totalDiscount</span></a></span><span> </span><span class="annot"><span class="annottext">TempCashCheck
+</span><a href="#local-6989586621680208430"><span class="hs-identifier hs-var">check</span></a></span><span>
+</span><span id="line-74"></span><span>   </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">max</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680208432"><span class="hs-identifier hs-var">diff</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span>
+</span><span id="line-75"></span><span>
+</span><span id="line-76"></span><span class="annot"><span class="hs-comment">-- | Verify that the accumulated amounts obey the invariant (total &gt;= discount).</span></span><span>
+</span><span id="line-77"></span><span class="annot"><a href="Commerce.CashSessionTemp.html#verifyCheck"><span class="hs-identifier hs-type">verifyCheck</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Commerce.CashSessionTemp.html#TempCashCheck"><span class="hs-identifier hs-type">TempCashCheck</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-78"></span><span id="verifyCheck"><span class="annot"><span class="annottext">verifyCheck :: TempCashCheck -&gt; Bool
+</span><a href="Commerce.CashSessionTemp.html#verifyCheck"><span class="hs-identifier hs-var hs-var">verifyCheck</span></a></span></span><span> </span><span id="local-6989586621680208434"><span class="annot"><span class="annottext">TempCashCheck
+</span><a href="#local-6989586621680208434"><span class="hs-identifier hs-var">check</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TempCashCheck -&gt; Double
+</span><a href="Commerce.CashSessionTemp.html#totalAmount"><span class="hs-identifier hs-var">totalAmount</span></a></span><span> </span><span class="annot"><span class="annottext">TempCashCheck
+</span><a href="#local-6989586621680208434"><span class="hs-identifier hs-var">check</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">TempCashCheck -&gt; Double
+</span><a href="Commerce.CashSessionTemp.html#totalDiscount"><span class="hs-identifier hs-var">totalDiscount</span></a></span><span> </span><span class="annot"><span class="annottext">TempCashCheck
+</span><a href="#local-6989586621680208434"><span class="hs-identifier hs-var">check</span></a></span><span>
+</span><span id="line-79"></span></pre></body></html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Backup module - Database backup</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Infrastructure.Backup.html"><span class="hs-identifier">Infrastructure.Backup</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="annot"><span class="hs-comment">-- | Backup - Database backup</span></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">data</span><span> </span><span id="Backup"><span class="annot"><a href="Infrastructure.Backup.html#Backup"><span class="hs-identifier hs-var">Backup</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Backup"><span class="annot"><a href="Infrastructure.Backup.html#Backup"><span class="hs-identifier hs-var">Backup</span></a></span></span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="bkId"><span class="annot"><span class="annottext">Backup -&gt; Int64
+</span><a href="Infrastructure.Backup.html#bkId"><span class="hs-identifier hs-var hs-var">bkId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-12"></span><span>    </span><span id="bkCode"><span class="annot"><span class="annottext">Backup -&gt; Text
+</span><a href="Infrastructure.Backup.html#bkCode"><span class="hs-identifier hs-var hs-var">bkCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-13"></span><span>    </span><span id="bkPath"><span class="annot"><span class="annottext">Backup -&gt; Text
+</span><a href="Infrastructure.Backup.html#bkPath"><span class="hs-identifier hs-var hs-var">bkPath</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="bkSize"><span class="annot"><span class="annottext">Backup -&gt; Int64
+</span><a href="Infrastructure.Backup.html#bkSize"><span class="hs-identifier hs-var hs-var">bkSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="bkType"><span class="annot"><span class="annottext">Backup -&gt; BackupType
+</span><a href="Infrastructure.Backup.html#bkType"><span class="hs-identifier hs-var hs-var">bkType</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.Backup.html#BackupType"><span class="hs-identifier hs-type">BackupType</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span id="bkStatus"><span class="annot"><span class="annottext">Backup -&gt; BackupStatus
+</span><a href="Infrastructure.Backup.html#bkStatus"><span class="hs-identifier hs-var hs-var">bkStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.Backup.html#BackupStatus"><span class="hs-identifier hs-type">BackupStatus</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>    </span><span id="bkCreated"><span class="annot"><span class="annottext">Backup -&gt; UTCTime
+</span><a href="Infrastructure.Backup.html#bkCreated"><span class="hs-identifier hs-var hs-var">bkCreated</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>    </span><span id="bkFlags"><span class="annot"><span class="annottext">Backup -&gt; Int
+</span><a href="Infrastructure.Backup.html#bkFlags"><span class="hs-identifier hs-var hs-var">bkFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680264514"><span id="local-6989586621680264532"><span id="local-6989586621680264536"><span class="annot"><span class="annottext">Int -&gt; Backup -&gt; ShowS
+[Backup] -&gt; ShowS
+Backup -&gt; String
+(Int -&gt; Backup -&gt; ShowS)
+-&gt; (Backup -&gt; String) -&gt; ([Backup] -&gt; ShowS) -&gt; Show Backup
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Backup -&gt; ShowS
+showsPrec :: Int -&gt; Backup -&gt; ShowS
+$cshow :: Backup -&gt; String
+show :: Backup -&gt; String
+$cshowList :: [Backup] -&gt; ShowS
+showList :: [Backup] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264541"><span id="local-6989586621680264557"><span class="annot"><span class="annottext">Backup -&gt; Backup -&gt; Bool
+(Backup -&gt; Backup -&gt; Bool)
+-&gt; (Backup -&gt; Backup -&gt; Bool) -&gt; Eq Backup
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Backup -&gt; Backup -&gt; Bool
+== :: Backup -&gt; Backup -&gt; Bool
+$c/= :: Backup -&gt; Backup -&gt; Bool
+/= :: Backup -&gt; Backup -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">data</span><span> </span><span id="BackupType"><span class="annot"><a href="Infrastructure.Backup.html#BackupType"><span class="hs-identifier hs-var">BackupType</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BTFull"><span class="annot"><a href="Infrastructure.Backup.html#BTFull"><span class="hs-identifier hs-var">BTFull</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="BTIncremental"><span class="annot"><a href="Infrastructure.Backup.html#BTIncremental"><span class="hs-identifier hs-var">BTIncremental</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="BTConfig"><span class="annot"><a href="Infrastructure.Backup.html#BTConfig"><span class="hs-identifier hs-var">BTConfig</span></a></span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680264565"><span id="local-6989586621680264567"><span id="local-6989586621680264570"><span class="annot"><span class="annottext">Int -&gt; BackupType -&gt; ShowS
+[BackupType] -&gt; ShowS
+BackupType -&gt; String
+(Int -&gt; BackupType -&gt; ShowS)
+-&gt; (BackupType -&gt; String)
+-&gt; ([BackupType] -&gt; ShowS)
+-&gt; Show BackupType
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BackupType -&gt; ShowS
+showsPrec :: Int -&gt; BackupType -&gt; ShowS
+$cshow :: BackupType -&gt; String
+show :: BackupType -&gt; String
+$cshowList :: [BackupType] -&gt; ShowS
+showList :: [BackupType] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264573"><span id="local-6989586621680264578"><span class="annot"><span class="annottext">BackupType -&gt; BackupType -&gt; Bool
+(BackupType -&gt; BackupType -&gt; Bool)
+-&gt; (BackupType -&gt; BackupType -&gt; Bool) -&gt; Eq BackupType
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BackupType -&gt; BackupType -&gt; Bool
+== :: BackupType -&gt; BackupType -&gt; Bool
+$c/= :: BackupType -&gt; BackupType -&gt; Bool
+/= :: BackupType -&gt; BackupType -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">data</span><span> </span><span id="BackupStatus"><span class="annot"><a href="Infrastructure.Backup.html#BackupStatus"><span class="hs-identifier hs-var">BackupStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BSPending"><span class="annot"><a href="Infrastructure.Backup.html#BSPending"><span class="hs-identifier hs-var">BSPending</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="BSInProgress"><span class="annot"><a href="Infrastructure.Backup.html#BSInProgress"><span class="hs-identifier hs-var">BSInProgress</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="BSCompleted"><span class="annot"><a href="Infrastructure.Backup.html#BSCompleted"><span class="hs-identifier hs-var">BSCompleted</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="BSFailed"><span class="annot"><a href="Infrastructure.Backup.html#BSFailed"><span class="hs-identifier hs-var">BSFailed</span></a></span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680264585"><span id="local-6989586621680264587"><span id="local-6989586621680264590"><span class="annot"><span class="annottext">Int -&gt; BackupStatus -&gt; ShowS
+[BackupStatus] -&gt; ShowS
+BackupStatus -&gt; String
+(Int -&gt; BackupStatus -&gt; ShowS)
+-&gt; (BackupStatus -&gt; String)
+-&gt; ([BackupStatus] -&gt; ShowS)
+-&gt; Show BackupStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BackupStatus -&gt; ShowS
+showsPrec :: Int -&gt; BackupStatus -&gt; ShowS
+$cshow :: BackupStatus -&gt; String
+show :: BackupStatus -&gt; String
+$cshowList :: [BackupStatus] -&gt; ShowS
+showList :: [BackupStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264593"><span id="local-6989586621680264597"><span class="annot"><span class="annottext">BackupStatus -&gt; BackupStatus -&gt; Bool
+(BackupStatus -&gt; BackupStatus -&gt; Bool)
+-&gt; (BackupStatus -&gt; BackupStatus -&gt; Bool) -&gt; Eq BackupStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BackupStatus -&gt; BackupStatus -&gt; Bool
+== :: BackupStatus -&gt; BackupStatus -&gt; Bool
+$c/= :: BackupStatus -&gt; BackupStatus -&gt; Bool
+/= :: BackupStatus -&gt; BackupStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="annot"><span class="hs-comment">-- | Backup settings</span></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">data</span><span> </span><span id="BackupSettings"><span class="annot"><a href="Infrastructure.Backup.html#BackupSettings"><span class="hs-identifier hs-var">BackupSettings</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BackupSettings"><span class="annot"><a href="Infrastructure.Backup.html#BackupSettings"><span class="hs-identifier hs-var">BackupSettings</span></a></span></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="bsPath"><span class="annot"><span class="annottext">BackupSettings -&gt; Text
+</span><a href="Infrastructure.Backup.html#bsPath"><span class="hs-identifier hs-var hs-var">bsPath</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span>
+</span><span id="line-31"></span><span>    </span><span id="bsRetentionDays"><span class="annot"><span class="annottext">BackupSettings -&gt; Int
+</span><a href="Infrastructure.Backup.html#bsRetentionDays"><span class="hs-identifier hs-var hs-var">bsRetentionDays</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-32"></span><span>    </span><span id="bsSchedule"><span class="annot"><span class="annottext">BackupSettings -&gt; Text
+</span><a href="Infrastructure.Backup.html#bsSchedule"><span class="hs-identifier hs-var hs-var">bsSchedule</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- cron</span><span>
+</span><span id="line-33"></span><span>    </span><span id="bsCompress"><span class="annot"><span class="annottext">BackupSettings -&gt; Bool
+</span><a href="Infrastructure.Backup.html#bsCompress"><span class="hs-identifier hs-var hs-var">bsCompress</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span>
+</span><span id="line-34"></span><span>    </span><span id="bsEncrypt"><span class="annot"><span class="annottext">BackupSettings -&gt; Bool
+</span><a href="Infrastructure.Backup.html#bsEncrypt"><span class="hs-identifier hs-var hs-var">bsEncrypt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680264606"><span id="local-6989586621680264615"><span id="local-6989586621680264619"><span class="annot"><span class="annottext">Int -&gt; BackupSettings -&gt; ShowS
+[BackupSettings] -&gt; ShowS
+BackupSettings -&gt; String
+(Int -&gt; BackupSettings -&gt; ShowS)
+-&gt; (BackupSettings -&gt; String)
+-&gt; ([BackupSettings] -&gt; ShowS)
+-&gt; Show BackupSettings
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BackupSettings -&gt; ShowS
+showsPrec :: Int -&gt; BackupSettings -&gt; ShowS
+$cshow :: BackupSettings -&gt; String
+show :: BackupSettings -&gt; String
+$cshowList :: [BackupSettings] -&gt; ShowS
+showList :: [BackupSettings] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680264622"><span id="local-6989586621680264630"><span class="annot"><span class="annottext">BackupSettings -&gt; BackupSettings -&gt; Bool
+(BackupSettings -&gt; BackupSettings -&gt; Bool)
+-&gt; (BackupSettings -&gt; BackupSettings -&gt; Bool) -&gt; Eq BackupSettings
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BackupSettings -&gt; BackupSettings -&gt; Bool
+== :: BackupSettings -&gt; BackupSettings -&gt; Bool
+$c/= :: BackupSettings -&gt; BackupSettings -&gt; Bool
+/= :: BackupSettings -&gt; BackupSettings -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="annot"><span class="hs-comment">-- | Validate backup path</span></span><span>
+</span><span id="line-39"></span><span class="annot"><a href="Infrastructure.Backup.html#validateBackupPath"><span class="hs-identifier hs-type">validateBackupPath</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.Backup.html#Backup"><span class="hs-identifier hs-type">Backup</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-40"></span><span id="validateBackupPath"><span class="annot"><span class="annottext">validateBackupPath :: Backup -&gt; Bool
+</span><a href="Infrastructure.Backup.html#validateBackupPath"><span class="hs-identifier hs-var hs-var">validateBackupPath</span></a></span></span><span> </span><span id="local-6989586621680264634"><span class="annot"><span class="annottext">Backup
+</span><a href="#local-6989586621680264634"><span class="hs-identifier hs-var">b</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Bool
+</span><span class="hs-identifier hs-var">Data.Text.null</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Backup -&gt; Text
+</span><a href="Infrastructure.Backup.html#bkPath"><span class="hs-identifier hs-var">bkPath</span></a></span><span> </span><span class="annot"><span class="annottext">Backup
+</span><a href="#local-6989586621680264634"><span class="hs-identifier hs-var">b</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span></pre></body></html>

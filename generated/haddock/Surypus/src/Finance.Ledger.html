@@ -1,0 +1,1103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680252685"><span id="local-6989586621680252686"></span></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-3"></span><span class="hs-pragma">{-# LANGUAGE RecordWildCards #-}</span><span>
+</span><span id="line-4"></span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- | Finance.Ledger - Enhanced accounting journal with rich types</span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- This module provides type-safe ledger operations with formal verification</span><span>
+</span><span id="line-7"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Finance.Ledger.html"><span class="hs-identifier">Finance.Ledger</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-8"></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Finance.Account.html"><span class="hs-identifier">Finance.Account</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Finance.Account.html#Account"><span class="hs-identifier">Account</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountId"><span class="hs-identifier">AccountId</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier">AccountCode</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountClass"><span class="hs-identifier">AccountClass</span></a></span><span>   </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map.Strict</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Map</span></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map.Strict</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">M</span></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="annot"><span class="hs-comment">-- | Enhanced accounting entry with richer semantics</span></span><span>
+</span><span id="line-19"></span><span class="hs-keyword">data</span><span> </span><span id="AccTurn"><span class="annot"><a href="Finance.Ledger.html#AccTurn"><span class="hs-identifier hs-var">AccTurn</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AccTurn"><span class="annot"><a href="Finance.Ledger.html#AccTurn"><span class="hs-identifier hs-var">AccTurn</span></a></span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="turnId"><span class="annot"><span class="annottext">AccTurn -&gt; TurnId
+</span><a href="Finance.Ledger.html#turnId"><span class="hs-identifier hs-var hs-var">turnId</span></a></span></span><span>        </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Ledger.html#TurnId"><span class="hs-identifier hs-type">TurnId</span></a></span><span>           </span><span class="hs-comment">-- Unique identifier</span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="turnBillId"><span class="annot"><span class="annottext">AccTurn -&gt; Maybe BillId
+</span><a href="Finance.Ledger.html#turnBillId"><span class="hs-identifier hs-var hs-var">turnBillId</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Finance.Ledger.html#BillId"><span class="hs-identifier hs-type">BillId</span></a></span><span>       </span><span class="hs-comment">-- Related bill</span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="turnDebitAcc"><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnDebitAcc"><span class="hs-identifier hs-var hs-var">turnDebitAcc</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span>       </span><span class="hs-comment">-- Debit account code</span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="turnCreditAcc"><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnCreditAcc"><span class="hs-identifier hs-var hs-var">turnCreditAcc</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span>       </span><span class="hs-comment">-- Credit account code</span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="turnAmount"><span class="annot"><span class="annottext">AccTurn -&gt; Amount
+</span><a href="Finance.Ledger.html#turnAmount"><span class="hs-identifier hs-var hs-var">turnAmount</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Ledger.html#Amount"><span class="hs-identifier hs-type">Amount</span></a></span><span>            </span><span class="hs-comment">-- Transaction amount</span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="turnCurrency"><span class="annot"><span class="annottext">AccTurn -&gt; CurrencyCode
+</span><a href="Finance.Ledger.html#turnCurrency"><span class="hs-identifier hs-var hs-var">turnCurrency</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Ledger.html#CurrencyCode"><span class="hs-identifier hs-type">CurrencyCode</span></a></span><span>      </span><span class="hs-comment">-- Currency</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="turnDate"><span class="annot"><span class="annottext">AccTurn -&gt; TransactionDate
+</span><a href="Finance.Ledger.html#turnDate"><span class="hs-identifier hs-var hs-var">turnDate</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Ledger.html#TransactionDate"><span class="hs-identifier hs-type">TransactionDate</span></a></span><span>    </span><span class="hs-comment">-- Transaction date</span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="turnObjectId"><span class="annot"><span class="annottext">AccTurn -&gt; Maybe ObjectId
+</span><a href="Finance.Ledger.html#turnObjectId"><span class="hs-identifier hs-var hs-var">turnObjectId</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Finance.Ledger.html#ObjectId"><span class="hs-identifier hs-type">ObjectId</span></a></span><span>     </span><span class="hs-comment">-- Related object</span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="turnArticleId"><span class="annot"><span class="annottext">AccTurn -&gt; Maybe ArticleId
+</span><a href="Finance.Ledger.html#turnArticleId"><span class="hs-identifier hs-var hs-var">turnArticleId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Finance.Ledger.html#ArticleId"><span class="hs-identifier hs-type">ArticleId</span></a></span><span>    </span><span class="hs-comment">-- Analytical article</span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="turnMemo"><span class="annot"><span class="annottext">AccTurn -&gt; Maybe Text
+</span><a href="Finance.Ledger.html#turnMemo"><span class="hs-identifier hs-var hs-var">turnMemo</span></a></span></span><span>      </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>        </span><span class="hs-comment">-- Description</span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="turnStatus"><span class="annot"><span class="annottext">AccTurn -&gt; TurnStatus
+</span><a href="Finance.Ledger.html#turnStatus"><span class="hs-identifier hs-var hs-var">turnStatus</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Ledger.html#TurnStatus"><span class="hs-identifier hs-type">TurnStatus</span></a></span><span>       </span><span class="hs-comment">-- Entry status</span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680252814"><span id="local-6989586621680252839"><span id="local-6989586621680252843"><span class="annot"><span class="annottext">Int -&gt; AccTurn -&gt; ShowS
+[AccTurn] -&gt; ShowS
+AccTurn -&gt; String
+(Int -&gt; AccTurn -&gt; ShowS)
+-&gt; (AccTurn -&gt; String) -&gt; ([AccTurn] -&gt; ShowS) -&gt; Show AccTurn
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AccTurn -&gt; ShowS
+showsPrec :: Int -&gt; AccTurn -&gt; ShowS
+$cshow :: AccTurn -&gt; String
+show :: AccTurn -&gt; String
+$cshowList :: [AccTurn] -&gt; ShowS
+showList :: [AccTurn] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252852"><span id="local-6989586621680252874"><span class="annot"><span class="annottext">AccTurn -&gt; AccTurn -&gt; Bool
+(AccTurn -&gt; AccTurn -&gt; Bool)
+-&gt; (AccTurn -&gt; AccTurn -&gt; Bool) -&gt; Eq AccTurn
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AccTurn -&gt; AccTurn -&gt; Bool
+== :: AccTurn -&gt; AccTurn -&gt; Bool
+$c/= :: AccTurn -&gt; AccTurn -&gt; Bool
+/= :: AccTurn -&gt; AccTurn -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252882"><span id="local-6989586621680252884"><span class="annot"><span class="annottext">(forall x. AccTurn -&gt; Rep AccTurn x)
+-&gt; (forall x. Rep AccTurn x -&gt; AccTurn) -&gt; Generic AccTurn
+forall x. Rep AccTurn x -&gt; AccTurn
+forall x. AccTurn -&gt; Rep AccTurn x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. AccTurn -&gt; Rep AccTurn x
+from :: forall x. AccTurn -&gt; Rep AccTurn x
+$cto :: forall x. Rep AccTurn x -&gt; AccTurn
+to :: forall x. Rep AccTurn x -&gt; AccTurn
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="annot"><span class="hs-comment">-- | Newtypes for enhanced type safety</span></span><span>
+</span><span id="line-34"></span><span class="hs-keyword">newtype</span><span> </span><span id="TurnId"><span class="annot"><a href="Finance.Ledger.html#TurnId"><span class="hs-identifier hs-var">TurnId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TurnId"><span class="annot"><a href="Finance.Ledger.html#TurnId"><span class="hs-identifier hs-var">TurnId</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unTurnId"><span class="annot"><span class="annottext">TurnId -&gt; Int64
+</span><a href="Finance.Ledger.html#unTurnId"><span class="hs-identifier hs-var hs-var">unTurnId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680252892"><span id="local-6989586621680252896"><span id="local-6989586621680252899"><span class="annot"><span class="annottext">Int -&gt; TurnId -&gt; ShowS
+[TurnId] -&gt; ShowS
+TurnId -&gt; String
+(Int -&gt; TurnId -&gt; ShowS)
+-&gt; (TurnId -&gt; String) -&gt; ([TurnId] -&gt; ShowS) -&gt; Show TurnId
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TurnId -&gt; ShowS
+showsPrec :: Int -&gt; TurnId -&gt; ShowS
+$cshow :: TurnId -&gt; String
+show :: TurnId -&gt; String
+$cshowList :: [TurnId] -&gt; ShowS
+showList :: [TurnId] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252902"><span id="local-6989586621680252907"><span class="annot"><span class="annottext">TurnId -&gt; TurnId -&gt; Bool
+(TurnId -&gt; TurnId -&gt; Bool)
+-&gt; (TurnId -&gt; TurnId -&gt; Bool) -&gt; Eq TurnId
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TurnId -&gt; TurnId -&gt; Bool
+== :: TurnId -&gt; TurnId -&gt; Bool
+$c/= :: TurnId -&gt; TurnId -&gt; Bool
+/= :: TurnId -&gt; TurnId -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252914"><span id="local-6989586621680252919"><span id="local-6989586621680252923"><span id="local-6989586621680252927"><span id="local-6989586621680252931"><span id="local-6989586621680252935"><span id="local-6989586621680252939"><span class="annot"><span class="annottext">Eq TurnId
+Eq TurnId =&gt;
+(TurnId -&gt; TurnId -&gt; Ordering)
+-&gt; (TurnId -&gt; TurnId -&gt; Bool)
+-&gt; (TurnId -&gt; TurnId -&gt; Bool)
+-&gt; (TurnId -&gt; TurnId -&gt; Bool)
+-&gt; (TurnId -&gt; TurnId -&gt; Bool)
+-&gt; (TurnId -&gt; TurnId -&gt; TurnId)
+-&gt; (TurnId -&gt; TurnId -&gt; TurnId)
+-&gt; Ord TurnId
+TurnId -&gt; TurnId -&gt; Bool
+TurnId -&gt; TurnId -&gt; Ordering
+TurnId -&gt; TurnId -&gt; TurnId
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: TurnId -&gt; TurnId -&gt; Ordering
+compare :: TurnId -&gt; TurnId -&gt; Ordering
+$c&lt; :: TurnId -&gt; TurnId -&gt; Bool
+&lt; :: TurnId -&gt; TurnId -&gt; Bool
+$c&lt;= :: TurnId -&gt; TurnId -&gt; Bool
+&lt;= :: TurnId -&gt; TurnId -&gt; Bool
+$c&gt; :: TurnId -&gt; TurnId -&gt; Bool
+&gt; :: TurnId -&gt; TurnId -&gt; Bool
+$c&gt;= :: TurnId -&gt; TurnId -&gt; Bool
+&gt;= :: TurnId -&gt; TurnId -&gt; Bool
+$cmax :: TurnId -&gt; TurnId -&gt; TurnId
+max :: TurnId -&gt; TurnId -&gt; TurnId
+$cmin :: TurnId -&gt; TurnId -&gt; TurnId
+min :: TurnId -&gt; TurnId -&gt; TurnId
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="hs-keyword">newtype</span><span> </span><span id="BillId"><span class="annot"><a href="Finance.Ledger.html#BillId"><span class="hs-identifier hs-var">BillId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="BillId"><span class="annot"><a href="Finance.Ledger.html#BillId"><span class="hs-identifier hs-var">BillId</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unBillId"><span class="annot"><span class="annottext">BillId -&gt; Int64
+</span><a href="Finance.Ledger.html#unBillId"><span class="hs-identifier hs-var hs-var">unBillId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680252952"><span id="local-6989586621680252956"><span id="local-6989586621680252959"><span class="annot"><span class="annottext">Int -&gt; BillId -&gt; ShowS
+[BillId] -&gt; ShowS
+BillId -&gt; String
+(Int -&gt; BillId -&gt; ShowS)
+-&gt; (BillId -&gt; String) -&gt; ([BillId] -&gt; ShowS) -&gt; Show BillId
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; BillId -&gt; ShowS
+showsPrec :: Int -&gt; BillId -&gt; ShowS
+$cshow :: BillId -&gt; String
+show :: BillId -&gt; String
+$cshowList :: [BillId] -&gt; ShowS
+showList :: [BillId] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252962"><span id="local-6989586621680252966"><span class="annot"><span class="annottext">BillId -&gt; BillId -&gt; Bool
+(BillId -&gt; BillId -&gt; Bool)
+-&gt; (BillId -&gt; BillId -&gt; Bool) -&gt; Eq BillId
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: BillId -&gt; BillId -&gt; Bool
+== :: BillId -&gt; BillId -&gt; Bool
+$c/= :: BillId -&gt; BillId -&gt; Bool
+/= :: BillId -&gt; BillId -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252972"><span id="local-6989586621680252976"><span id="local-6989586621680252980"><span id="local-6989586621680252984"><span id="local-6989586621680252988"><span id="local-6989586621680252992"><span id="local-6989586621680252996"><span class="annot"><span class="annottext">Eq BillId
+Eq BillId =&gt;
+(BillId -&gt; BillId -&gt; Ordering)
+-&gt; (BillId -&gt; BillId -&gt; Bool)
+-&gt; (BillId -&gt; BillId -&gt; Bool)
+-&gt; (BillId -&gt; BillId -&gt; Bool)
+-&gt; (BillId -&gt; BillId -&gt; Bool)
+-&gt; (BillId -&gt; BillId -&gt; BillId)
+-&gt; (BillId -&gt; BillId -&gt; BillId)
+-&gt; Ord BillId
+BillId -&gt; BillId -&gt; Bool
+BillId -&gt; BillId -&gt; Ordering
+BillId -&gt; BillId -&gt; BillId
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: BillId -&gt; BillId -&gt; Ordering
+compare :: BillId -&gt; BillId -&gt; Ordering
+$c&lt; :: BillId -&gt; BillId -&gt; Bool
+&lt; :: BillId -&gt; BillId -&gt; Bool
+$c&lt;= :: BillId -&gt; BillId -&gt; Bool
+&lt;= :: BillId -&gt; BillId -&gt; Bool
+$c&gt; :: BillId -&gt; BillId -&gt; Bool
+&gt; :: BillId -&gt; BillId -&gt; Bool
+$c&gt;= :: BillId -&gt; BillId -&gt; Bool
+&gt;= :: BillId -&gt; BillId -&gt; Bool
+$cmax :: BillId -&gt; BillId -&gt; BillId
+max :: BillId -&gt; BillId -&gt; BillId
+$cmin :: BillId -&gt; BillId -&gt; BillId
+min :: BillId -&gt; BillId -&gt; BillId
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="hs-keyword">newtype</span><span> </span><span id="Amount"><span class="annot"><a href="Finance.Ledger.html#Amount"><span class="hs-identifier hs-var">Amount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Amount"><span class="annot"><a href="Finance.Ledger.html#Amount"><span class="hs-identifier hs-var">Amount</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unAmount"><span class="annot"><span class="annottext">Amount -&gt; Double
+</span><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var hs-var">unAmount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680253003"><span id="local-6989586621680253007"><span id="local-6989586621680253010"><span class="annot"><span class="annottext">Int -&gt; Amount -&gt; ShowS
+[Amount] -&gt; ShowS
+Amount -&gt; String
+(Int -&gt; Amount -&gt; ShowS)
+-&gt; (Amount -&gt; String) -&gt; ([Amount] -&gt; ShowS) -&gt; Show Amount
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Amount -&gt; ShowS
+showsPrec :: Int -&gt; Amount -&gt; ShowS
+$cshow :: Amount -&gt; String
+show :: Amount -&gt; String
+$cshowList :: [Amount] -&gt; ShowS
+showList :: [Amount] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680253013"><span id="local-6989586621680253018"><span class="annot"><span class="annottext">Amount -&gt; Amount -&gt; Bool
+(Amount -&gt; Amount -&gt; Bool)
+-&gt; (Amount -&gt; Amount -&gt; Bool) -&gt; Eq Amount
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Amount -&gt; Amount -&gt; Bool
+== :: Amount -&gt; Amount -&gt; Bool
+$c/= :: Amount -&gt; Amount -&gt; Bool
+/= :: Amount -&gt; Amount -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680253024"><span id="local-6989586621680253028"><span id="local-6989586621680253032"><span id="local-6989586621680253036"><span id="local-6989586621680253040"><span id="local-6989586621680253044"><span id="local-6989586621680253048"><span class="annot"><span class="annottext">Eq Amount
+Eq Amount =&gt;
+(Amount -&gt; Amount -&gt; Ordering)
+-&gt; (Amount -&gt; Amount -&gt; Bool)
+-&gt; (Amount -&gt; Amount -&gt; Bool)
+-&gt; (Amount -&gt; Amount -&gt; Bool)
+-&gt; (Amount -&gt; Amount -&gt; Bool)
+-&gt; (Amount -&gt; Amount -&gt; Amount)
+-&gt; (Amount -&gt; Amount -&gt; Amount)
+-&gt; Ord Amount
+Amount -&gt; Amount -&gt; Bool
+Amount -&gt; Amount -&gt; Ordering
+Amount -&gt; Amount -&gt; Amount
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: Amount -&gt; Amount -&gt; Ordering
+compare :: Amount -&gt; Amount -&gt; Ordering
+$c&lt; :: Amount -&gt; Amount -&gt; Bool
+&lt; :: Amount -&gt; Amount -&gt; Bool
+$c&lt;= :: Amount -&gt; Amount -&gt; Bool
+&lt;= :: Amount -&gt; Amount -&gt; Bool
+$c&gt; :: Amount -&gt; Amount -&gt; Bool
+&gt; :: Amount -&gt; Amount -&gt; Bool
+$c&gt;= :: Amount -&gt; Amount -&gt; Bool
+&gt;= :: Amount -&gt; Amount -&gt; Bool
+$cmax :: Amount -&gt; Amount -&gt; Amount
+max :: Amount -&gt; Amount -&gt; Amount
+$cmin :: Amount -&gt; Amount -&gt; Amount
+min :: Amount -&gt; Amount -&gt; Amount
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-42"></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">newtype</span><span> </span><span id="CurrencyCode"><span class="annot"><a href="Finance.Ledger.html#CurrencyCode"><span class="hs-identifier hs-var">CurrencyCode</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="CurrencyCode"><span class="annot"><a href="Finance.Ledger.html#CurrencyCode"><span class="hs-identifier hs-var">CurrencyCode</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unCurrencyCode"><span class="annot"><span class="annottext">CurrencyCode -&gt; Text
+</span><a href="Finance.Ledger.html#unCurrencyCode"><span class="hs-identifier hs-var hs-var">unCurrencyCode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680253055"><span id="local-6989586621680253059"><span id="local-6989586621680253062"><span class="annot"><span class="annottext">Int -&gt; CurrencyCode -&gt; ShowS
+[CurrencyCode] -&gt; ShowS
+CurrencyCode -&gt; String
+(Int -&gt; CurrencyCode -&gt; ShowS)
+-&gt; (CurrencyCode -&gt; String)
+-&gt; ([CurrencyCode] -&gt; ShowS)
+-&gt; Show CurrencyCode
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; CurrencyCode -&gt; ShowS
+showsPrec :: Int -&gt; CurrencyCode -&gt; ShowS
+$cshow :: CurrencyCode -&gt; String
+show :: CurrencyCode -&gt; String
+$cshowList :: [CurrencyCode] -&gt; ShowS
+showList :: [CurrencyCode] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680253065"><span id="local-6989586621680253069"><span class="annot"><span class="annottext">CurrencyCode -&gt; CurrencyCode -&gt; Bool
+(CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool) -&gt; Eq CurrencyCode
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+== :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c/= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+/= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680253075"><span id="local-6989586621680253080"><span id="local-6989586621680253084"><span id="local-6989586621680253088"><span id="local-6989586621680253092"><span id="local-6989586621680253096"><span id="local-6989586621680253100"><span class="annot"><span class="annottext">Eq CurrencyCode
+Eq CurrencyCode =&gt;
+(CurrencyCode -&gt; CurrencyCode -&gt; Ordering)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; Bool)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode)
+-&gt; (CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode)
+-&gt; Ord CurrencyCode
+CurrencyCode -&gt; CurrencyCode -&gt; Bool
+CurrencyCode -&gt; CurrencyCode -&gt; Ordering
+CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: CurrencyCode -&gt; CurrencyCode -&gt; Ordering
+compare :: CurrencyCode -&gt; CurrencyCode -&gt; Ordering
+$c&lt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&lt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c&lt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&lt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c&gt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&gt; :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$c&gt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+&gt;= :: CurrencyCode -&gt; CurrencyCode -&gt; Bool
+$cmax :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+max :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+$cmin :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+min :: CurrencyCode -&gt; CurrencyCode -&gt; CurrencyCode
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="hs-keyword">newtype</span><span> </span><span id="TransactionDate"><span class="annot"><a href="Finance.Ledger.html#TransactionDate"><span class="hs-identifier hs-var">TransactionDate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TransactionDate"><span class="annot"><a href="Finance.Ledger.html#TransactionDate"><span class="hs-identifier hs-var">TransactionDate</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unTransactionDate"><span class="annot"><span class="annottext">TransactionDate -&gt; Day
+</span><a href="Finance.Ledger.html#unTransactionDate"><span class="hs-identifier hs-var hs-var">unTransactionDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680253107"><span id="local-6989586621680253112"><span id="local-6989586621680253115"><span class="annot"><span class="annottext">Int -&gt; TransactionDate -&gt; ShowS
+[TransactionDate] -&gt; ShowS
+TransactionDate -&gt; String
+(Int -&gt; TransactionDate -&gt; ShowS)
+-&gt; (TransactionDate -&gt; String)
+-&gt; ([TransactionDate] -&gt; ShowS)
+-&gt; Show TransactionDate
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TransactionDate -&gt; ShowS
+showsPrec :: Int -&gt; TransactionDate -&gt; ShowS
+$cshow :: TransactionDate -&gt; String
+show :: TransactionDate -&gt; String
+$cshowList :: [TransactionDate] -&gt; ShowS
+showList :: [TransactionDate] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680253118"><span id="local-6989586621680253123"><span class="annot"><span class="annottext">TransactionDate -&gt; TransactionDate -&gt; Bool
+(TransactionDate -&gt; TransactionDate -&gt; Bool)
+-&gt; (TransactionDate -&gt; TransactionDate -&gt; Bool)
+-&gt; Eq TransactionDate
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TransactionDate -&gt; TransactionDate -&gt; Bool
+== :: TransactionDate -&gt; TransactionDate -&gt; Bool
+$c/= :: TransactionDate -&gt; TransactionDate -&gt; Bool
+/= :: TransactionDate -&gt; TransactionDate -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680253129"><span id="local-6989586621680253134"><span id="local-6989586621680253138"><span id="local-6989586621680253142"><span id="local-6989586621680253146"><span id="local-6989586621680253150"><span id="local-6989586621680253154"><span class="annot"><span class="annottext">Eq TransactionDate
+Eq TransactionDate =&gt;
+(TransactionDate -&gt; TransactionDate -&gt; Ordering)
+-&gt; (TransactionDate -&gt; TransactionDate -&gt; Bool)
+-&gt; (TransactionDate -&gt; TransactionDate -&gt; Bool)
+-&gt; (TransactionDate -&gt; TransactionDate -&gt; Bool)
+-&gt; (TransactionDate -&gt; TransactionDate -&gt; Bool)
+-&gt; (TransactionDate -&gt; TransactionDate -&gt; TransactionDate)
+-&gt; (TransactionDate -&gt; TransactionDate -&gt; TransactionDate)
+-&gt; Ord TransactionDate
+TransactionDate -&gt; TransactionDate -&gt; Bool
+TransactionDate -&gt; TransactionDate -&gt; Ordering
+TransactionDate -&gt; TransactionDate -&gt; TransactionDate
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: TransactionDate -&gt; TransactionDate -&gt; Ordering
+compare :: TransactionDate -&gt; TransactionDate -&gt; Ordering
+$c&lt; :: TransactionDate -&gt; TransactionDate -&gt; Bool
+&lt; :: TransactionDate -&gt; TransactionDate -&gt; Bool
+$c&lt;= :: TransactionDate -&gt; TransactionDate -&gt; Bool
+&lt;= :: TransactionDate -&gt; TransactionDate -&gt; Bool
+$c&gt; :: TransactionDate -&gt; TransactionDate -&gt; Bool
+&gt; :: TransactionDate -&gt; TransactionDate -&gt; Bool
+$c&gt;= :: TransactionDate -&gt; TransactionDate -&gt; Bool
+&gt;= :: TransactionDate -&gt; TransactionDate -&gt; Bool
+$cmax :: TransactionDate -&gt; TransactionDate -&gt; TransactionDate
+max :: TransactionDate -&gt; TransactionDate -&gt; TransactionDate
+$cmin :: TransactionDate -&gt; TransactionDate -&gt; TransactionDate
+min :: TransactionDate -&gt; TransactionDate -&gt; TransactionDate
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="hs-keyword">newtype</span><span> </span><span id="ObjectId"><span class="annot"><a href="Finance.Ledger.html#ObjectId"><span class="hs-identifier hs-var">ObjectId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ObjectId"><span class="annot"><a href="Finance.Ledger.html#ObjectId"><span class="hs-identifier hs-var">ObjectId</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unObjectId"><span class="annot"><span class="annottext">ObjectId -&gt; Int64
+</span><a href="Finance.Ledger.html#unObjectId"><span class="hs-identifier hs-var hs-var">unObjectId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680253161"><span id="local-6989586621680253165"><span id="local-6989586621680253168"><span class="annot"><span class="annottext">Int -&gt; ObjectId -&gt; ShowS
+[ObjectId] -&gt; ShowS
+ObjectId -&gt; String
+(Int -&gt; ObjectId -&gt; ShowS)
+-&gt; (ObjectId -&gt; String) -&gt; ([ObjectId] -&gt; ShowS) -&gt; Show ObjectId
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ObjectId -&gt; ShowS
+showsPrec :: Int -&gt; ObjectId -&gt; ShowS
+$cshow :: ObjectId -&gt; String
+show :: ObjectId -&gt; String
+$cshowList :: [ObjectId] -&gt; ShowS
+showList :: [ObjectId] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680253171"><span id="local-6989586621680253175"><span class="annot"><span class="annottext">ObjectId -&gt; ObjectId -&gt; Bool
+(ObjectId -&gt; ObjectId -&gt; Bool)
+-&gt; (ObjectId -&gt; ObjectId -&gt; Bool) -&gt; Eq ObjectId
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ObjectId -&gt; ObjectId -&gt; Bool
+== :: ObjectId -&gt; ObjectId -&gt; Bool
+$c/= :: ObjectId -&gt; ObjectId -&gt; Bool
+/= :: ObjectId -&gt; ObjectId -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680253181"><span id="local-6989586621680253185"><span id="local-6989586621680253189"><span id="local-6989586621680253193"><span id="local-6989586621680253197"><span id="local-6989586621680253201"><span id="local-6989586621680253205"><span class="annot"><span class="annottext">Eq ObjectId
+Eq ObjectId =&gt;
+(ObjectId -&gt; ObjectId -&gt; Ordering)
+-&gt; (ObjectId -&gt; ObjectId -&gt; Bool)
+-&gt; (ObjectId -&gt; ObjectId -&gt; Bool)
+-&gt; (ObjectId -&gt; ObjectId -&gt; Bool)
+-&gt; (ObjectId -&gt; ObjectId -&gt; Bool)
+-&gt; (ObjectId -&gt; ObjectId -&gt; ObjectId)
+-&gt; (ObjectId -&gt; ObjectId -&gt; ObjectId)
+-&gt; Ord ObjectId
+ObjectId -&gt; ObjectId -&gt; Bool
+ObjectId -&gt; ObjectId -&gt; Ordering
+ObjectId -&gt; ObjectId -&gt; ObjectId
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: ObjectId -&gt; ObjectId -&gt; Ordering
+compare :: ObjectId -&gt; ObjectId -&gt; Ordering
+$c&lt; :: ObjectId -&gt; ObjectId -&gt; Bool
+&lt; :: ObjectId -&gt; ObjectId -&gt; Bool
+$c&lt;= :: ObjectId -&gt; ObjectId -&gt; Bool
+&lt;= :: ObjectId -&gt; ObjectId -&gt; Bool
+$c&gt; :: ObjectId -&gt; ObjectId -&gt; Bool
+&gt; :: ObjectId -&gt; ObjectId -&gt; Bool
+$c&gt;= :: ObjectId -&gt; ObjectId -&gt; Bool
+&gt;= :: ObjectId -&gt; ObjectId -&gt; Bool
+$cmax :: ObjectId -&gt; ObjectId -&gt; ObjectId
+max :: ObjectId -&gt; ObjectId -&gt; ObjectId
+$cmin :: ObjectId -&gt; ObjectId -&gt; ObjectId
+min :: ObjectId -&gt; ObjectId -&gt; ObjectId
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="hs-keyword">newtype</span><span> </span><span id="ArticleId"><span class="annot"><a href="Finance.Ledger.html#ArticleId"><span class="hs-identifier hs-var">ArticleId</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ArticleId"><span class="annot"><a href="Finance.Ledger.html#ArticleId"><span class="hs-identifier hs-var">ArticleId</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unArticleId"><span class="annot"><span class="annottext">ArticleId -&gt; Int64
+</span><a href="Finance.Ledger.html#unArticleId"><span class="hs-identifier hs-var hs-var">unArticleId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680253212"><span id="local-6989586621680253216"><span id="local-6989586621680253219"><span class="annot"><span class="annottext">Int -&gt; ArticleId -&gt; ShowS
+[ArticleId] -&gt; ShowS
+ArticleId -&gt; String
+(Int -&gt; ArticleId -&gt; ShowS)
+-&gt; (ArticleId -&gt; String)
+-&gt; ([ArticleId] -&gt; ShowS)
+-&gt; Show ArticleId
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; ArticleId -&gt; ShowS
+showsPrec :: Int -&gt; ArticleId -&gt; ShowS
+$cshow :: ArticleId -&gt; String
+show :: ArticleId -&gt; String
+$cshowList :: [ArticleId] -&gt; ShowS
+showList :: [ArticleId] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680253222"><span id="local-6989586621680253226"><span class="annot"><span class="annottext">ArticleId -&gt; ArticleId -&gt; Bool
+(ArticleId -&gt; ArticleId -&gt; Bool)
+-&gt; (ArticleId -&gt; ArticleId -&gt; Bool) -&gt; Eq ArticleId
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: ArticleId -&gt; ArticleId -&gt; Bool
+== :: ArticleId -&gt; ArticleId -&gt; Bool
+$c/= :: ArticleId -&gt; ArticleId -&gt; Bool
+/= :: ArticleId -&gt; ArticleId -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680253232"><span id="local-6989586621680253236"><span id="local-6989586621680253240"><span id="local-6989586621680253244"><span id="local-6989586621680253248"><span id="local-6989586621680253252"><span id="local-6989586621680253256"><span class="annot"><span class="annottext">Eq ArticleId
+Eq ArticleId =&gt;
+(ArticleId -&gt; ArticleId -&gt; Ordering)
+-&gt; (ArticleId -&gt; ArticleId -&gt; Bool)
+-&gt; (ArticleId -&gt; ArticleId -&gt; Bool)
+-&gt; (ArticleId -&gt; ArticleId -&gt; Bool)
+-&gt; (ArticleId -&gt; ArticleId -&gt; Bool)
+-&gt; (ArticleId -&gt; ArticleId -&gt; ArticleId)
+-&gt; (ArticleId -&gt; ArticleId -&gt; ArticleId)
+-&gt; Ord ArticleId
+ArticleId -&gt; ArticleId -&gt; Bool
+ArticleId -&gt; ArticleId -&gt; Ordering
+ArticleId -&gt; ArticleId -&gt; ArticleId
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: ArticleId -&gt; ArticleId -&gt; Ordering
+compare :: ArticleId -&gt; ArticleId -&gt; Ordering
+$c&lt; :: ArticleId -&gt; ArticleId -&gt; Bool
+&lt; :: ArticleId -&gt; ArticleId -&gt; Bool
+$c&lt;= :: ArticleId -&gt; ArticleId -&gt; Bool
+&lt;= :: ArticleId -&gt; ArticleId -&gt; Bool
+$c&gt; :: ArticleId -&gt; ArticleId -&gt; Bool
+&gt; :: ArticleId -&gt; ArticleId -&gt; Bool
+$c&gt;= :: ArticleId -&gt; ArticleId -&gt; Bool
+&gt;= :: ArticleId -&gt; ArticleId -&gt; Bool
+$cmax :: ArticleId -&gt; ArticleId -&gt; ArticleId
+max :: ArticleId -&gt; ArticleId -&gt; ArticleId
+$cmin :: ArticleId -&gt; ArticleId -&gt; ArticleId
+min :: ArticleId -&gt; ArticleId -&gt; ArticleId
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>
+</span><span id="line-55"></span><span class="annot"><span class="hs-comment">-- | Transaction status</span></span><span>
+</span><span id="line-56"></span><span class="hs-keyword">data</span><span> </span><span id="TurnStatus"><span class="annot"><a href="Finance.Ledger.html#TurnStatus"><span class="hs-identifier hs-var">TurnStatus</span></a></span></span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="TSNew"><span class="annot"><a href="Finance.Ledger.html#TSNew"><span class="hs-identifier hs-var">TSNew</span></a></span></span><span>          </span><span class="hs-comment">-- New entry</span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="TSPosted"><span class="annot"><a href="Finance.Ledger.html#TSPosted"><span class="hs-identifier hs-var">TSPosted</span></a></span></span><span>       </span><span class="hs-comment">-- Posted to ledger</span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="TSReverted"><span class="annot"><a href="Finance.Ledger.html#TSReverted"><span class="hs-identifier hs-var">TSReverted</span></a></span></span><span>    </span><span class="hs-comment">-- Reverted</span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="TSCancelled"><span class="annot"><a href="Finance.Ledger.html#TSCancelled"><span class="hs-identifier hs-var">TSCancelled</span></a></span></span><span>   </span><span class="hs-comment">-- Cancelled</span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680253265"><span id="local-6989586621680253267"><span id="local-6989586621680253270"><span class="annot"><span class="annottext">Int -&gt; TurnStatus -&gt; ShowS
+[TurnStatus] -&gt; ShowS
+TurnStatus -&gt; String
+(Int -&gt; TurnStatus -&gt; ShowS)
+-&gt; (TurnStatus -&gt; String)
+-&gt; ([TurnStatus] -&gt; ShowS)
+-&gt; Show TurnStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TurnStatus -&gt; ShowS
+showsPrec :: Int -&gt; TurnStatus -&gt; ShowS
+$cshow :: TurnStatus -&gt; String
+show :: TurnStatus -&gt; String
+$cshowList :: [TurnStatus] -&gt; ShowS
+showList :: [TurnStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680253273"><span id="local-6989586621680253278"><span class="annot"><span class="annottext">TurnStatus -&gt; TurnStatus -&gt; Bool
+(TurnStatus -&gt; TurnStatus -&gt; Bool)
+-&gt; (TurnStatus -&gt; TurnStatus -&gt; Bool) -&gt; Eq TurnStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TurnStatus -&gt; TurnStatus -&gt; Bool
+== :: TurnStatus -&gt; TurnStatus -&gt; Bool
+$c/= :: TurnStatus -&gt; TurnStatus -&gt; Bool
+/= :: TurnStatus -&gt; TurnStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680253281"><span id="local-6989586621680253290"><span id="local-6989586621680253297"><span id="local-6989586621680253310"><span id="local-6989586621680253313"><span id="local-6989586621680253318"><span id="local-6989586621680253324"><span id="local-6989586621680253328"><span class="annot"><span class="annottext">Int -&gt; TurnStatus
+TurnStatus -&gt; Int
+TurnStatus -&gt; [TurnStatus]
+TurnStatus -&gt; TurnStatus
+TurnStatus -&gt; TurnStatus -&gt; [TurnStatus]
+TurnStatus -&gt; TurnStatus -&gt; TurnStatus -&gt; [TurnStatus]
+(TurnStatus -&gt; TurnStatus)
+-&gt; (TurnStatus -&gt; TurnStatus)
+-&gt; (Int -&gt; TurnStatus)
+-&gt; (TurnStatus -&gt; Int)
+-&gt; (TurnStatus -&gt; [TurnStatus])
+-&gt; (TurnStatus -&gt; TurnStatus -&gt; [TurnStatus])
+-&gt; (TurnStatus -&gt; TurnStatus -&gt; [TurnStatus])
+-&gt; (TurnStatus -&gt; TurnStatus -&gt; TurnStatus -&gt; [TurnStatus])
+-&gt; Enum TurnStatus
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: TurnStatus -&gt; TurnStatus
+succ :: TurnStatus -&gt; TurnStatus
+$cpred :: TurnStatus -&gt; TurnStatus
+pred :: TurnStatus -&gt; TurnStatus
+$ctoEnum :: Int -&gt; TurnStatus
+toEnum :: Int -&gt; TurnStatus
+$cfromEnum :: TurnStatus -&gt; Int
+fromEnum :: TurnStatus -&gt; Int
+$cenumFrom :: TurnStatus -&gt; [TurnStatus]
+enumFrom :: TurnStatus -&gt; [TurnStatus]
+$cenumFromThen :: TurnStatus -&gt; TurnStatus -&gt; [TurnStatus]
+enumFromThen :: TurnStatus -&gt; TurnStatus -&gt; [TurnStatus]
+$cenumFromTo :: TurnStatus -&gt; TurnStatus -&gt; [TurnStatus]
+enumFromTo :: TurnStatus -&gt; TurnStatus -&gt; [TurnStatus]
+$cenumFromThenTo :: TurnStatus -&gt; TurnStatus -&gt; TurnStatus -&gt; [TurnStatus]
+enumFromThenTo :: TurnStatus -&gt; TurnStatus -&gt; TurnStatus -&gt; [TurnStatus]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span>
+</span><span id="line-63"></span><span class="annot"><span class="hs-comment">-- | Ledger with enhanced operations</span></span><span>
+</span><span id="line-64"></span><span class="hs-keyword">data</span><span> </span><span id="Ledger"><span class="annot"><a href="Finance.Ledger.html#Ledger"><span class="hs-identifier hs-var">Ledger</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Ledger"><span class="annot"><a href="Finance.Ledger.html#Ledger"><span class="hs-identifier hs-var">Ledger</span></a></span></span><span>
+</span><span id="line-65"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="ledgerEntries"><span class="annot"><span class="annottext">Ledger -&gt; Map TurnId AccTurn
+</span><a href="Finance.Ledger.html#ledgerEntries"><span class="hs-identifier hs-var hs-var">ledgerEntries</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Map</span></span><span> </span><span class="annot"><a href="Finance.Ledger.html#TurnId"><span class="hs-identifier hs-type">TurnId</span></a></span><span> </span><span class="annot"><a href="Finance.Ledger.html#AccTurn"><span class="hs-identifier hs-type">AccTurn</span></a></span><span>
+</span><span id="line-66"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="ledgerBalance"><span class="annot"><span class="annottext">Ledger -&gt; Map AccountCode Amount
+</span><a href="Finance.Ledger.html#ledgerBalance"><span class="hs-identifier hs-var hs-var">ledgerBalance</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Map</span></span><span> </span><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span> </span><span class="annot"><a href="Finance.Ledger.html#Amount"><span class="hs-identifier hs-type">Amount</span></a></span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="ledgerCurrency"><span class="annot"><span class="annottext">Ledger -&gt; CurrencyCode
+</span><a href="Finance.Ledger.html#ledgerCurrency"><span class="hs-identifier hs-var hs-var">ledgerCurrency</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Ledger.html#CurrencyCode"><span class="hs-identifier hs-type">CurrencyCode</span></a></span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680253340"><span id="local-6989586621680253350"><span id="local-6989586621680253354"><span class="annot"><span class="annottext">Int -&gt; Ledger -&gt; ShowS
+[Ledger] -&gt; ShowS
+Ledger -&gt; String
+(Int -&gt; Ledger -&gt; ShowS)
+-&gt; (Ledger -&gt; String) -&gt; ([Ledger] -&gt; ShowS) -&gt; Show Ledger
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Ledger -&gt; ShowS
+showsPrec :: Int -&gt; Ledger -&gt; ShowS
+$cshow :: Ledger -&gt; String
+show :: Ledger -&gt; String
+$cshowList :: [Ledger] -&gt; ShowS
+showList :: [Ledger] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680253357"><span id="local-6989586621680253367"><span class="annot"><span class="annottext">Ledger -&gt; Ledger -&gt; Bool
+(Ledger -&gt; Ledger -&gt; Bool)
+-&gt; (Ledger -&gt; Ledger -&gt; Bool) -&gt; Eq Ledger
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Ledger -&gt; Ledger -&gt; Bool
+== :: Ledger -&gt; Ledger -&gt; Bool
+$c/= :: Ledger -&gt; Ledger -&gt; Bool
+/= :: Ledger -&gt; Ledger -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680253371"><span id="local-6989586621680253373"><span class="annot"><span class="annottext">(forall x. Ledger -&gt; Rep Ledger x)
+-&gt; (forall x. Rep Ledger x -&gt; Ledger) -&gt; Generic Ledger
+forall x. Rep Ledger x -&gt; Ledger
+forall x. Ledger -&gt; Rep Ledger x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. Ledger -&gt; Rep Ledger x
+from :: forall x. Ledger -&gt; Rep Ledger x
+$cto :: forall x. Rep Ledger x -&gt; Ledger
+to :: forall x. Rep Ledger x -&gt; Ledger
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="annot"><span class="hs-comment">-- | Smart constructor with validation</span></span><span>
+</span><span id="line-71"></span><span class="annot"><a href="Finance.Ledger.html#createTurn"><span class="hs-identifier hs-type">createTurn</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Ledger.html#TurnId"><span class="hs-identifier hs-type">TurnId</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Ledger.html#Amount"><span class="hs-identifier hs-type">Amount</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Ledger.html#TransactionDate"><span class="hs-identifier hs-type">TransactionDate</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Ledger.html#AccTurn"><span class="hs-identifier hs-type">AccTurn</span></a></span><span>
+</span><span id="line-72"></span><span id="createTurn"><span class="annot"><span class="annottext">createTurn :: TurnId
+-&gt; AccountCode
+-&gt; AccountCode
+-&gt; Amount
+-&gt; TransactionDate
+-&gt; AccTurn
+</span><a href="Finance.Ledger.html#createTurn"><span class="hs-identifier hs-var hs-var">createTurn</span></a></span></span><span> </span><span id="local-6989586621680253376"><span class="annot"><span class="annottext">TurnId
+</span><a href="#local-6989586621680253376"><span class="hs-identifier hs-var">tid</span></a></span></span><span> </span><span id="local-6989586621680253377"><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680253377"><span class="hs-identifier hs-var">dbt</span></a></span></span><span> </span><span id="local-6989586621680253378"><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680253378"><span class="hs-identifier hs-var">cdt</span></a></span></span><span> </span><span id="local-6989586621680253379"><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253379"><span class="hs-identifier hs-var">amt</span></a></span></span><span> </span><span id="local-6989586621680253380"><span class="annot"><span class="annottext">TransactionDate
+</span><a href="#local-6989586621680253380"><span class="hs-identifier hs-var">date</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Ledger.html#AccTurn"><span class="hs-identifier hs-type">AccTurn</span></a></span><span>
+</span><span id="line-73"></span><span>  </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">turnId :: TurnId
+</span><a href="Finance.Ledger.html#turnId"><span class="hs-identifier hs-var">turnId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TurnId
+</span><a href="#local-6989586621680253376"><span class="hs-identifier hs-var">tid</span></a></span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">turnBillId :: Maybe BillId
+</span><a href="Finance.Ledger.html#turnBillId"><span class="hs-identifier hs-var">turnBillId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe BillId
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">turnDebitAcc :: AccountCode
+</span><a href="Finance.Ledger.html#turnDebitAcc"><span class="hs-identifier hs-var">turnDebitAcc</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680253377"><span class="hs-identifier hs-var">dbt</span></a></span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">turnCreditAcc :: AccountCode
+</span><a href="Finance.Ledger.html#turnCreditAcc"><span class="hs-identifier hs-var">turnCreditAcc</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680253378"><span class="hs-identifier hs-var">cdt</span></a></span><span>
+</span><span id="line-77"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">turnAmount :: Amount
+</span><a href="Finance.Ledger.html#turnAmount"><span class="hs-identifier hs-var">turnAmount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253379"><span class="hs-identifier hs-var">amt</span></a></span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">turnCurrency :: CurrencyCode
+</span><a href="Finance.Ledger.html#turnCurrency"><span class="hs-identifier hs-var">turnCurrency</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; CurrencyCode
+</span><a href="Finance.Ledger.html#CurrencyCode"><span class="hs-identifier hs-var">CurrencyCode</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;RUB&quot;</span></span><span>
+</span><span id="line-79"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">turnDate :: TransactionDate
+</span><a href="Finance.Ledger.html#turnDate"><span class="hs-identifier hs-var">turnDate</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TransactionDate
+</span><a href="#local-6989586621680253380"><span class="hs-identifier hs-var">date</span></a></span><span>
+</span><span id="line-80"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">turnObjectId :: Maybe ObjectId
+</span><a href="Finance.Ledger.html#turnObjectId"><span class="hs-identifier hs-var">turnObjectId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe ObjectId
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-81"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">turnArticleId :: Maybe ArticleId
+</span><a href="Finance.Ledger.html#turnArticleId"><span class="hs-identifier hs-var">turnArticleId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe ArticleId
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-82"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">turnMemo :: Maybe Text
+</span><a href="Finance.Ledger.html#turnMemo"><span class="hs-identifier hs-var">turnMemo</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Text
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-83"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">turnStatus :: TurnStatus
+</span><a href="Finance.Ledger.html#turnStatus"><span class="hs-identifier hs-var">turnStatus</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TurnStatus
+</span><a href="Finance.Ledger.html#TSNew"><span class="hs-identifier hs-var">TSNew</span></a></span><span>
+</span><span id="line-84"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-85"></span><span>
+</span><span id="line-86"></span><span class="annot"><span class="hs-comment">-- | Validate accounting equation: total debits = total credits</span></span><span>
+</span><span id="line-87"></span><span class="annot"><a href="Finance.Ledger.html#validateAccountingEquation"><span class="hs-identifier hs-type">validateAccountingEquation</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Ledger.html#Ledger"><span class="hs-identifier hs-type">Ledger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-88"></span><span id="validateAccountingEquation"><span class="annot"><span class="annottext">validateAccountingEquation :: Ledger -&gt; Bool
+</span><a href="Finance.Ledger.html#validateAccountingEquation"><span class="hs-identifier hs-var hs-var">validateAccountingEquation</span></a></span></span><span> </span><span id="local-6989586621680253382"><span class="annot"><span class="annottext">Ledger
+</span><a href="#local-6989586621680253382"><span class="hs-identifier hs-var">ledger</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-89"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680253386"><span class="annot"><span class="annottext">debitTotal :: Double
+</span><a href="#local-6989586621680253386"><span class="hs-identifier hs-var hs-var">debitTotal</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Double] -&gt; Double
+forall a. Num a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">sum</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Amount -&gt; Double
+</span><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; Amount
+</span><a href="Finance.Ledger.html#turnAmount"><span class="hs-identifier hs-var">turnAmount</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253388"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span id="local-6989586621680253388"><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253388"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Map TurnId AccTurn -&gt; [AccTurn]
+forall k a. Map k a -&gt; [a]
+</span><span class="hs-identifier hs-var">M.elems</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ledger -&gt; Map TurnId AccTurn
+</span><a href="Finance.Ledger.html#ledgerEntries"><span class="hs-identifier hs-var">ledgerEntries</span></a></span><span> </span><span class="annot"><span class="annottext">Ledger
+</span><a href="#local-6989586621680253382"><span class="hs-identifier hs-var">ledger</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">AccountCode -&gt; Bool
+</span><a href="Finance.Ledger.html#isDebitAccount"><span class="hs-identifier hs-var">isDebitAccount</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnDebitAcc"><span class="hs-identifier hs-var">turnDebitAcc</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253388"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-90"></span><span>      </span><span id="local-6989586621680253393"><span class="annot"><span class="annottext">creditTotal :: Double
+</span><a href="#local-6989586621680253393"><span class="hs-identifier hs-var hs-var">creditTotal</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Double] -&gt; Double
+forall a. Num a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">sum</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Amount -&gt; Double
+</span><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; Amount
+</span><a href="Finance.Ledger.html#turnAmount"><span class="hs-identifier hs-var">turnAmount</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253394"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">|</span><span> </span><span id="local-6989586621680253394"><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253394"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Map TurnId AccTurn -&gt; [AccTurn]
+forall k a. Map k a -&gt; [a]
+</span><span class="hs-identifier hs-var">M.elems</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ledger -&gt; Map TurnId AccTurn
+</span><a href="Finance.Ledger.html#ledgerEntries"><span class="hs-identifier hs-var">ledgerEntries</span></a></span><span> </span><span class="annot"><span class="annottext">Ledger
+</span><a href="#local-6989586621680253382"><span class="hs-identifier hs-var">ledger</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">AccountCode -&gt; Bool
+</span><a href="Finance.Ledger.html#isCreditAccount"><span class="hs-identifier hs-var">isCreditAccount</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnCreditAcc"><span class="hs-identifier hs-var">turnCreditAcc</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253394"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-91"></span><span>  </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">abs</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680253386"><span class="hs-identifier hs-var">debitTotal</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680253393"><span class="hs-identifier hs-var">creditTotal</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0.001</span></span><span>  </span><span class="hs-comment">-- Tolerance for floating point</span><span>
+</span><span id="line-92"></span><span>
+</span><span id="line-93"></span><span class="hs-comment">-- | Check if account is debit nature based on account code.</span><span>
+</span><span id="line-94"></span><span class="hs-comment">-- Active accounts (Asset, Expense): debit nature</span><span>
+</span><span id="line-95"></span><span class="hs-comment">-- Based on Russian Accounting Standards:</span><span>
+</span><span id="line-96"></span><span class="hs-comment">--   01-19: Asset (debit)</span><span>
+</span><span id="line-97"></span><span class="hs-comment">--   20-29, 44: Expense (debit)</span><span>
+</span><span id="line-98"></span><span class="hs-comment">--   30-39: Asset/Expense mixed (debit by default)</span><span>
+</span><span id="line-99"></span><span class="hs-comment">--   40-43: Production (debit)</span><span>
+</span><span id="line-100"></span><span class="hs-comment">--   50-59: Asset/cash (debit)</span><span>
+</span><span id="line-101"></span><span class="hs-comment">--   60-79: Liability (credit)</span><span>
+</span><span id="line-102"></span><span class="hs-comment">--   80-89: Equity (credit)</span><span>
+</span><span id="line-103"></span><span class="hs-comment">--   90-99: Revenue (credit)</span><span>
+</span><span id="line-104"></span><span class="annot"><a href="Finance.Ledger.html#isDebitAccount"><span class="hs-identifier hs-type">isDebitAccount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-105"></span><span id="isDebitAccount"><span class="annot"><span class="annottext">isDebitAccount :: AccountCode -&gt; Bool
+</span><a href="Finance.Ledger.html#isDebitAccount"><span class="hs-identifier hs-var hs-var">isDebitAccount</span></a></span></span><span> </span><span id="local-6989586621680253397"><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680253397"><span class="hs-identifier hs-var">code</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-106"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680253398"><span class="annot"><span class="annottext">t :: Text
+</span><a href="#local-6989586621680253398"><span class="hs-identifier hs-var hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">AccountCode -&gt; Text
+</span><a href="Finance.Account.html#unAccountCode"><span class="hs-identifier hs-var">unAccountCode</span></a></span><span> </span><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680253397"><span class="hs-identifier hs-var">code</span></a></span><span>
+</span><span id="line-107"></span><span>      </span><span id="local-6989586621680253402"><span class="annot"><span class="annottext">prefix :: Text
+</span><a href="#local-6989586621680253402"><span class="hs-identifier hs-var hs-var">prefix</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Int
+</span><span class="hs-identifier hs-var">T.length</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680253398"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">2</span></span><span> </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Text -&gt; Text
+</span><span class="hs-identifier hs-var">T.take</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">2</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680253398"><span class="hs-identifier hs-var">t</span></a></span><span> </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680253398"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-108"></span><span>   </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680253402"><span class="hs-identifier hs-var">prefix</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-109"></span><span>        </span><span class="hs-comment">-- Active accounts (debit nature)</span><span>
+</span><span id="line-110"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;01&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Fixed assets</span><span>
+</span><span id="line-111"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;02&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Depreciation</span><span>
+</span><span id="line-112"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;03&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Investments</span><span>
+</span><span id="line-113"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;04&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Intangible assets</span><span>
+</span><span id="line-114"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;07&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Equipment</span><span>
+</span><span id="line-115"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;08&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Construction</span><span>
+</span><span id="line-116"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;09&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Deferred tax</span><span>
+</span><span id="line-117"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;10&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Materials</span><span>
+</span><span id="line-118"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;11&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Animals</span><span>
+</span><span id="line-119"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;14&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Reserves</span><span>
+</span><span id="line-120"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;15&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Procurement</span><span>
+</span><span id="line-121"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;16&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Variance</span><span>
+</span><span id="line-122"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;19&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- VAT</span><span>
+</span><span id="line-123"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;20&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Production</span><span>
+</span><span id="line-124"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;21&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Semi-finished</span><span>
+</span><span id="line-125"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;23&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Auxiliary</span><span>
+</span><span id="line-126"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;25&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Overhead</span><span>
+</span><span id="line-127"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;26&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- General expenses</span><span>
+</span><span id="line-128"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;28&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Defects</span><span>
+</span><span id="line-129"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;29&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Service</span><span>
+</span><span id="line-130"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;40&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Output</span><span>
+</span><span id="line-131"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;41&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Goods</span><span>
+</span><span id="line-132"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;42&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Margin</span><span>
+</span><span id="line-133"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;43&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Finished goods</span><span>
+</span><span id="line-134"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;44&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Selling costs</span><span>
+</span><span id="line-135"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;45&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Shipped goods</span><span>
+</span><span id="line-136"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;46&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Work in progress</span><span>
+</span><span id="line-137"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;50&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Cash</span><span>
+</span><span id="line-138"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;51&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Bank accounts</span><span>
+</span><span id="line-139"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;52&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Currency accounts</span><span>
+</span><span id="line-140"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;55&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Special accounts</span><span>
+</span><span id="line-141"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;57&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Transfers</span><span>
+</span><span id="line-142"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;58&quot;</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>  </span><span class="hs-comment">-- Investments</span><span>
+</span><span id="line-143"></span><span>        </span><span class="hs-comment">-- All others: credit nature (default passive)</span><span>
+</span><span id="line-144"></span><span>        </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-145"></span><span>
+</span><span id="line-146"></span><span class="annot"><span class="hs-comment">-- | Check if account is credit nature (opposite of debit)</span></span><span>
+</span><span id="line-147"></span><span class="annot"><a href="Finance.Ledger.html#isCreditAccount"><span class="hs-identifier hs-type">isCreditAccount</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-148"></span><span id="isCreditAccount"><span class="annot"><span class="annottext">isCreditAccount :: AccountCode -&gt; Bool
+</span><a href="Finance.Ledger.html#isCreditAccount"><span class="hs-identifier hs-var hs-var">isCreditAccount</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">not</span></span><span> </span><span class="annot"><span class="annottext">(Bool -&gt; Bool) -&gt; (AccountCode -&gt; Bool) -&gt; AccountCode -&gt; Bool
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">AccountCode -&gt; Bool
+</span><a href="Finance.Ledger.html#isDebitAccount"><span class="hs-identifier hs-var">isDebitAccount</span></a></span><span>
+</span><span id="line-149"></span><span>
+</span><span id="line-150"></span><span class="annot"><span class="hs-comment">-- | Post entry to ledger</span></span><span>
+</span><span id="line-151"></span><span class="annot"><a href="Finance.Ledger.html#postTurn"><span class="hs-identifier hs-type">postTurn</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Ledger.html#AccTurn"><span class="hs-identifier hs-type">AccTurn</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Ledger.html#Ledger"><span class="hs-identifier hs-type">Ledger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="Finance.Ledger.html#Ledger"><span class="hs-identifier hs-type">Ledger</span></a></span><span>
+</span><span id="line-152"></span><span id="postTurn"><span class="annot"><span class="annottext">postTurn :: AccTurn -&gt; Ledger -&gt; Maybe Ledger
+</span><a href="Finance.Ledger.html#postTurn"><span class="hs-identifier hs-var hs-var">postTurn</span></a></span></span><span> </span><span id="local-6989586621680253408"><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253408"><span class="hs-identifier hs-var">turn</span></a></span></span><span> </span><span id="local-6989586621680253409"><span class="annot"><span class="annottext">Ledger
+</span><a href="#local-6989586621680253409"><span class="hs-identifier hs-var">ledger</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-153"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">AccTurn -&gt; TurnStatus
+</span><a href="Finance.Ledger.html#turnStatus"><span class="hs-identifier hs-var">turnStatus</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253408"><span class="hs-identifier hs-var">turn</span></a></span><span> </span><span class="annot"><span class="annottext">TurnStatus -&gt; TurnStatus -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">TurnStatus
+</span><a href="Finance.Ledger.html#TSNew"><span class="hs-identifier hs-var">TSNew</span></a></span><span>
+</span><span id="line-154"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Maybe Ledger
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-155"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">Ledger -&gt; Maybe Ledger
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(Ledger -&gt; Maybe Ledger) -&gt; Ledger -&gt; Maybe Ledger
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Ledger
+</span><a href="#local-6989586621680253409"><span class="hs-identifier hs-var">ledger</span></a></span><span>
+</span><span id="line-156"></span><span>      </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.Ledger.html#ledgerEntries"><span class="hs-identifier hs-var">ledgerEntries</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">M.insert</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Finance.Ledger.html#turnId"><span class="hs-identifier hs-var">turnId</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680253408"><span class="hs-identifier hs-type">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><a href="#local-6989586621680253408"><span class="hs-identifier hs-type">turn</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Finance.Ledger.html#ledgerEntries"><span class="hs-identifier hs-var">ledgerEntries</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680253409"><span class="hs-identifier hs-type">ledger</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-157"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Ledger.html#ledgerBalance"><span class="hs-identifier hs-var">ledgerBalance</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Ledger.html#updateBalance"><span class="hs-identifier hs-type">updateBalance</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680253408"><span class="hs-identifier hs-type">turn</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Finance.Ledger.html#ledgerBalance"><span class="hs-identifier hs-var">ledgerBalance</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680253409"><span class="hs-identifier hs-type">ledger</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-158"></span><span>      </span><span class="hs-special">}</span><span>
+</span><span id="line-159"></span><span>
+</span><span id="line-160"></span><span class="annot"><span class="hs-comment">-- | Update balance after posting</span></span><span>
+</span><span id="line-161"></span><span class="annot"><a href="Finance.Ledger.html#updateBalance"><span class="hs-identifier hs-type">updateBalance</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Ledger.html#AccTurn"><span class="hs-identifier hs-type">AccTurn</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Map</span></span><span> </span><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span> </span><span class="annot"><a href="Finance.Ledger.html#Amount"><span class="hs-identifier hs-type">Amount</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Map</span></span><span> </span><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span> </span><span class="annot"><a href="Finance.Ledger.html#Amount"><span class="hs-identifier hs-type">Amount</span></a></span><span>
+</span><span id="line-162"></span><span id="updateBalance"><span class="annot"><span class="annottext">updateBalance :: AccTurn -&gt; Map AccountCode Amount -&gt; Map AccountCode Amount
+</span><a href="Finance.Ledger.html#updateBalance"><span class="hs-identifier hs-var hs-var">updateBalance</span></a></span></span><span> </span><span id="local-6989586621680253412"><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253412"><span class="hs-identifier hs-var">turn</span></a></span></span><span> </span><span id="local-6989586621680253413"><span class="annot"><span class="annottext">Map AccountCode Amount
+</span><a href="#local-6989586621680253413"><span class="hs-identifier hs-var">balance</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-163"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccountCode -&gt; Map AccountCode Amount -&gt; Maybe Amount
+forall k a. Ord k =&gt; k -&gt; Map k a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">M.lookup</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnDebitAcc"><span class="hs-identifier hs-var">turnDebitAcc</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253412"><span class="hs-identifier hs-var">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Map AccountCode Amount
+</span><a href="#local-6989586621680253413"><span class="hs-identifier hs-var">balance</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">AccountCode -&gt; Map AccountCode Amount -&gt; Maybe Amount
+forall k a. Ord k =&gt; k -&gt; Map k a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">M.lookup</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnCreditAcc"><span class="hs-identifier hs-var">turnCreditAcc</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253412"><span class="hs-identifier hs-var">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Map AccountCode Amount
+</span><a href="#local-6989586621680253413"><span class="hs-identifier hs-var">balance</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-164"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680253415"><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253415"><span class="hs-identifier hs-var">oldDebit</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680253416"><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253416"><span class="hs-identifier hs-var">oldCredit</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-165"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680253418"><span class="annot"><span class="annottext">updatedDebit :: Amount
+</span><a href="#local-6989586621680253418"><span class="hs-identifier hs-var hs-var">updatedDebit</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253415"><span class="hs-identifier hs-var">oldDebit</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680253415"><span class="hs-identifier hs-type">oldDebit</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">+</span></span><span> </span><span class="annot"><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Finance.Ledger.html#turnAmount"><span class="hs-identifier hs-var">turnAmount</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680253412"><span class="hs-identifier hs-type">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-166"></span><span>          </span><span id="local-6989586621680253421"><span class="annot"><span class="annottext">updatedCredit :: Amount
+</span><a href="#local-6989586621680253421"><span class="hs-identifier hs-var hs-var">updatedCredit</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253416"><span class="hs-identifier hs-var">oldCredit</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680253416"><span class="hs-identifier hs-type">oldCredit</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">+</span></span><span> </span><span class="annot"><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Finance.Ledger.html#turnAmount"><span class="hs-identifier hs-var">turnAmount</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680253412"><span class="hs-identifier hs-type">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-167"></span><span>      </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">AccountCode
+-&gt; Amount -&gt; Map AccountCode Amount -&gt; Map AccountCode Amount
+forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">M.insert</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnCreditAcc"><span class="hs-identifier hs-var">turnCreditAcc</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253412"><span class="hs-identifier hs-var">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253421"><span class="hs-identifier hs-var">updatedCredit</span></a></span><span> </span><span class="annot"><span class="annottext">(Map AccountCode Amount -&gt; Map AccountCode Amount)
+-&gt; Map AccountCode Amount -&gt; Map AccountCode Amount
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">AccountCode
+-&gt; Amount -&gt; Map AccountCode Amount -&gt; Map AccountCode Amount
+forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">M.insert</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnDebitAcc"><span class="hs-identifier hs-var">turnDebitAcc</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253412"><span class="hs-identifier hs-var">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253418"><span class="hs-identifier hs-var">updatedDebit</span></a></span><span> </span><span class="annot"><span class="annottext">Map AccountCode Amount
+</span><a href="#local-6989586621680253413"><span class="hs-identifier hs-var">balance</span></a></span><span>
+</span><span id="line-168"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680253422"><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253422"><span class="hs-identifier hs-var">oldDebit</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Maybe Amount
+</span><span class="hs-identifier hs-var">Nothing</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-169"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680253424"><span class="annot"><span class="annottext">updatedDebit :: Amount
+</span><a href="#local-6989586621680253424"><span class="hs-identifier hs-var hs-var">updatedDebit</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253422"><span class="hs-identifier hs-var">oldDebit</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680253422"><span class="hs-identifier hs-type">oldDebit</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">+</span></span><span> </span><span class="annot"><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Finance.Ledger.html#turnAmount"><span class="hs-identifier hs-var">turnAmount</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680253412"><span class="hs-identifier hs-type">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-170"></span><span>          </span><span id="local-6989586621680253425"><span class="annot"><span class="annottext">newCredit :: Amount
+</span><a href="#local-6989586621680253425"><span class="hs-identifier hs-var hs-var">newCredit</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Ledger.html#Amount"><span class="hs-identifier hs-type">Amount</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">unAmount :: Double
+</span><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Amount -&gt; Double
+</span><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; Amount
+</span><a href="Finance.Ledger.html#turnAmount"><span class="hs-identifier hs-var">turnAmount</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253412"><span class="hs-identifier hs-var">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-171"></span><span>      </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">AccountCode
+-&gt; Amount -&gt; Map AccountCode Amount -&gt; Map AccountCode Amount
+forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">M.insert</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnCreditAcc"><span class="hs-identifier hs-var">turnCreditAcc</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253412"><span class="hs-identifier hs-var">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253425"><span class="hs-identifier hs-var">newCredit</span></a></span><span> </span><span class="annot"><span class="annottext">(Map AccountCode Amount -&gt; Map AccountCode Amount)
+-&gt; Map AccountCode Amount -&gt; Map AccountCode Amount
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">AccountCode
+-&gt; Amount -&gt; Map AccountCode Amount -&gt; Map AccountCode Amount
+forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">M.insert</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnDebitAcc"><span class="hs-identifier hs-var">turnDebitAcc</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253412"><span class="hs-identifier hs-var">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253424"><span class="hs-identifier hs-var">updatedDebit</span></a></span><span> </span><span class="annot"><span class="annottext">Map AccountCode Amount
+</span><a href="#local-6989586621680253413"><span class="hs-identifier hs-var">balance</span></a></span><span>
+</span><span id="line-172"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Maybe Amount
+</span><span class="hs-identifier hs-var">Nothing</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680253426"><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253426"><span class="hs-identifier hs-var">oldCredit</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-173"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680253427"><span class="annot"><span class="annottext">newDebit :: Amount
+</span><a href="#local-6989586621680253427"><span class="hs-identifier hs-var hs-var">newDebit</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Ledger.html#Amount"><span class="hs-identifier hs-type">Amount</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">unAmount :: Double
+</span><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Amount -&gt; Double
+</span><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; Amount
+</span><a href="Finance.Ledger.html#turnAmount"><span class="hs-identifier hs-var">turnAmount</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253412"><span class="hs-identifier hs-var">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-174"></span><span>          </span><span id="local-6989586621680253429"><span class="annot"><span class="annottext">updatedCredit :: Amount
+</span><a href="#local-6989586621680253429"><span class="hs-identifier hs-var hs-var">updatedCredit</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253426"><span class="hs-identifier hs-var">oldCredit</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680253426"><span class="hs-identifier hs-type">oldCredit</span></a></span><span> </span><span class="annot"><span class="hs-operator hs-type">+</span></span><span> </span><span class="annot"><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Finance.Ledger.html#turnAmount"><span class="hs-identifier hs-var">turnAmount</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680253412"><span class="hs-identifier hs-type">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-175"></span><span>      </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">AccountCode
+-&gt; Amount -&gt; Map AccountCode Amount -&gt; Map AccountCode Amount
+forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">M.insert</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnCreditAcc"><span class="hs-identifier hs-var">turnCreditAcc</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253412"><span class="hs-identifier hs-var">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253429"><span class="hs-identifier hs-var">updatedCredit</span></a></span><span> </span><span class="annot"><span class="annottext">(Map AccountCode Amount -&gt; Map AccountCode Amount)
+-&gt; Map AccountCode Amount -&gt; Map AccountCode Amount
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">AccountCode
+-&gt; Amount -&gt; Map AccountCode Amount -&gt; Map AccountCode Amount
+forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">M.insert</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnDebitAcc"><span class="hs-identifier hs-var">turnDebitAcc</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253412"><span class="hs-identifier hs-var">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253427"><span class="hs-identifier hs-var">newDebit</span></a></span><span> </span><span class="annot"><span class="annottext">Map AccountCode Amount
+</span><a href="#local-6989586621680253413"><span class="hs-identifier hs-var">balance</span></a></span><span>
+</span><span id="line-176"></span><span>    </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Maybe Amount
+</span><span class="hs-identifier hs-var">Nothing</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Maybe Amount
+</span><span class="hs-identifier hs-var">Nothing</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-177"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680253430"><span class="annot"><span class="annottext">newDebit :: Amount
+</span><a href="#local-6989586621680253430"><span class="hs-identifier hs-var hs-var">newDebit</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Ledger.html#Amount"><span class="hs-identifier hs-type">Amount</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">unAmount :: Double
+</span><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Amount -&gt; Double
+</span><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; Amount
+</span><a href="Finance.Ledger.html#turnAmount"><span class="hs-identifier hs-var">turnAmount</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253412"><span class="hs-identifier hs-var">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-178"></span><span>          </span><span id="local-6989586621680253431"><span class="annot"><span class="annottext">newCredit :: Amount
+</span><a href="#local-6989586621680253431"><span class="hs-identifier hs-var hs-var">newCredit</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="Finance.Ledger.html#Amount"><span class="hs-identifier hs-type">Amount</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">unAmount :: Double
+</span><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Amount -&gt; Double
+</span><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; Amount
+</span><a href="Finance.Ledger.html#turnAmount"><span class="hs-identifier hs-var">turnAmount</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253412"><span class="hs-identifier hs-var">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-179"></span><span>      </span><span class="hs-keyword">in</span><span> </span><span class="annot"><span class="annottext">AccountCode
+-&gt; Amount -&gt; Map AccountCode Amount -&gt; Map AccountCode Amount
+forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">M.insert</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnCreditAcc"><span class="hs-identifier hs-var">turnCreditAcc</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253412"><span class="hs-identifier hs-var">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253431"><span class="hs-identifier hs-var">newCredit</span></a></span><span> </span><span class="annot"><span class="annottext">(Map AccountCode Amount -&gt; Map AccountCode Amount)
+-&gt; Map AccountCode Amount -&gt; Map AccountCode Amount
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">AccountCode
+-&gt; Amount -&gt; Map AccountCode Amount -&gt; Map AccountCode Amount
+forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">M.insert</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnDebitAcc"><span class="hs-identifier hs-var">turnDebitAcc</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253412"><span class="hs-identifier hs-var">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Amount
+</span><a href="#local-6989586621680253430"><span class="hs-identifier hs-var">newDebit</span></a></span><span> </span><span class="annot"><span class="annottext">Map AccountCode Amount
+</span><a href="#local-6989586621680253413"><span class="hs-identifier hs-var">balance</span></a></span><span>
+</span><span id="line-180"></span><span>
+</span><span id="line-181"></span><span class="annot"><span class="hs-comment">-- | Pretty print ledger entry</span></span><span>
+</span><span id="line-182"></span><span class="annot"><a href="Finance.Ledger.html#prettyTurn"><span class="hs-identifier hs-type">prettyTurn</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Ledger.html#AccTurn"><span class="hs-identifier hs-type">AccTurn</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span>
+</span><span id="line-183"></span><span id="prettyTurn"><span class="annot"><span class="annottext">prettyTurn :: AccTurn -&gt; Text
+</span><a href="Finance.Ledger.html#prettyTurn"><span class="hs-identifier hs-var hs-var">prettyTurn</span></a></span></span><span> </span><span id="local-6989586621680253433"><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253433"><span class="hs-identifier hs-var">t</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Turn #&quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int64 -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TurnId -&gt; Int64
+</span><a href="Finance.Ledger.html#unTurnId"><span class="hs-identifier hs-var">unTurnId</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; TurnId
+</span><a href="Finance.Ledger.html#turnId"><span class="hs-identifier hs-var">turnId</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253433"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;: &quot;</span></span><span>
+</span><span id="line-184"></span><span>            </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccountCode -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnDebitAcc"><span class="hs-identifier hs-var">turnDebitAcc</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253433"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; -&gt; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccountCode -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; AccountCode
+</span><a href="Finance.Ledger.html#turnCreditAcc"><span class="hs-identifier hs-var">turnCreditAcc</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253433"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-185"></span><span>            </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot; &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Text
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; String
+forall a. Show a =&gt; a -&gt; String
+</span><span class="hs-identifier hs-var">show</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Amount -&gt; Double
+</span><a href="Finance.Ledger.html#unAmount"><span class="hs-identifier hs-var">unAmount</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; Amount
+</span><a href="Finance.Ledger.html#turnAmount"><span class="hs-identifier hs-var">turnAmount</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680253433"><span class="hs-identifier hs-var">t</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-186"></span><span>
+</span><span id="line-187"></span><span class="annot"><span class="hs-comment">-- | Calculate account balance</span></span><span>
+</span><span id="line-188"></span><span class="annot"><a href="Finance.Ledger.html#calculateAccountBalance"><span class="hs-identifier hs-type">calculateAccountBalance</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Account.html#AccountCode"><span class="hs-identifier hs-type">AccountCode</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Ledger.html#Ledger"><span class="hs-identifier hs-type">Ledger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Ledger.html#Amount"><span class="hs-identifier hs-type">Amount</span></a></span><span>
+</span><span id="line-189"></span><span id="calculateAccountBalance"><span class="annot"><span class="annottext">calculateAccountBalance :: AccountCode -&gt; Ledger -&gt; Amount
+</span><a href="Finance.Ledger.html#calculateAccountBalance"><span class="hs-identifier hs-var hs-var">calculateAccountBalance</span></a></span></span><span> </span><span id="local-6989586621680253437"><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680253437"><span class="hs-identifier hs-var">code</span></a></span></span><span> </span><span id="local-6989586621680253438"><span class="annot"><span class="annottext">Ledger
+</span><a href="#local-6989586621680253438"><span class="hs-identifier hs-var">ledger</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-190"></span><span>  </span><span class="annot"><span class="annottext">Amount -&gt; (Amount -&gt; Amount) -&gt; Maybe Amount -&gt; Amount
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; Amount
+</span><a href="Finance.Ledger.html#Amount"><span class="hs-identifier hs-var">Amount</span></a></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Amount -&gt; Amount
+forall a. a -&gt; a
+</span><span class="hs-identifier hs-var">id</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccountCode -&gt; Map AccountCode Amount -&gt; Maybe Amount
+forall k a. Ord k =&gt; k -&gt; Map k a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">M.lookup</span></span><span> </span><span class="annot"><span class="annottext">AccountCode
+</span><a href="#local-6989586621680253437"><span class="hs-identifier hs-var">code</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ledger -&gt; Map AccountCode Amount
+</span><a href="Finance.Ledger.html#ledgerBalance"><span class="hs-identifier hs-var">ledgerBalance</span></a></span><span> </span><span class="annot"><span class="annottext">Ledger
+</span><a href="#local-6989586621680253438"><span class="hs-identifier hs-var">ledger</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-191"></span></pre></body></html>

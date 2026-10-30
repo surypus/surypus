@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html"><span class="hs-identifier">Infrastructure.EncryptionAdvanced</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Exception</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">SomeException</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">try</span></span><span class="hs-special">)</span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Bits</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">xor</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">BS</span></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.ByteString.Lazy</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">BSL</span></span><span>
+</span><span id="line-7"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text.Encoding</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">TE</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Word</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Word8</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="annot"><span class="hs-comment">-- | Advanced encryption with multiple algorithms (simplified)</span></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">data</span><span> </span><span id="EncryptionAlgorithm"><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#EncryptionAlgorithm"><span class="hs-identifier hs-var">EncryptionAlgorithm</span></a></span></span><span>
+</span><span id="line-15"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="AES256CTREnc"><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#AES256CTREnc"><span class="hs-identifier hs-var">AES256CTREnc</span></a></span></span><span>
+</span><span id="line-16"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="AES256CBC"><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#AES256CBC"><span class="hs-identifier hs-var">AES256CBC</span></a></span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="ChaCha20Poly1305"><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#ChaCha20Poly1305"><span class="hs-identifier hs-var">ChaCha20Poly1305</span></a></span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680265253"><span id="local-6989586621680265255"><span id="local-6989586621680265259"><span class="annot"><span class="annottext">Int -&gt; EncryptionAlgorithm -&gt; ShowS
+[EncryptionAlgorithm] -&gt; ShowS
+EncryptionAlgorithm -&gt; String
+(Int -&gt; EncryptionAlgorithm -&gt; ShowS)
+-&gt; (EncryptionAlgorithm -&gt; String)
+-&gt; ([EncryptionAlgorithm] -&gt; ShowS)
+-&gt; Show EncryptionAlgorithm
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; EncryptionAlgorithm -&gt; ShowS
+showsPrec :: Int -&gt; EncryptionAlgorithm -&gt; ShowS
+$cshow :: EncryptionAlgorithm -&gt; String
+show :: EncryptionAlgorithm -&gt; String
+$cshowList :: [EncryptionAlgorithm] -&gt; ShowS
+showList :: [EncryptionAlgorithm] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680265264"><span id="local-6989586621680265269"><span class="annot"><span class="annottext">EncryptionAlgorithm -&gt; EncryptionAlgorithm -&gt; Bool
+(EncryptionAlgorithm -&gt; EncryptionAlgorithm -&gt; Bool)
+-&gt; (EncryptionAlgorithm -&gt; EncryptionAlgorithm -&gt; Bool)
+-&gt; Eq EncryptionAlgorithm
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: EncryptionAlgorithm -&gt; EncryptionAlgorithm -&gt; Bool
+== :: EncryptionAlgorithm -&gt; EncryptionAlgorithm -&gt; Bool
+$c/= :: EncryptionAlgorithm -&gt; EncryptionAlgorithm -&gt; Bool
+/= :: EncryptionAlgorithm -&gt; EncryptionAlgorithm -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="annot"><span class="hs-comment">-- | Encryption configuration</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="EncryptionConfig"><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#EncryptionConfig"><span class="hs-identifier hs-var">EncryptionConfig</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="EncryptionConfig"><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#EncryptionConfig"><span class="hs-identifier hs-var">EncryptionConfig</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="encAlgorithm"><span class="annot"><span class="annottext">EncryptionConfig -&gt; EncryptionAlgorithm
+</span><a href="Infrastructure.EncryptionAdvanced.html#encAlgorithm"><span class="hs-identifier hs-var hs-var">encAlgorithm</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#EncryptionAlgorithm"><span class="hs-identifier hs-type">EncryptionAlgorithm</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-23"></span><span>    </span><span id="encKeySize"><span class="annot"><span class="annottext">EncryptionConfig -&gt; Int
+</span><a href="Infrastructure.EncryptionAdvanced.html#encKeySize"><span class="hs-identifier hs-var hs-var">encKeySize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-24"></span><span>    </span><span id="encIvSize"><span class="annot"><span class="annottext">EncryptionConfig -&gt; Int
+</span><a href="Infrastructure.EncryptionAdvanced.html#encIvSize"><span class="hs-identifier hs-var hs-var">encIvSize</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span>
+</span><span id="line-25"></span><span>    </span><span id="encMode"><span class="annot"><span class="annottext">EncryptionConfig -&gt; EncryptionMode
+</span><a href="Infrastructure.EncryptionAdvanced.html#encMode"><span class="hs-identifier hs-var hs-var">encMode</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#EncryptionMode"><span class="hs-identifier hs-type">EncryptionMode</span></a></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="annot"><span class="hs-comment">-- | Encryption mode</span></span><span>
+</span><span id="line-29"></span><span class="hs-keyword">data</span><span> </span><span id="EncryptionMode"><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#EncryptionMode"><span class="hs-identifier hs-var">EncryptionMode</span></a></span></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="CTRMode"><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#CTRMode"><span class="hs-identifier hs-var">CTRMode</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="CBCMode"><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#CBCMode"><span class="hs-identifier hs-var">CBCMode</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="GCMMode"><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#GCMMode"><span class="hs-identifier hs-var">GCMMode</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680265282"><span id="local-6989586621680265284"><span id="local-6989586621680265288"><span class="annot"><span class="annottext">Int -&gt; EncryptionMode -&gt; ShowS
+[EncryptionMode] -&gt; ShowS
+EncryptionMode -&gt; String
+(Int -&gt; EncryptionMode -&gt; ShowS)
+-&gt; (EncryptionMode -&gt; String)
+-&gt; ([EncryptionMode] -&gt; ShowS)
+-&gt; Show EncryptionMode
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; EncryptionMode -&gt; ShowS
+showsPrec :: Int -&gt; EncryptionMode -&gt; ShowS
+$cshow :: EncryptionMode -&gt; String
+show :: EncryptionMode -&gt; String
+$cshowList :: [EncryptionMode] -&gt; ShowS
+showList :: [EncryptionMode] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680265291"><span id="local-6989586621680265295"><span class="annot"><span class="annottext">EncryptionMode -&gt; EncryptionMode -&gt; Bool
+(EncryptionMode -&gt; EncryptionMode -&gt; Bool)
+-&gt; (EncryptionMode -&gt; EncryptionMode -&gt; Bool) -&gt; Eq EncryptionMode
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: EncryptionMode -&gt; EncryptionMode -&gt; Bool
+== :: EncryptionMode -&gt; EncryptionMode -&gt; Bool
+$c/= :: EncryptionMode -&gt; EncryptionMode -&gt; Bool
+/= :: EncryptionMode -&gt; EncryptionMode -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="annot"><span class="hs-comment">-- | Initialize advanced encryption (stub)</span></span><span>
+</span><span id="line-36"></span><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#initAdvancedEncryption"><span class="hs-identifier hs-type">initAdvancedEncryption</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#EncryptionAlgorithm"><span class="hs-identifier hs-type">EncryptionAlgorithm</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#EncryptionConfig"><span class="hs-identifier hs-type">EncryptionConfig</span></a></span><span>
+</span><span id="line-37"></span><span id="initAdvancedEncryption"><span class="annot"><span class="annottext">initAdvancedEncryption :: EncryptionAlgorithm -&gt; IO EncryptionConfig
+</span><a href="Infrastructure.EncryptionAdvanced.html#initAdvancedEncryption"><span class="hs-identifier hs-var hs-var">initAdvancedEncryption</span></a></span></span><span> </span><span id="local-6989586621680265299"><span class="annot"><span class="annottext">EncryptionAlgorithm
+</span><a href="#local-6989586621680265299"><span class="hs-identifier hs-var">algo</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-38"></span><span>  </span><span class="annot"><span class="annottext">EncryptionConfig -&gt; IO EncryptionConfig
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(EncryptionConfig -&gt; IO EncryptionConfig)
+-&gt; EncryptionConfig -&gt; IO EncryptionConfig
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span>
+</span><span id="line-39"></span><span>    </span><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#EncryptionConfig"><span class="hs-identifier hs-type">EncryptionConfig</span></a></span><span>
+</span><span id="line-40"></span><span>      </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">encAlgorithm :: EncryptionAlgorithm
+</span><a href="Infrastructure.EncryptionAdvanced.html#encAlgorithm"><span class="hs-identifier hs-var">encAlgorithm</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">EncryptionAlgorithm
+</span><a href="#local-6989586621680265299"><span class="hs-identifier hs-var">algo</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-41"></span><span>        </span><span class="annot"><span class="annottext">encKeySize :: Int
+</span><a href="Infrastructure.EncryptionAdvanced.html#encKeySize"><span class="hs-identifier hs-var">encKeySize</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">32</span></span><span class="hs-special">,</span><span>
+</span><span id="line-42"></span><span>        </span><span class="annot"><span class="annottext">encIvSize :: Int
+</span><a href="Infrastructure.EncryptionAdvanced.html#encIvSize"><span class="hs-identifier hs-var">encIvSize</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">16</span></span><span class="hs-special">,</span><span>
+</span><span id="line-43"></span><span>        </span><span class="annot"><span class="annottext">encMode :: EncryptionMode
+</span><a href="Infrastructure.EncryptionAdvanced.html#encMode"><span class="hs-identifier hs-var">encMode</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">EncryptionMode
+</span><a href="Infrastructure.EncryptionAdvanced.html#CTRMode"><span class="hs-identifier hs-var">CTRMode</span></a></span><span>
+</span><span id="line-44"></span><span>      </span><span class="hs-special">}</span><span>
+</span><span id="line-45"></span><span>
+</span><span id="line-46"></span><span class="annot"><span class="hs-comment">-- | Encrypt with authentication (stub)</span></span><span>
+</span><span id="line-47"></span><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#encryptWithAuth"><span class="hs-identifier hs-type">encryptWithAuth</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#EncryptionConfig"><span class="hs-identifier hs-type">EncryptionConfig</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">BS.ByteString</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">BS.ByteString</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">BS.ByteString</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span id="encryptWithAuth"><span class="annot"><span class="annottext">encryptWithAuth :: EncryptionConfig
+-&gt; ByteString -&gt; IO (Either String (ByteString, ByteString))
+</span><a href="Infrastructure.EncryptionAdvanced.html#encryptWithAuth"><span class="hs-identifier hs-var hs-var">encryptWithAuth</span></a></span></span><span> </span><span id="local-6989586621680265301"><span class="annot"><span class="annottext">EncryptionConfig
+</span><a href="#local-6989586621680265301"><span class="hs-identifier hs-var">config</span></a></span></span><span> </span><span id="local-6989586621680265302"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680265302"><span class="hs-identifier hs-var">plaintext</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-comment">-- Simplified: return plaintext as ciphertext and dummy tag</span><span>
+</span><span id="line-50"></span><span>  </span><span class="annot"><span class="annottext">Either String (ByteString, ByteString)
+-&gt; IO (Either String (ByteString, ByteString))
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Either String (ByteString, ByteString)
+ -&gt; IO (Either String (ByteString, ByteString)))
+-&gt; Either String (ByteString, ByteString)
+-&gt; IO (Either String (ByteString, ByteString))
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">(ByteString, ByteString) -&gt; Either String (ByteString, ByteString)
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680265302"><span class="hs-identifier hs-var">plaintext</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Word8 -&gt; ByteString
+</span><span class="hs-identifier hs-var">BS.replicate</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">16</span></span><span> </span><span class="annot"><span class="annottext">Word8
+</span><span class="hs-number">0x00</span></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>
+</span><span id="line-52"></span><span class="annot"><span class="hs-comment">-- | Decrypt with authentication (stub)</span></span><span>
+</span><span id="line-53"></span><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#decryptWithAuth"><span class="hs-identifier hs-type">decryptWithAuth</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#EncryptionConfig"><span class="hs-identifier hs-type">EncryptionConfig</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">BS.ByteString</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">BS.ByteString</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">BS.ByteString</span></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span id="decryptWithAuth"><span class="annot"><span class="annottext">decryptWithAuth :: EncryptionConfig
+-&gt; ByteString -&gt; ByteString -&gt; IO (Either String ByteString)
+</span><a href="Infrastructure.EncryptionAdvanced.html#decryptWithAuth"><span class="hs-identifier hs-var hs-var">decryptWithAuth</span></a></span></span><span> </span><span id="local-6989586621680265305"><span class="annot"><span class="annottext">EncryptionConfig
+</span><a href="#local-6989586621680265305"><span class="hs-identifier hs-var">config</span></a></span></span><span> </span><span id="local-6989586621680265306"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680265306"><span class="hs-identifier hs-var">ciphertext</span></a></span></span><span> </span><span id="local-6989586621680265307"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680265307"><span class="hs-identifier hs-var">tag</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-55"></span><span>  </span><span class="hs-comment">-- Simplified: return ciphertext as plaintext</span><span>
+</span><span id="line-56"></span><span>  </span><span class="annot"><span class="annottext">Either String ByteString -&gt; IO (Either String ByteString)
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">(Either String ByteString -&gt; IO (Either String ByteString))
+-&gt; Either String ByteString -&gt; IO (Either String ByteString)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Either String ByteString
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680265306"><span class="hs-identifier hs-var">ciphertext</span></a></span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="annot"><span class="hs-comment">-- | Key rotation (stub)</span></span><span>
+</span><span id="line-59"></span><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#rotateKey"><span class="hs-identifier hs-type">rotateKey</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#EncryptionConfig"><span class="hs-identifier hs-type">EncryptionConfig</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#EncryptionConfig"><span class="hs-identifier hs-type">EncryptionConfig</span></a></span><span>
+</span><span id="line-60"></span><span id="rotateKey"><span class="annot"><span class="annottext">rotateKey :: EncryptionConfig -&gt; IO EncryptionConfig
+</span><a href="Infrastructure.EncryptionAdvanced.html#rotateKey"><span class="hs-identifier hs-var hs-var">rotateKey</span></a></span></span><span> </span><span id="local-6989586621680265309"><span class="annot"><span class="annottext">EncryptionConfig
+</span><a href="#local-6989586621680265309"><span class="hs-identifier hs-var">config</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-61"></span><span>  </span><span class="annot"><span class="annottext">EncryptionConfig -&gt; IO EncryptionConfig
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="annot"><span class="annottext">EncryptionConfig
+</span><a href="#local-6989586621680265309"><span class="hs-identifier hs-var">config</span></a></span><span>
+</span><span id="line-62"></span><span>
+</span><span id="line-63"></span><span class="annot"><span class="hs-comment">-- | Securely wipe data (stub)</span></span><span>
+</span><span id="line-64"></span><span class="annot"><a href="Infrastructure.EncryptionAdvanced.html#secureWipe"><span class="hs-identifier hs-type">secureWipe</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">BS.ByteString</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-65"></span><span id="secureWipe"><span class="annot"><span class="annottext">secureWipe :: ByteString -&gt; IO ()
+</span><a href="Infrastructure.EncryptionAdvanced.html#secureWipe"><span class="hs-identifier hs-var hs-var">secureWipe</span></a></span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-66"></span><span>  </span><span class="annot"><span class="annottext">() -&gt; IO ()
+forall a. a -&gt; IO a
+forall (m :: * -&gt; *) a. Monad m =&gt; a -&gt; m a
+</span><span class="hs-identifier hs-var">return</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
+</span><span id="line-67"></span></pre></body></html>

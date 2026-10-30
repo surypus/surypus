@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Finance.Types.html"><span class="hs-identifier">Finance.Types</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Finance.Types.html#Money"><span class="hs-identifier">Money</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Types.html#RatePercent"><span class="hs-identifier">RatePercent</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Types.html#RateFraction"><span class="hs-identifier">RateFraction</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Types.html#calcVAT"><span class="hs-identifier">calcVAT</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Types.html#AccTurn"><span class="hs-identifier">AccTurn</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-2"></span><span>
+</span><span id="line-3"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/Decimal-0.5.2-000a17e862f22f3d4f2d6b5742ec3c1ea96ec29a76e0e6afd999ca5cf5d9c138/share/doc/html/src/Data.Decimal.html"><span class="hs-identifier">Data.Decimal</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/Decimal-0.5.2-000a17e862f22f3d4f2d6b5742ec3c1ea96ec29a76e0e6afd999ca5cf5d9c138/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier">Decimal</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Numeric</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">showFFloat</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">newtype</span><span> </span><span id="Money"><span class="annot"><a href="Finance.Types.html#Money"><span class="hs-identifier hs-var">Money</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Money"><span class="annot"><a href="Finance.Types.html#Money"><span class="hs-identifier hs-var">Money</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unMoney"><span class="annot"><span class="annottext">Money -&gt; Decimal
+</span><a href="Finance.Types.html#unMoney"><span class="hs-identifier hs-var hs-var">unMoney</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/Decimal-0.5.2-000a17e862f22f3d4f2d6b5742ec3c1ea96ec29a76e0e6afd999ca5cf5d9c138/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680254290"><span id="local-6989586621680254295"><span class="annot"><span class="annottext">Money -&gt; Money -&gt; Bool
+(Money -&gt; Money -&gt; Bool) -&gt; (Money -&gt; Money -&gt; Bool) -&gt; Eq Money
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Money -&gt; Money -&gt; Bool
+== :: Money -&gt; Money -&gt; Bool
+$c/= :: Money -&gt; Money -&gt; Bool
+/= :: Money -&gt; Money -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680254302"><span id="local-6989586621680254309"><span id="local-6989586621680254313"><span class="annot"><span class="annottext">Int -&gt; Money -&gt; ShowS
+[Money] -&gt; ShowS
+Money -&gt; String
+(Int -&gt; Money -&gt; ShowS)
+-&gt; (Money -&gt; String) -&gt; ([Money] -&gt; ShowS) -&gt; Show Money
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Money -&gt; ShowS
+showsPrec :: Int -&gt; Money -&gt; ShowS
+$cshow :: Money -&gt; String
+show :: Money -&gt; String
+$cshowList :: [Money] -&gt; ShowS
+showList :: [Money] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">data</span><span> </span><span id="RatePercent"><span class="annot"><a href="Finance.Types.html#RatePercent"><span class="hs-identifier hs-var">RatePercent</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RatePercent"><span class="annot"><a href="Finance.Types.html#RatePercent"><span class="hs-identifier hs-var">RatePercent</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unRatePercent"><span class="annot"><span class="annottext">RatePercent -&gt; Decimal
+</span><a href="Finance.Types.html#unRatePercent"><span class="hs-identifier hs-var hs-var">unRatePercent</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/Decimal-0.5.2-000a17e862f22f3d4f2d6b5742ec3c1ea96ec29a76e0e6afd999ca5cf5d9c138/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680254321"><span id="local-6989586621680254324"><span class="annot"><span class="annottext">RatePercent -&gt; RatePercent -&gt; Bool
+(RatePercent -&gt; RatePercent -&gt; Bool)
+-&gt; (RatePercent -&gt; RatePercent -&gt; Bool) -&gt; Eq RatePercent
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: RatePercent -&gt; RatePercent -&gt; Bool
+== :: RatePercent -&gt; RatePercent -&gt; Bool
+$c/= :: RatePercent -&gt; RatePercent -&gt; Bool
+/= :: RatePercent -&gt; RatePercent -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680254328"><span id="local-6989586621680254333"><span id="local-6989586621680254337"><span class="annot"><span class="annottext">Int -&gt; RatePercent -&gt; ShowS
+[RatePercent] -&gt; ShowS
+RatePercent -&gt; String
+(Int -&gt; RatePercent -&gt; ShowS)
+-&gt; (RatePercent -&gt; String)
+-&gt; ([RatePercent] -&gt; ShowS)
+-&gt; Show RatePercent
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; RatePercent -&gt; ShowS
+showsPrec :: Int -&gt; RatePercent -&gt; ShowS
+$cshow :: RatePercent -&gt; String
+show :: RatePercent -&gt; String
+$cshowList :: [RatePercent] -&gt; ShowS
+showList :: [RatePercent] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">data</span><span> </span><span id="RateFraction"><span class="annot"><a href="Finance.Types.html#RateFraction"><span class="hs-identifier hs-var">RateFraction</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="RateFraction"><span class="annot"><a href="Finance.Types.html#RateFraction"><span class="hs-identifier hs-var">RateFraction</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unRateFraction"><span class="annot"><span class="annottext">RateFraction -&gt; Decimal
+</span><a href="Finance.Types.html#unRateFraction"><span class="hs-identifier hs-var hs-var">unRateFraction</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/Decimal-0.5.2-000a17e862f22f3d4f2d6b5742ec3c1ea96ec29a76e0e6afd999ca5cf5d9c138/share/doc/html/src/Data.Decimal.html#Decimal"><span class="hs-identifier hs-type">Decimal</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680254342"><span id="local-6989586621680254345"><span class="annot"><span class="annottext">RateFraction -&gt; RateFraction -&gt; Bool
+(RateFraction -&gt; RateFraction -&gt; Bool)
+-&gt; (RateFraction -&gt; RateFraction -&gt; Bool) -&gt; Eq RateFraction
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: RateFraction -&gt; RateFraction -&gt; Bool
+== :: RateFraction -&gt; RateFraction -&gt; Bool
+$c/= :: RateFraction -&gt; RateFraction -&gt; Bool
+/= :: RateFraction -&gt; RateFraction -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680254349"><span id="local-6989586621680254354"><span id="local-6989586621680254358"><span class="annot"><span class="annottext">Int -&gt; RateFraction -&gt; ShowS
+[RateFraction] -&gt; ShowS
+RateFraction -&gt; String
+(Int -&gt; RateFraction -&gt; ShowS)
+-&gt; (RateFraction -&gt; String)
+-&gt; ([RateFraction] -&gt; ShowS)
+-&gt; Show RateFraction
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; RateFraction -&gt; ShowS
+showsPrec :: Int -&gt; RateFraction -&gt; ShowS
+$cshow :: RateFraction -&gt; String
+show :: RateFraction -&gt; String
+$cshowList :: [RateFraction] -&gt; ShowS
+showList :: [RateFraction] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span>
+</span><span id="line-16"></span><span class="annot"><a href="Finance.Types.html#rateToFraction"><span class="hs-identifier hs-type">rateToFraction</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Types.html#RatePercent"><span class="hs-identifier hs-type">RatePercent</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Types.html#RateFraction"><span class="hs-identifier hs-type">RateFraction</span></a></span><span>
+</span><span id="line-17"></span><span id="rateToFraction"><span class="annot"><span class="annottext">rateToFraction :: RatePercent -&gt; RateFraction
+</span><a href="Finance.Types.html#rateToFraction"><span class="hs-identifier hs-var hs-var">rateToFraction</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Finance.Types.html#RatePercent"><span class="hs-identifier hs-type">RatePercent</span></a></span><span> </span><span id="local-6989586621680254361"><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680254361"><span class="hs-identifier hs-var">p</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; RateFraction
+</span><a href="Finance.Types.html#RateFraction"><span class="hs-identifier hs-var">RateFraction</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680254361"><span class="hs-identifier hs-var">p</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="annottext">Decimal
+</span><span class="hs-number">100</span></span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span>
+</span><span id="line-19"></span><span class="annot"><a href="Finance.Types.html#calcVAT"><span class="hs-identifier hs-type">calcVAT</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Types.html#Money"><span class="hs-identifier hs-type">Money</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Types.html#RatePercent"><span class="hs-identifier hs-type">RatePercent</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Types.html#Money"><span class="hs-identifier hs-type">Money</span></a></span><span>
+</span><span id="line-20"></span><span id="calcVAT"><span class="annot"><span class="annottext">calcVAT :: Money -&gt; RatePercent -&gt; Money
+</span><a href="Finance.Types.html#calcVAT"><span class="hs-identifier hs-var hs-var">calcVAT</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Finance.Types.html#Money"><span class="hs-identifier hs-type">Money</span></a></span><span> </span><span id="local-6989586621680254363"><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680254363"><span class="hs-identifier hs-var">amount</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621680254364"><span class="annot"><span class="annottext">RatePercent
+</span><a href="#local-6989586621680254364"><span class="hs-identifier hs-var">rate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Money
+</span><a href="Finance.Types.html#Money"><span class="hs-identifier hs-var">Money</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Decimal
+</span><a href="#local-6989586621680254363"><span class="hs-identifier hs-var">amount</span></a></span><span> </span><span class="annot"><span class="annottext">Decimal -&gt; Decimal -&gt; Decimal
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">RateFraction -&gt; Decimal
+</span><a href="Finance.Types.html#unRateFraction"><span class="hs-identifier hs-var">unRateFraction</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">RatePercent -&gt; RateFraction
+</span><a href="Finance.Types.html#rateToFraction"><span class="hs-identifier hs-var">rateToFraction</span></a></span><span> </span><span class="annot"><span class="annottext">RatePercent
+</span><a href="#local-6989586621680254364"><span class="hs-identifier hs-var">rate</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="annot"><span class="hs-comment">-- | Accounting turn - single accounting entry (debit/credit)</span></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">data</span><span> </span><span id="AccTurn"><span class="annot"><a href="Finance.Types.html#AccTurn"><span class="hs-identifier hs-var">AccTurn</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="AccTurn"><span class="annot"><a href="Finance.Types.html#AccTurn"><span class="hs-identifier hs-var">AccTurn</span></a></span></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="atId"><span class="annot"><span class="annottext">AccTurn -&gt; Int
+</span><a href="Finance.Types.html#atId"><span class="hs-identifier hs-var hs-var">atId</span></a></span></span><span>    </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="atAcctId"><span class="annot"><span class="annottext">AccTurn -&gt; Int
+</span><a href="Finance.Types.html#atAcctId"><span class="hs-identifier hs-var hs-var">atAcctId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="atArId"><span class="annot"><span class="annottext">AccTurn -&gt; Int
+</span><a href="Finance.Types.html#atArId"><span class="hs-identifier hs-var hs-var">atArId</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="atDate"><span class="annot"><span class="annottext">AccTurn -&gt; Day
+</span><a href="Finance.Types.html#atDate"><span class="hs-identifier hs-var hs-var">atDate</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="atAmount"><span class="annot"><span class="annottext">AccTurn -&gt; Double
+</span><a href="Finance.Types.html#atAmount"><span class="hs-identifier hs-var hs-var">atAmount</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="atCurId"><span class="annot"><span class="annottext">AccTurn -&gt; Int
+</span><a href="Finance.Types.html#atCurId"><span class="hs-identifier hs-var hs-var">atCurId</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="atCurRate"><span class="annot"><span class="annottext">AccTurn -&gt; Double
+</span><a href="Finance.Types.html#atCurRate"><span class="hs-identifier hs-var hs-var">atCurRate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="atFlags"><span class="annot"><span class="annottext">AccTurn -&gt; Int
+</span><a href="Finance.Types.html#atFlags"><span class="hs-identifier hs-var hs-var">atFlags</span></a></span></span><span>  </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="atBillId"><span class="annot"><span class="annottext">AccTurn -&gt; Int64
+</span><a href="Finance.Types.html#atBillId"><span class="hs-identifier hs-var hs-var">atBillId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="atCorrId"><span class="annot"><span class="annottext">AccTurn -&gt; Int
+</span><a href="Finance.Types.html#atCorrId"><span class="hs-identifier hs-var hs-var">atCorrId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="atDbtAmt"><span class="annot"><span class="annottext">AccTurn -&gt; Double
+</span><a href="Finance.Types.html#atDbtAmt"><span class="hs-identifier hs-var hs-var">atDbtAmt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="atCrdAmt"><span class="annot"><span class="annottext">AccTurn -&gt; Double
+</span><a href="Finance.Types.html#atCrdAmt"><span class="hs-identifier hs-var hs-var">atCrdAmt</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-glyph">!</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680254380"><span id="local-6989586621680254399"><span id="local-6989586621680254403"><span class="annot"><span class="annottext">Int -&gt; AccTurn -&gt; ShowS
+[AccTurn] -&gt; ShowS
+AccTurn -&gt; String
+(Int -&gt; AccTurn -&gt; ShowS)
+-&gt; (AccTurn -&gt; String) -&gt; ([AccTurn] -&gt; ShowS) -&gt; Show AccTurn
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; AccTurn -&gt; ShowS
+showsPrec :: Int -&gt; AccTurn -&gt; ShowS
+$cshow :: AccTurn -&gt; String
+show :: AccTurn -&gt; String
+$cshowList :: [AccTurn] -&gt; ShowS
+showList :: [AccTurn] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680254406"><span id="local-6989586621680254424"><span class="annot"><span class="annottext">AccTurn -&gt; AccTurn -&gt; Bool
+(AccTurn -&gt; AccTurn -&gt; Bool)
+-&gt; (AccTurn -&gt; AccTurn -&gt; Bool) -&gt; Eq AccTurn
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: AccTurn -&gt; AccTurn -&gt; Bool
+== :: AccTurn -&gt; AccTurn -&gt; Bool
+$c/= :: AccTurn -&gt; AccTurn -&gt; Bool
+/= :: AccTurn -&gt; AccTurn -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span></pre></body></html>

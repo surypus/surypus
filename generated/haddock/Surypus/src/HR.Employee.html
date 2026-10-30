@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">-- | Employee types - Staff management</span></span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="HR.Employee.html"><span class="hs-identifier">HR.Employee</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">isNothing</span></span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Day</span></span><span class="hs-special">)</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="annot"><span class="hs-comment">-- | Employee - Employee record</span></span><span>
+</span><span id="line-9"></span><span class="hs-keyword">data</span><span> </span><span id="Employee"><span class="annot"><a href="HR.Employee.html#Employee"><span class="hs-identifier hs-var">Employee</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="Employee"><span class="annot"><a href="HR.Employee.html#Employee"><span class="hs-identifier hs-var">Employee</span></a></span></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="empId"><span class="annot"><span class="annottext">Employee -&gt; Int64
+</span><a href="HR.Employee.html#empId"><span class="hs-identifier hs-var hs-var">empId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-11"></span><span>    </span><span id="empPersonId"><span class="annot"><span class="annottext">Employee -&gt; Int64
+</span><a href="HR.Employee.html#empPersonId"><span class="hs-identifier hs-var hs-var">empPersonId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Link to Person</span><span>
+</span><span id="line-12"></span><span>    </span><span id="empPostId"><span class="annot"><span class="annottext">Employee -&gt; Int64
+</span><a href="HR.Employee.html#empPostId"><span class="hs-identifier hs-var hs-var">empPostId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Position ID</span><span>
+</span><span id="line-13"></span><span>    </span><span id="empHireDate"><span class="annot"><span class="annottext">Employee -&gt; Day
+</span><a href="HR.Employee.html#empHireDate"><span class="hs-identifier hs-var hs-var">empHireDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>    </span><span id="empFireDate"><span class="annot"><span class="annottext">Employee -&gt; Maybe Day
+</span><a href="HR.Employee.html#empFireDate"><span class="hs-identifier hs-var hs-var">empFireDate</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>    </span><span id="empSalary"><span class="annot"><span class="annottext">Employee -&gt; Double
+</span><a href="HR.Employee.html#empSalary"><span class="hs-identifier hs-var hs-var">empSalary</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>    </span><span id="empFlags"><span class="annot"><span class="annottext">Employee -&gt; EmployeeFlags
+</span><a href="HR.Employee.html#empFlags"><span class="hs-identifier hs-var hs-var">empFlags</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="HR.Employee.html#EmployeeFlags"><span class="hs-identifier hs-type">EmployeeFlags</span></a></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680254678"><span id="local-6989586621680254694"><span id="local-6989586621680254698"><span class="annot"><span class="annottext">Int -&gt; Employee -&gt; ShowS
+[Employee] -&gt; ShowS
+Employee -&gt; String
+(Int -&gt; Employee -&gt; ShowS)
+-&gt; (Employee -&gt; String) -&gt; ([Employee] -&gt; ShowS) -&gt; Show Employee
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Employee -&gt; ShowS
+showsPrec :: Int -&gt; Employee -&gt; ShowS
+$cshow :: Employee -&gt; String
+show :: Employee -&gt; String
+$cshowList :: [Employee] -&gt; ShowS
+showList :: [Employee] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680254703"><span id="local-6989586621680254717"><span class="annot"><span class="annottext">Employee -&gt; Employee -&gt; Bool
+(Employee -&gt; Employee -&gt; Bool)
+-&gt; (Employee -&gt; Employee -&gt; Bool) -&gt; Eq Employee
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Employee -&gt; Employee -&gt; Bool
+== :: Employee -&gt; Employee -&gt; Bool
+$c/= :: Employee -&gt; Employee -&gt; Bool
+/= :: Employee -&gt; Employee -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="annot"><span class="hs-comment">-- | Employee flags</span></span><span>
+</span><span id="line-21"></span><span class="hs-keyword">data</span><span> </span><span id="EmployeeFlags"><span class="annot"><a href="HR.Employee.html#EmployeeFlags"><span class="hs-identifier hs-var">EmployeeFlags</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="EmployeeFlags"><span class="annot"><a href="HR.Employee.html#EmployeeFlags"><span class="hs-identifier hs-var">EmployeeFlags</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="efActive"><span class="annot"><span class="annottext">EmployeeFlags -&gt; Bool
+</span><a href="HR.Employee.html#efActive"><span class="hs-identifier hs-var hs-var">efActive</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Currently employed</span><span>
+</span><span id="line-23"></span><span>    </span><span id="efClockedIn"><span class="annot"><span class="annottext">EmployeeFlags -&gt; Bool
+</span><a href="HR.Employee.html#efClockedIn"><span class="hs-identifier hs-var hs-var">efClockedIn</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Currently on shift</span><span>
+</span><span id="line-24"></span><span>    </span><span id="efManager"><span class="annot"><span class="annottext">EmployeeFlags -&gt; Bool
+</span><a href="HR.Employee.html#efManager"><span class="hs-identifier hs-var hs-var">efManager</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span class="hs-special">,</span><span> </span><span class="hs-comment">-- Has manager privileges</span><span>
+</span><span id="line-25"></span><span>    </span><span id="efLocked"><span class="annot"><span class="annottext">EmployeeFlags -&gt; Bool
+</span><a href="HR.Employee.html#efLocked"><span class="hs-identifier hs-var hs-var">efLocked</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span> </span><span class="hs-comment">-- Account locked</span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680254727"><span id="local-6989586621680254735"><span id="local-6989586621680254738"><span class="annot"><span class="annottext">Int -&gt; EmployeeFlags -&gt; ShowS
+[EmployeeFlags] -&gt; ShowS
+EmployeeFlags -&gt; String
+(Int -&gt; EmployeeFlags -&gt; ShowS)
+-&gt; (EmployeeFlags -&gt; String)
+-&gt; ([EmployeeFlags] -&gt; ShowS)
+-&gt; Show EmployeeFlags
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; EmployeeFlags -&gt; ShowS
+showsPrec :: Int -&gt; EmployeeFlags -&gt; ShowS
+$cshow :: EmployeeFlags -&gt; String
+show :: EmployeeFlags -&gt; String
+$cshowList :: [EmployeeFlags] -&gt; ShowS
+showList :: [EmployeeFlags] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680254741"><span id="local-6989586621680254748"><span class="annot"><span class="annottext">EmployeeFlags -&gt; EmployeeFlags -&gt; Bool
+(EmployeeFlags -&gt; EmployeeFlags -&gt; Bool)
+-&gt; (EmployeeFlags -&gt; EmployeeFlags -&gt; Bool) -&gt; Eq EmployeeFlags
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: EmployeeFlags -&gt; EmployeeFlags -&gt; Bool
+== :: EmployeeFlags -&gt; EmployeeFlags -&gt; Bool
+$c/= :: EmployeeFlags -&gt; EmployeeFlags -&gt; Bool
+/= :: EmployeeFlags -&gt; EmployeeFlags -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="annot"><span class="hs-comment">-- | Employee status</span></span><span>
+</span><span id="line-30"></span><span class="hs-keyword">data</span><span> </span><span id="EmployeeStatus"><span class="annot"><a href="HR.Employee.html#EmployeeStatus"><span class="hs-identifier hs-var">EmployeeStatus</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="ESActive"><span class="annot"><a href="HR.Employee.html#ESActive"><span class="hs-identifier hs-var">ESActive</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ESOnLeave"><span class="annot"><a href="HR.Employee.html#ESOnLeave"><span class="hs-identifier hs-var">ESOnLeave</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ESFired"><span class="annot"><a href="HR.Employee.html#ESFired"><span class="hs-identifier hs-var">ESFired</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="ESRetired"><span class="annot"><a href="HR.Employee.html#ESRetired"><span class="hs-identifier hs-var">ESRetired</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680254755"><span id="local-6989586621680254757"><span id="local-6989586621680254761"><span class="annot"><span class="annottext">Int -&gt; EmployeeStatus -&gt; ShowS
+[EmployeeStatus] -&gt; ShowS
+EmployeeStatus -&gt; String
+(Int -&gt; EmployeeStatus -&gt; ShowS)
+-&gt; (EmployeeStatus -&gt; String)
+-&gt; ([EmployeeStatus] -&gt; ShowS)
+-&gt; Show EmployeeStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; EmployeeStatus -&gt; ShowS
+showsPrec :: Int -&gt; EmployeeStatus -&gt; ShowS
+$cshow :: EmployeeStatus -&gt; String
+show :: EmployeeStatus -&gt; String
+$cshowList :: [EmployeeStatus] -&gt; ShowS
+showList :: [EmployeeStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680254764"><span id="local-6989586621680254769"><span class="annot"><span class="annottext">EmployeeStatus -&gt; EmployeeStatus -&gt; Bool
+(EmployeeStatus -&gt; EmployeeStatus -&gt; Bool)
+-&gt; (EmployeeStatus -&gt; EmployeeStatus -&gt; Bool) -&gt; Eq EmployeeStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: EmployeeStatus -&gt; EmployeeStatus -&gt; Bool
+== :: EmployeeStatus -&gt; EmployeeStatus -&gt; Bool
+$c/= :: EmployeeStatus -&gt; EmployeeStatus -&gt; Bool
+/= :: EmployeeStatus -&gt; EmployeeStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680254773"><span id="local-6989586621680254782"><span id="local-6989586621680254789"><span id="local-6989586621680254798"><span id="local-6989586621680254801"><span id="local-6989586621680254806"><span id="local-6989586621680254812"><span id="local-6989586621680254816"><span class="annot"><span class="annottext">Int -&gt; EmployeeStatus
+EmployeeStatus -&gt; Int
+EmployeeStatus -&gt; [EmployeeStatus]
+EmployeeStatus -&gt; EmployeeStatus
+EmployeeStatus -&gt; EmployeeStatus -&gt; [EmployeeStatus]
+EmployeeStatus
+-&gt; EmployeeStatus -&gt; EmployeeStatus -&gt; [EmployeeStatus]
+(EmployeeStatus -&gt; EmployeeStatus)
+-&gt; (EmployeeStatus -&gt; EmployeeStatus)
+-&gt; (Int -&gt; EmployeeStatus)
+-&gt; (EmployeeStatus -&gt; Int)
+-&gt; (EmployeeStatus -&gt; [EmployeeStatus])
+-&gt; (EmployeeStatus -&gt; EmployeeStatus -&gt; [EmployeeStatus])
+-&gt; (EmployeeStatus -&gt; EmployeeStatus -&gt; [EmployeeStatus])
+-&gt; (EmployeeStatus
+    -&gt; EmployeeStatus -&gt; EmployeeStatus -&gt; [EmployeeStatus])
+-&gt; Enum EmployeeStatus
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: EmployeeStatus -&gt; EmployeeStatus
+succ :: EmployeeStatus -&gt; EmployeeStatus
+$cpred :: EmployeeStatus -&gt; EmployeeStatus
+pred :: EmployeeStatus -&gt; EmployeeStatus
+$ctoEnum :: Int -&gt; EmployeeStatus
+toEnum :: Int -&gt; EmployeeStatus
+$cfromEnum :: EmployeeStatus -&gt; Int
+fromEnum :: EmployeeStatus -&gt; Int
+$cenumFrom :: EmployeeStatus -&gt; [EmployeeStatus]
+enumFrom :: EmployeeStatus -&gt; [EmployeeStatus]
+$cenumFromThen :: EmployeeStatus -&gt; EmployeeStatus -&gt; [EmployeeStatus]
+enumFromThen :: EmployeeStatus -&gt; EmployeeStatus -&gt; [EmployeeStatus]
+$cenumFromTo :: EmployeeStatus -&gt; EmployeeStatus -&gt; [EmployeeStatus]
+enumFromTo :: EmployeeStatus -&gt; EmployeeStatus -&gt; [EmployeeStatus]
+$cenumFromThenTo :: EmployeeStatus
+-&gt; EmployeeStatus -&gt; EmployeeStatus -&gt; [EmployeeStatus]
+enumFromThenTo :: EmployeeStatus
+-&gt; EmployeeStatus -&gt; EmployeeStatus -&gt; [EmployeeStatus]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-32"></span><span>
+</span><span id="line-33"></span><span class="annot"><span class="hs-comment">-- | Check if employee is active</span></span><span>
+</span><span id="line-34"></span><span class="annot"><a href="HR.Employee.html#isEmployeeActive"><span class="hs-identifier hs-type">isEmployeeActive</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="HR.Employee.html#Employee"><span class="hs-identifier hs-type">Employee</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-35"></span><span id="isEmployeeActive"><span class="annot"><span class="annottext">isEmployeeActive :: Employee -&gt; Bool
+</span><a href="HR.Employee.html#isEmployeeActive"><span class="hs-identifier hs-var hs-var">isEmployeeActive</span></a></span></span><span> </span><span id="local-6989586621680254824"><span class="annot"><span class="annottext">Employee
+</span><a href="#local-6989586621680254824"><span class="hs-identifier hs-var">e</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Day -&gt; Bool
+forall a. Maybe a -&gt; Bool
+</span><span class="hs-identifier hs-var">isNothing</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Employee -&gt; Maybe Day
+</span><a href="HR.Employee.html#empFireDate"><span class="hs-identifier hs-var">empFireDate</span></a></span><span> </span><span class="annot"><span class="annottext">Employee
+</span><a href="#local-6989586621680254824"><span class="hs-identifier hs-var">e</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="annot"><span class="hs-comment">-- | Get employee status based on dates</span></span><span>
+</span><span id="line-38"></span><span class="annot"><a href="HR.Employee.html#getEmployeeStatus"><span class="hs-identifier hs-type">getEmployeeStatus</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="HR.Employee.html#Employee"><span class="hs-identifier hs-type">Employee</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Day</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="HR.Employee.html#EmployeeStatus"><span class="hs-identifier hs-type">EmployeeStatus</span></a></span><span>
+</span><span id="line-39"></span><span id="getEmployeeStatus"><span class="annot"><span class="annottext">getEmployeeStatus :: Employee -&gt; Day -&gt; EmployeeStatus
+</span><a href="HR.Employee.html#getEmployeeStatus"><span class="hs-identifier hs-var hs-var">getEmployeeStatus</span></a></span></span><span> </span><span id="local-6989586621680254826"><span class="annot"><span class="annottext">Employee
+</span><a href="#local-6989586621680254826"><span class="hs-identifier hs-var">emp</span></a></span></span><span> </span><span id="local-6989586621680254827"><span class="annot"><span class="annottext">Day
+</span><a href="#local-6989586621680254827"><span class="hs-identifier hs-var">_today</span></a></span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Employee -&gt; Bool
+</span><a href="HR.Employee.html#isEmployeeActive"><span class="hs-identifier hs-var">isEmployeeActive</span></a></span><span> </span><span class="annot"><span class="annottext">Employee
+</span><a href="#local-6989586621680254826"><span class="hs-identifier hs-var">emp</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">EmployeeStatus
+</span><a href="HR.Employee.html#ESActive"><span class="hs-identifier hs-var">ESActive</span></a></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">EmployeeStatus
+</span><a href="HR.Employee.html#ESFired"><span class="hs-identifier hs-var">ESFired</span></a></span><span>
+</span><span id="line-42"></span></pre></body></html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span id="local-6989586621680358754"><span id="local-6989586621680358755"></span></span><span class="hs-pragma">{-# LANGUAGE DeriveGeneric #-}</span><span>
+</span><span id="line-2"></span><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-comment">{-@ LIQUID &quot;--reflection&quot; @-}</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="System.Hardware.html"><span class="hs-identifier">System.Hardware</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.html"><span class="hs-identifier">Data.Aeson</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier">FromJSON</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier">ToJSON</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Time</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">UTCTime</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">GHC.Generics</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Generic</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="hs-comment">{-@ type PosInt = {v:Int | v &gt; 0} @-}</span><span>
+</span><span id="line-15"></span><span class="hs-comment">{-@ type NonNeg = {v:Double | v &gt;= 0} @-}</span><span>
+</span><span id="line-16"></span><span class="hs-comment">{-@ type TimeOrder a = {v:a | v &gt;= v} @-}</span><span>
+</span><span id="line-17"></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">data</span><span> </span><span id="HardwareStatus"><span class="annot"><a href="System.Hardware.html#HardwareStatus"><span class="hs-identifier hs-var">HardwareStatus</span></a></span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="HSPlanned"><span class="annot"><a href="System.Hardware.html#HSPlanned"><span class="hs-identifier hs-var">HSPlanned</span></a></span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="HSInProgress"><span class="annot"><a href="System.Hardware.html#HSInProgress"><span class="hs-identifier hs-var">HSInProgress</span></a></span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="HSCompleted"><span class="annot"><a href="System.Hardware.html#HSCompleted"><span class="hs-identifier hs-var">HSCompleted</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="HSCancelled"><span class="annot"><a href="System.Hardware.html#HSCancelled"><span class="hs-identifier hs-var">HSCancelled</span></a></span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680358778"><span id="local-6989586621680358780"><span id="local-6989586621680358784"><span class="annot"><span class="annottext">Int -&gt; HardwareStatus -&gt; ShowS
+[HardwareStatus] -&gt; ShowS
+HardwareStatus -&gt; String
+(Int -&gt; HardwareStatus -&gt; ShowS)
+-&gt; (HardwareStatus -&gt; String)
+-&gt; ([HardwareStatus] -&gt; ShowS)
+-&gt; Show HardwareStatus
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; HardwareStatus -&gt; ShowS
+showsPrec :: Int -&gt; HardwareStatus -&gt; ShowS
+$cshow :: HardwareStatus -&gt; String
+show :: HardwareStatus -&gt; String
+$cshowList :: [HardwareStatus] -&gt; ShowS
+showList :: [HardwareStatus] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680358789"><span id="local-6989586621680358794"><span class="annot"><span class="annottext">HardwareStatus -&gt; HardwareStatus -&gt; Bool
+(HardwareStatus -&gt; HardwareStatus -&gt; Bool)
+-&gt; (HardwareStatus -&gt; HardwareStatus -&gt; Bool) -&gt; Eq HardwareStatus
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: HardwareStatus -&gt; HardwareStatus -&gt; Bool
+== :: HardwareStatus -&gt; HardwareStatus -&gt; Bool
+$c/= :: HardwareStatus -&gt; HardwareStatus -&gt; Bool
+/= :: HardwareStatus -&gt; HardwareStatus -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680358799"><span id="local-6989586621680358808"><span id="local-6989586621680358815"><span id="local-6989586621680358829"><span id="local-6989586621680358832"><span id="local-6989586621680358837"><span id="local-6989586621680358843"><span id="local-6989586621680358847"><span class="annot"><span class="annottext">Int -&gt; HardwareStatus
+HardwareStatus -&gt; Int
+HardwareStatus -&gt; [HardwareStatus]
+HardwareStatus -&gt; HardwareStatus
+HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+HardwareStatus
+-&gt; HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+(HardwareStatus -&gt; HardwareStatus)
+-&gt; (HardwareStatus -&gt; HardwareStatus)
+-&gt; (Int -&gt; HardwareStatus)
+-&gt; (HardwareStatus -&gt; Int)
+-&gt; (HardwareStatus -&gt; [HardwareStatus])
+-&gt; (HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus])
+-&gt; (HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus])
+-&gt; (HardwareStatus
+    -&gt; HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus])
+-&gt; Enum HardwareStatus
+forall a.
+(a -&gt; a)
+-&gt; (a -&gt; a)
+-&gt; (Int -&gt; a)
+-&gt; (a -&gt; Int)
+-&gt; (a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; [a])
+-&gt; (a -&gt; a -&gt; a -&gt; [a])
+-&gt; Enum a
+$csucc :: HardwareStatus -&gt; HardwareStatus
+succ :: HardwareStatus -&gt; HardwareStatus
+$cpred :: HardwareStatus -&gt; HardwareStatus
+pred :: HardwareStatus -&gt; HardwareStatus
+$ctoEnum :: Int -&gt; HardwareStatus
+toEnum :: Int -&gt; HardwareStatus
+$cfromEnum :: HardwareStatus -&gt; Int
+fromEnum :: HardwareStatus -&gt; Int
+$cenumFrom :: HardwareStatus -&gt; [HardwareStatus]
+enumFrom :: HardwareStatus -&gt; [HardwareStatus]
+$cenumFromThen :: HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+enumFromThen :: HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+$cenumFromTo :: HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+enumFromTo :: HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+$cenumFromThenTo :: HardwareStatus
+-&gt; HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+enumFromThenTo :: HardwareStatus
+-&gt; HardwareStatus -&gt; HardwareStatus -&gt; [HardwareStatus]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Enum</span></span></span></span></span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680358855"><span id="local-6989586621680358859"><span id="local-6989586621680358862"><span id="local-6989586621680358869"><span class="annot"><span class="annottext">ReadPrec [HardwareStatus]
+ReadPrec HardwareStatus
+Int -&gt; ReadS HardwareStatus
+ReadS [HardwareStatus]
+(Int -&gt; ReadS HardwareStatus)
+-&gt; ReadS [HardwareStatus]
+-&gt; ReadPrec HardwareStatus
+-&gt; ReadPrec [HardwareStatus]
+-&gt; Read HardwareStatus
+forall a.
+(Int -&gt; ReadS a)
+-&gt; ReadS [a] -&gt; ReadPrec a -&gt; ReadPrec [a] -&gt; Read a
+$creadsPrec :: Int -&gt; ReadS HardwareStatus
+readsPrec :: Int -&gt; ReadS HardwareStatus
+$creadList :: ReadS [HardwareStatus]
+readList :: ReadS [HardwareStatus]
+$creadPrec :: ReadPrec HardwareStatus
+readPrec :: ReadPrec HardwareStatus
+$creadListPrec :: ReadPrec [HardwareStatus]
+readListPrec :: ReadPrec [HardwareStatus]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Read</span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680358876"><span id="local-6989586621680358878"><span class="annot"><span class="annottext">(forall x. HardwareStatus -&gt; Rep HardwareStatus x)
+-&gt; (forall x. Rep HardwareStatus x -&gt; HardwareStatus)
+-&gt; Generic HardwareStatus
+forall x. Rep HardwareStatus x -&gt; HardwareStatus
+forall x. HardwareStatus -&gt; Rep HardwareStatus x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. HardwareStatus -&gt; Rep HardwareStatus x
+from :: forall x. HardwareStatus -&gt; Rep HardwareStatus x
+$cto :: forall x. Rep HardwareStatus x -&gt; HardwareStatus
+to :: forall x. Rep HardwareStatus x -&gt; HardwareStatus
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680358884"><span id="local-6989586621680358891"><span id="local-6989586621680358894"><span id="local-6989586621680358897"><span id="local-6989586621680358900"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="System.Hardware.html#HardwareStatus"><span class="hs-identifier hs-type">HardwareStatus</span></a></span></span></span></span></span></span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680359026"><span id="local-6989586621680359033"><span id="local-6989586621680359036"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="System.Hardware.html#HardwareStatus"><span class="hs-identifier hs-type">HardwareStatus</span></a></span></span></span></span><span>
+</span><span id="line-28"></span><span>
+</span><span id="line-29"></span><span class="hs-comment">{-@ data HardwareLoad = HardwareLoad
+  { hlId         :: Maybe Int64
+  , hlResourceId :: PosInt
+  , hlStartTime  :: UTCTime
+  , hlEndTime    :: UTCTime
+  , hlTechId     :: PosInt
+  , hlQuantity   :: NonNeg
+  , hlStatus     :: HardwareStatus
+  } @-}</span><span>
+</span><span id="line-38"></span><span class="hs-keyword">data</span><span> </span><span id="HardwareLoad"><span class="annot"><a href="System.Hardware.html#HardwareLoad"><span class="hs-identifier hs-var">HardwareLoad</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="HardwareLoad"><span class="annot"><a href="System.Hardware.html#HardwareLoad"><span class="hs-identifier hs-var">HardwareLoad</span></a></span></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="hlId"><span class="annot"><span class="annottext">HardwareLoad -&gt; Maybe Int64
+</span><a href="System.Hardware.html#hlId"><span class="hs-identifier hs-var hs-var">hlId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-40"></span><span>    </span><span id="hlResourceId"><span class="annot"><span class="annottext">HardwareLoad -&gt; Int64
+</span><a href="System.Hardware.html#hlResourceId"><span class="hs-identifier hs-var hs-var">hlResourceId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-41"></span><span>    </span><span id="hlStartTime"><span class="annot"><span class="annottext">HardwareLoad -&gt; UTCTime
+</span><a href="System.Hardware.html#hlStartTime"><span class="hs-identifier hs-var hs-var">hlStartTime</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-42"></span><span>    </span><span id="hlEndTime"><span class="annot"><span class="annottext">HardwareLoad -&gt; UTCTime
+</span><a href="System.Hardware.html#hlEndTime"><span class="hs-identifier hs-var hs-var">hlEndTime</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">UTCTime</span></span><span class="hs-special">,</span><span>
+</span><span id="line-43"></span><span>    </span><span id="hlTechId"><span class="annot"><span class="annottext">HardwareLoad -&gt; Int64
+</span><a href="System.Hardware.html#hlTechId"><span class="hs-identifier hs-var hs-var">hlTechId</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int64</span></span><span class="hs-special">,</span><span>
+</span><span id="line-44"></span><span>    </span><span id="hlQuantity"><span class="annot"><span class="annottext">HardwareLoad -&gt; Double
+</span><a href="System.Hardware.html#hlQuantity"><span class="hs-identifier hs-var hs-var">hlQuantity</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span>
+</span><span id="line-45"></span><span>    </span><span id="hlStatus"><span class="annot"><span class="annottext">HardwareLoad -&gt; HardwareStatus
+</span><a href="System.Hardware.html#hlStatus"><span class="hs-identifier hs-var hs-var">hlStatus</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Hardware.html#HardwareStatus"><span class="hs-identifier hs-type">HardwareStatus</span></a></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">}</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680359141"><span id="local-6989586621680359155"><span id="local-6989586621680359159"><span class="annot"><span class="annottext">Int -&gt; HardwareLoad -&gt; ShowS
+[HardwareLoad] -&gt; ShowS
+HardwareLoad -&gt; String
+(Int -&gt; HardwareLoad -&gt; ShowS)
+-&gt; (HardwareLoad -&gt; String)
+-&gt; ([HardwareLoad] -&gt; ShowS)
+-&gt; Show HardwareLoad
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; HardwareLoad -&gt; ShowS
+showsPrec :: Int -&gt; HardwareLoad -&gt; ShowS
+$cshow :: HardwareLoad -&gt; String
+show :: HardwareLoad -&gt; String
+$cshowList :: [HardwareLoad] -&gt; ShowS
+showList :: [HardwareLoad] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680359163"><span id="local-6989586621680359176"><span class="annot"><span class="annottext">HardwareLoad -&gt; HardwareLoad -&gt; Bool
+(HardwareLoad -&gt; HardwareLoad -&gt; Bool)
+-&gt; (HardwareLoad -&gt; HardwareLoad -&gt; Bool) -&gt; Eq HardwareLoad
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: HardwareLoad -&gt; HardwareLoad -&gt; Bool
+== :: HardwareLoad -&gt; HardwareLoad -&gt; Bool
+$c/= :: HardwareLoad -&gt; HardwareLoad -&gt; Bool
+/= :: HardwareLoad -&gt; HardwareLoad -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680359181"><span id="local-6989586621680359183"><span class="annot"><span class="annottext">(forall x. HardwareLoad -&gt; Rep HardwareLoad x)
+-&gt; (forall x. Rep HardwareLoad x -&gt; HardwareLoad)
+-&gt; Generic HardwareLoad
+forall x. Rep HardwareLoad x -&gt; HardwareLoad
+forall x. HardwareLoad -&gt; Rep HardwareLoad x
+forall a.
+(forall x. a -&gt; Rep a x) -&gt; (forall x. Rep a x -&gt; a) -&gt; Generic a
+$cfrom :: forall x. HardwareLoad -&gt; Rep HardwareLoad x
+from :: forall x. HardwareLoad -&gt; Rep HardwareLoad x
+$cto :: forall x. Rep HardwareLoad x -&gt; HardwareLoad
+to :: forall x. Rep HardwareLoad x -&gt; HardwareLoad
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Generic</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680359186"><span id="local-6989586621680359193"><span id="local-6989586621680359196"><span id="local-6989586621680359199"><span id="local-6989586621680359202"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.ToJSON.html#ToJSON"><span class="hs-identifier hs-type">ToJSON</span></a></span><span> </span><span class="annot"><a href="System.Hardware.html#HardwareLoad"><span class="hs-identifier hs-type">HardwareLoad</span></a></span></span></span></span></span></span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621680359369"><span id="local-6989586621680359376"><span id="local-6989586621680359379"><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/aeson-2.2.5.1-929c6d5dc67d0dbb9a3ad453862afaf988ce0707f3a94b11516dcbfb886c12ad/share/doc/html/src/Data.Aeson.Types.FromJSON.html#FromJSON"><span class="hs-identifier hs-type">FromJSON</span></a></span><span> </span><span class="annot"><a href="System.Hardware.html#HardwareLoad"><span class="hs-identifier hs-type">HardwareLoad</span></a></span></span></span></span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="annot"><a href="System.Hardware.html#validateHardwareLoad"><span class="hs-identifier hs-type">validateHardwareLoad</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="System.Hardware.html#HardwareLoad"><span class="hs-identifier hs-type">HardwareLoad</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><a href="System.Hardware.html#HardwareLoad"><span class="hs-identifier hs-type">HardwareLoad</span></a></span><span>
+</span><span id="line-54"></span><span id="validateHardwareLoad"><span class="annot"><span class="annottext">validateHardwareLoad :: HardwareLoad -&gt; Either Text HardwareLoad
+</span><a href="System.Hardware.html#validateHardwareLoad"><span class="hs-identifier hs-var hs-var">validateHardwareLoad</span></a></span></span><span> </span><span id="local-6989586621680359487"><span class="annot"><span class="annottext">HardwareLoad
+</span><a href="#local-6989586621680359487"><span class="hs-identifier hs-var">h</span></a></span></span><span>
+</span><span id="line-55"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">HardwareLoad -&gt; Double
+</span><a href="System.Hardware.html#hlQuantity"><span class="hs-identifier hs-var">hlQuantity</span></a></span><span> </span><span class="annot"><span class="annottext">HardwareLoad
+</span><a href="#local-6989586621680359487"><span class="hs-identifier hs-var">h</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text HardwareLoad
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;quantity must be positive&quot;</span></span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">HardwareLoad -&gt; UTCTime
+</span><a href="System.Hardware.html#hlEndTime"><span class="hs-identifier hs-var">hlEndTime</span></a></span><span> </span><span class="annot"><span class="annottext">HardwareLoad
+</span><a href="#local-6989586621680359487"><span class="hs-identifier hs-var">h</span></a></span><span> </span><span class="annot"><span class="annottext">UTCTime -&gt; UTCTime -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">HardwareLoad -&gt; UTCTime
+</span><a href="System.Hardware.html#hlStartTime"><span class="hs-identifier hs-var">hlStartTime</span></a></span><span> </span><span class="annot"><span class="annottext">HardwareLoad
+</span><a href="#local-6989586621680359487"><span class="hs-identifier hs-var">h</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text HardwareLoad
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;end time must be after start&quot;</span></span><span>
+</span><span id="line-57"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">HardwareLoad -&gt; Int64
+</span><a href="System.Hardware.html#hlResourceId"><span class="hs-identifier hs-var">hlResourceId</span></a></span><span> </span><span class="annot"><span class="annottext">HardwareLoad
+</span><a href="#local-6989586621680359487"><span class="hs-identifier hs-var">h</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text HardwareLoad
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;resource id must be positive&quot;</span></span><span>
+</span><span id="line-58"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">HardwareLoad -&gt; Int64
+</span><a href="System.Hardware.html#hlTechId"><span class="hs-identifier hs-var">hlTechId</span></a></span><span> </span><span class="annot"><span class="annottext">HardwareLoad
+</span><a href="#local-6989586621680359487"><span class="hs-identifier hs-var">h</span></a></span><span> </span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Int64
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text HardwareLoad
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;tech id must be positive&quot;</span></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">HardwareLoad -&gt; Either Text HardwareLoad
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">HardwareLoad
+</span><a href="#local-6989586621680359487"><span class="hs-identifier hs-var">h</span></a></span><span>
+</span><span id="line-60"></span></pre></body></html>

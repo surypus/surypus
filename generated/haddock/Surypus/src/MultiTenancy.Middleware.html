@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="MultiTenancy.Middleware.html"><span class="hs-identifier">MultiTenancy.Middleware</span></a></span><span>
+</span><span id="line-3"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="MultiTenancy.Middleware.html#tenantMiddleware"><span class="hs-identifier">tenantMiddleware</span></a></span><span>
+</span><span id="line-4"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="MultiTenancy.Middleware.html#resolveTenantFromJWT"><span class="hs-identifier">resolveTenantFromJWT</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="MultiTenancy.Middleware.html#TenantResolution"><span class="hs-identifier">TenantResolution</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-7"></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Int</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Int64</span></span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text.Encoding</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">TE</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/http-types-0.12.6-9002687bc78321be20f9fadd72f45fe9d959cc4a2695790fb6eed49a50ae19b9/share/doc/html/src/Network.HTTP.Types.html"><span class="hs-identifier">Network.HTTP.Types</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/http-types-0.12.6-9002687bc78321be20f9fadd72f45fe9d959cc4a2695790fb6eed49a50ae19b9/share/doc/html/src/Network.HTTP.Types.Status.html#status401"><span class="hs-identifier">status401</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Control.Exception</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">bracket_</span></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/wai-3.2.5-a6aadf3d0a8d3964af1f8844d60f07bc82e2ea3dfdaba9c2e7bd018e2261d927/share/doc/html/src/Network.Wai.html"><span class="hs-identifier">Network.Wai</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/wai-3.2.5-a6aadf3d0a8d3964af1f8844d60f07bc82e2ea3dfdaba9c2e7bd018e2261d927/share/doc/html/src/Network.Wai.html#Application"><span class="hs-identifier">Application</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/wai-3.2.5-a6aadf3d0a8d3964af1f8844d60f07bc82e2ea3dfdaba9c2e7bd018e2261d927/share/doc/html/src/Network.Wai.Internal.html#requestHeaders"><span class="hs-identifier">requestHeaders</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/wai-3.2.5-a6aadf3d0a8d3964af1f8844d60f07bc82e2ea3dfdaba9c2e7bd018e2261d927/share/doc/html/src/Network.Wai.html#responseLBS"><span class="hs-identifier">responseLBS</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/wai-3.2.5-a6aadf3d0a8d3964af1f8844d60f07bc82e2ea3dfdaba9c2e7bd018e2261d927/share/doc/html/src/Network.Wai.Internal.html#rawPathInfo"><span class="hs-identifier">rawPathInfo</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/wai-3.2.5-a6aadf3d0a8d3964af1f8844d60f07bc82e2ea3dfdaba9c2e7bd018e2261d927/share/doc/html/src/Network.Wai.html"><span class="hs-identifier">Network.Wai</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">W</span></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><a href="Surypus.JWT.Token.html"><span class="hs-identifier">Surypus.JWT.Token</span></a></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">JWT</span></span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="MultiTenancy.Isolation.html"><span class="hs-identifier">MultiTenancy.Isolation</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="MultiTenancy.Isolation.html#TenantContext"><span class="hs-identifier">TenantContext</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="DAL.Database.html"><span class="hs-identifier">DAL.Database</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="DAL.Database.html#setCurrentTenantContext"><span class="hs-identifier">setCurrentTenantContext</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="DAL.Database.html#clearCurrentTenantContext"><span class="hs-identifier">clearCurrentTenantContext</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">data</span><span> </span><span id="TenantResolution"><span class="annot"><a href="MultiTenancy.Middleware.html#TenantResolution"><span class="hs-identifier hs-var">TenantResolution</span></a></span></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="TenantFromJWT"><span class="annot"><a href="MultiTenancy.Middleware.html#TenantFromJWT"><span class="hs-identifier hs-var">TenantFromJWT</span></a></span></span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="TenantFromHeader"><span class="annot"><a href="MultiTenancy.Middleware.html#TenantFromHeader"><span class="hs-identifier hs-var">TenantFromHeader</span></a></span></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680331527"><span id="local-6989586621680331532"><span class="annot"><span class="annottext">TenantResolution -&gt; TenantResolution -&gt; Bool
+(TenantResolution -&gt; TenantResolution -&gt; Bool)
+-&gt; (TenantResolution -&gt; TenantResolution -&gt; Bool)
+-&gt; Eq TenantResolution
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TenantResolution -&gt; TenantResolution -&gt; Bool
+== :: TenantResolution -&gt; TenantResolution -&gt; Bool
+$c/= :: TenantResolution -&gt; TenantResolution -&gt; Bool
+/= :: TenantResolution -&gt; TenantResolution -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680331537"><span id="local-6989586621680331539"><span id="local-6989586621680331543"><span class="annot"><span class="annottext">Int -&gt; TenantResolution -&gt; ShowS
+[TenantResolution] -&gt; ShowS
+TenantResolution -&gt; String
+(Int -&gt; TenantResolution -&gt; ShowS)
+-&gt; (TenantResolution -&gt; String)
+-&gt; ([TenantResolution] -&gt; ShowS)
+-&gt; Show TenantResolution
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TenantResolution -&gt; ShowS
+showsPrec :: Int -&gt; TenantResolution -&gt; ShowS
+$cshow :: TenantResolution -&gt; String
+show :: TenantResolution -&gt; String
+$cshowList :: [TenantResolution] -&gt; ShowS
+showList :: [TenantResolution] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="annot"><a href="MultiTenancy.Middleware.html#resolveTenantFromJWT"><span class="hs-identifier hs-type">resolveTenantFromJWT</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">IO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><a href="MultiTenancy.Isolation.html#TenantContext"><span class="hs-identifier hs-type">TenantContext</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-26"></span><span id="resolveTenantFromJWT"><span class="annot"><span class="annottext">resolveTenantFromJWT :: Text -&gt; IO (Either Text TenantContext)
+</span><a href="MultiTenancy.Middleware.html#resolveTenantFromJWT"><span class="hs-identifier hs-var hs-var">resolveTenantFromJWT</span></a></span></span><span> </span><span id="local-6989586621680331547"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680331547"><span class="hs-identifier hs-var">tokenStr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-27"></span><span>  </span><span id="local-6989586621680331548"><span class="annot"><a href="#local-6989586621680331548"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Text -&gt; IO (Either String UserClaims)
+</span><a href="Surypus.JWT.Token.html#verifyToken"><span class="hs-identifier hs-var">JWT.verifyToken</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680331547"><span class="hs-identifier hs-var">tokenStr</span></a></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680331548"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-29"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span id="local-6989586621680331550"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621680331550"><span class="hs-identifier hs-var">err</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text TenantContext -&gt; IO (Either Text TenantContext)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text TenantContext -&gt; IO (Either Text TenantContext))
+-&gt; Either Text TenantContext -&gt; IO (Either Text TenantContext)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text TenantContext
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String -&gt; Text
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621680331550"><span class="hs-identifier hs-var">err</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span>    </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621680331552"><span class="annot"><span class="annottext">UserClaims
+</span><a href="#local-6989586621680331552"><span class="hs-identifier hs-var">claims</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">UserClaims -&gt; Maybe Int64
+</span><a href="Surypus.JWT.Token.html#ucTenantId"><span class="hs-identifier hs-var">JWT.ucTenantId</span></a></span><span> </span><span class="annot"><span class="annottext">UserClaims
+</span><a href="#local-6989586621680331552"><span class="hs-identifier hs-var">claims</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-31"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680331554"><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680331554"><span class="hs-identifier hs-var">tid</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text TenantContext -&gt; IO (Either Text TenantContext)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text TenantContext -&gt; IO (Either Text TenantContext))
+-&gt; Either Text TenantContext -&gt; IO (Either Text TenantContext)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">TenantContext -&gt; Either Text TenantContext
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><a href="MultiTenancy.Isolation.html#TenantContext"><span class="hs-identifier hs-type">TenantContext</span></a></span><span>
+</span><span id="line-32"></span><span>        </span><span class="hs-special">{</span><span> </span><span class="annot"><span class="annottext">tcTenantId :: Int64
+</span><a href="MultiTenancy.Isolation.html#tcTenantId"><span class="hs-identifier hs-var">tcTenantId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int64
+</span><a href="#local-6989586621680331554"><span class="hs-identifier hs-var">tid</span></a></span><span>
+</span><span id="line-33"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tcSchemaName :: Text
+</span><a href="#local-6989586621680331557"><span class="hs-identifier hs-var">tcSchemaName</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;public&quot;</span></span><span>
+</span><span id="line-34"></span><span>        </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">tcUserId :: Int64
+</span><a href="MultiTenancy.Isolation.html#tcUserId"><span class="hs-identifier hs-var">tcUserId</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">UserClaims -&gt; Int64
+</span><a href="Surypus.JWT.Token.html#ucUserId"><span class="hs-identifier hs-var">JWT.ucUserId</span></a></span><span> </span><span class="annot"><span class="annottext">UserClaims
+</span><a href="#local-6989586621680331552"><span class="hs-identifier hs-var">claims</span></a></span><span>
+</span><span id="line-35"></span><span>        </span><span class="hs-special">}</span><span>
+</span><span id="line-36"></span><span>      </span><span class="annot"><span class="annottext">Maybe Int64
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Either Text TenantContext -&gt; IO (Either Text TenantContext)
+forall a. a -&gt; IO a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(Either Text TenantContext -&gt; IO (Either Text TenantContext))
+-&gt; Either Text TenantContext -&gt; IO (Either Text TenantContext)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text TenantContext
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;JWT token missing tenant_id claim&quot;</span></span><span>
+</span><span id="line-37"></span><span>
+</span><span id="line-38"></span><span class="annot"><a href="MultiTenancy.Middleware.html#tenantMiddleware"><span class="hs-identifier hs-type">tenantMiddleware</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/wai-3.2.5-a6aadf3d0a8d3964af1f8844d60f07bc82e2ea3dfdaba9c2e7bd018e2261d927/share/doc/html/src/Network.Wai.html#Application"><span class="hs-identifier hs-type">Application</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/wai-3.2.5-a6aadf3d0a8d3964af1f8844d60f07bc82e2ea3dfdaba9c2e7bd018e2261d927/share/doc/html/src/Network.Wai.html#Application"><span class="hs-identifier hs-type">Application</span></a></span><span>
+</span><span id="line-39"></span><span id="tenantMiddleware"><span class="annot"><span class="annottext">tenantMiddleware :: Application -&gt; Application
+</span><a href="MultiTenancy.Middleware.html#tenantMiddleware"><span class="hs-identifier hs-var hs-var">tenantMiddleware</span></a></span></span><span> </span><span id="local-6989586621680331560"><span class="annot"><span class="annottext">Application
+</span><a href="#local-6989586621680331560"><span class="hs-identifier hs-var">app</span></a></span></span><span> </span><span id="local-6989586621680331561"><span class="annot"><span class="annottext">Request
+</span><a href="#local-6989586621680331561"><span class="hs-identifier hs-var">req</span></a></span></span><span> </span><span id="local-6989586621680331562"><span class="annot"><span class="annottext">Response -&gt; IO ResponseReceived
+</span><a href="#local-6989586621680331562"><span class="hs-identifier hs-var">respond</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680331563"><span class="annot"><span class="annottext">path :: ByteString
+</span><a href="#local-6989586621680331563"><span class="hs-identifier hs-var hs-var">path</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Request -&gt; ByteString
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/wai-3.2.5-a6aadf3d0a8d3964af1f8844d60f07bc82e2ea3dfdaba9c2e7bd018e2261d927/share/doc/html/src/Network.Wai.Internal.html#rawPathInfo"><span class="hs-identifier hs-var">W.rawPathInfo</span></a></span><span> </span><span class="annot"><span class="annottext">Request
+</span><a href="#local-6989586621680331561"><span class="hs-identifier hs-var">req</span></a></span><span>
+</span><span id="line-41"></span><span>  </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680331563"><span class="hs-identifier hs-var">path</span></a></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><span class="hs-string">&quot;/api/v1/login&quot;</span></span><span>
+</span><span id="line-42"></span><span>    </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">Application
+</span><a href="#local-6989586621680331560"><span class="hs-identifier hs-var">app</span></a></span><span> </span><span class="annot"><span class="annottext">Request
+</span><a href="#local-6989586621680331561"><span class="hs-identifier hs-var">req</span></a></span><span> </span><span class="annot"><span class="annottext">Response -&gt; IO ResponseReceived
+</span><a href="#local-6989586621680331562"><span class="hs-identifier hs-var">respond</span></a></span><span>
+</span><span id="line-43"></span><span>    </span><span class="hs-keyword">else</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">HeaderName -&gt; [(HeaderName, ByteString)] -&gt; Maybe ByteString
+forall a b. Eq a =&gt; a -&gt; [(a, b)] -&gt; Maybe b
+</span><span class="hs-identifier hs-var">lookup</span></span><span> </span><span class="annot"><span class="annottext">HeaderName
+</span><span class="hs-string">&quot;Authorization&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Request -&gt; [(HeaderName, ByteString)]
+</span><a href="file:///home/runner/.cabal/store/ghc-9.10.3-b4c3/wai-3.2.5-a6aadf3d0a8d3964af1f8844d60f07bc82e2ea3dfdaba9c2e7bd018e2261d927/share/doc/html/src/Network.Wai.Internal.html#requestHeaders"><span class="hs-identifier hs-var">W.requestHeaders</span></a></span><span> </span><span class="annot"><span class="annottext">Request
+</span><a href="#local-6989586621680331561"><span class="hs-identifier hs-var">req</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-44"></span><span>      </span><span class="annot"><span class="annottext">Maybe ByteString
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Application
+</span><a href="#local-6989586621680331560"><span class="hs-identifier hs-var">app</span></a></span><span> </span><span class="annot"><span class="annottext">Request
+</span><a href="#local-6989586621680331561"><span class="hs-identifier hs-var">req</span></a></span><span> </span><span class="annot"><span class="annottext">Response -&gt; IO ResponseReceived
+</span><a href="#local-6989586621680331562"><span class="hs-identifier hs-var">respond</span></a></span><span>
+</span><span id="line-45"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680331565"><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680331565"><span class="hs-identifier hs-var">hdr</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-46"></span><span>        </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680331566"><span class="annot"><span class="annottext">hdrStr :: Text
+</span><a href="#local-6989586621680331566"><span class="hs-identifier hs-var hs-var">hdrStr</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; Text
+</span><span class="hs-identifier hs-var">TE.decodeUtf8</span></span><span> </span><span class="annot"><span class="annottext">ByteString
+</span><a href="#local-6989586621680331565"><span class="hs-identifier hs-var">hdr</span></a></span><span>
+</span><span id="line-47"></span><span>        </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Text -&gt; Maybe Text
+</span><span class="hs-identifier hs-var">T.stripPrefix</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;Bearer &quot;</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680331566"><span class="hs-identifier hs-var">hdrStr</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-48"></span><span>          </span><span class="annot"><span class="annottext">Maybe Text
+</span><span class="hs-identifier hs-var">Nothing</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Application
+</span><a href="#local-6989586621680331560"><span class="hs-identifier hs-var">app</span></a></span><span> </span><span class="annot"><span class="annottext">Request
+</span><a href="#local-6989586621680331561"><span class="hs-identifier hs-var">req</span></a></span><span> </span><span class="annot"><span class="annottext">Response -&gt; IO ResponseReceived
+</span><a href="#local-6989586621680331562"><span class="hs-identifier hs-var">respond</span></a></span><span>
+</span><span id="line-49"></span><span>          </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span id="local-6989586621680331569"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680331569"><span class="hs-identifier hs-var">token</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-50"></span><span>            </span><span id="local-6989586621680331570"><span class="annot"><a href="#local-6989586621680331570"><span class="hs-identifier hs-var">result</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Text -&gt; IO (Either Text TenantContext)
+</span><a href="MultiTenancy.Middleware.html#resolveTenantFromJWT"><span class="hs-identifier hs-var">resolveTenantFromJWT</span></a></span><span> </span><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621680331569"><span class="hs-identifier hs-var">token</span></a></span><span>
+</span><span id="line-51"></span><span>            </span><span class="hs-keyword">case</span><span> </span><span class="annot"><a href="#local-6989586621680331570"><span class="hs-identifier hs-type">result</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-52"></span><span>              </span><span class="annot"><span class="hs-identifier hs-type">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Application
+</span><a href="#local-6989586621680331560"><span class="hs-identifier hs-var">app</span></a></span><span> </span><span class="annot"><span class="annottext">Request
+</span><a href="#local-6989586621680331561"><span class="hs-identifier hs-var">req</span></a></span><span> </span><span class="annot"><span class="annottext">Response -&gt; IO ResponseReceived
+</span><a href="#local-6989586621680331562"><span class="hs-identifier hs-var">respond</span></a></span><span>
+</span><span id="line-53"></span><span>              </span><span class="annot"><span class="hs-identifier hs-type">Right</span></span><span> </span><span id="local-6989586621680331571"><span class="annot"><span class="annottext">TenantContext
+</span><a href="#local-6989586621680331571"><span class="hs-identifier hs-var">ctx</span></a></span></span><span> </span><span class="hs-glyph">-&gt;</span><span>
+</span><span id="line-54"></span><span>                </span><span class="annot"><span class="annottext">IO () -&gt; IO () -&gt; IO ResponseReceived -&gt; IO ResponseReceived
+forall a b c. IO a -&gt; IO b -&gt; IO c -&gt; IO c
+</span><span class="hs-identifier hs-var">bracket_</span></span><span>
+</span><span id="line-55"></span><span>                  </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int64 -&gt; Int64 -&gt; IO ()
+</span><a href="DAL.Database.html#setCurrentTenantContext"><span class="hs-identifier hs-var">setCurrentTenantContext</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TenantContext -&gt; Int64
+</span><a href="MultiTenancy.Isolation.html#tcTenantId"><span class="hs-identifier hs-var">tcTenantId</span></a></span><span> </span><span class="annot"><span class="annottext">TenantContext
+</span><a href="#local-6989586621680331571"><span class="hs-identifier hs-var">ctx</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">TenantContext -&gt; Int64
+</span><a href="MultiTenancy.Isolation.html#tcUserId"><span class="hs-identifier hs-var">tcUserId</span></a></span><span> </span><span class="annot"><span class="annottext">TenantContext
+</span><a href="#local-6989586621680331571"><span class="hs-identifier hs-var">ctx</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span>                  </span><span class="annot"><span class="annottext">IO ()
+</span><a href="DAL.Database.html#clearCurrentTenantContext"><span class="hs-identifier hs-var">clearCurrentTenantContext</span></a></span><span>
+</span><span id="line-57"></span><span>                  </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Application
+</span><a href="#local-6989586621680331560"><span class="hs-identifier hs-var">app</span></a></span><span> </span><span class="annot"><span class="annottext">Request
+</span><a href="#local-6989586621680331561"><span class="hs-identifier hs-var">req</span></a></span><span> </span><span class="annot"><span class="annottext">Response -&gt; IO ResponseReceived
+</span><a href="#local-6989586621680331562"><span class="hs-identifier hs-var">respond</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-58"></span></pre></body></html>
