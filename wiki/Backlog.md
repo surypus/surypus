@@ -68,4 +68,5 @@
 - `Surypus-x0e` (P2) US-2-3: Read Accounts (P2, 3SP)
 - `Surypus-ykn` (P2) US-2-5: RBAC negative test (P2, 2SP)
 - `Surypus-634` (P1) Add QuickCheck property for Core.Inventory stock-balance invariant — `Rest = Initial + Receipt - Issue`. Added `test/Core/InventorySpec.hs` (5 unit tests + 2 QuickCheck properties) and wired into `test-suite surypus-test` via `Surypus.cabal` (`other-modules`) and `test/Test.hs` (`import` + `spec` invocation). Verified: full suite `surypus-test` PASS — 1024 examples, 0 failures, 3 pending (pre-existing).
+- `Surypus-635` (P1) Add QuickCheck property tests for `Commerce.Discount.calcDiscount` — threshold (below min → 0), fixed-value (DTFixed equals the fixed value once the threshold is met), non-negativity, and percentage linearity. Added `test/Commerce/DiscountSpec.hs` and wired it into `test-suite surypus-test` via `Surypus.cabal` (`other-modules`) and `test/Test.hs` (`import` + `spec` invocation). Verified: full suite `surypus-test` PASS — 1015 examples, 0 failures, 3 pending.
 - `Surypus-626` (P3) Seed data и demo environment

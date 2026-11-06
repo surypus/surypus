@@ -57,6 +57,7 @@ import qualified Commerce.CashSessionTempSpec
 import qualified Commerce.InvoiceSpec
 import qualified Commerce.ServiceBillSpec
 import qualified Commerce.ContractSpec
+import qualified Commerce.DiscountSpec
 import qualified EmailSpec
 import qualified System.ValidationSpec
 import qualified Surypus.MetricsSpec
@@ -122,6 +123,7 @@ main = hspec $ do
   Commerce.InvoiceSpec.spec
   Commerce.PaymentSpec.spec
   Commerce.ContractSpec.spec
+  Commerce.DiscountSpec.spec
   EmailSpec.spec
   System.ValidationSpec.spec
   Surypus.MetricsSpec.spec
