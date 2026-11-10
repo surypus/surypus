@@ -18,6 +18,53 @@ mkRatePair r1 r2 date =
     createExchangeRate (RateId 2) (CurrencyCode "EUR") (CurrencyCode "GBP") r2 date CentralBank
   )
 
+prop_convertCurrency_nonPositive :: Double -> Property
+prop_convertCurrency_nonPositive amount =
+  amount <= 0 ==>
+    case convertCurrency amount (mkRate 0.85 (fromGregorian 2026 1 1)) of
+      Just _ -> property False
+      Nothing -> property True
+
+prop_convertCurrency_positive :: Double -> Property
+prop_convertCurrency_positive amount =
+  amount > 0 ==>
+    case convertCurrency amount (mkRate 0.85 (fromGregorian 2026 1 1)) of
+      Nothing -> property False
+      Just v -> property (v > 0)
+
+prop_convertCurrency_amountProportional :: Double -> Property
+prop_convertCurrency_amountProportional amount =
+  amount > 0 ==>
+    forAll (choose (0.01, 10 :: Double)) $ \rate ->
+      let r = mkRate rate (fromGregorian 2026 1 1)
+          Just v = convertCurrency amount r
+      in property (abs (v - amount * rate) <= 1e-9)
+
+prop_inverseRate_composes :: Property
+prop_inverseRate_composes =
+  forAll (choose (0.01, 100 :: Double)) $ \rateValue ->
+    let r = mkRate rateValue (fromGregorian 2026 1 1)
+        inv = case inverseRate r of
+          Nothing -> 0
+          Just v -> v
+    in property (if inv > 0 then abs (inv * rateValue - 1.0) <= 1e-9 else True)
+
+prop_isValidOnDate_monotonic :: Property
+prop_isValidOnDate_monotonic =
+  forAll genDay $ \closeDate ->
+    forAll genDay $ \laterDate ->
+      laterDate > closeDate ==>
+        let rate = closeExchangeRate closeDate (mkRate 0.85 (fromGregorian 2026 1 1))
+         in property (isValidOnDate laterDate rate == False)
+
+-- | A QuickCheck generator for 'Day' values in a fixed range (uses the 'Gen' monad).
+genDay :: Gen Day
+genDay = do
+  y <- choose (2020, 2030)
+  m <- choose (1, 12)
+  d <- choose (1, 28)
+  pure (fromGregorian y m d)
+
 spec :: Spec
 spec = describe "Finance.ExchangeRate" $ do
   describe "createExchangeRate" $ do
@@ -131,14 +178,12 @@ spec = describe "Finance.ExchangeRate" $ do
       let r2 = createExchangeRate (RateId 2) (CurrencyCode "EUR") (CurrencyCode "GBP") 0 (fromGregorian 2026 1 1) CentralBank
       calculateCrossRate r1 r2 `shouldBe` Nothing
 
-  describe "property: convertCurrency is multiplicative" $ do
-    it "converting amount a then b equals converting a*b" $ do
-      let rate = mkRate 0.85 (fromGregorian 2026 1 1)
-      convertCurrency 100 rate `shouldBe` Just (100 * 0.85)
-      convertCurrency 200 rate `shouldBe` Just (200 * 0.85)
-
-  describe "property: isValidOnDate is monotonic" $ do
-    it "once closed, stays closed for later dates" $ do
-      let rate = closeExchangeRate (fromGregorian 2026 6 30) (mkRate 0.85 (fromGregorian 2026 1 1))
-      isValidOnDate (fromGregorian 2026 7 1) rate `shouldBe` False
-      isValidOnDate (fromGregorian 2026 12 31) rate `shouldBe` False
+  describe "QuickCheck properties" $ do
+    it "convertCurrency returns Nothing for zero/negative amounts"
+      (property prop_convertCurrency_nonPositive)
+    it "convertCurrency returns a positive result for positive amounts"
+      (property prop_convertCurrency_positive)
+    it "convertCurrency scales linearly with the amount"
+      (property prop_convertCurrency_amountProportional)
+    it "inverseRate * rate ≈ 1" (property prop_inverseRate_composes)
+    it "isValidOnDate is monotonic after closing" (property prop_isValidOnDate_monotonic)

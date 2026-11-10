@@ -100,6 +100,7 @@
   - Payment invariants covered (TASK-036, 2026-10-23)
   - Multi-tenant property coverage: `MultiTenancy.TenantConfigSpec` wired (2026-10-23): 7 tests on `defaultTenant` and `tenantSchema`; suite at **1011 examples, 0 failures, 3 pending** (cabal test)
   - Remaining multi-tenant coverage: `MultiTenancy.Isolation`/`MultiTenancy.Middleware` (DB/IO-bound) — deferred to TASK-029 integration tests
+- [x] **TASK-037**: Safe QuickCheck coverage for `Surypus.Refined` — deterministic clamp helpers (`clampNonNeg`, `clampPercentage`, `isNonNeg`, `combineNonNeg`) with no DB/Redis or wall-clock dependence. Implemented 2026-10-23; 14 properties, 0 failures, verified via `stack test` — **1032 examples, 0 failures, 3 pending** (3 pending = DB/Redis integration tests requiring env vars).
 
 ---
 

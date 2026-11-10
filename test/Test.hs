@@ -44,6 +44,7 @@ import qualified Integration.API.ExternalAPISpec
 import qualified Surypus.API.GraphQLSpec
 import qualified Surypus.JWTSpec
 import qualified Surypus.WebSocketSpec
+import qualified Surypus.RefinedSpec
 import qualified Service.WorkflowEngineSpec
 import qualified Phase2Phase3.AccountingEventsSpec
 import qualified Phase2Phase3.AccountingReadModelSpec
@@ -80,6 +81,7 @@ main = hspec $ do
   Finance.AccountingSpec.spec
   Finance.BillSpec.spec
   Surypus.ValidationSpec.spec
+  Surypus.RefinedSpec.spec
   Core.PayrollSpec.spec
   System.DiscoverySpec.spec
   System.RateLimiterSpec.spec
