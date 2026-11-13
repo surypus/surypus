@@ -286,6 +286,14 @@ bd ready
   - Real bug fixed: `getBalance sb = sbTotal sb - sbPaid sb` returned negative when `sbPaid > sbTotal`; now `max 0 (sbTotal sb - sbPaid sb)`
   - Negative check confirmed: spec compiled against the pre-fix source fails exactly 2 examples (overpayment + property), proving it is not vacuous
   - Verified: **1002 examples, 0 new failures, 2 pending** (pre-existing DAL.EventStore DB auth failures + pre-existing pending); new spec 5/5 green
+- [x] Wire Finance.AccMaskSpec into cabal test-suite (2026-11-11)
+  - Finance.AccMask had zero test coverage; added test/Finance/AccMaskSpec.hs with
+    9 deterministic tests (6 QuickCheck properties + 3 unit): isMaskActive closed
+    interval semantics (inclusive start/end, concrete end date) and open-ended
+    window, AMSActive guard, and validateMaskCode exact 1-10 alphanumeric range.
+  - Verified: **1041 examples, 0 failures, 3 pending** (cabal test surypus-test); 3
+    pending are DB/Redis integration specs gated on SURYPUS_TEST_DATABASE_URL
+    (checked by running the full suite on wdmch.lan with postgres + redis)
 
 - [x] Wire `MultiTenancy.TenantConfigSpec` into cabal test-suite (2026-10-23)
   - 7 tests over `MultiTenancy.TenantConfig`: `defaultTenant` invariants, `tenantSchema` behaviour, `tenantSchema` == `tcDatabaseSchema` field

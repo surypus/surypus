@@ -3,7 +3,7 @@
 module Surypus.CoreTypes
   ( Decimal   (..),
     unDecimal,
-    NonNeg,
+    NonNeg (..),
     mkNonNeg,
     unNonNeg
   ) where
