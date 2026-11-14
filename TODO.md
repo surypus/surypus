@@ -296,7 +296,8 @@ bd ready
     (checked by running the full suite on wdmch.lan with postgres + redis)
 
 - [x] Wire `MultiTenancy.TenantConfigSpec` into cabal test-suite (2026-10-23)
-  - 7 tests over `MultiTenancy.TenantConfig`: `defaultTenant` invariants, `tenantSchema` behaviour, `tenantSchema` == `tcDatabaseSchema` field
+  - 7 tests over `MultiTenan
+- [x] Wire System.EventSpec into cabal test-suite (2026-11-14) — first coverage for System.Event: logEvent field correctness (unit), evId/evFlags = 0 (unit + property), timestamp epoch invariant (property)cy.TenantConfig`: `defaultTenant` invariants, `tenantSchema` behaviour, `tenantSchema` == `tcDatabaseSchema` field
   - Targets TASK-030 (multi-tenant QuickCheck isolation) — first QuickCheck coverage of the multi-tenant config module
   - Verified: **1011 examples, 0 failures, 3 pending** (cabal test, GHC 9.10.3); 3 pending are DB/Redis integration specs
 

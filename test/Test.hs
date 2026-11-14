@@ -65,6 +65,7 @@ import qualified EmailSpec
 import qualified System.ValidationSpec
 import qualified Surypus.MetricsSpec
 import qualified Surypus.CoreTypesSpec
+import qualified System.EventSpec
 import qualified TranscendenceSpec
 import qualified AdditionalTests
 import qualified DAL.TypesSpec
@@ -137,6 +138,7 @@ main = hspec $ do
   System.ValidationSpec.spec
   Surypus.MetricsSpec.spec
   Surypus.CoreTypesSpec.spec
+  System.EventSpec.spec
   AdditionalTests.spec
   TranscendenceSpec.spec
   DAL.TypesSpec.spec
