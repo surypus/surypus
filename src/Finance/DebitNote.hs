@@ -61,7 +61,9 @@ createDebitNote dnId num date amt curr desc = DebitNote
   , dnUpdatedAt = Nothing
   }
 
--- | Pay debit note with invariant: amount > 0 and status is issued
+-- | Pay debit note with invariant: amount > 0, status is issued,
+-- and the remaining amount never drops below zero (overpayment is
+-- clamped to zero rather than producing a negative amount).
 payDebitNote :: Double -> DebitNote -> Maybe DebitNote
 payDebitNote amount dn
   | amount <= 0 = Nothing
@@ -69,7 +71,7 @@ payDebitNote amount dn
   | otherwise = Just $ dn
       { dnStatus = DNSPaid
       , dnUpdatedAt = Just (fromGregorian 2024 1 1)  -- Should be supplied
-      , dnAmount = dnAmount dn - amount
+      , dnAmount = max 0 (dnAmount dn - amount)
       }
 
 -- | Cancel debit note
