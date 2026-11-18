@@ -1,0 +1,105 @@
+\chapter{Operations Guide: Surypus
+ERP/CRM}\label{operations-guide-surypus-erpcrm}
+
+\section{Docker}\label{docker}
+
+Для локальной разработки и развертывания используются Docker и Docker
+Compose.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Запуск всей инфраструктуры (DB, API, Worker)}
+\ExtensionTok{docker{-}compose}\NormalTok{ up }\AttributeTok{{-}d}
+
+\CommentTok{\# Просмотр логов}
+\ExtensionTok{docker{-}compose}\NormalTok{ logs }\AttributeTok{{-}f}\NormalTok{ api}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Сервисы}\label{ux441ux435ux440ux432ux438ux441ux44b}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{db}: PostgreSQL 16 (порт 5432)
+\item
+  \texttt{api}: Haskell REST Server (порт 8080)
+\item
+  \texttt{worker}: Фоновый обработчик задач (отчеты, экспорт)
+\end{itemize}
+
+\section{Миграции базы
+данных}\label{ux43cux438ux433ux440ux430ux446ux438ux438-ux431ux430ux437ux44b-ux434ux430ux43dux43dux44bux445}
+
+Система использует кастомный механизм миграций.
+
+\textbf{Путь к файлам}: \texttt{sql/migrations/}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Инициализация и запуск всех миграций}
+\ExtensionTok{./sql/migrations/init\_db.sh}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Порядок добавления новой
+миграции}\label{ux43fux43eux440ux44fux434ux43eux43a-ux434ux43eux431ux430ux432ux43bux435ux43dux438ux44f-ux43dux43eux432ux43eux439-ux43cux438ux433ux440ux430ux446ux438ux438}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Создайте файл
+  \texttt{sql/migrations/V\textless{}XXX\textgreater{}\_\_\textless{}description\textgreater{}.sql}.
+\item
+  Убедитесь, что версия \texttt{\textless{}XXX\textgreater{}} идет
+  строго после последней существующей.
+\item
+  Добавьте SQL команды (CREATE, ALTER и т.д.).
+\item
+  Запустите \texttt{init\_db.sh} для применения.
+\end{enumerate}
+
+\section{Фоновые задачи
+(Jobs)}\label{ux444ux43eux43dux43eux432ux44bux435-ux437ux430ux434ux430ux447ux438-jobs}
+
+Задачи хранятся в таблице \texttt{jobs} и обрабатываются сервисом
+\texttt{worker}.
+
+\subsection{Типы
+задач}\label{ux442ux438ux43fux44b-ux437ux430ux434ux430ux447}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{report\_generate}: Генерация PDF.
+\item
+  \texttt{data\_export}: Экспорт в CSV/Excel.
+\item
+  \texttt{notification\_send}: Отправка email.
+\end{itemize}
+
+\section{Наблюдаемость
+(Observability)}\label{ux43dux430ux431ux43bux44eux434ux430ux435ux43cux43eux441ux442ux44c-observability}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Метрики}: Prometheus эндпоинт \texttt{/metrics} (в процессе).
+\item
+  \textbf{Логирование}: Настроено через stdout/stderr, рекомендуется
+  собирать через Vector/Loki.
+\item
+  \textbf{Аудит}: Все чувствительные операции записываются в
+  \texttt{audit\_log}.
+\end{itemize}
+
+\section{CI/CD}\label{cicd}
+
+Проект использует \textbf{GitHub Actions} (\texttt{.github/workflows/}):
+- \texttt{ci.yml}: Сборка и прохождение всех тестов при каждом Push/PR.
+- \texttt{opencode.yml}: Проверки стиля и линтинг.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\emph{Последнее обновление: 2026-05-14}

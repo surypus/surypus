@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://surypus.github.io/surypus/guides/rbac/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Как работает RBAC - Surypus ERP</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "\u041a\u0430\u043a \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442 RBAC";
+        var mkdocs_page_input_path = "guides/rbac.md";
+        var mkdocs_page_url = "/surypus/guides/rbac/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Surypus ERP
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Главная</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../ARCHITECTURE/">Архитектура</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../TYPES/">Система типов</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../API/">API</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DATABASE/">Хранилище данных</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../DEPLOYMENT/">Развёртывание</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../GUIDE/">Руководство</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Руководства</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../accounting/">Как работает бухгалтерия</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../inventory/">Как работает инвентарь</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Как работает RBAC</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#core-concepts">Core Concepts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#rbac-module-structure">RBAC Module Structure</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#permission-model">Permission Model</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#policy-evaluation">Policy Evaluation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#tenant-isolation">Tenant Isolation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#self-healing">Self-Healing</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#related-modules">Related Modules</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../jwt/">Как работает JWT-аутентификация</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../persistence/">Как работает персистентность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../event-store/">Как работает Event Store</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">ADR</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0001-haskell-primary-language/">ADR-001: Haskell как основной язык</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../adr/0002-mkdocs-site/">ADR-002: MkDocs для сайта документации</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../architecture/EVENT_SOURCING/">Архитектура событий</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Инженерные модули</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/api-conventions/">API-конвенции</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/bill-module/">Bill-модуль</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/document-module/">Document-модуль</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/hr-payroll-module/">HR/Payroll-модуль</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/job-server-etl/">Job Server ETL</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/person-module/">Person-модуль</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/production-module/">Production-модуль</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/reports-portal/">Reports Portal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/schema-uniqueness/">Schema уникальность</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../engineering/testing-guide/">Руководство по тестированию</a>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/EXAMPLES/">Примеры</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../REFINEMENT/">Рефиниции</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../SUMMARY/">Сводка</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Задачи</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Home/">Обзор</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Plans/">Планы</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tasks/Backlog/">Бэклог</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Сгенерировано</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/health/">Состояние документации</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/inventory/coverage/">Покрытие</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/inventory/modules/">Каталог модулей</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/inventory/functions/">Функции</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/graphs/">Граф зависимостей</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../generated/haddock/Surypus/">Haddock API</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Surypus ERP</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Руководства</li>
+      <li class="breadcrumb-item active">Как работает RBAC</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/surypus/surypus/edit/master/docs/guides/rbac.md">Edit on surypus/surypus</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="how-rbac-works">How RBAC Works</h1>
+<h2 id="overview">Overview</h2>
+<p>Surypus implements Role-Based Access Control (RBAC) for multi-tenant operations.</p>
+<h2 id="core-concepts">Core Concepts</h2>
+<ul>
+<li><strong>Tenant</strong> — an isolated organizational unit (company, department)</li>
+<li><strong>Role</strong> — a named set of permissions (e.g., <code>Admin</code>, <code>Accountant</code>, <code>Manager</code>)</li>
+<li><strong>Permission</strong> — a fine-grained action right (e.g., <code>bill:create</code>, <code>report:view</code>)</li>
+<li><strong>User</strong> — an authenticated person assigned one or more roles</li>
+<li><strong>Policy</strong> — a rule that evaluates whether a user-action-resource tuple is allowed</li>
+</ul>
+<h2 id="rbac-module-structure">RBAC Module Structure</h2>
+<div class="highlight"><pre><span></span><code>Surypus.RBAC
+├── Types        -- RBAC types (Role, Permission, Policy)
+├── Store        -- Persistent RBAC storage operations
+├── Evaluator    -- Policy evaluation engine
+└── SelfHeal     -- Automatic RBAC consistency repair
+</code></pre></div>
+<h2 id="permission-model">Permission Model</h2>
+<p>Permissions follow the pattern <code>resource:action</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Permission</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bill:create</code></td>
+<td>Create new bills</td>
+</tr>
+<tr>
+<td><code>bill:approve</code></td>
+<td>Approve bills</td>
+</tr>
+<tr>
+<td><code>report:view</code></td>
+<td>View financial reports</td>
+</tr>
+<tr>
+<td><code>admin:users</code></td>
+<td>Manage users and roles</td>
+</tr>
+<tr>
+<td><code>inventory:adjust</code></td>
+<td>Adjust inventory counts</td>
+</tr>
+</tbody>
+</table>
+<h2 id="policy-evaluation">Policy Evaluation</h2>
+<div class="highlight"><pre><span></span><code><span class="c1">-- | Check whether a user is authorized for an action on a resource.</span>
+<span class="c1">--</span>
+<span class="c1">-- &gt;&gt;&gt; canUser (User "alice" [Role "Accountant"]) "bill:create" "bill:123"</span>
+<span class="c1">-- True</span>
+<span class="nf">canUser</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">User</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Permission</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">ResourceId</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Bool</span>
+</code></pre></div>
+<h2 id="tenant-isolation">Tenant Isolation</h2>
+<p>Each tenant has its own namespace:</p>
+<div class="highlight"><pre><span></span><code>Tenant: acme-corp
+├── Roles: Admin, Accountant, Manager
+├── Users: alice (Accountant), bob (Admin)
+└── Resources: bills.*, reports.*
+</code></pre></div>
+<h2 id="self-healing">Self-Healing</h2>
+<p>The RBAC self-heal module (<code>rbac_self_heal_incremental.sql</code>) automatically:</p>
+<ol>
+<li>Detects orphaned roles (no users assigned)</li>
+<li>Detects missing permissions on existing roles</li>
+<li>Detects inconsistent policy assignments</li>
+<li>Generates repair SQL statements</li>
+</ol>
+<h2 id="related-modules">Related Modules</h2>
+<ul>
+<li><code>Surypus.RBAC.Store</code> — persistent storage</li>
+<li><code>Surypus.RBAC.Types</code> — type definitions</li>
+<li><code>Surypus.JWT</code> — authentication integration</li>
+</ul>
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="../../ARCHITECTURE/">Architecture: Security</a></li>
+<li><a href="../../DATABASE/">Database: RBAC schema</a></li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../inventory/" class="btn btn-neutral float-left" title="Как работает инвентарь"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../jwt/" class="btn btn-neutral float-right" title="Как работает JWT-аутентификация">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/surypus/surypus" class="fa fa-code-fork" style="color: #fcfcfc"> surypus/surypus</a>
+        </span>
+    
+    
+      <span><a href="../inventory/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../jwt/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
