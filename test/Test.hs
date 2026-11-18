@@ -63,9 +63,14 @@ import qualified Commerce.ContractSpec
 import qualified Commerce.DiscountSpec
 import qualified EmailSpec
 import qualified System.ValidationSpec
+import qualified System.SchedulerSpec
 import qualified Surypus.MetricsSpec
 import qualified Surypus.CoreTypesSpec
 import qualified System.EventSpec
+import qualified Finance.JournalSpec
+import qualified Finance.LedgerSpec
+import qualified Finance.AssetSpec
+import qualified Finance.AccPlanSpec
 import qualified TranscendenceSpec
 import qualified AdditionalTests
 import qualified DAL.TypesSpec
@@ -136,9 +141,14 @@ main = hspec $ do
   Commerce.DiscountSpec.spec
   EmailSpec.spec
   System.ValidationSpec.spec
+  System.SchedulerSpec.spec
   Surypus.MetricsSpec.spec
   Surypus.CoreTypesSpec.spec
   System.EventSpec.spec
+  Finance.JournalSpec.spec
+  Finance.LedgerSpec.spec
+  Finance.AssetSpec.spec
+  Finance.AccPlanSpec.spec
   AdditionalTests.spec
   TranscendenceSpec.spec
   DAL.TypesSpec.spec
