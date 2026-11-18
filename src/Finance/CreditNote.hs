@@ -67,13 +67,15 @@ cancelCreditNote cn
   | cnStatus cn /= CNSIssued = Nothing
   | otherwise = Just $ cn { cnStatus = CNSCancelled, cnUpdatedAt = Just (fromGregorian 2024 1 1) }
 
--- | Apply credit note with invariant: amount > 0 and status is issued
+-- | Apply credit note with invariant: amount > 0, status is issued,
+-- and the remaining amount never drops below zero (over-application is
+-- clamped to zero rather than producing a negative amount).
 applyCreditNote :: Double -> CreditNote -> Maybe CreditNote
 applyCreditNote amount cn
   | amount <= 0 = Nothing
   | cnStatus cn /= CNSIssued = Nothing
   | otherwise = Just $ cn
-      { cnAmount = cnAmount cn - amount
+      { cnAmount = max 0 (cnAmount cn - amount)
       , cnStatus = if cnAmount cn - amount <= 0 then CNSApplied else cnStatus cn
       , cnUpdatedAt = Just (fromGregorian 2024 1 1)
       }

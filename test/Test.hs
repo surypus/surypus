@@ -71,6 +71,7 @@ import qualified Finance.JournalSpec
 import qualified Finance.LedgerSpec
 import qualified Finance.AssetSpec
 import qualified Finance.AccPlanSpec
+import qualified Finance.CreditNoteSpec
 import qualified TranscendenceSpec
 import qualified AdditionalTests
 import qualified DAL.TypesSpec
@@ -149,6 +150,7 @@ main = hspec $ do
   Finance.LedgerSpec.spec
   Finance.AssetSpec.spec
   Finance.AccPlanSpec.spec
+  Finance.CreditNoteSpec.spec
   AdditionalTests.spec
   TranscendenceSpec.spec
   DAL.TypesSpec.spec
