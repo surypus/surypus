@@ -36,10 +36,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-stack-
 
-      - name: Setup Stack and GHC
-        run: |
-          curl -sSL https://get.haskellstack.org/ | sh -s - -f
-          stack setup --no-nix
+      - name: Setup GHC and Stack via haskell-actions
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.6.5'
+          cabal-version: '3.12.1.0'
+          enable-stack: true
+          stack-version: 'latest'
+
+      - name: Use the system GHC (skip bindist sanity check)
+        run: stack config set system-ghc --global true
 
       - name: Build library and tests
         run: |
