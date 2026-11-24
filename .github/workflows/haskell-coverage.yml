@@ -34,8 +34,16 @@ jobs:
       - name: Setup Stack
         uses: haskell-actions/setup@v2
         with:
+          ghc-version: '9.6.5'
+          cabal-version: '3.12.1.0'
           enable-stack: true
           stack-version: 'latest'
+
+      - name: Install linker tools and use system GHC
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y binutils binutils-gold
+          stack config set system-ghc --global true
 
       - name: Cache Stack dependencies
         uses: actions/cache@v6
