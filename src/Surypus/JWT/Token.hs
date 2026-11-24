@@ -13,7 +13,6 @@ module Surypus.JWT.Token (
     verifyToken,
     UserClaims (..),
     SecretKey,
-    defaultSecretKey,
 ) where
 
 import Control.Exception (throwIO)
