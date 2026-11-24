@@ -7,7 +7,6 @@ module Surypus.API.AuthMiddleware
   ( withAuthzResolverAdvanced
   , withAuthzResolver
   , AuthResult(..)
-  , authenticateRequest
   ) where
 
 import Data.Int (Int64)
@@ -17,7 +16,7 @@ import qualified Data.Text.Encoding as TE
 import Network.HTTP.Types (status401, status403)
 import Network.Wai (Application, requestHeaders, rawPathInfo, requestMethod, responseLBS)
 import Surypus.API.Authorization (requiredPermissionForPathMethod, checkPermission, permissionToText)
-import Surypus.JWT.Token (UserClaims(..), verifyToken, SecretKey, defaultSecretKey)
+import Surypus.JWT.Token (UserClaims(..), verifyToken)
 import qualified Data.Text.Encoding as TE
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BS
@@ -37,18 +36,6 @@ extractToken authHeader = do
   if prefix `BS.isPrefixOf` authHeader
     then Just $ TE.decodeUtf8 $ BS.drop (BS.length prefix) authHeader
     else Nothing
-
--- | Authenticate a request
-authenticateRequest :: SecretKey -> ByteString -> ByteString -> IO AuthResult
-authenticateRequest _secret _path method = do
-  let mToken = extractToken method
-  case mToken of
-    Nothing -> return $ AuthFailed "Missing or invalid Authorization header"
-    Just token -> do
-      result <- verifyToken token
-      case result of
-        Left err -> return $ AuthFailed (T.pack err)
-        Right claims -> return $ Authenticated claims
 
 -- | Apply RBAC authorization middleware.
 -- Skips auth for public paths; otherwise verifies JWT and checks permission.
