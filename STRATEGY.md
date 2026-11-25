@@ -40,7 +40,7 @@ Surypus aims to be the **only formally verified open-source ERP/CRM** in the Has
 |-----------|---------|--------|------------|
 | **REST API** | `Surypus.API.Server`, `Surypus.API.*` (22 handlers) | ✅ **Complete** | Servant with 50+ endpoints, OpenAPI capable, fully real-DB backed |
 | **Auth & RBAC** | `Surypus.JWT.*`, `Surypus.RBAC`, `Surypus.API.AuthMiddleware` | ⚠️ **Mostly done** | JWT signing/verification working, but RBAC permission store is **stubbed** (`Surypus.RBAC:150-166`) and refresh tokens are `"fake-refresh-token-"` (`Surypus.JWT:117-137`) |
-| **Multi-Tenant** | `MultiTenancy.*` | ⚠️ **Done** | RLS middleware + `runDbWithTenant` exist, but `setTenantContext` is no-op (`MultiTenancy.Isolation:25-27`) and `getTenantFromRequest` returns Nothing (`:46-48`) |
+| **Multi-Tenant** | `MultiTenancy.*` | ⚠️ **Done** | RLS middleware + `runDbWithTenant` exist; the unused `getTenantFromRequest`/`checkTenantAccess` placeholders were removed in security/remove-auth-stubs. Tenant context comes only from verified JWT claims in `MultiTenancy.Middleware`. |
 | **Accounting** | `Finance.Accounting`, `Core.Accounting.*`, `Core.Services.Accounting` | ✅ **Complete** | Double-entry verified, LiquidHaskell refinement types on core operations |
 | **Inventory** | `Inventory.*` (15+ modules), `Core.Services.Inventory` | ✅ **Complete** | Stock operations, lot tracking, warehouse management |
 | **Tax/VAT** | `Core.Tax`, `DAL.Procedures` (`calcVAT`, `calcVATInclusive` etc.) | ✅ **Complete** | PostgreSQL stored procedures with Haskell wrappers |

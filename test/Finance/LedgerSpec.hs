@@ -17,6 +17,7 @@ import Data.Int (Int64)
 import Test.Hspec.QuickCheck (prop)
 import Test.QuickCheck
 import Data.Text (Text, pack)
+import Data.List (foldl')
 import qualified Data.Map.Strict as Map
 import Data.Time.Calendar (Day, fromGregorian)
 

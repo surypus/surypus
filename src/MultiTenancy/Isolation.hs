@@ -2,8 +2,6 @@
 module MultiTenancy.Isolation
   ( TenantContext(..)
   , runDbWithTenant
-  , getTenantFromRequest
-  , checkTenantAccess
   ) where
 
 import Data.Int (Int64)
@@ -33,10 +31,3 @@ runDbWithTenant ctx pool action = do
     pure result
     ) pool
 
-getTenantFromRequest :: Text -> IO (Maybe TenantContext)
-getTenantFromRequest apiKey = do
-  pure Nothing
-
-checkTenantAccess :: TenantContext -> Text -> Int -> IO Bool
-checkTenantAccess ctx resourceType resourceId = do
-  pure True
