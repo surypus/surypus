@@ -185,13 +185,14 @@ isLeft' _        = False
 -- Real signed-token behaviour (fixtures generated independently with HS256)
 -- ============================================================================
 
-validToken, expiredToken, wrongAudienceToken, noSubToken, wrongSecretToken, tamperedToken :: Text
-validToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoic3VyeXB1cy1hcGkiLCJpYXQiOjE3MzU2ODk2MDAsImV4cCI6NDEwMjQ0NDgwMH0.ESY-I90QiGX2uaFJv5m9Vj1InSdo11eVWhZ0LYTA8jM"
-expiredToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoic3VyeXB1cy1hcGkiLCJpYXQiOjE3MzU2ODk2MDAsImV4cCI6MTYwMDAwMzYwMH0.SORQFIlIrHpYV3TTOUYQddLXnSjB5SAJqClzs2rNsbE"
-wrongAudienceToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoib3RoZXItYXBpIiwiaWF0IjoxNzM1Njg5NjAwLCJleHAiOjQxMDI0NDQ4MDB9.jp6YuEgfclltH-jm7deCBnDW5wMOclI2-R-Nk1hfH_M"
-noSubToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdCIsImF1ZCI6InN1cnlwdXMtYXBpIiwiaWF0IjoxNzM1Njg5NjAwLCJleHAiOjQxMDI0NDQ4MDB9.8ABDIuT1qum6zhFYGn9hM5knFeFSwNuYx6fVKbNUciY"
-wrongSecretToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoic3VyeXB1cy1hcGkiLCJpYXQiOjE3MzU2ODk2MDAsImV4cCI6NDEwMjQ0NDgwMH0.zfWRl8kNI8E0JJkoeNz7hnYHLz8sTDgwQAz5NTZ0rjE"
-tamperedToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoic3VyeXB1cy1hcGkiLCJpYXQiOjE3MzU2ODk2MDAsImV4cCI6NDEwMjQ0NDgwMH0.ESY-I90QiGX2uaFJv5m9Vj1InSdo11eVWhZ0LYTAabc"
+validToken, expiredToken, wrongAudienceToken, noSubToken, wrongSecretToken, wrongIssuerToken, tamperedToken :: Text
+validToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoic3VyeXB1cy1hcGkiLCJpc3MiOiJzdXJ5cHVzLWFwaSIsImlhdCI6MTczNTY4OTYwMCwiZXhwIjo0MTAyNDQ0ODAwfQ.vcLLs7sQuzZMICkStzwzK-8pg8QDhHoyynNHzsM552w"
+expiredToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoic3VyeXB1cy1hcGkiLCJpc3MiOiJzdXJ5cHVzLWFwaSIsImlhdCI6MTYwMDAwMDAwMCwiZXhwIjoxNjAwMDAzNjAwLCJyb2xlIjoidXNlciIsInRlbmFudF9pZCI6N30.kBu-OADoGqCww7jQWofFa7WBTXHYpQ-rep588dP5jyY"
+wrongAudienceToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoib3RoZXItYXBpIiwiaXNzIjoic3VyeXB1cy1hcGkiLCJpYXQiOjE3MzU2ODk2MDAsImV4cCI6NDEwMjQ0NDgwMH0.vl0WWEvsiVrid6ZvjSteuful8N6mCFljQtPN6NhuePg"
+noSubToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdCIsImF1ZCI6InN1cnlwdXMtYXBpIiwiaXNzIjoic3VyeXB1cy1hcGkiLCJpYXQiOjE3MzU2ODk2MDAsImV4cCI6NDEwMjQ0NDgwMCwicm9sZSI6InVzZXIiLCJ0ZW5hbnRfaWQiOjd9.TpWHP29_ePWwoZ3zTjS4Y5TsZ1JsLlZ2FBfRupM9vmA"
+wrongSecretToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoic3VyeXB1cy1hcGkiLCJpc3MiOiJzdXJ5cHVzLWFwaSIsImlhdCI6MTczNTY4OTYwMCwiZXhwIjo0MTAyNDQ0ODAwfQ.zwtCQWZNMDwICAl4TF0pRhoSFi_X86xtFyMJeSGo70I"
+wrongIssuerToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoic3VyeXB1cy1hcGkiLCJpc3MiOiJldmlsLWlzc3VlciIsImlhdCI6MTczNTY4OTYwMCwiZXhwIjo0MTAyNDQ0ODAwfQ.65EmnK40Nv9vEfMzXN8lIVkysc89GHwsMIuWIEqkKgU"
+tamperedToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoic3VyeXB1cy1hcGkiLCJpc3MiOiJzdXJ5cHVzLWFwaSIsImlhdCI6MTczNTY4OTYwMCwiZXhwIjo0MTAyNDQ0ODAwLCJyb2xlIjoidXNlciIsInRlbmFudF9pZCI6N30.v-HxWRbMbTG3vRARlzQjTZI0uwzlBHMOLw9fFiCrabc"
 
 realTokenSpec :: Spec
 realTokenSpec = do
@@ -212,6 +213,9 @@ realTokenSpec = do
 
   it "rejects a tampered signature" $
     validateAccessToken testSecret tamperedToken `shouldReturn` Left "Invalid or expired token"
+
+  it "rejects a token with the wrong issuer" $
+    validateAccessToken testSecret wrongIssuerToken `shouldReturn` Left "Invalid or expired token"
 
   it "decodes identity and expiry from a real token" $ do
     result <- decodeAndValidateToken testSecret validToken

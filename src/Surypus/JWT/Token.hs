@@ -28,6 +28,7 @@ import Crypto.JWT (
     addClaim,
     claimExp,
     claimIat,
+    claimIss,
     claimSub,
     decodeCompact,
     defaultJWTValidationSettings,
@@ -51,6 +52,9 @@ import DAL.Types (User (..))
 import DAL.Pool (ConnectionPool)
 import System.Environment (lookupEnv)
 import Text.Read (readMaybe)
+
+expectedIssuer :: Text
+expectedIssuer = "surypus-api"
 
 -- | Secret key type alias for JWT signing
 type SecretKey = LBS.ByteString
@@ -93,6 +97,7 @@ generateToken _pool user = do
                             addClaim "tenant_id" (Number (fromIntegral realTenantId)) $
                                 addClaim "aud" (toJSON ("surypus-api" :: Text)) $
                                     emptyClaimsSet
+                                        & claimIss ?~ review string expectedIssuer
                                         & claimSub ?~ review string (T.pack (show (userId user)))
                                         & claimIat ?~ NumericDate now
                                         & claimExp ?~ NumericDate (addUTCTime 3600 now)
@@ -117,6 +122,9 @@ verifyToken tokenStr = do
         verifyClaims config jwk (jwt :: SignedJWT)
     case result of
         Left jwtErr -> pure $ Left $ show jwtErr
+        Right claimsSet
+          | (claimsSet ^. claimIss) /= Just (review string expectedIssuer) ->
+              pure $ Left "Invalid token: wrong issuer"
         Right claimsSet -> do
             let custClaims = claimsSet ^. unregisteredClaims
                 lookupClaim :: Text -> Maybe Value
