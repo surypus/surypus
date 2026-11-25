@@ -41,7 +41,7 @@ services:
       dockerfile: Dockerfile
     container_name: surypus-api
     environment:
-      PORT: 443
+      PORT: 8080
       DB_HOST: db
       DB_PORT: 5432
       DB_NAME: surypus
@@ -50,7 +50,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
     ports:
-      - "8080:443"
+      - "8080:8080"
     depends_on:
       db:
         condition: service_healthy
@@ -58,27 +58,8 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # Job Worker (background tasks)
-  worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: surypus-worker
-    command: surypus-job-worker
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: surypus
-      DB_USER: surypus
-      DB_PASSWORD: surypus_password
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    restart: unless-stopped
+  # Background jobs are handled by the server via Redis Streams.
+  # A separate worker executable does not exist in Surypus.cabal.
 
 volumes:
   surypus_db_data:
