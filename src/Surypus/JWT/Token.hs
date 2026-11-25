@@ -16,7 +16,7 @@ module Surypus.JWT.Token (
 ) where
 
 import Control.Exception (throwIO)
-import Control.Lens ((&), (?~), (^.), (^?))
+import Control.Lens ((&), (?~), (^.), (^?), review)
 import Crypto.JOSE.Compact (encodeCompact)
 import Crypto.JOSE.JWA.JWS (Alg (..))
 import Crypto.JOSE.JWK (fromOctets)
@@ -93,7 +93,7 @@ generateToken _pool user = do
                             addClaim "tenant_id" (Number (fromIntegral realTenantId)) $
                                 addClaim "aud" (toJSON ("surypus-api" :: Text)) $
                                     emptyClaimsSet
-                                        & claimSub ?~ T.pack (show (userId user))
+                                        & claimSub ?~ review string (T.pack (show (userId user)))
                                         & claimIat ?~ NumericDate now
                                         & claimExp ?~ NumericDate (addUTCTime 3600 now)
         signClaims jwk header claims

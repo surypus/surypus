@@ -42,7 +42,7 @@ import Crypto.JWT
     unregisteredClaims,
     verifyClaims,
   )
-import Control.Lens ((&), (?~), (^.), (^?))
+import Control.Lens ((&), (?~), (^.), (^?), review)
 import DAL.Database (ConnectionPool)
 import Data.Aeson (Value (..), toJSON)
 import Data.ByteString.Lazy qualified as LBS
@@ -112,7 +112,7 @@ generateTokenPair pool cfg userId username role _mPersonId = do
             addClaim "role" (toJSON role) $
               addClaim "aud" (toJSON ("surypus-api" :: Text)) $
                 emptyClaimsSet
-                  & claimSub ?~ uid
+                  & claimSub ?~ review string uid
                   & claimIat ?~ NumericDate now
                   & claimExp ?~ NumericDate expiresAt
   result <- runJOSE @JWTError $ signClaims jwk header claims
@@ -223,7 +223,7 @@ refreshAccessToken pool cfg oldToken = do
                     addClaim "role" (toJSON ("" :: Text)) $
                       addClaim "aud" (toJSON ("surypus-api" :: Text)) $
                         emptyClaimsSet
-                          & claimSub ?~ uid
+                          & claimSub ?~ review string uid
                           & claimIat ?~ NumericDate now
                           & claimExp ?~ NumericDate accessExpiresAt
           signed <- runJOSE @JWTError $ signClaims jwk header claims
