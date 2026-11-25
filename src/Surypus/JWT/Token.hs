@@ -16,7 +16,7 @@ module Surypus.JWT.Token (
 ) where
 
 import Control.Exception (throwIO)
-import Control.Lens ((&), (?~), (^.))
+import Control.Lens ((&), (?~), (^.), (^?))
 import Crypto.JOSE.Compact (encodeCompact)
 import Crypto.JOSE.JWA.JWS (Alg (..))
 import Crypto.JOSE.JWK (fromOctets)
@@ -28,11 +28,13 @@ import Crypto.JWT (
     addClaim,
     claimExp,
     claimIat,
+    claimSub,
     decodeCompact,
     defaultJWTValidationSettings,
     emptyClaimsSet,
     runJOSE,
     signClaims,
+    string,
     unregisteredClaims,
     verifyClaims,
  )
@@ -91,6 +93,7 @@ generateToken _pool user = do
                             addClaim "tenant_id" (Number (fromIntegral realTenantId)) $
                                 addClaim "aud" (toJSON ("surypus-api" :: Text)) $
                                     emptyClaimsSet
+                                        & claimSub ?~ T.pack (show (userId user))
                                         & claimIat ?~ NumericDate now
                                         & claimExp ?~ NumericDate (addUTCTime 3600 now)
         signClaims jwk header claims
@@ -118,10 +121,8 @@ verifyToken tokenStr = do
             let custClaims = claimsSet ^. unregisteredClaims
                 lookupClaim :: Text -> Maybe Value
                 lookupClaim key = Map.lookup key custClaims
-                mbUid =
-                    lookupClaim "sub" >>= \case
-                        String s -> Just s
-                        _ -> Nothing
+                -- "sub" is registered: jose decodes it into claimSub.
+                mbUid = (claimsSet ^. claimSub) >>= (^? string)
                 mbName =
                     lookupClaim "name" >>= \case
                         String s -> Just s
