@@ -32,15 +32,17 @@ import Crypto.JWT
     addClaim,
     claimExp,
     claimIat,
+    claimSub,
     decodeCompact,
     defaultJWTValidationSettings,
     emptyClaimsSet,
     runJOSE,
     signClaims,
+    string,
     unregisteredClaims,
     verifyClaims,
   )
-import Control.Lens ((&), (?~), (^.))
+import Control.Lens ((&), (?~), (^.), (^?), review)
 import DAL.Database (ConnectionPool)
 import Data.Aeson (Value (..), toJSON)
 import Data.ByteString.Lazy qualified as LBS
@@ -106,11 +108,11 @@ generateTokenPair pool cfg userId username role _mPersonId = do
       header = newJWSHeader ((), HS256)
       uid = T.pack (show userId)
       claims =
-        addClaim "sub" (toJSON uid) $
-          addClaim "name" (toJSON username) $
+                  addClaim "name" (toJSON username) $
             addClaim "role" (toJSON role) $
               addClaim "aud" (toJSON ("surypus-api" :: Text)) $
                 emptyClaimsSet
+                  & claimSub ?~ review string uid
                   & claimIat ?~ NumericDate now
                   & claimExp ?~ NumericDate expiresAt
   result <- runJOSE @JWTError $ signClaims jwk header claims
@@ -153,10 +155,7 @@ validateAccessToken secret token = do
     Left _ -> pure $ Left "Invalid or expired token"
     Right claimsSet -> do
       let custClaims = claimsSet ^. unregisteredClaims
-          mbUid =
-            Map.lookup "sub" custClaims >>= \case
-              String s -> Just s
-              _ -> Nothing
+          mbUid = (claimsSet ^. claimSub) >>= (^? string)
       case mbUid of
         Just uid -> case readMaybe (T.unpack uid) of
           Just uidInt -> pure $ Right uidInt
@@ -179,7 +178,7 @@ decodeAndValidateToken secret token = do
             Map.lookup k custClaims >>= \case
               String s -> Just s
               _ -> Nothing
-          mbUid = lookupClaim "sub"
+          mbUid = (claimsSet ^. claimSub) >>= (^? string)
           mbName = lookupClaim "name"
           mbExp = claimsSet ^. claimExp
       case mbUid of
@@ -220,11 +219,11 @@ refreshAccessToken pool cfg oldToken = do
               header = newJWSHeader ((), HS256)
               uid = T.pack (show userId)
               claims =
-                addClaim "sub" (toJSON uid) $
-                  addClaim "name" (toJSON ("" :: Text)) $
+                                  addClaim "name" (toJSON ("" :: Text)) $
                     addClaim "role" (toJSON ("" :: Text)) $
                       addClaim "aud" (toJSON ("surypus-api" :: Text)) $
                         emptyClaimsSet
+                          & claimSub ?~ review string uid
                           & claimIat ?~ NumericDate now
                           & claimExp ?~ NumericDate accessExpiresAt
           signed <- runJOSE @JWTError $ signClaims jwk header claims
