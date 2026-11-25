@@ -50,6 +50,7 @@ spec = do
   describe "validateAccessToken" validateAccessTokenSpec
   describe "decodeAndValidateToken" decodeAndValidateTokenSpec
   describe "Security properties" securityPropertiesSpec
+  describe "Real signed JWT behaviour" realTokenSpec
 
 jwtConfigFromSecretSpec :: Spec
 jwtConfigFromSecretSpec = do
@@ -179,3 +180,45 @@ securityPropertiesSpec = do
 isLeft' :: Either a b -> Bool
 isLeft' (Left _) = True
 isLeft' _        = False
+
+-- ============================================================================
+-- Real signed-token behaviour (fixtures generated independently with HS256)
+-- ============================================================================
+
+validToken, expiredToken, wrongAudienceToken, noSubToken, wrongSecretToken, tamperedToken :: Text
+validToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoic3VyeXB1cy1hcGkiLCJpYXQiOjE3OTU1NjkwOTUsImV4cCI6MjExMDkyOTA5NX0.zPzoY9phvPhYMuK0dX32larYSjWfzAgz8twbdK0V1b8"
+expiredToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoic3VyeXB1cy1hcGkiLCJpYXQiOjEsImV4cCI6Mn0.h2yG1FxvO2aS7WiD0jPJkhQIxzQ_4rV_d6aM6UeNsDg"
+wrongAudienceToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoib3RoZXIiLCJpYXQiOjE3OTU1NjkwOTUsImV4cCI6MjExMDkyOTA5NX0.cLKyqTE7gc4CwDDRCFdwlWCizN_dhcReKv8ykbZXTi0"
+noSubToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdCIsImF1ZCI6InN1cnlwdXMtYXBpIiwiaWF0IjoxNzk1NTY5MDk1LCJleHAiOjIxMTA5MjkwOTV9.YmXl7u6fIUQawOApa_2rADjXJ8mE64OuNlgHIAtjlfQ"
+wrongSecretToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoic3VyeXB1cy1hcGkiLCJpYXQiOjE3OTU1NjkwOTUsImV4cCI6MjExMDkyOTA5NX0.MjccADEWBQAiV8aeWSFvkSbzsNayavMnMrJnL8IN64Y"
+tamperedToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0MiIsIm5hbWUiOiJ0ZXN0IiwiYXVkIjoic3VyeXB1cy1hcGkiLCJpYXQiOjE3OTU1NjkwOTUsImV4cCI6MjExMDkyOTA5NX0.zPzoY9phvPhYMuK0dX32larYSjWfzAgz8twbdK0V1xy"
+
+realTokenSpec :: Spec
+realTokenSpec = do
+  it "accepts a correctly signed token with sub/aud/exp" $
+    validateAccessToken testSecret validToken `shouldReturn` Right 42
+
+  it "rejects an expired token" $
+    validateAccessToken testSecret expiredToken `shouldReturn` Left "Invalid or expired token"
+
+  it "rejects a token with the wrong audience" $
+    validateAccessToken testSecret wrongAudienceToken `shouldReturn` Left "Invalid or expired token"
+
+  it "rejects a token without a sub claim" $
+    validateAccessToken testSecret noSubToken `shouldReturn` Left "Invalid token: missing sub claim"
+
+  it "rejects a token signed with another secret" $
+    validateAccessToken testSecret wrongSecretToken `shouldReturn` Left "Invalid or expired token"
+
+  it "rejects a tampered signature" $
+    validateAccessToken testSecret tamperedToken `shouldReturn` Left "Invalid or expired token"
+
+  it "decodes identity and expiry from a real token" $ do
+    result <- decodeAndValidateToken testSecret validToken
+    case result of
+      Right (uid, name, expAt) -> do
+        uid `shouldBe` 42
+        name `shouldBe` "test"
+        expAt `shouldSatisfy` (> read "2036-01-01 00:00:00 UTC")
+      Left err -> fail ("unexpected rejection: " ++ show err)
+

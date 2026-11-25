@@ -27,6 +27,7 @@ import qualified System.SequenceSpec
 import qualified System.RetrySpec
 import qualified System.SecretsSpec
 import qualified JWTSpec
+import qualified TenantIsolationSpec
 import qualified ConfigSpec
 import qualified ObservabilitySpec
 import qualified MigrationDryRunSpec
@@ -108,6 +109,7 @@ main = hspec $ do
   System.RetrySpec.spec
   System.SecretsSpec.spec
   JWTSpec.spec
+  TenantIsolationSpec.spec
   Core.Accounting.CacheSpec.spec
   Core.Accounting.RedisCacheSpec.spec
   ConfigSpec.spec
