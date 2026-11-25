@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Generate deterministic HS256 JWT fixtures used by TenantIsolationSpec.hs."""
+"""Generate deterministic HS256 JWT fixtures used by JWTSpec/TenantIsolationSpec."""
 import base64, hashlib, hmac, json
 from pathlib import Path
 
 SECRET = b"test-secret-key-that-is-long-enough-for-hs256"
-BASE = {"sub": "42", "name": "test-user", "role": "user",
-        "aud": "surypus-api", "iat": 1735689600, "exp": 4102444800}
+API_BASE = {"sub": "42", "name": "test", "aud": "surypus-api",
+            "iss": "surypus-api", "iat": 1735689600, "exp": 4102444800}
+TENANT_BASE = {**API_BASE, "role": "user", "tenant_id": 7}
 
 def b64(obj):
     return base64.urlsafe_b64encode(
@@ -18,28 +19,27 @@ def jwt(payload, key=SECRET):
     return f"{h}.{p}.{sig}"
 
 def main():
-    fixtures = {
-        "tenant": jwt({**BASE, "tenant_id": 7}),
-        "notenant": jwt(BASE),
-        "expired": jwt({**BASE, "tenant_id": 7, "iat": 1600000000, "exp": 1600003600}),
-        "wrongaud": jwt({**BASE, "aud": "other-api", "tenant_id": 7}),
-        "nosub": jwt({k: v for k, v in BASE.items() if k != "sub"} | {"tenant_id": 7}),
-    }
-    fixtures["tampered"] = fixtures["tenant"][:-3] + "abc"
-    api_base = {"sub": "42", "name": "test", "aud": "surypus-api",
-                "iat": 1735689600, "exp": 4102444800}
     api = {
-        "validToken": jwt(api_base),
-        "expiredToken": jwt({**api_base, "exp": 1600003600}),
-        "wrongAudienceToken": jwt({**api_base, "aud": "other-api"}),
-        "noSubToken": jwt({k: v for k, v in api_base.items() if k != "sub"}),
-        "wrongSecretToken": jwt(api_base, key=b"other-secret-key-that-is-also-long-enough"),
+        "validToken": jwt(API_BASE),
+        "expiredToken": jwt({**API_BASE, "exp": 1600003600}),
+        "wrongAudienceToken": jwt({**API_BASE, "aud": "other-api"}),
+        "noSubToken": jwt({k: v for k, v in API_BASE.items() if k != "sub"}),
+        "wrongSecretToken": jwt(API_BASE, key=b"other-secret-key-that-is-also-long-enough"),
+        "wrongIssuerToken": jwt({**API_BASE, "iss": "evil-issuer"}),
     }
     api["tamperedToken"] = api["validToken"][:-3] + "abc"
-    fixtures.update(api)
+    tenant = {
+        "tenantToken": jwt(TENANT_BASE),
+        "noTenantToken": jwt({k: v for k, v in TENANT_BASE.items() if k != "tenant_id"}),
+        "expiredToken": jwt({**TENANT_BASE, "exp": 1600003600, "iat": 1600000000}),
+        "wrongAudToken": jwt({**TENANT_BASE, "aud": "other-api"}),
+        "noSubToken": jwt({k: v for k, v in TENANT_BASE.items() if k != "sub"}),
+        "wrongIssToken": jwt({**TENANT_BASE, "iss": "evil-issuer"}),
+    }
+    tenant["tamperedToken"] = tenant["tenantToken"][:-3] + "abc"
     out = Path(__file__).resolve().parents[1] / "test" / "fixtures" / "jwt-fixtures.json"
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(fixtures, indent=2) + "\n", encoding="utf-8")
+    out.write_text(json.dumps({**api, **tenant}, indent=2) + "\n", encoding="utf-8")
     print(f"wrote {out}")
 
 if __name__ == "__main__":
