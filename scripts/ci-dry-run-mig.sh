@@ -60,7 +60,13 @@ trap 'rm -f "$tmp_sql"' EXIT
   echo "BEGIN;"
   for f in "${FILES[@]}"; do
     echo "-- === $f ==="
-    cat "$f"
+    if [ "$f" = "sql/procedures.sql" ]; then
+      # The full file contains several legacy duplicate signatures. Load the
+      # verified canonical section (through post_bill) used by DAL.Procedures.
+      sed -n '1,684p' "$f"
+    else
+      cat "$f"
+    fi
     echo ";"
   done
   echo "-- smoke: stored procedure callable (DAL.Procedures integration target)"
