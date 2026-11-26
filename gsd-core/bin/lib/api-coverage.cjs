@@ -653,7 +653,15 @@ function parseCoverageMatrix(text) {
     // #2365 acceptance #5: a "no external API integration" declaration. Scanned
     // on fence-stripped, comment-stripped text so an example inside a code block
     // or an HTML comment does not count.
-    const declMatch = NO_INTEGRATION_DECLARATION_RE.exec((0, markdown_sectionizer_cjs_1.stripFencedCode)(src).text.replace(HTML_COMMENT_RE, ''));
+    let commentStripped = (0, markdown_sectionizer_cjs_1.stripFencedCode)(src).text;
+    // Remove nested/adjacent HTML comments until stable; a single .replace() can
+    // leave a second `<!--` behind and would misclassify a declaration.
+    for (;;) {
+      const next = commentStripped.replace(HTML_COMMENT_RE, '');
+      if (next === commentStripped) break;
+      commentStripped = next;
+    }
+    const declMatch = NO_INTEGRATION_DECLARATION_RE.exec(commentStripped);
     if (declMatch) {
         out.declaration = { none: true, reason: (declMatch[1] || '').trim() };
     }
