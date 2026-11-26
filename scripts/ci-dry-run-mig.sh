@@ -10,11 +10,26 @@ set -uo pipefail
 echo "Migration verification: loading the full chain against Postgres (if available)"
 
 # Collect every migration file and sort by version prefix (V<num>__).
+# Sort by the numeric V<version> prefix first, then by path. Sorting the full
+# path numerically treated every file as version 0, which loaded aggregate
+# V012 before event V001 and made event_type_register missing.
 mapfile -t FILES < <(cat <(ls sql/migrations/V*.sql 2>/dev/null) \
                           <(ls sql/event/V*.sql 2>/dev/null) \
                           <(ls sql/projection/V*.sql 2>/dev/null) \
                           <(ls sql/aggregate/V*.sql 2>/dev/null) \
-                          | sort -t_ -k1 -n)
+                          | while read -r f; do
+                              v=$(basename "$f" | sed -E 's/^V([0-9]+)[^_]*__.*/\1/')
+                              case "$f" in
+                                sql/migrations/*) g=0 ;;
+                                sql/event/*)      g=1 ;;
+                                sql/projection/*) g=2 ;;
+                                sql/aggregate/*)  g=3 ;;
+                                *)                g=4 ;;
+                              esac
+                              printf '%s %s %s\n' "$g" "$v" "$f"
+                            done \
+                          | sort -k2,2n -k1,1n -k3,3 \
+                          | cut -d' ' -f3-)
 
 if [ -z "${TEST_PG_CONN:-}" ]; then
   if command -v psql >/dev/null 2>&1 && [ -n "${PGHOST:-}" ]; then
@@ -52,9 +67,7 @@ if psql "$conn" -v ON_ERROR_STOP=1 -f "$tmp_sql" >/tmp/ci_mig_load.log 2>&1; the
   echo "Migration chain loads cleanly (ALL_MIGRATIONS_LOAD_OK)."
   exit 0
 else
-  echo "Migration load FAILED. First error:"
-  grep -n -m1 -E "ERROR|ERROR:" /tmp/ci_mig_load.log | head -1
-  echo "--- context ---"
-  grep -n -B2 -A2 -E "ERROR" /tmp/ci_mig_load.log | head -30
+  echo "Migration load FAILED. Full psql log (first 80 lines):"
+  sed -n '1,80p' /tmp/ci_mig_load.log
   exit 1
 fi
