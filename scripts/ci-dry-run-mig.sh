@@ -18,11 +18,18 @@ mapfile -t FILES < <(cat <(ls sql/migrations/V*.sql 2>/dev/null) \
                           <(ls sql/projection/V*.sql 2>/dev/null) \
                           <(ls sql/aggregate/V*.sql 2>/dev/null) \
                           | while read -r f; do
-                              v=$(basename "$f" | sed -E 's/^V([0-9]+)__.*/\1/')
-                              printf '%s %s\n' "$v" "$f"
+                              v=$(basename "$f" | sed -E 's/^V([0-9]+)[^_]*__.*/\1/')
+                              case "$f" in
+                                sql/migrations/*) g=0 ;;
+                                sql/event/*)      g=1 ;;
+                                sql/projection/*) g=2 ;;
+                                sql/aggregate/*)  g=3 ;;
+                                *)                g=4 ;;
+                              esac
+                              printf '%s %s %s\n' "$g" "$v" "$f"
                             done \
-                          | sort -k1,1n -k2,2 \
-                          | cut -d' ' -f2-)
+                          | sort -k1,1n -k2,2n -k3,3 \
+                          | cut -d' ' -f3-)
 
 if [ -z "${TEST_PG_CONN:-}" ]; then
   if command -v psql >/dev/null 2>&1 && [ -n "${PGHOST:-}" ]; then
