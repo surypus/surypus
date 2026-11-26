@@ -11,12 +11,12 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install build dependencies and PostgreSQL dev libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget \
-    build-essential \
-    libssl-dev \
-    libreadline-dev \
-    zlib1g-dev \
-    libpq-dev \
+    wget="$(apt-cache policy wget | awk '/Candidate:/{print $2}')" \
+    build-essential="$(apt-cache policy build-essential | awk '/Candidate:/{print $2}')" \
+    libssl-dev="$(apt-cache policy libssl-dev | awk '/Candidate:/{print $2}')" \
+    libreadline-dev="$(apt-cache policy libreadline-dev | awk '/Candidate:/{print $2}')" \
+    zlib1g-dev="$(apt-cache policy zlib1g-dev | awk '/Candidate:/{print $2}')" \
+    libpq-dev="$(apt-cache policy libpq-dev | awk '/Candidate:/{print $2}')" \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
@@ -42,10 +42,10 @@ FROM debian:bookworm-slim
 
 # Install minimal runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq5 \
-    ca-certificates \
-    curl \
-    dumb-init \
+    libpq5="$(apt-cache policy libpq5 | awk '/Candidate:/{print $2}')" \
+    ca-certificates="$(apt-cache policy ca-certificates | awk '/Candidate:/{print $2}')" \
+    curl="$(apt-cache policy curl | awk '/Candidate:/{print $2}')" \
+    dumb-init="$(apt-cache policy dumb-init | awk '/Candidate:/{print $2}')" \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
@@ -68,7 +68,7 @@ EXPOSE 8080
 
 # Health check (liveness + readiness)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/api/v1/health || exit 1
+    CMD ["curl", "-f", "http://localhost:8080/api/v1/health"]
 
 # Run with dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
