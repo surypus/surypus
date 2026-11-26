@@ -16,7 +16,7 @@ module Surypus.JWT.Token (
 ) where
 
 import Control.Exception (throwIO)
-import Control.Lens ((&), (?~), (^.))
+import Control.Lens ((&), (?~), (^.), (^?), review)
 import Crypto.JOSE.Compact (encodeCompact)
 import Crypto.JOSE.JWA.JWS (Alg (..))
 import Crypto.JOSE.JWK (fromOctets)
@@ -28,11 +28,14 @@ import Crypto.JWT (
     addClaim,
     claimExp,
     claimIat,
+    claimIss,
+    claimSub,
     decodeCompact,
     defaultJWTValidationSettings,
     emptyClaimsSet,
     runJOSE,
     signClaims,
+    string,
     unregisteredClaims,
     verifyClaims,
  )
@@ -49,6 +52,9 @@ import DAL.Types (User (..))
 import DAL.Pool (ConnectionPool)
 import System.Environment (lookupEnv)
 import Text.Read (readMaybe)
+
+expectedIssuer :: Text
+expectedIssuer = "surypus-api"
 
 -- | Secret key type alias for JWT signing
 type SecretKey = LBS.ByteString
@@ -91,6 +97,8 @@ generateToken _pool user = do
                             addClaim "tenant_id" (Number (fromIntegral realTenantId)) $
                                 addClaim "aud" (toJSON ("surypus-api" :: Text)) $
                                     emptyClaimsSet
+                                        & claimIss ?~ review string expectedIssuer
+                                        & claimSub ?~ review string (T.pack (show (userId user)))
                                         & claimIat ?~ NumericDate now
                                         & claimExp ?~ NumericDate (addUTCTime 3600 now)
         signClaims jwk header claims
@@ -114,14 +122,15 @@ verifyToken tokenStr = do
         verifyClaims config jwk (jwt :: SignedJWT)
     case result of
         Left jwtErr -> pure $ Left $ show jwtErr
+        Right claimsSet
+          | (claimsSet ^. claimIss) /= Just (review string expectedIssuer) ->
+              pure $ Left "Invalid token: wrong issuer"
         Right claimsSet -> do
             let custClaims = claimsSet ^. unregisteredClaims
                 lookupClaim :: Text -> Maybe Value
                 lookupClaim key = Map.lookup key custClaims
-                mbUid =
-                    lookupClaim "sub" >>= \case
-                        String s -> Just s
-                        _ -> Nothing
+                -- "sub" is registered: jose decodes it into claimSub.
+                mbUid = (claimsSet ^. claimSub) >>= (^? string)
                 mbName =
                     lookupClaim "name" >>= \case
                         String s -> Just s

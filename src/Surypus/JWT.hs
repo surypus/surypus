@@ -32,15 +32,18 @@ import Crypto.JWT
     addClaim,
     claimExp,
     claimIat,
+    claimIss,
+    claimSub,
     decodeCompact,
     defaultJWTValidationSettings,
     emptyClaimsSet,
     runJOSE,
     signClaims,
+    string,
     unregisteredClaims,
     verifyClaims,
   )
-import Control.Lens ((&), (?~), (^.))
+import Control.Lens ((&), (?~), (^.), (^?), review)
 import DAL.Database (ConnectionPool)
 import Data.Aeson (Value (..), toJSON)
 import Data.ByteString.Lazy qualified as LBS
@@ -56,6 +59,9 @@ import qualified Data.UUID as UUID
 import qualified Data.UUID.V4 as UUIDv4
 import qualified Surypus.RefreshTokenRepo as RTRepo
 import Text.Read (readMaybe)
+
+expectedIssuer :: Text
+expectedIssuer = "surypus-api"
 
 data AuthError = AuthExpired | AuthInvalid | AuthMissing | AuthMalformed
   deriving (Show, Eq)
@@ -106,11 +112,12 @@ generateTokenPair pool cfg userId username role _mPersonId = do
       header = newJWSHeader ((), HS256)
       uid = T.pack (show userId)
       claims =
-        addClaim "sub" (toJSON uid) $
-          addClaim "name" (toJSON username) $
+                  addClaim "name" (toJSON username) $
             addClaim "role" (toJSON role) $
               addClaim "aud" (toJSON ("surypus-api" :: Text)) $
                 emptyClaimsSet
+                  & claimIss ?~ review string expectedIssuer
+                  & claimSub ?~ review string uid
                   & claimIat ?~ NumericDate now
                   & claimExp ?~ NumericDate expiresAt
   result <- runJOSE @JWTError $ signClaims jwk header claims
@@ -151,17 +158,17 @@ validateAccessToken secret token = do
     verifyClaims (defaultJWTValidationSettings (== "surypus-api")) jwk (jwt :: SignedJWT)
   case result of
     Left _ -> pure $ Left "Invalid or expired token"
-    Right claimsSet -> do
-      let custClaims = claimsSet ^. unregisteredClaims
-          mbUid =
-            Map.lookup "sub" custClaims >>= \case
-              String s -> Just s
-              _ -> Nothing
-      case mbUid of
-        Just uid -> case readMaybe (T.unpack uid) of
-          Just uidInt -> pure $ Right uidInt
-          Nothing -> pure $ Left "Invalid token: sub claim is not a valid integer"
-        _ -> pure $ Left "Invalid token: missing sub claim"
+    Right claimsSet ->
+      if (claimsSet ^. claimIss) /= Just (review string expectedIssuer)
+        then pure $ Left "Invalid or expired token"
+        else do
+          let custClaims = claimsSet ^. unregisteredClaims
+              mbUid = (claimsSet ^. claimSub) >>= (^? string)
+          case mbUid of
+            Just uid -> case readMaybe (T.unpack uid) of
+              Just uidInt -> pure $ Right uidInt
+              Nothing -> pure $ Left "Invalid token: sub claim is not a valid integer"
+            _ -> pure $ Left "Invalid token: missing sub claim"
 
 decodeAndValidateToken :: Text -> Text -> IO (Either AuthError (Int64, Text, UTCTime))
 decodeAndValidateToken secret token = do
@@ -173,24 +180,27 @@ decodeAndValidateToken secret token = do
     verifyClaims (defaultJWTValidationSettings (== "surypus-api")) jwk (jwt :: SignedJWT)
   case result of
     Left _ -> pure $ Left AuthInvalid
-    Right claimsSet -> do
-      let custClaims = claimsSet ^. unregisteredClaims
-          lookupClaim k =
-            Map.lookup k custClaims >>= \case
-              String s -> Just s
-              _ -> Nothing
-          mbUid = lookupClaim "sub"
-          mbName = lookupClaim "name"
-          mbExp = claimsSet ^. claimExp
-      case mbUid of
-        Just uid -> case readMaybe (T.unpack uid) of
-          Just uidInt ->
-            let expiresAt = case mbExp of
-                  Just (NumericDate t) -> t
-                  Nothing -> addUTCTime 3600 now
-             in pure $ Right (uidInt, fromMaybe "" mbName, expiresAt)
-          Nothing -> pure $ Left AuthInvalid
-        _ -> pure $ Left AuthInvalid
+    Right claimsSet ->
+      if (claimsSet ^. claimIss) /= Just (review string expectedIssuer)
+        then pure $ Left AuthInvalid
+        else do
+        let custClaims = claimsSet ^. unregisteredClaims
+            lookupClaim k =
+              Map.lookup k custClaims >>= \case
+                String s -> Just s
+                _ -> Nothing
+            mbUid = (claimsSet ^. claimSub) >>= (^? string)
+            mbName = lookupClaim "name"
+            mbExp = claimsSet ^. claimExp
+        case mbUid of
+          Just uid -> case readMaybe (T.unpack uid) of
+            Just uidInt ->
+              let expiresAt = case mbExp of
+                    Just (NumericDate t) -> t
+                    Nothing -> addUTCTime 3600 now
+               in pure $ Right (uidInt, fromMaybe "" mbName, expiresAt)
+            Nothing -> pure $ Left AuthInvalid
+          _ -> pure $ Left AuthInvalid
 
 --------------------------------------------------------------------------------
 -- Refresh-token rotation + access-token reissue
@@ -220,11 +230,12 @@ refreshAccessToken pool cfg oldToken = do
               header = newJWSHeader ((), HS256)
               uid = T.pack (show userId)
               claims =
-                addClaim "sub" (toJSON uid) $
-                  addClaim "name" (toJSON ("" :: Text)) $
+                                  addClaim "name" (toJSON ("" :: Text)) $
                     addClaim "role" (toJSON ("" :: Text)) $
                       addClaim "aud" (toJSON ("surypus-api" :: Text)) $
                         emptyClaimsSet
+                          & claimIss ?~ review string expectedIssuer
+                  & claimSub ?~ review string uid
                           & claimIat ?~ NumericDate now
                           & claimExp ?~ NumericDate accessExpiresAt
           signed <- runJOSE @JWTError $ signClaims jwk header claims

@@ -76,7 +76,7 @@ const migration = {
             const native = servers['gsd'];
             if ((0, opencode_mcp_entry_cjs_1.isGsdMcpEntry)(native) && !(0, opencode_mcp_entry_cjs_1.hasNoPromptsFlag)(native)) {
                 const updated = (0, opencode_mcp_entry_cjs_1.withNoPromptsFlag)(native);
-                nextMcp['servers'] = { ...servers, gsd- updated };
+                nextMcp['servers'] = { ...servers, gsd: updated };
                 edits.push({ path: ['mcp', 'servers', 'gsd', 'command'], value: updated.command });
             }
         }
