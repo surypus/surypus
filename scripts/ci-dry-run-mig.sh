@@ -10,11 +10,19 @@ set -uo pipefail
 echo "Migration verification: loading the full chain against Postgres (if available)"
 
 # Collect every migration file and sort by version prefix (V<num>__).
+# Sort by the numeric V<version> prefix first, then by path. Sorting the full
+# path numerically treated every file as version 0, which loaded aggregate
+# V012 before event V001 and made event_type_register missing.
 mapfile -t FILES < <(cat <(ls sql/migrations/V*.sql 2>/dev/null) \
                           <(ls sql/event/V*.sql 2>/dev/null) \
                           <(ls sql/projection/V*.sql 2>/dev/null) \
                           <(ls sql/aggregate/V*.sql 2>/dev/null) \
-                          | sort -t_ -k1 -n)
+                          | while read -r f; do
+                              v=$(basename "$f" | sed -E 's/^V([0-9]+)__.*/\1/')
+                              printf '%s %s\n' "$v" "$f"
+                            done \
+                          | sort -k1,1n -k2,2 \
+                          | cut -d' ' -f2-)
 
 if [ -z "${TEST_PG_CONN:-}" ]; then
   if command -v psql >/dev/null 2>&1 && [ -n "${PGHOST:-}" ]; then
