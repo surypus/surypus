@@ -28,7 +28,7 @@ mapfile -t FILES < <(cat <(ls sql/migrations/V*.sql 2>/dev/null) \
                               esac
                               printf '%s %s %s\n' "$g" "$v" "$f"
                             done \
-                          | sort -k1,1n -k2,2n -k3,3 \
+                          | sort -k2,2n -k1,1n -k3,3 \
                           | cut -d' ' -f3-)
 
 if [ -z "${TEST_PG_CONN:-}" ]; then
