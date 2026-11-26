@@ -17,8 +17,12 @@ mapfile -t FILES < <(cat <(ls sql/migrations/V*.sql 2>/dev/null) \
                           <(ls sql/event/V*.sql 2>/dev/null) \
                           <(ls sql/projection/V*.sql 2>/dev/null) \
                           <(ls sql/aggregate/V*.sql 2>/dev/null) \
+                          <(ls sql/procedures.sql 2>/dev/null) \
                           | while read -r f; do
                               v=$(basename "$f" | sed -E 's/^V([0-9]+)[^_]*__.*/\1/')
+                              if [ "$f" = "sql/procedures.sql" ]; then
+                                v=9999
+                              fi
                               case "$f" in
                                 sql/migrations/*) g=0 ;;
                                 sql/event/*)      g=1 ;;
@@ -59,6 +63,8 @@ trap 'rm -f "$tmp_sql"' EXIT
     cat "$f"
     echo ";"
   done
+  echo "-- smoke: stored procedure callable (DAL.Procedures integration target)"
+  echo "SELECT calc_stock_balance(0::bigint, 0::bigint, 5::numeric);"
   echo "ROLLBACK;"
 } > "$tmp_sql"
 
