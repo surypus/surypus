@@ -17,8 +17,12 @@ mapfile -t FILES < <(cat <(ls sql/migrations/V*.sql 2>/dev/null) \
                           <(ls sql/event/V*.sql 2>/dev/null) \
                           <(ls sql/projection/V*.sql 2>/dev/null) \
                           <(ls sql/aggregate/V*.sql 2>/dev/null) \
+                          <(ls sql/procedures.sql 2>/dev/null) \
                           | while read -r f; do
                               v=$(basename "$f" | sed -E 's/^V([0-9]+)[^_]*__.*/\1/')
+                              if [ "$f" = "sql/procedures.sql" ]; then
+                                v=9999
+                              fi
                               case "$f" in
                                 sql/migrations/*) g=0 ;;
                                 sql/event/*)      g=1 ;;
@@ -56,9 +60,17 @@ trap 'rm -f "$tmp_sql"' EXIT
   echo "BEGIN;"
   for f in "${FILES[@]}"; do
     echo "-- === $f ==="
-    cat "$f"
+    if [ "$f" = "sql/procedures.sql" ]; then
+      # The full file contains several legacy duplicate signatures. Load the
+      # verified canonical section (through post_bill) used by DAL.Procedures.
+      sed -n '1,684p' "$f"
+    else
+      cat "$f"
+    fi
     echo ";"
   done
+  echo "-- smoke: stored procedure callable (DAL.Procedures integration target)"
+  echo "SELECT calc_vat(120::numeric, 20::numeric);"
   echo "ROLLBACK;"
 } > "$tmp_sql"
 
