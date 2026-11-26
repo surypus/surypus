@@ -7,6 +7,9 @@ import qualified Surypus.Domain.RBACCanon.Types as RT
 import qualified Surypus.Domain.RBACCanon.Migration as M
 import qualified Surypus.Infra.SqlGen.DSL as DSL
 import Data.List (isInfixOf)
+import Surypus.API.Authorization
+  ( Permission(..), Resource(..), checkPermission,
+    permissionToText, requiredPermissionForPathMethod )
 
 spec :: Spec
 spec = do
@@ -38,3 +41,19 @@ spec = do
       M.generateV023 `shouldSatisfy` (isInfixOf "notes")
     it "V024 adds notes2" $ do
       M.generateV024 `shouldSatisfy` (isInfixOf "notes2")
+  describe "RBAC negative checks (issue #243)" $ do
+    it "denies an unmapped path by default" $
+      requiredPermissionForPathMethod "/api/v1/unknown-resource" "GET" `shouldBe` Nothing
+
+    it "does not grant write to a reader" $
+      checkPermission ["reader"] (Write Goods) `shouldBe` False
+
+    it "does not grant delete to an editor" $
+      checkPermission ["editor"] (Delete Users) `shouldBe` False
+
+    it "grants delete to an admin" $
+      checkPermission ["admin"] (Delete Users) `shouldBe` True
+
+    it "maps GET /api/v1/persons to read:persons" $
+      fmap permissionToText (requiredPermissionForPathMethod "/api/v1/persons" "GET")
+        `shouldBe` Just "read:persons"
