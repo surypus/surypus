@@ -966,7 +966,7 @@ function _runLegacyInstallMigrations(runtime, configDir, scope = 'global') {
             migrated = migrateLegacyDevPreferencesToSkill(configDir, savedLegacyArtifacts, runtime, scope);
         }
         catch (err) {
-            console.warn(`  [gsd] dev-preferences.md migration skipped for "${configDir}" (${err.message}) — restoring the legacy copy instead.`);
+            console.warn(`  [gsd] dev-preferences.md migration skipped (${err.message}) — restoring the legacy copy instead.`);
             migrationRefused = true;
         }
         // #2875 defect fix (call site 1 was a loss site): migrateLegacyDevPreferencesToSkill's

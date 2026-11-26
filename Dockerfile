@@ -40,6 +40,8 @@ RUN stack build --install-ghc --copy-bins --ghc-options="-O2 -j4"
 # Stage 2: Production runtime (minimal)
 FROM debian:bookworm-slim
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # Install minimal runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5="$(apt-cache policy libpq5 | awk '/Candidate:/{print $2}')" \
