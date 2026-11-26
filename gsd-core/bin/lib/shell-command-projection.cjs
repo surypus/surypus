@@ -892,7 +892,7 @@ function projectSpawnInvocation(command, args = [], opts = {}) {
         return resolved ? { command: resolved, args, resolved } : { command, args, resolved: null };
     }
     return {
-        command: String(envGet(env, 'ComSpec') || 'cmd.exe'),
+        command: 'cmd.exe',
         args: ['/d', '/s', '/c', _buildVerbatimCmdLine(target, args)],
         resolved,
         windowsVerbatimArguments: true,
