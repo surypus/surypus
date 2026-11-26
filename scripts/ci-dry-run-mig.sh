@@ -70,7 +70,7 @@ trap 'rm -f "$tmp_sql"' EXIT
     echo ";"
   done
   echo "-- smoke: stored procedure callable (DAL.Procedures integration target)"
-  echo "SELECT calc_stock_balance(0::bigint, 0::bigint, 5::numeric);"
+  echo "SELECT calc_vat(120::numeric, 20::numeric);"
   echo "ROLLBACK;"
 } > "$tmp_sql"
 
