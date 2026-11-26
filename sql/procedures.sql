@@ -684,7 +684,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Cancel bill (reverse accounting entries and restore stock)
-CREATE OR REPLACE FUNCTION cancel_bill(p_bill_id BIGINT)
+CREATE OR REPLACE FUNCTION cancel_bill_boolean(p_bill_id BIGINT)
 RETURNS BOOLEAN AS $$
 DECLARE
     v_status INT;
