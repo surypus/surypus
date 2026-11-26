@@ -52,9 +52,7 @@ if psql "$conn" -v ON_ERROR_STOP=1 -f "$tmp_sql" >/tmp/ci_mig_load.log 2>&1; the
   echo "Migration chain loads cleanly (ALL_MIGRATIONS_LOAD_OK)."
   exit 0
 else
-  echo "Migration load FAILED. First error:"
-  grep -n -m1 -E "ERROR|ERROR:" /tmp/ci_mig_load.log | head -1
-  echo "--- context ---"
-  grep -n -B2 -A2 -E "ERROR" /tmp/ci_mig_load.log | head -30
+  echo "Migration load FAILED. Full psql log (first 80 lines):"
+  sed -n '1,80p' /tmp/ci_mig_load.log
   exit 1
 fi
