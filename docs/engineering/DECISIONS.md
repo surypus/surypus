@@ -27,11 +27,13 @@
 - **Context:** `AGENTS.md` requires Beads as sole tracker, but `bd ready --json`
   failed with `database "Surypus" not found on Dolt server`; `bd doctor`
   reported 3 errors and pointed at another clone's `.beads`.
-- **Decision:** Do not invent Beads IDs or claim task state. Keep
-  `NEXT_ACTIONS.md` as the handoff record required by `HERMES.md` §16, explicitly
-  marked as not a task tracker.
+- **Decision:** Beads remains the sole source of task IDs, priorities,
+  dependencies and status. Markdown engineering files are recovery and
+  reporting records only; they must not carry a competing queue of task IDs.
+  `NEXT_ACTIONS.md` was rewritten as a recovery point with no task IDs.
 - **Evidence:** command output recorded in `VERIFICATION_LOG.md`.
-- **Consequences:** task IDs must be reconciled with Beads once Dolt is healthy.
+- **Consequences:** work descriptions in Markdown are pointers, not backlog
+  entries; they are registered as Beads issues once Beads is healthy.
 
 ## DEC-004 — Fail-closed authorization and per-thread tenant context
 
@@ -44,3 +46,18 @@
 - **Consequences:** some previously "working" routes now require a real grant;
   this is intentional. Verified by 16 auth, 13 permission and 4 tenant tests.
 - **Status:** Active.
+
+## DEC-005 — No destructive Beads reinitialisation without owner approval
+
+- **Date:** 2026-11-27
+- **Context:** The local Dolt database `Surypus` is absent. `bd bootstrap`
+  failed to clone the DoltHub remote (`rpc error: code = Unimplemented`), and
+  `bd init --reinit-local --from-jsonl` refuses without `--discard-remote`,
+  which would overwrite remote Dolt history.
+- **Decision:** Do not run the destructive reinit. Record Beads as BLOCKED;
+  keep autonomous work limited to safe, reversible changes and recovery-state
+  updates.
+- **Alternatives:** discard remote history (destructive, externally
+  consequential) — requires owner approval; wait for DoltHub access to recover.
+- **Evidence:** command output in `VERIFICATION_LOG.md`.
+- **Status:** BLOCKED — needs owner decision or restored DoltHub access.

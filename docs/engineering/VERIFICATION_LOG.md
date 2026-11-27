@@ -11,6 +11,10 @@
   therefore unusable as the task tracker in this session.
 - `git merge origin/main` → conflict in `HERMES.md` (add/add); resolved by
   taking main's version, commit `696c412`.
+- `bd bootstrap` → `Bootstrap failed: clone from remote via server ... rpc
+  error: code = Unimplemented`. `bd init --reinit-local --from-jsonl`
+  (isolated copy) → refused: remote has Dolt history; `--discard-remote`
+  required. Destructive reinit not executed; Beads recorded as BLOCKED.
 
 All commands in the clean worktree at
 `/home/dominicusin/.hermes/cache/scratch/surypus-audit`.

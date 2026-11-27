@@ -12,10 +12,17 @@ Upstream `main` gained commit `0a20715` (canonical 1133-line `HERMES.md`) while
 this branch was in flight. Merged at `696c412`, adopting main's policy file;
 the shorter local policy was discarded, not kept as a competing document.
 
+Owner clarification (2026-11-27): Beads is the single task source; Markdown
+engineering files exist for recovery and reporting only. `NEXT_ACTIONS.md` was
+rewritten as a recovery point with no task IDs or priorities.
+
 Beads (`bd`) is broken in this worktree: `bd ready --json` fails with
 `database "Surypus" not found on Dolt server`; `bd doctor` reports 3 errors,
 including database and Dolt permission failures, and still points at
-`/home/dominicusin/surypus/.beads`. No task IDs were invented or claimed.
+`/home/dominicusin/surypus/.beads`. `bd bootstrap` then failed to clone the
+DoltHub remote (`rpc error: code = Unimplemented`); `--reinit-local` requires
+the destructive `--discard-remote` workflow, which was not run. No task IDs
+were invented or claimed.
 `NEXT_ACTIONS.md` remains a handoff record required by `HERMES.md` §16, not a
 replacement for Beads.
 
