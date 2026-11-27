@@ -9,8 +9,8 @@ Source of truth: clean worktree of `origin/main` at `078ead3` on branch
 |---|---|---|
 | Library modules in `src/` | 387 (386 before this task's new module) | `find src -name '*.hs' \| wc -l` |
 | Exposed modules in `Surypus.cabal` | 385 after change (384 before) | grep of stanzas |
-| Test modules in `test/` | 90 (85 at cycle-1 start) | `find test -name '*.hs' \| wc -l` |
-| Test examples | **1254, 0 failures, 3 pending** (1234 at cycle-1 start) | `stack test` |
+| Test modules in `test/` | 91 (85 at cycle-1 start) | `find test -name '*.hs' \| wc -l` |
+| Test examples | **1258, 0 failures, 3 pending** (1234 at cycle-1 start) | `stack test` |
 | CI workflow files | 78 (1 disabled) | `ls .github/workflows/` |
 | Toolchain | Stack 3.7.1 / GHC 9.6.5 / resolver lts-22.21 | `stack path --compiler-exe` |
 | SQL migration files | 40+ across `sql/migrations`, `sql/core`, `sql/event`, `sql/aggregate`, `sql/archive` | `find sql -type f` |

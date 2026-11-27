@@ -11,11 +11,15 @@ module DAL.Database (
     runDbWithTenant,
     currentTenantContext,
     setCurrentTenantContext,
+    withTenantContext,
     clearCurrentTenantContext,
 ) where
 
 import Data.Int (Int64)
-import Data.IORef (IORef, newIORef, readIORef, writeIORef)
+import Data.IORef (IORef, modifyIORef', newIORef, readIORef)
+import Control.Concurrent (ThreadId, myThreadId)
+import Control.Exception (finally)
+import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import qualified Data.Text as T
 import Database.Persist.Postgresql (ConnectionPool, createPostgresqlPool)
@@ -31,20 +35,40 @@ import Data.Char (isSpace)
 
 type Pool = ConnectionPool
 
--- | Thread-local tenant context.
--- Each request sets this via middleware; runDb reads it for RLS scoping.
+-- | Per-thread tenant context, keyed by 'ThreadId'.
+--
+-- A single global IORef leaked tenant A's context into tenant B's queries
+-- whenever two requests ran concurrently. Each WAI request runs in its own
+-- thread, so keying by ThreadId makes the context request-scoped.
 {-# NOINLINE tenantContextVar #-}
-tenantContextVar :: IORef (Maybe (Int64, Int64))
-tenantContextVar = unsafePerformIO $ newIORef Nothing
+tenantContextVar :: IORef (Map.Map ThreadId (Int64, Int64))
+tenantContextVar = unsafePerformIO $ newIORef Map.empty
 
 currentTenantContext :: IO (Maybe (Int64, Int64))
-currentTenantContext = readIORef tenantContextVar
+currentTenantContext = do
+  tid <- myThreadId
+  Map.lookup tid <$> readIORef tenantContextVar
 
 setCurrentTenantContext :: Int64 -> Int64 -> IO ()
-setCurrentTenantContext tenantId userId = writeIORef tenantContextVar (Just (tenantId, userId))
+setCurrentTenantContext tenantId userId = do
+  tid <- myThreadId
+  modifyIORef' tenantContextVar (Map.insert tid (tenantId, userId))
 
 clearCurrentTenantContext :: IO ()
-clearCurrentTenantContext = writeIORef tenantContextVar Nothing
+clearCurrentTenantContext = do
+  tid <- myThreadId
+  modifyIORef' tenantContextVar (Map.delete tid)
+
+-- | Scope a tenant context to an action and restore the previous value on exit.
+withTenantContext :: Int64 -> Int64 -> IO a -> IO a
+withTenantContext tenantId userId action = do
+  tid <- myThreadId
+  previous <- Map.lookup tid <$> readIORef tenantContextVar
+  setCurrentTenantContext tenantId userId
+  let restore = case previous of
+        Just (oldTenant, oldUser) -> setCurrentTenantContext oldTenant oldUser
+        Nothing -> clearCurrentTenantContext
+  action `finally` restore
 
 -- | Backwards-compatible pool constructor.
 createPool :: IO ConnectionPool
@@ -92,7 +116,7 @@ closePool = destroyAllResources
 
 runDb :: ConnectionPool -> SqlPersistT IO a -> IO a
 runDb pool action = do
-  mCtx <- readIORef tenantContextVar
+  mCtx <- currentTenantContext
   case mCtx of
     Just (tenantId, userId) ->
       runSqlPool (do

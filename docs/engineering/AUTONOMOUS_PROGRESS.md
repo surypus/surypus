@@ -1,5 +1,22 @@
 # Autonomous progress
 
+## Cycle 3 (2026-11-27) — tenant isolation
+
+### Implemented
+- **S-09 (P0)**: tenant context was a single global `IORef` created with
+  `unsafePerformIO` while documented as thread-local. Under concurrency,
+  tenant A's context could be read by tenant B's `runDb`. Context is now keyed
+  by `ThreadId`; added `withTenantContext` with restoration on scope exit and
+  on exceptions, and rewired `MultiTenancy.Middleware` to use it.
+- Added four isolation tests, including a two-thread interleaving test that
+  proves both tenants keep their own context simultaneously.
+
+### Verified
+`stack test` → **1258 examples, 0 failures, 3 pending**, exit 0.
+
+### Outstanding
+S-10 (live DB verification of the permission query), then S-03/S-04/S-05.
+
 ## Cycle 2 (2026-11-27) — persistent mode resumed
 
 Verified at start: `stack test` 1234 examples / 0 failures / 3 pending;
@@ -39,8 +56,7 @@ worktree clean at `9c0368e`; no `HERMES.md` existed (created now).
 
 Full DB-backed permission check against a live migrated schema is still
 UNVERIFIED (no credentials supplied for TCP auth; `sudo -u postgres` peer auth
-works but the app has no password). Tenant context still uses a global
-`unsafePerformIO` IORef — concurrency leak, next P0.
+works but the app has no password). Tenant-context concurrency leak was fixed in cycle 3.
 
 ## Cycle 1 (2026-11-27)
 

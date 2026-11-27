@@ -3,6 +3,16 @@
 All commands in the clean worktree at
 `/home/dominicusin/.hermes/cache/scratch/surypus-audit`.
 
+## Cycle 3 (2026-11-27)
+
+| Command | Exit | Result |
+|---|---|---|
+| `stack test` (after S-09) | 0 | **1258 examples, 0 failures, 3 pending** |
+
+First attempt failed to compile (`putMVar resume` missing its unit argument);
+fixed and re-run. The two-thread interleaving test asserts tenant 1 and tenant
+2 contexts are simultaneously distinct.
+
 ## Cycle 2 (2026-11-27)
 
 | Command | Exit | Result |

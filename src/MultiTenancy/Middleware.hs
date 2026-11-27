@@ -10,12 +10,11 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Network.HTTP.Types (status401)
-import Control.Exception (bracket_)
 import Network.Wai (Application, requestHeaders, responseLBS, rawPathInfo)
 import qualified Network.Wai as W
 import qualified Surypus.JWT.Token as JWT
 import MultiTenancy.Isolation (TenantContext(..))
-import DAL.Database (setCurrentTenantContext, clearCurrentTenantContext)
+import DAL.Database (withTenantContext)
 
 data TenantResolution
   = TenantFromJWT
@@ -51,7 +50,4 @@ tenantMiddleware app req respond = do
             case result of
               Left _ -> app req respond
               Right ctx ->
-                bracket_
-                  (setCurrentTenantContext (tcTenantId ctx) (tcUserId ctx))
-                  clearCurrentTenantContext
-                  (app req respond)
+                withTenantContext (tcTenantId ctx) (tcUserId ctx) (app req respond)

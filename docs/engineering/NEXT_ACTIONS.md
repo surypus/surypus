@@ -1,12 +1,6 @@
 # Next actions (ordered)
 
-1. **S-09 (P0)** — `DAL.Database` stores tenant context in a single global
-   `IORef` created with `unsafePerformIO`, despite the "thread-local" comment.
-   Concurrent requests can leak tenant A's context into tenant B's query.
-   Replace with request-scoped context passed explicitly (or a keyed map with
-   `bracket` cleanup), and add a concurrency test with two tenants. Update
-   `MultiTenancy.Middleware` and `runDb`/`runDbWithTenant`.
-2. **S-10 (P1)** — Verify the real permission query against a migrated
+1. **S-10 (P1)** — Verify the real permission query against a migrated
    PostgreSQL schema. A local server is reachable via peer auth; a dedicated
    role is needed for the Haskell process. Add `SURYPUS_TEST_DATABASE_URL`
    integration coverage for allow/deny and admin role.
