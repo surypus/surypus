@@ -1,24 +1,36 @@
-# Verification log (2026-11-27)
+# Verification log
 
-All commands run in `/home/dominicusin/.hermes/cache/scratch/surypus-audit`
-(clean worktree, branch `autonomous/audit-2026-11-27`, HEAD `078ead3`).
+All commands in the clean worktree at
+`/home/dominicusin/.hermes/cache/scratch/surypus-audit`.
+
+## Cycle 2 (2026-11-27)
 
 | Command | Exit | Result |
 |---|---|---|
-| `git worktree add -b autonomous/audit-2026-11-27 <wt> origin/main` | 0 | detached from divergent local `main`; no dirty file touched |
-| `find src -name '*.hs' \| wc -l` | 0 | 386 before change, 387 after |
-| `find test -name '*.hs' \| wc -l` | 0 | 85 before, 87 after |
+| `git fetch origin` + `git status` | 0 | branch `autonomous/audit-2026-11-27` at `9c0368e`, clean |
+| `stack test` (session start, re-verification) | 0 | 1234 examples, 0 failures, 3 pending |
+| `stack build --test --test-arguments="--match RBAC repository"` | 1 | Hspec rejects a multi-word pattern; the build itself succeeded; used full run instead |
+| `stack test` (after S-08) | 0 | 1247 examples, 0 failures, 3 pending |
+| `stack test` (after S-02) | 0 | **1254 examples, 0 failures, 3 pending** |
+| `env -u DB_HOST -u SURYPUS_JWT_SECRET stack exec surypus-server` | 1 | `SURYPUS_JWT_SECRET is required (fail-fast)` |
+| Real server, `curl /api/v1/health` | 0 | HTTP 200 |
+| Real server, `curl /api/v1/persons` (no token) | 0 | HTTP 401 |
+| Real server, `curl /api/v1/unknown-resource` (no token) | 0 | HTTP 401 |
+| Real server, `curl /api/v1/metrics` | 0 | HTTP 200 |
+
+Failed build attempts during implementation (my own errors, fixed and re-run):
+`T.notElem` does not exist; `userError` import; missing `persistent` in test
+dependencies; missing `IORef` type import; a three-argument throwing lambda;
+`rawPathInfo` not imported; an assertion wrongly assumed `SELECT 1` has no
+digits. None of these were hidden.
+
+## Cycle 1
+
+| Command | Exit | Result |
+|---|---|---|
 | `stack build --test --test-arguments="--match AuthMiddleware"` | 0 | 8 examples, 0 failures |
 | `stack test` | 0 | 1234 examples, 0 failures, 3 pending |
+| System `runghc`/`ghc`/`ghci` | 1 | broken system package db (`hspec` files missing); switched to Stack GHC 9.6.5 |
 
-Failed attempts (recorded, not hidden):
-- System `runghc`/`ghc`/`ghci` could not load `Test.Hspec` — broken system
-  package db (`hspec-2.11.18` files missing). Switched to Stack GHC 9.6.5.
-- First Stack builds failed on my own type errors (WAI `respond` argument;
-  missing `wai`/`wai-extra` in test build-depends; `Status` vs `Int`). Fixed and
-  re-ran; final runs above are green.
-- `stack build --test-args=...` is not a valid Stack option; `--test-arguments`
-  is.
-
-Not executed: `scripts/check-tenant-rls.sh`, `scripts/ci-migration-verification.sh`
-(require PostgreSQL), and GitHub CI (not queried). No claim is made about them.
+Not executed: `scripts/check-tenant-rls.sh`,
+`scripts/ci-migration-verification.sh`, GitHub CI. No claim is made about them.

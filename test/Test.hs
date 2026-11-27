@@ -84,6 +84,9 @@ import qualified AdditionalTests
 import qualified DAL.TypesSpec
 import qualified DAL.DBSpec
 import qualified DAL.PoolSpec
+import qualified DAL.RBACRepositorySpec
+import qualified DAL.ConnectionConfigSpec
+import qualified ServerWiringSpec
 import qualified DAL.EventStoreIntegration
 import qualified Infrastructure.Redis.EventStreamSpec
 import qualified Infrastructure.EventStore.AccountingIntegration
@@ -170,6 +173,9 @@ main = hspec $ do
   DAL.TypesSpec.spec
   DAL.DBSpec.spec
   DAL.PoolSpec.spec
+  DAL.RBACRepositorySpec.spec
+  DAL.ConnectionConfigSpec.spec
+  ServerWiringSpec.spec
   DAL.EventStoreIntegration.spec
   Infrastructure.Redis.EventStreamSpec.spec
   Infrastructure.EventStore.AccountingIntegration.spec

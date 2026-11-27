@@ -2,6 +2,9 @@
 module DAL.Database (
     Pool,
     createPool,
+    createPoolWith,
+    createPoolFromEnv,
+    buildConnectionString,
     closePool,
     ConnectionPool,
     runDb,
@@ -21,6 +24,10 @@ import Control.Monad.Logger (runNoLoggingT)
 import Data.ByteString.Char8 (pack)
 import Data.Pool (destroyAllResources)
 import System.IO.Unsafe (unsafePerformIO)
+import System.Environment (lookupEnv)
+import Data.Maybe (fromMaybe)
+import System.IO.Error (userError)
+import Data.Char (isSpace)
 
 type Pool = ConnectionPool
 
@@ -39,8 +46,46 @@ setCurrentTenantContext tenantId userId = writeIORef tenantContextVar (Just (ten
 clearCurrentTenantContext :: IO ()
 clearCurrentTenantContext = writeIORef tenantContextVar Nothing
 
+-- | Backwards-compatible pool constructor.
 createPool :: IO ConnectionPool
-createPool = runNoLoggingT $ createPostgresqlPool (pack "host=localhost port=5432 dbname=surypus user=postgres password=postgres") 10
+createPool = do
+  password <- maybe "" id <$> lookupEnv "DB_PASSWORD"
+  case buildConnectionString "localhost" "5432" "surypus" "postgres" password of
+    Left err -> ioError (userError err)
+    Right connStr -> createPoolWith connStr 10
+
+-- | Create a pool from an explicit connection string.
+createPoolWith :: String -> Int -> IO ConnectionPool
+createPoolWith connStr stripes = runNoLoggingT $ createPostgresqlPool (pack connStr) stripes
+
+-- | Build a libpq connection string. Every component is validated so a value
+-- from the environment cannot inject extra connection parameters.
+buildConnectionString :: String -> String -> String -> String -> String -> Either String String
+buildConnectionString host port name user password =
+  case filter (not . null) [check "DB_HOST" host, check "DB_PORT" port, check "DB_NAME" name, check "DB_USER" user] of
+    (err : _) -> Left err
+    [] -> Right $ "host=" ++ host ++ " port=" ++ port ++ " dbname=" ++ name ++ " user=" ++ user ++ " password=" ++ password
+  where
+    check label value
+      | null value = label ++ " must not be empty"
+      | any (\c -> isSpace c || c == '\'' || c == '\\') value = label ++ " contains an invalid character"
+      | otherwise = ""
+
+-- | Fail-fast pool construction from the documented environment variables.
+createPoolFromEnv :: IO ConnectionPool
+createPoolFromEnv = do
+  host <- requireEnv "DB_HOST"
+  port <- fromMaybe "5432" <$> lookupEnv "DB_PORT"
+  name <- fromMaybe "surypus" <$> lookupEnv "DB_NAME"
+  user <- fromMaybe "postgres" <$> lookupEnv "DB_USER"
+  password <- fromMaybe "" <$> lookupEnv "DB_PASSWORD"
+  case buildConnectionString host port name user password of
+    Left err -> ioError (userError err)
+    Right connStr -> createPoolWith connStr 10
+  where
+    requireEnv key = do
+      value <- lookupEnv key
+      maybe (ioError (userError (key ++ " is required (fail-fast)"))) pure value
 
 closePool :: ConnectionPool -> IO ()
 closePool = destroyAllResources

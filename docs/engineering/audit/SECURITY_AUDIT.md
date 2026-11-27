@@ -37,7 +37,8 @@ that false-confidence gap.
 
 | ID | Severity | Finding | Status |
 |---|---|---|---|
-| S-02 | P0 | `app/Main.hs` does not use `apiServer`; deployed HTTP surface is a stub | OPEN |
+| S-02 | P0 | `app/Main.hs` did not use `apiServer`; deployed HTTP surface was a stub | **FIXED** cycle 2 (real server wired, fail-fast config, binary checked) |
+| S-08 | P0 | `checkUserAppPermissionRepo` returned `True` unconditionally | **FIXED** cycle 2 (parameterised DB query, fail-closed, 13 tests) |
 | S-03 | P1 | `DAL.Queue.processJob` reports success without doing work | OPEN (module unreferenced by executable) |
 | S-04 | P1 | `System.Secrets.storeSecret` stores plaintext under an "encrypted store" name | OPEN |
 | S-05 | P2 | `EventProcessor.generateEventId` returns a constant, breaking idempotency/dedup | OPEN |

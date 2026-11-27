@@ -3,8 +3,11 @@
 module DAL.Pool
   ( ConnectionPool
   , createPool
+  , createPoolWith
+  , createPoolFromEnv
+  , buildConnectionString
   , closePool
   , runDb
   ) where
 
-import DAL.Database (ConnectionPool, createPool, closePool, runDb)
+import DAL.Database (ConnectionPool, createPool, createPoolWith, createPoolFromEnv, buildConnectionString, closePool, runDb)

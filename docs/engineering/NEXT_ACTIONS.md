@@ -1,20 +1,23 @@
 # Next actions (ordered)
 
-1. **S-02 (P0)** — Replace the health-probe-only `app/Main.hs` with the real
-   `Surypus.API.Server.apiServer`, wired to DB config, RBAC permission store,
-   metrics and public paths. Acceptance: a running server serves a documented
-   route (e.g. `GET /api/v1/persons`) with real DB-backed data and an
-   integration test proves 401/403/200 behaviour. Requires a PostgreSQL
-   instance for full verification.
-2. **S-03 (P1)** — Replace `DAL.Queue.processJob` placeholder handlers with
-   real handlers, or delete the module from exported surfaces if the Redis
-   Streams worker is the canonical queue. Do not leave success-shaped stubs.
-3. **S-04 (P1)** — Implement encryption at rest in `System.Secrets` or rename
-   the module to reflect in-memory plaintext; add tests.
-4. **S-05 (P2)** — `EventProcessor.generateEventId` must generate unique IDs
-   (`Data.UUID.V4` is already imported but commented out).
-5. **Migration corpus** — reconcile the competing `V001`/`V002` files under
+1. **S-09 (P0)** — `DAL.Database` stores tenant context in a single global
+   `IORef` created with `unsafePerformIO`, despite the "thread-local" comment.
+   Concurrent requests can leak tenant A's context into tenant B's query.
+   Replace with request-scoped context passed explicitly (or a keyed map with
+   `bracket` cleanup), and add a concurrency test with two tenants. Update
+   `MultiTenancy.Middleware` and `runDb`/`runDbWithTenant`.
+2. **S-10 (P1)** — Verify the real permission query against a migrated
+   PostgreSQL schema. A local server is reachable via peer auth; a dedicated
+   role is needed for the Haskell process. Add `SURYPUS_TEST_DATABASE_URL`
+   integration coverage for allow/deny and admin role.
+3. **S-03 (P1)** — `DAL.Queue.processJob` still returns success-shaped stubs.
+   Replace with real handlers or remove the module from exported surfaces.
+4. **S-04 (P1)** — `System.Secrets` stores plaintext; implement encryption at
+   rest or rename the module to state its real behaviour.
+5. **S-05 (P2)** — `EventProcessor.generateEventId` returns a constant; use
+   `Data.UUID.V4` (import already present but commented out).
+6. **Migrations** — reconcile competing `V001`/`V002` files across
    `sql/migrations`, `sql/core`, `sql/event`, `sql/aggregate`; define one
-   deterministic order and validate against a real PostgreSQL service.
-6. **Documentation** — regenerate `STATE.md`/`ROADMAP.md` from measured
-   repository facts once S-02 is done; keep superseded notices in place.
+   deterministic order and validate against PostgreSQL.
+7. **Docs** — regenerate `STATE.md`/`ROADMAP.md` from measured facts once the
+   tenant-context fix and DB integration are done. Keep superseded notices.
