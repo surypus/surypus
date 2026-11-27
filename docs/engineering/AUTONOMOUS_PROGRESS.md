@@ -1,5 +1,19 @@
 # Autonomous progress
 
+## Cycle 7 (2026-11-27) — permission check on live PostgreSQL
+
+- Claimed and closed Beads `Surypus-38p` (P1). Added
+  `test/DAL/RBACRepositoryIntegration.hs`: with `SURYPUS_TEST_DATABASE_URL`
+  it inserts probe users, exercises `checkUserAppPermissionRepo` against the
+  real schema and cleans up in `finally`. Cases: viewer/read allowed,
+  viewer/delete denied, no-role denied, admin allowed.
+- Local peer-auth DB role `dominicusin` was granted SELECT/INSERT/DELETE on
+  the RBAC tables; no production credential or data was changed.
+- Verification: with DB URL **1273 examples, 0 failures, 2 pending**;
+  without URL **1267 examples, 0 failures, 4 pending** (new suite pending,
+  not passing). `bd dolt push` → Push complete.
+
+
 ## Cycle 6 (2026-11-27) — secrets encrypted at rest
 
 - Claimed and closed Beads `Surypus-6ob` (P1). `System.Secrets` no longer

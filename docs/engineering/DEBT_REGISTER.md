@@ -21,7 +21,7 @@
 | ID | Finding | Evidence | Status |
 |---|---|---|---|
 | DEBT-003 | RESOLVED cycle 5: `processJob` fails closed for unhandled types; `realHandler` is the only path to `JobCompleted`; stubs removed | `src/DAL/Queue.hs`, `test/DAL/QueueSpec.hs` | CLOSED (Beads `Surypus-9c2`) |
-| DEBT-004 | PARTIALLY RESOLVED (secrets now encrypted, cycle 6): `DAL.Repository.RBAC.checkUserAppPermissionRepo` was `return True`; now a parameterised, fail-closed DB query (cycle 2). `Surypus.RBAC.Store` is still in-memory (`IORef`). Tenant context was one global `unsafePerformIO` IORef; now per-`ThreadId` (cycle 3). | source + 13 + 4 tests | PARTIAL |
+| DEBT-004 | PARTIALLY RESOLVED cycle 7 (secrets encrypted cycle 6; permission check verified on live PostgreSQL cycle 7): `DAL.Repository.RBAC.checkUserAppPermissionRepo` was `return True`; now a parameterised, fail-closed DB query (cycle 2). `Surypus.RBAC.Store` is still in-memory (`IORef`). Tenant context was one global `unsafePerformIO` IORef; now per-`ThreadId` (cycle 3). | source + 13 + 4 tests | PARTIAL |
 | DEBT-007 | CONFIRMED: `STATE.md` / `ROADMAP.md` claim v1.0 complete while README says prototype; both marked SUPERSEDED | `git diff` of both files | OPEN (historical notices retained) |
 | DEBT-001/002/005/006 | Not re-inspected in this session; no claim made | — | UNVERIFIED |
 

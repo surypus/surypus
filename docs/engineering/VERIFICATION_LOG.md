@@ -1,5 +1,15 @@
 # Verification log
 
+## Cycle 7 (2026-11-27)
+
+| Command | Exit | Result |
+|---|---|---|
+| `psql "postgresql:///surypus?host=/var/run/postgresql&user=dominicusin" -c 'select 1'` | 0 | peer-auth role works |
+| `SURYPUS_TEST_DATABASE_URL=... stack test` | 0 | **1273 examples, 0 failures, 2 pending**; RBAC and event-store integration ran |
+| `stack test` (no DB URL) | 0 | 1267 examples, 0 failures, 4 pending |
+| `bd close Surypus-38p` / `bd dolt push` | 0 | closed; Push complete |
+
+
 ## Cycle 6 (2026-11-27)
 
 | Command | Exit | Result |
