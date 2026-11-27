@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-comment">-- | App.Tx &#8212; the single write path for ledger mutations.</span><span>
+</span><span id="line-2"></span><span class="hs-comment">--</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- Every accounting write must go through 'runWrite'. A repeated idempotency</span><span>
+</span><span id="line-4"></span><span class="hs-comment">-- key is a replay and returns the state unchanged; unbalanced entries are</span><span>
+</span><span id="line-5"></span><span class="hs-comment">-- rejected before they can reach storage.</span><span>
+</span><span id="line-6"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="App.Tx.html"><span class="hs-identifier">App.Tx</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="App.Tx.html#IdempotencyKey"><span class="hs-identifier">IdempotencyKey</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="App.Tx.html#TxError"><span class="hs-identifier">TxError</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="App.Tx.html#TxState"><span class="hs-identifier">TxState</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="App.Tx.html#emptyTxState"><span class="hs-identifier">emptyTxState</span></a></span><span>
+</span><span id="line-11"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="App.Tx.html#runWrite"><span class="hs-identifier">runWrite</span></a></span><span>
+</span><span id="line-12"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-13"></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map.Strict</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Map</span></span><span class="hs-special">)</span><span>
+</span><span id="line-15"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Map.Strict</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">M</span></span><span>
+</span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Set</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Set</span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Set</span></span><span> </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">S</span></span><span>
+</span><span id="line-18"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Finance.Ledger.html"><span class="hs-identifier">Finance.Ledger</span></a></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Finance.Ledger.html#AccTurn"><span class="hs-identifier">AccTurn</span></a></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Ledger.html#Ledger"><span class="hs-identifier">Ledger</span></a></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Ledger.html#TurnId"><span class="hs-identifier">TurnId</span></a></span><span>
+</span><span id="line-23"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Ledger.html#ledgerEntries"><span class="hs-identifier">ledgerEntries</span></a></span><span>
+</span><span id="line-24"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Ledger.html#turnId"><span class="hs-identifier">turnId</span></a></span><span>
+</span><span id="line-25"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Ledger.html#validateAccountingEquation"><span class="hs-identifier">validateAccountingEquation</span></a></span><span>
+</span><span id="line-26"></span><span>  </span><span class="hs-special">)</span><span>
+</span><span id="line-27"></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">newtype</span><span> </span><span id="IdempotencyKey"><span class="annot"><a href="App.Tx.html#IdempotencyKey"><span class="hs-identifier hs-var">IdempotencyKey</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="IdempotencyKey"><span class="annot"><a href="App.Tx.html#IdempotencyKey"><span class="hs-identifier hs-var">IdempotencyKey</span></a></span></span><span> </span><span class="hs-special">{</span><span> </span><span id="unIdempotencyKey"><span class="annot"><span class="annottext">IdempotencyKey -&gt; Text
+</span><a href="App.Tx.html#unIdempotencyKey"><span class="hs-identifier hs-var hs-var">unIdempotencyKey</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680252032"><span id="local-6989586621680252038"><span id="local-6989586621680252042"><span class="annot"><span class="annottext">Int -&gt; IdempotencyKey -&gt; ShowS
+[IdempotencyKey] -&gt; ShowS
+IdempotencyKey -&gt; String
+(Int -&gt; IdempotencyKey -&gt; ShowS)
+-&gt; (IdempotencyKey -&gt; String)
+-&gt; ([IdempotencyKey] -&gt; ShowS)
+-&gt; Show IdempotencyKey
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; IdempotencyKey -&gt; ShowS
+showsPrec :: Int -&gt; IdempotencyKey -&gt; ShowS
+$cshow :: IdempotencyKey -&gt; String
+show :: IdempotencyKey -&gt; String
+$cshowList :: [IdempotencyKey] -&gt; ShowS
+showList :: [IdempotencyKey] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252047"><span id="local-6989586621680252052"><span class="annot"><span class="annottext">IdempotencyKey -&gt; IdempotencyKey -&gt; Bool
+(IdempotencyKey -&gt; IdempotencyKey -&gt; Bool)
+-&gt; (IdempotencyKey -&gt; IdempotencyKey -&gt; Bool) -&gt; Eq IdempotencyKey
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: IdempotencyKey -&gt; IdempotencyKey -&gt; Bool
+== :: IdempotencyKey -&gt; IdempotencyKey -&gt; Bool
+$c/= :: IdempotencyKey -&gt; IdempotencyKey -&gt; Bool
+/= :: IdempotencyKey -&gt; IdempotencyKey -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252061"><span id="local-6989586621680252066"><span id="local-6989586621680252070"><span id="local-6989586621680252074"><span id="local-6989586621680252078"><span id="local-6989586621680252082"><span id="local-6989586621680252086"><span class="annot"><span class="annottext">Eq IdempotencyKey
+Eq IdempotencyKey =&gt;
+(IdempotencyKey -&gt; IdempotencyKey -&gt; Ordering)
+-&gt; (IdempotencyKey -&gt; IdempotencyKey -&gt; Bool)
+-&gt; (IdempotencyKey -&gt; IdempotencyKey -&gt; Bool)
+-&gt; (IdempotencyKey -&gt; IdempotencyKey -&gt; Bool)
+-&gt; (IdempotencyKey -&gt; IdempotencyKey -&gt; Bool)
+-&gt; (IdempotencyKey -&gt; IdempotencyKey -&gt; IdempotencyKey)
+-&gt; (IdempotencyKey -&gt; IdempotencyKey -&gt; IdempotencyKey)
+-&gt; Ord IdempotencyKey
+IdempotencyKey -&gt; IdempotencyKey -&gt; Bool
+IdempotencyKey -&gt; IdempotencyKey -&gt; Ordering
+IdempotencyKey -&gt; IdempotencyKey -&gt; IdempotencyKey
+forall a.
+Eq a =&gt;
+(a -&gt; a -&gt; Ordering)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; Bool)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; (a -&gt; a -&gt; a)
+-&gt; Ord a
+$ccompare :: IdempotencyKey -&gt; IdempotencyKey -&gt; Ordering
+compare :: IdempotencyKey -&gt; IdempotencyKey -&gt; Ordering
+$c&lt; :: IdempotencyKey -&gt; IdempotencyKey -&gt; Bool
+&lt; :: IdempotencyKey -&gt; IdempotencyKey -&gt; Bool
+$c&lt;= :: IdempotencyKey -&gt; IdempotencyKey -&gt; Bool
+&lt;= :: IdempotencyKey -&gt; IdempotencyKey -&gt; Bool
+$c&gt; :: IdempotencyKey -&gt; IdempotencyKey -&gt; Bool
+&gt; :: IdempotencyKey -&gt; IdempotencyKey -&gt; Bool
+$c&gt;= :: IdempotencyKey -&gt; IdempotencyKey -&gt; Bool
+&gt;= :: IdempotencyKey -&gt; IdempotencyKey -&gt; Bool
+$cmax :: IdempotencyKey -&gt; IdempotencyKey -&gt; IdempotencyKey
+max :: IdempotencyKey -&gt; IdempotencyKey -&gt; IdempotencyKey
+$cmin :: IdempotencyKey -&gt; IdempotencyKey -&gt; IdempotencyKey
+min :: IdempotencyKey -&gt; IdempotencyKey -&gt; IdempotencyKey
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Ord</span></span></span></span></span></span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span>
+</span><span id="line-31"></span><span class="hs-keyword">data</span><span> </span><span id="TxError"><span class="annot"><a href="App.Tx.html#TxError"><span class="hs-identifier hs-var">TxError</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="UnbalancedEntry"><span class="annot"><a href="App.Tx.html#UnbalancedEntry"><span class="hs-identifier hs-var">UnbalancedEntry</span></a></span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680252098"><span id="local-6989586621680252100"><span id="local-6989586621680252104"><span class="annot"><span class="annottext">Int -&gt; TxError -&gt; ShowS
+[TxError] -&gt; ShowS
+TxError -&gt; String
+(Int -&gt; TxError -&gt; ShowS)
+-&gt; (TxError -&gt; String) -&gt; ([TxError] -&gt; ShowS) -&gt; Show TxError
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TxError -&gt; ShowS
+showsPrec :: Int -&gt; TxError -&gt; ShowS
+$cshow :: TxError -&gt; String
+show :: TxError -&gt; String
+$cshowList :: [TxError] -&gt; ShowS
+showList :: [TxError] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252107"><span id="local-6989586621680252109"><span class="annot"><span class="annottext">TxError -&gt; TxError -&gt; Bool
+(TxError -&gt; TxError -&gt; Bool)
+-&gt; (TxError -&gt; TxError -&gt; Bool) -&gt; Eq TxError
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TxError -&gt; TxError -&gt; Bool
+== :: TxError -&gt; TxError -&gt; Bool
+$c/= :: TxError -&gt; TxError -&gt; Bool
+/= :: TxError -&gt; TxError -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>
+</span><span id="line-35"></span><span class="hs-comment">-- | Ledger plus the idempotency ledger. Kept separate from 'Ledger' so that</span><span>
+</span><span id="line-36"></span><span class="hs-comment">-- existing consumers of that record are not broken.</span><span>
+</span><span id="line-37"></span><span class="hs-keyword">data</span><span> </span><span id="TxState"><span class="annot"><a href="App.Tx.html#TxState"><span class="hs-identifier hs-var">TxState</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span id="TxState"><span class="annot"><a href="App.Tx.html#TxState"><span class="hs-identifier hs-var">TxState</span></a></span></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-special">{</span><span> </span><span id="txLedger"><span class="annot"><span class="annottext">TxState -&gt; Ledger
+</span><a href="App.Tx.html#txLedger"><span class="hs-identifier hs-var hs-var">txLedger</span></a></span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Ledger.html#Ledger"><span class="hs-identifier hs-type">Ledger</span></a></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-special">,</span><span> </span><span id="txKeys"><span class="annot"><span class="annottext">TxState -&gt; Set IdempotencyKey
+</span><a href="App.Tx.html#txKeys"><span class="hs-identifier hs-var hs-var">txKeys</span></a></span></span><span>   </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Set</span></span><span> </span><span class="annot"><a href="App.Tx.html#IdempotencyKey"><span class="hs-identifier hs-type">IdempotencyKey</span></a></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-special">}</span><span> </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680252117"><span id="local-6989586621680252125"><span id="local-6989586621680252129"><span class="annot"><span class="annottext">Int -&gt; TxState -&gt; ShowS
+[TxState] -&gt; ShowS
+TxState -&gt; String
+(Int -&gt; TxState -&gt; ShowS)
+-&gt; (TxState -&gt; String) -&gt; ([TxState] -&gt; ShowS) -&gt; Show TxState
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; TxState -&gt; ShowS
+showsPrec :: Int -&gt; TxState -&gt; ShowS
+$cshow :: TxState -&gt; String
+show :: TxState -&gt; String
+$cshowList :: [TxState] -&gt; ShowS
+showList :: [TxState] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680252132"><span id="local-6989586621680252139"><span class="annot"><span class="annottext">TxState -&gt; TxState -&gt; Bool
+(TxState -&gt; TxState -&gt; Bool)
+-&gt; (TxState -&gt; TxState -&gt; Bool) -&gt; Eq TxState
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: TxState -&gt; TxState -&gt; Bool
+== :: TxState -&gt; TxState -&gt; Bool
+$c/= :: TxState -&gt; TxState -&gt; Bool
+/= :: TxState -&gt; TxState -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="annot"><a href="App.Tx.html#emptyTxState"><span class="hs-identifier hs-type">emptyTxState</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="Finance.Ledger.html#Ledger"><span class="hs-identifier hs-type">Ledger</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="App.Tx.html#TxState"><span class="hs-identifier hs-type">TxState</span></a></span><span>
+</span><span id="line-43"></span><span id="emptyTxState"><span class="annot"><span class="annottext">emptyTxState :: Ledger -&gt; TxState
+</span><a href="App.Tx.html#emptyTxState"><span class="hs-identifier hs-var hs-var">emptyTxState</span></a></span></span><span> </span><span id="local-6989586621680252142"><span class="annot"><span class="annottext">Ledger
+</span><a href="#local-6989586621680252142"><span class="hs-identifier hs-var">ledger</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Ledger -&gt; Set IdempotencyKey -&gt; TxState
+</span><a href="App.Tx.html#TxState"><span class="hs-identifier hs-var">TxState</span></a></span><span> </span><span class="annot"><span class="annottext">Ledger
+</span><a href="#local-6989586621680252142"><span class="hs-identifier hs-var">ledger</span></a></span><span> </span><span class="annot"><span class="annottext">Set IdempotencyKey
+forall a. Set a
+</span><span class="hs-identifier hs-var">S.empty</span></span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="hs-comment">-- | The only supported ledger write. Replays are no-ops; new entries are</span><span>
+</span><span id="line-46"></span><span class="hs-comment">-- accepted only when the accounting equation still balances afterwards.</span><span>
+</span><span id="line-47"></span><span class="annot"><a href="App.Tx.html#runWrite"><span class="hs-identifier hs-type">runWrite</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="App.Tx.html#IdempotencyKey"><span class="hs-identifier hs-type">IdempotencyKey</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="App.Tx.html#TxState"><span class="hs-identifier hs-type">TxState</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="Finance.Ledger.html#AccTurn"><span class="hs-identifier hs-type">AccTurn</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><a href="App.Tx.html#TxError"><span class="hs-identifier hs-type">TxError</span></a></span><span> </span><span class="annot"><a href="App.Tx.html#TxState"><span class="hs-identifier hs-type">TxState</span></a></span><span>
+</span><span id="line-48"></span><span id="runWrite"><span class="annot"><span class="annottext">runWrite :: IdempotencyKey -&gt; TxState -&gt; AccTurn -&gt; Either TxError TxState
+</span><a href="App.Tx.html#runWrite"><span class="hs-identifier hs-var hs-var">runWrite</span></a></span></span><span> </span><span id="local-6989586621680252144"><span class="annot"><span class="annottext">IdempotencyKey
+</span><a href="#local-6989586621680252144"><span class="hs-identifier hs-var">key</span></a></span></span><span> </span><span id="local-6989586621680252145"><span class="annot"><span class="annottext">TxState
+</span><a href="#local-6989586621680252145"><span class="hs-identifier hs-var">st</span></a></span></span><span> </span><span id="local-6989586621680252146"><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680252146"><span class="hs-identifier hs-var">turn</span></a></span></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">IdempotencyKey
+</span><a href="#local-6989586621680252144"><span class="hs-identifier hs-var">key</span></a></span><span> </span><span class="annot"><span class="annottext">IdempotencyKey -&gt; Set IdempotencyKey -&gt; Bool
+forall a. Ord a =&gt; a -&gt; Set a -&gt; Bool
+</span><span class="hs-operator hs-var">`S.member`</span></span><span> </span><span class="annot"><span class="annottext">TxState -&gt; Set IdempotencyKey
+</span><a href="App.Tx.html#txKeys"><span class="hs-identifier hs-var">txKeys</span></a></span><span> </span><span class="annot"><span class="annottext">TxState
+</span><a href="#local-6989586621680252145"><span class="hs-identifier hs-var">st</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TxState -&gt; Either TxError TxState
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">TxState
+</span><a href="#local-6989586621680252145"><span class="hs-identifier hs-var">st</span></a></span><span>
+</span><span id="line-50"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-51"></span><span>      </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621680252148"><span class="annot"><span class="annottext">ledger :: Ledger
+</span><a href="#local-6989586621680252148"><span class="hs-identifier hs-var hs-var">ledger</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TxState -&gt; Ledger
+</span><a href="App.Tx.html#txLedger"><span class="hs-identifier hs-var">txLedger</span></a></span><span> </span><span class="annot"><span class="annottext">TxState
+</span><a href="#local-6989586621680252145"><span class="hs-identifier hs-var">st</span></a></span><span>
+</span><span id="line-52"></span><span>          </span><span id="local-6989586621680252151"><span class="annot"><span class="annottext">entries :: Map TurnId AccTurn
+</span><a href="#local-6989586621680252151"><span class="hs-identifier hs-var hs-var">entries</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">TurnId -&gt; AccTurn -&gt; Map TurnId AccTurn -&gt; Map TurnId AccTurn
+forall k a. Ord k =&gt; k -&gt; a -&gt; Map k a -&gt; Map k a
+</span><span class="hs-identifier hs-var">M.insert</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">AccTurn -&gt; TurnId
+</span><a href="Finance.Ledger.html#turnId"><span class="hs-identifier hs-var">turnId</span></a></span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680252146"><span class="hs-identifier hs-var">turn</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">AccTurn
+</span><a href="#local-6989586621680252146"><span class="hs-identifier hs-var">turn</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Ledger -&gt; Map TurnId AccTurn
+</span><a href="Finance.Ledger.html#ledgerEntries"><span class="hs-identifier hs-var">ledgerEntries</span></a></span><span> </span><span class="annot"><span class="annottext">Ledger
+</span><a href="#local-6989586621680252148"><span class="hs-identifier hs-var">ledger</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>          </span><span id="local-6989586621680252153"><span class="annot"><span class="annottext">candidate :: Ledger
+</span><a href="#local-6989586621680252153"><span class="hs-identifier hs-var hs-var">candidate</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Ledger
+</span><a href="#local-6989586621680252148"><span class="hs-identifier hs-var">ledger</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="Finance.Ledger.html#ledgerEntries"><span class="hs-identifier hs-var">ledgerEntries</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621680252151"><span class="hs-identifier hs-type">entries</span></a></span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-54"></span><span>      </span><span class="hs-keyword">in</span><span> </span><span class="hs-keyword">if</span><span> </span><span class="annot"><span class="annottext">Ledger -&gt; Bool
+</span><a href="Finance.Ledger.html#validateAccountingEquation"><span class="hs-identifier hs-var">validateAccountingEquation</span></a></span><span> </span><span class="annot"><span class="annottext">Ledger
+</span><a href="#local-6989586621680252153"><span class="hs-identifier hs-var">candidate</span></a></span><span>
+</span><span id="line-55"></span><span>           </span><span class="hs-keyword">then</span><span> </span><span class="annot"><span class="annottext">TxState -&gt; Either TxError TxState
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="annot"><span class="annottext">TxState
+</span><a href="#local-6989586621680252145"><span class="hs-identifier hs-var">st</span></a></span><span> </span><span class="hs-special">{</span><span> </span><span class="annot"><a href="App.Tx.html#txLedger"><span class="hs-identifier hs-var">txLedger</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><a href="#local-6989586621680252153"><span class="hs-identifier hs-type">candidate</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="App.Tx.html#txKeys"><span class="hs-identifier hs-var">txKeys</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">S.insert</span></span><span> </span><span class="annot"><a href="#local-6989586621680252144"><span class="hs-identifier hs-type">key</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="App.Tx.html#txKeys"><span class="hs-identifier hs-var">txKeys</span></a></span><span> </span><span class="annot"><a href="#local-6989586621680252145"><span class="hs-identifier hs-type">st</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">}</span><span>
+</span><span id="line-56"></span><span>           </span><span class="hs-keyword">else</span><span> </span><span class="annot"><span class="annottext">TxError -&gt; Either TxError TxState
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">TxError
+</span><a href="App.Tx.html#UnbalancedEntry"><span class="hs-identifier hs-var">UnbalancedEntry</span></a></span><span>
+</span><span id="line-57"></span></pre></body></html>

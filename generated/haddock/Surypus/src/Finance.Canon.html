@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-comment">-- | Finance.Canon &#8212; pure calculations for Phase 4 (master data &amp; inventory)</span><span>
+</span><span id="line-3"></span><span class="hs-comment">-- and Phase 5 (billing, payments and trial balance).</span><span>
+</span><span id="line-4"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Finance.Canon.html"><span class="hs-identifier">Finance.Canon</span></a></span><span>
+</span><span id="line-5"></span><span>  </span><span class="hs-special">(</span><span> </span><span class="annot"><a href="Finance.Canon.html#weightedAverageCost"><span class="hs-identifier">weightedAverageCost</span></a></span><span>
+</span><span id="line-6"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Canon.html#cogs"><span class="hs-identifier">cogs</span></a></span><span>
+</span><span id="line-7"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Finance.Canon.html#trialBalance"><span class="hs-identifier">trialBalance</span></a></span><span>
+</span><span id="line-8"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-9"></span><span>
+</span><span id="line-10"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Text</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-comment">-- | Weighted average unit cost from a list of @(quantity, unit cost)@</span><span>
+</span><span id="line-13"></span><span class="hs-comment">-- receipts. Zero/negative total quantity is rejected instead of producing</span><span>
+</span><span id="line-14"></span><span class="hs-comment">-- NaN or infinity.</span><span>
+</span><span id="line-15"></span><span class="annot"><a href="Finance.Canon.html#weightedAverageCost"><span class="hs-identifier hs-type">weightedAverageCost</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-16"></span><span id="weightedAverageCost"><span class="annot"><span class="annottext">weightedAverageCost :: [(Double, Double)] -&gt; Either Text Double
+</span><a href="Finance.Canon.html#weightedAverageCost"><span class="hs-identifier hs-var hs-var">weightedAverageCost</span></a></span></span><span> </span><span id="local-6989586621680249150"><span class="annot"><span class="annottext">[(Double, Double)]
+</span><a href="#local-6989586621680249150"><span class="hs-identifier hs-var">receipts</span></a></span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680249151"><span class="hs-identifier hs-var">totalQty</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Text -&gt; Either Text Double
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;total quantity must be positive&quot;</span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double -&gt; Either Text Double
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680249153"><span class="hs-identifier hs-var">totalCost</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680249151"><span class="hs-identifier hs-var">totalQty</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-20"></span><span>    </span><span id="local-6989586621680249151"><span class="annot"><span class="annottext">totalQty :: Double
+</span><a href="#local-6989586621680249151"><span class="hs-identifier hs-var hs-var">totalQty</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Double] -&gt; Double
+forall a. Num a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">sum</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">((Double, Double) -&gt; Double) -&gt; [(Double, Double)] -&gt; [Double]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">(Double, Double) -&gt; Double
+forall a b. (a, b) -&gt; a
+</span><span class="hs-identifier hs-var">fst</span></span><span> </span><span class="annot"><span class="annottext">[(Double, Double)]
+</span><a href="#local-6989586621680249150"><span class="hs-identifier hs-var">receipts</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>    </span><span id="local-6989586621680249153"><span class="annot"><span class="annottext">totalCost :: Double
+</span><a href="#local-6989586621680249153"><span class="hs-identifier hs-var hs-var">totalCost</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Double] -&gt; Double
+forall a. Num a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">sum</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680249163"><span class="hs-identifier hs-var">q</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680249165"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span id="local-6989586621680249163"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680249163"><span class="hs-identifier hs-var">q</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680249165"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680249165"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[(Double, Double)]
+</span><a href="#local-6989586621680249150"><span class="hs-identifier hs-var">receipts</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="annot"><span class="hs-comment">-- | Cost of goods sold for a shipment at the current weighted average cost.</span></span><span>
+</span><span id="line-24"></span><span class="annot"><a href="Finance.Canon.html#cogs"><span class="hs-identifier hs-type">cogs</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span>
+</span><span id="line-25"></span><span id="cogs"><span class="annot"><span class="annottext">cogs :: Double -&gt; Double -&gt; Double
+</span><a href="Finance.Canon.html#cogs"><span class="hs-identifier hs-var hs-var">cogs</span></a></span></span><span> </span><span id="local-6989586621680249166"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680249166"><span class="hs-identifier hs-var">shippedQty</span></a></span></span><span> </span><span id="local-6989586621680249167"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680249167"><span class="hs-identifier hs-var">averageCost</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680249166"><span class="hs-identifier hs-var">shippedQty</span></a></span><span> </span><span class="annot"><span class="annottext">Double -&gt; Double -&gt; Double
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680249167"><span class="hs-identifier hs-var">averageCost</span></a></span><span>
+</span><span id="line-26"></span><span>
+</span><span id="line-27"></span><span class="hs-comment">-- | Trial balance totals. Debits and credits must match to the cent; the</span><span>
+</span><span id="line-28"></span><span class="hs-comment">-- comparison is done in integer kopecks to avoid floating-point drift.</span><span>
+</span><span id="line-29"></span><span class="annot"><a href="Finance.Canon.html#trialBalance"><span class="hs-identifier hs-type">trialBalance</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Double</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Either</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span id="trialBalance"><span class="annot"><span class="annottext">trialBalance :: [(Text, Double, Double)] -&gt; Either Text (Integer, Integer)
+</span><a href="Finance.Canon.html#trialBalance"><span class="hs-identifier hs-var hs-var">trialBalance</span></a></span></span><span> </span><span id="local-6989586621680249168"><span class="annot"><span class="annottext">[(Text, Double, Double)]
+</span><a href="#local-6989586621680249168"><span class="hs-identifier hs-var">rows</span></a></span></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621680249169"><span class="hs-identifier hs-var">debitKopecks</span></a></span><span> </span><span class="annot"><span class="annottext">Integer -&gt; Integer -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621680249171"><span class="hs-identifier hs-var">creditKopecks</span></a></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-32"></span><span>      </span><span class="annot"><span class="annottext">Text -&gt; Either Text (Integer, Integer)
+forall a b. a -&gt; Either a b
+</span><span class="hs-identifier hs-var">Left</span></span><span> </span><span class="annot"><span class="annottext">Text
+</span><span class="hs-string">&quot;trial balance is not balanced&quot;</span></span><span>
+</span><span id="line-33"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Integer, Integer) -&gt; Either Text (Integer, Integer)
+forall a b. b -&gt; Either a b
+</span><span class="hs-identifier hs-var">Right</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621680249169"><span class="hs-identifier hs-var">debitKopecks</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Integer
+</span><a href="#local-6989586621680249171"><span class="hs-identifier hs-var">creditKopecks</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-35"></span><span>    </span><span id="local-6989586621680249194"><span class="annot"><span class="annottext">toKopecks :: a -&gt; Integer
+</span><a href="#local-6989586621680249194"><span class="hs-identifier hs-var hs-var">toKopecks</span></a></span></span><span> </span><span id="local-6989586621680249195"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621680249195"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">a -&gt; Integer
+forall b. Integral b =&gt; a -&gt; b
+forall a b. (RealFrac a, Integral b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">round</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621680249195"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">a -&gt; a -&gt; a
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">a
+</span><span class="hs-number">100</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Integer</span></span><span>
+</span><span id="line-36"></span><span>    </span><span id="local-6989586621680249169"><span class="annot"><span class="annottext">debitKopecks :: Integer
+</span><a href="#local-6989586621680249169"><span class="hs-identifier hs-var hs-var">debitKopecks</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Integer] -&gt; Integer
+forall a. Num a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">sum</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">((Text, Double, Double) -&gt; Integer)
+-&gt; [(Text, Double, Double)] -&gt; [Integer]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; Integer
+forall {a}. RealFrac a =&gt; a -&gt; Integer
+</span><a href="#local-6989586621680249194"><span class="hs-identifier hs-var">toKopecks</span></a></span><span> </span><span class="annot"><span class="annottext">(Double -&gt; Integer)
+-&gt; ((Text, Double, Double) -&gt; Double)
+-&gt; (Text, Double, Double)
+-&gt; Integer
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680249203"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680249203"><span class="hs-identifier hs-var">d</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680249203"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(Text, Double, Double)]
+</span><a href="#local-6989586621680249168"><span class="hs-identifier hs-var">rows</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>    </span><span id="local-6989586621680249171"><span class="annot"><span class="annottext">creditKopecks :: Integer
+</span><a href="#local-6989586621680249171"><span class="hs-identifier hs-var hs-var">creditKopecks</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Integer] -&gt; Integer
+forall a. Num a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Num a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">sum</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">((Text, Double, Double) -&gt; Integer)
+-&gt; [(Text, Double, Double)] -&gt; [Integer]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Double -&gt; Integer
+forall {a}. RealFrac a =&gt; a -&gt; Integer
+</span><a href="#local-6989586621680249194"><span class="hs-identifier hs-var">toKopecks</span></a></span><span> </span><span class="annot"><span class="annottext">(Double -&gt; Integer)
+-&gt; ((Text, Double, Double) -&gt; Double)
+-&gt; (Text, Double, Double)
+-&gt; Integer
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">\</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Double
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621680249207"><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680249207"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Double
+</span><a href="#local-6989586621680249207"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(Text, Double, Double)]
+</span><a href="#local-6989586621680249168"><span class="hs-identifier hs-var">rows</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span></pre></body></html>

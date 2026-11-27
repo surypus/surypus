@@ -1,0 +1,134 @@
+\chapter{Development Guide: Surypus
+ERP/CRM}\label{development-guide-surypus-erpcrm}
+
+\section{Подготовка
+окружения}\label{ux43fux43eux434ux433ux43eux442ux43eux432ux43aux430-ux43eux43aux440ux443ux436ux435ux43dux438ux44f}
+
+\subsection{Требования}\label{ux442ux440ux435ux431ux43eux432ux430ux43dux438ux44f}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{GHC 9.8.4} (рекомендуется через \texttt{stack})
+\item
+  \textbf{Stack}
+\item
+  \textbf{PostgreSQL 16+}
+\item
+  \textbf{Docker \& docker-compose} (для локальной БД)
+\end{itemize}
+
+\section{Сборка и
+запуск}\label{ux441ux431ux43eux440ux43aux430-ux438-ux437ux430ux43fux443ux441ux43a}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Сборка проекта}
+\ExtensionTok{stack}\NormalTok{ build}
+
+\CommentTok{\# Запуск в режиме разработки (watch mode)}
+\ExtensionTok{stack}\NormalTok{ build }\AttributeTok{{-}{-}file{-}watch}
+
+\CommentTok{\# Запуск REPL (интерактивная среда)}
+\ExtensionTok{stack}\NormalTok{ repl}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Тестирование}\label{ux442ux435ux441ux442ux438ux440ux43eux432ux430ux43dux438ux435}
+
+Проект использует \textbf{Hspec} для Unit-тестов и \textbf{QuickCheck}
+для Property-based тестов.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Запуск всех тестов}
+\ExtensionTok{stack}\NormalTok{ test}
+
+\CommentTok{\# Запуск тестов, соответствующих шаблону}
+\ExtensionTok{stack}\NormalTok{ test }\AttributeTok{{-}{-}test{-}arguments} \StringTok{"{-}{-}match \textquotesingle{}VAT\textquotesingle{}"}
+
+\CommentTok{\# Запуск с подробным выводом}
+\ExtensionTok{stack}\NormalTok{ test }\AttributeTok{{-}{-}verbose}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Тестовая база
+данных}\label{ux442ux435ux441ux442ux43eux432ux430ux44f-ux431ux430ux437ux430-ux434ux430ux43dux43dux44bux445}
+
+Для интеграционных тестов требуется запущенный PostgreSQL. См.
+\texttt{OPERATIONS.md} для настройки.
+
+\section{Стандарты
+кода}\label{ux441ux442ux430ux43dux434ux430ux440ux442ux44b-ux43aux43eux434ux430}
+
+\subsection{Стиль (Style
+Guide)}\label{ux441ux442ux438ux43bux44c-style-guide}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Индентация}: 2 пробела (табы запрещены).
+\item
+  \textbf{Длина строки}: макс. 100 символов.
+\item
+  \textbf{Предупреждения}: Весь код должен компилироваться с
+  \texttt{-Wall} без предупреждений.
+\end{itemize}
+
+\subsection{Именование}\label{ux438ux43cux435ux43dux43eux432ux430ux43dux438ux435}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Модули}: PascalCase (\texttt{Core.Tax})
+\item
+  \textbf{Типы/Конструкторы}: PascalCase (\texttt{TaxRate},
+  \texttt{Asset})
+\item
+  \textbf{Функции/Поля}: camelCase (\texttt{calcVAT}, \texttt{trRate})
+\end{itemize}
+
+\subsection{Работа с
+типами}\label{ux440ux430ux431ux43eux442ux430-ux441-ux442ux438ux43fux430ux43cux438}
+
+\begin{itemize}
+\tightlist
+\item
+  Используйте \texttt{Text} вместо \texttt{String}.
+\item
+  Используйте \texttt{Int64} для ID из базы данных.
+\item
+  Используйте \texttt{Newtype} для оберток доменных понятий
+  (\texttt{Money}, \texttt{BillID}).
+\end{itemize}
+
+\section{Завершение сессии (Session
+Completion)}\label{ux437ux430ux432ux435ux440ux448ux435ux43dux438ux435-ux441ux435ux441ux441ux438ux438-session-completion}
+
+\textbf{ВАЖНО}: Работа считается завершенной только после успешного
+выполнения \texttt{git\ push}.
+
+\subsection{Обязательный
+процесс:}\label{ux43eux431ux44fux437ux430ux442ux435ux43bux44cux43dux44bux439-ux43fux440ux43eux446ux435ux441ux441}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Зафиксировать остаток работ}: Создать задачи в Beads для
+  всего, что требует продолжения.
+\item
+  \textbf{Проверка качества}: Запустить тесты и линтеры.
+\item
+  \textbf{Обновить статус задач}: Закрыть выполненные задачи в Beads.
+\item
+  \textbf{PUSH В РЕПОЗИТОРИЙ}:
+  \texttt{bash\ \ \ \ \ git\ pull\ -\/-rebase\ \ \ \ \ git\ push}
+\item
+  \textbf{Верификация}: Убедиться, что \texttt{git\ status} показывает
+  ``up to date with origin''.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\emph{Последнее обновление: 2026-05-14}

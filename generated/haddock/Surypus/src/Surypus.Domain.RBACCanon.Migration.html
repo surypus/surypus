@@ -1,0 +1,669 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><span id="line-2"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html"><span class="hs-identifier">Surypus.Domain.RBACCanon.Migration</span></a></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-3"></span><span>
+</span><span id="line-4"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html"><span class="hs-identifier">Surypus.Infra.SqlGen.DSL</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier">DSL</span></a></span><span>  </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier">render</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier">multi</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#createTable"><span class="hs-identifier">createTable</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier">alterTableAddColumn</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Surypus.Infra.SqlGen.DSL.html#addConstraint"><span class="hs-identifier">addConstraint</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-5"></span><span>
+</span><span id="line-6"></span><span class="hs-comment">-- Generate V001RBAC Canon SQL migration via DSL</span><span>
+</span><span id="line-7"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV001"><span class="hs-identifier hs-type">generateV001</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-8"></span><span id="generateV001"><span class="annot"><span class="annottext">generateV001 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV001"><span class="hs-identifier hs-var hs-var">generateV001</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-9"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; [(String, String)] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#createTable"><span class="hs-identifier hs-var">createTable</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span>
+</span><span id="line-10"></span><span>      </span><span class="hs-special">[</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;id&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-11"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;name&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT NOT NULL UNIQUE&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-12"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;created_at&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-13"></span><span>      </span><span class="hs-special">]</span><span>
+</span><span id="line-14"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; [(String, String)] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#createTable"><span class="hs-identifier hs-var">createTable</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span>
+</span><span id="line-15"></span><span>      </span><span class="hs-special">[</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;canon_id&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;BIGINT NOT NULL REFERENCES rbac_canon&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-16"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;role&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT NOT NULL&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-17"></span><span>      </span><span class="hs-special">]</span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; [(String, String)] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#createTable"><span class="hs-identifier hs-var">createTable</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span>
+</span><span id="line-19"></span><span>      </span><span class="hs-special">[</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;canon_id&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;BIGINT NOT NULL REFERENCES rbac_canon&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-20"></span><span>      </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;permission&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT NOT NULL&quot;</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span>      </span><span class="hs-special">]</span><span>
+</span><span id="line-22"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="hs-comment">-- Additional migration: build indices for fast lookups</span><span>
+</span><span id="line-25"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV002"><span class="hs-identifier hs-type">generateV002</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-26"></span><span id="generateV002"><span class="annot"><span class="annottext">generateV002 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV002"><span class="hs-identifier hs-var hs-var">generateV002</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-27"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE INDEX IF NOT EXISTS idx_rbac_canon_name ON rbac_canon (name);&quot;</span></span><span>
+</span><span id="line-28"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE INDEX IF NOT EXISTS idx_rbac_canon_roles_canon ON rbac_canon_roles (canon_id);&quot;</span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE INDEX IF NOT EXISTS idx_rbac_canon_perms ON rbac_canon_perms (canon_id);&quot;</span></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="hs-comment">-- Additional migration: add timestamp columns to existing tables</span><span>
+</span><span id="line-33"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV003"><span class="hs-identifier hs-type">generateV003</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-34"></span><span id="generateV003"><span class="annot"><span class="annottext">generateV003 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV003"><span class="hs-identifier hs-var hs-var">generateV003</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-35"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;updated_at&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TIMESTAMP WITHOUT TIME ZONE&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;updated_at&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TIMESTAMP WITHOUT TIME ZONE&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;updated_at&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TIMESTAMP WITHOUT TIME ZONE&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-39"></span><span>
+</span><span id="line-40"></span><span class="hs-comment">-- Additional migration: add description columns to support comments</span><span>
+</span><span id="line-41"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV004"><span class="hs-identifier hs-type">generateV004</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-42"></span><span id="generateV004"><span class="annot"><span class="annottext">generateV004 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV004"><span class="hs-identifier hs-var hs-var">generateV004</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;description&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;description&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;description&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-47"></span><span>
+</span><span id="line-48"></span><span class="hs-comment">-- Additional migration: add active flag to support soft-deletes / visibility</span><span>
+</span><span id="line-49"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV005"><span class="hs-identifier hs-type">generateV005</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-50"></span><span id="generateV005"><span class="annot"><span class="annottext">generateV005 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV005"><span class="hs-identifier hs-var hs-var">generateV005</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-51"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;active&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;BOOLEAN DEFAULT TRUE&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;active&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;BOOLEAN DEFAULT TRUE&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;active&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;BOOLEAN DEFAULT TRUE&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="hs-comment">-- Additional migration: add security level descriptor</span><span>
+</span><span id="line-57"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV006"><span class="hs-identifier hs-type">generateV006</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-58"></span><span id="generateV006"><span class="annot"><span class="annottext">generateV006 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV006"><span class="hs-identifier hs-var hs-var">generateV006</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-59"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;security_level&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;security_level&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-61"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;security_level&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-63"></span><span>
+</span><span id="line-64"></span><span class="hs-comment">-- Additional migration: add owner_id to all RBAC canon tables</span><span>
+</span><span id="line-65"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV007"><span class="hs-identifier hs-type">generateV007</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-66"></span><span id="generateV007"><span class="annot"><span class="annottext">generateV007 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV007"><span class="hs-identifier hs-var hs-var">generateV007</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;owner_id&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;BIGINT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;owner_id&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;BIGINT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;owner_id&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;BIGINT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-71"></span><span>
+</span><span id="line-72"></span><span class="hs-comment">-- Additional migration: add created_by to support auditing</span><span>
+</span><span id="line-73"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV008"><span class="hs-identifier hs-type">generateV008</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-74"></span><span id="generateV008"><span class="annot"><span class="annottext">generateV008 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV008"><span class="hs-identifier hs-var hs-var">generateV008</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;created_by&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;created_by&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-77"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;created_by&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-78"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-79"></span><span>
+</span><span id="line-80"></span><span class="hs-comment">-- Additional migration: add updated_by metadata for auditing</span><span>
+</span><span id="line-81"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV009"><span class="hs-identifier hs-type">generateV009</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-82"></span><span id="generateV009"><span class="annot"><span class="annottext">generateV009 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV009"><span class="hs-identifier hs-var hs-var">generateV009</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-83"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;updated_by&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-84"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;updated_by&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-85"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;updated_by&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-86"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span class="hs-comment">-- Additional migration: add composite index to improve queries combining owner and name</span><span>
+</span><span id="line-89"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV010"><span class="hs-identifier hs-type">generateV010</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-90"></span><span id="generateV010"><span class="annot"><span class="annottext">generateV010 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV010"><span class="hs-identifier hs-var hs-var">generateV010</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-91"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE INDEX IF NOT EXISTS idx_rbac_canon_name_owner ON rbac_canon (name, owner_id);&quot;</span></span><span>
+</span><span id="line-92"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE INDEX IF NOT EXISTS idx_rbac_canon_roles_name_owner ON rbac_canon_roles (canon_id, name, owner_id);&quot;</span></span><span>
+</span><span id="line-93"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE INDEX IF NOT EXISTS idx_rbac_canon_perms_name_owner ON rbac_canon_perms (canon_id, name, owner_id);&quot;</span></span><span>
+</span><span id="line-94"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-95"></span><span>
+</span><span id="line-96"></span><span class="hs-comment">-- Additional migration: last_seen/audit fields</span><span>
+</span><span id="line-97"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV011"><span class="hs-identifier hs-type">generateV011</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-98"></span><span id="generateV011"><span class="annot"><span class="annottext">generateV011 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV011"><span class="hs-identifier hs-var hs-var">generateV011</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-99"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;last_seen&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TIMESTAMP WITHOUT TIME ZONE&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-100"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;last_seen&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TIMESTAMP WITHOUT TIME ZONE&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-101"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;last_seen&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TIMESTAMP WITHOUT TIME ZONE&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-102"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-103"></span><span>
+</span><span id="line-104"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV012"><span class="hs-identifier hs-type">generateV012</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-105"></span><span id="generateV012"><span class="annot"><span class="annottext">generateV012 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV012"><span class="hs-identifier hs-var hs-var">generateV012</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-106"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE INDEX IF NOT EXISTS idx_rbac_canon_last_seen ON rbac_canon (last_seen);&quot;</span></span><span>
+</span><span id="line-107"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE INDEX IF NOT EXISTS idx_rbac_canon_roles_last_seen ON rbac_canon_roles (canon_id, last_seen);&quot;</span></span><span>
+</span><span id="line-108"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE INDEX IF NOT EXISTS idx_rbac_canon_perms_last_seen ON rbac_canon_perms (canon_id, last_seen);&quot;</span></span><span>
+</span><span id="line-109"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-110"></span><span class="hs-comment">-- Note: generated V008 is defined above; this duplicate block was removed to avoid redeclaration</span><span>
+</span><span id="line-111"></span><span>
+</span><span id="line-112"></span><span class="hs-comment">-- Additional migration: add is_revoked column (V013)</span><span>
+</span><span id="line-113"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV013"><span class="hs-identifier hs-type">generateV013</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-114"></span><span id="generateV013"><span class="annot"><span class="annottext">generateV013 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV013"><span class="hs-identifier hs-var hs-var">generateV013</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-115"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;is_revoked&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;BOOLEAN DEFAULT FALSE&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-116"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;is_revoked&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;BOOLEAN DEFAULT FALSE&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-117"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;is_revoked&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;BOOLEAN DEFAULT FALSE&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-118"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-119"></span><span>
+</span><span id="line-120"></span><span class="hs-comment">-- Migration: add policy_class (V014)</span><span>
+</span><span id="line-121"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV014"><span class="hs-identifier hs-type">generateV014</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-122"></span><span id="generateV014"><span class="annot"><span class="annottext">generateV014 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV014"><span class="hs-identifier hs-var hs-var">generateV014</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-123"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;policy_class&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-124"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;policy_class&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-125"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;policy_class&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-126"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-127"></span><span>
+</span><span id="line-128"></span><span class="hs-comment">-- Migration: add data_version (V015)</span><span>
+</span><span id="line-129"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV015"><span class="hs-identifier hs-type">generateV015</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-130"></span><span id="generateV015"><span class="annot"><span class="annottext">generateV015 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV015"><span class="hs-identifier hs-var hs-var">generateV015</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-131"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;data_version&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;INT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-132"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;data_version&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;INT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-133"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;data_version&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;INT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-134"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-135"></span><span>
+</span><span id="line-136"></span><span class="hs-comment">-- Additional migration: add row_version (for optimistic locking or ordering)</span><span>
+</span><span id="line-137"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV016"><span class="hs-identifier hs-type">generateV016</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-138"></span><span id="generateV016"><span class="annot"><span class="annottext">generateV016 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV016"><span class="hs-identifier hs-var hs-var">generateV016</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-139"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;row_version&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;INT NOT NULL DEFAULT 1&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-140"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;row_version&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;INT NOT NULL DEFAULT 1&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-141"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;row_version&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;INT NOT NULL DEFAULT 1&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-142"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-143"></span><span>
+</span><span id="line-144"></span><span class="hs-comment">-- Additional migration: audit tagging field (generic auditing label)</span><span>
+</span><span id="line-145"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV017"><span class="hs-identifier hs-type">generateV017</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-146"></span><span id="generateV017"><span class="annot"><span class="annottext">generateV017 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV017"><span class="hs-identifier hs-var hs-var">generateV017</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-147"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;audit_tag&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-148"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;audit_tag&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-149"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;audit_tag&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-150"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-151"></span><span>
+</span><span id="line-152"></span><span class="hs-comment">-- Additional migration: add etag/audit tracking token</span><span>
+</span><span id="line-153"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV018"><span class="hs-identifier hs-type">generateV018</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-154"></span><span id="generateV018"><span class="annot"><span class="annottext">generateV018 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV018"><span class="hs-identifier hs-var hs-var">generateV018</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-155"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;etag&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-156"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;etag&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-157"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;etag&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-158"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-159"></span><span>
+</span><span id="line-160"></span><span class="hs-comment">-- Additional migration: add log_id columns (V019)</span><span>
+</span><span id="line-161"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV019"><span class="hs-identifier hs-type">generateV019</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-162"></span><span id="generateV019"><span class="annot"><span class="annottext">generateV019 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV019"><span class="hs-identifier hs-var hs-var">generateV019</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-163"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;log_id&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-164"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;log_id&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-165"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;log_id&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-166"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-167"></span><span>
+</span><span id="line-168"></span><span class="hs-comment">-- Migration: create simple summary views (V020)</span><span>
+</span><span id="line-169"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV020"><span class="hs-identifier hs-type">generateV020</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-170"></span><span id="generateV020"><span class="annot"><span class="annottext">generateV020 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV020"><span class="hs-identifier hs-var hs-var">generateV020</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-171"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE VIEW v_rbac_canon_view_log AS SELECT id, name, log_id, created_at FROM rbac_canon;&quot;</span></span><span>
+</span><span id="line-172"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE VIEW v_rbac_canon_roles_view_log AS SELECT canon_id, role, log_id FROM rbac_canon_roles;&quot;</span></span><span>
+</span><span id="line-173"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE VIEW v_rbac_canon_perms_view_log AS SELECT canon_id, permission, log_id FROM rbac_canon_perms;&quot;</span></span><span>
+</span><span id="line-174"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-175"></span><span>
+</span><span id="line-176"></span><span class="hs-comment">-- V021: add unique constraints across tables (name/owner_id etc.)</span><span>
+</span><span id="line-177"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV021"><span class="hs-identifier hs-type">generateV021</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-178"></span><span id="generateV021"><span class="annot"><span class="annottext">generateV021 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV021"><span class="hs-identifier hs-var hs-var">generateV021</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-179"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#addConstraint"><span class="hs-identifier hs-var">addConstraint</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;uq_name_owner&quot;</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;UNIQUE (name, owner_id)&quot;</span></span><span>
+</span><span id="line-180"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#addConstraint"><span class="hs-identifier hs-var">addConstraint</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;uq_roles_owner&quot;</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;UNIQUE (canon_id, role, owner_id)&quot;</span></span><span>
+</span><span id="line-181"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; String -&gt; String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#addConstraint"><span class="hs-identifier hs-var">addConstraint</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;uq_perms_owner&quot;</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;UNIQUE (canon_id, permission, owner_id)&quot;</span></span><span>
+</span><span id="line-182"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-183"></span><span>
+</span><span id="line-184"></span><span class="hs-comment">-- V022: views for summarized permission data (simple summaries)</span><span>
+</span><span id="line-185"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV022"><span class="hs-identifier hs-type">generateV022</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-186"></span><span id="generateV022"><span class="annot"><span class="annottext">generateV022 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV022"><span class="hs-identifier hs-var hs-var">generateV022</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-187"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE VIEW v_rbac_canon_summary AS SELECT c.id AS canon_id, c.name, c.owner_id FROM rbac_canon c;&quot;</span></span><span>
+</span><span id="line-188"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE VIEW v_rbac_canon_roles_summary AS SELECT cr.canon_id, cr.role, cr.owner_id FROM rbac_canon_roles cr;&quot;</span></span><span>
+</span><span id="line-189"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE VIEW v_rbac_canon_perms_summary AS SELECT cp.canon_id, cp.permission, cp.owner_id FROM rbac_canon_perms cp;&quot;</span></span><span>
+</span><span id="line-190"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-191"></span><span>
+</span><span id="line-192"></span><span class="hs-comment">-- V023: add notes columns to all RBAC canon tables</span><span>
+</span><span id="line-193"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV023"><span class="hs-identifier hs-type">generateV023</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-194"></span><span id="generateV023"><span class="annot"><span class="annottext">generateV023 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV023"><span class="hs-identifier hs-var hs-var">generateV023</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-195"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;notes&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-196"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;notes&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-197"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;notes&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-198"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-199"></span><span>
+</span><span id="line-200"></span><span class="hs-comment">-- V024: add secondary notes column to diversify auditing metadata</span><span>
+</span><span id="line-201"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV024"><span class="hs-identifier hs-type">generateV024</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-202"></span><span id="generateV024"><span class="annot"><span class="annottext">generateV024 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV024"><span class="hs-identifier hs-var hs-var">generateV024</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-203"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;notes2&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-204"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_roles&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;notes2&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-205"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; (String, String) -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#alterTableAddColumn"><span class="hs-identifier hs-var">alterTableAddColumn</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;rbac_canon_perms&quot;</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;notes2&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;TEXT&quot;</span></span><span> </span><span class="hs-special">)</span><span>
+</span><span id="line-206"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-207"></span><span>
+</span><span id="line-208"></span><span> </span><span class="hs-comment">-- V025: index optimizations on updated_at fields</span><span>
+</span><span id="line-209"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV025"><span class="hs-identifier hs-type">generateV025</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-210"></span><span id="generateV025"><span class="annot"><span class="annottext">generateV025 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV025"><span class="hs-identifier hs-var hs-var">generateV025</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-211"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE INDEX IF NOT EXISTS idx_rbac_canon_updated_at ON rbac_canon (updated_at);&quot;</span></span><span>
+</span><span id="line-212"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE INDEX IF NOT EXISTS idx_rbac_canon_roles_updated_at ON rbac_canon_roles (updated_at);&quot;</span></span><span>
+</span><span id="line-213"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE INDEX IF NOT EXISTS idx_rbac_canon_perms_updated_at ON rbac_canon_perms (updated_at);&quot;</span></span><span>
+</span><span id="line-214"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-215"></span><span>
+</span><span id="line-216"></span><span class="hs-comment">-- V026: additional views on log fields</span><span>
+</span><span id="line-217"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV026"><span class="hs-identifier hs-type">generateV026</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-218"></span><span id="generateV026"><span class="annot"><span class="annottext">generateV026 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV026"><span class="hs-identifier hs-var hs-var">generateV026</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-219"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE VIEW v_rbac_canon_log_summary2 AS SELECT log_id FROM rbac_canon;&quot;</span></span><span>
+</span><span id="line-220"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE VIEW v_rbac_canon_roles_log_summary2 AS SELECT log_id FROM rbac_canon_roles;&quot;</span></span><span>
+</span><span id="line-221"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE VIEW v_rbac_canon_perms_log_summary2 AS SELECT log_id FROM rbac_canon_perms;&quot;</span></span><span>
+</span><span id="line-222"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-223"></span><span>
+</span><span id="line-224"></span><span class="hs-comment">-- V027: additional check constraints</span><span>
+</span><span id="line-225"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV027"><span class="hs-identifier hs-type">generateV027</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-226"></span><span id="generateV027"><span class="annot"><span class="annottext">generateV027 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV027"><span class="hs-identifier hs-var hs-var">generateV027</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-227"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;ALTER TABLE rbac_canon ADD CONSTRAINT ck_rbac_canon_name CHECK (char_length(name) &gt; 0);&quot;</span></span><span>
+</span><span id="line-228"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;ALTER TABLE rbac_canon_roles ADD CONSTRAINT ck_rbac_roles_name CHECK (char_length(role) &gt; 0);&quot;</span></span><span>
+</span><span id="line-229"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;ALTER TABLE rbac_canon_perms ADD CONSTRAINT ck_rbac_perms_name CHECK (char_length(permission) &gt; 0);&quot;</span></span><span>
+</span><span id="line-230"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-231"></span><span>
+</span><span id="line-232"></span><span class="hs-comment">-- V028: additional final views</span><span>
+</span><span id="line-233"></span><span class="annot"><a href="Surypus.Domain.RBACCanon.Migration.html#generateV028"><span class="hs-identifier hs-type">generateV028</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-234"></span><span id="generateV028"><span class="annot"><span class="annottext">generateV028 :: String
+</span><a href="Surypus.Domain.RBACCanon.Migration.html#generateV028"><span class="hs-identifier hs-var hs-var">generateV028</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">DSL -&gt; String
+</span><a href="Surypus.Infra.SqlGen.DSL.html#render"><span class="hs-identifier hs-var">render</span></a></span><span> </span><span class="annot"><span class="annottext">(DSL -&gt; String) -&gt; DSL -&gt; String
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">[DSL] -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#multi"><span class="hs-identifier hs-var">multi</span></a></span><span>
+</span><span id="line-235"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE VIEW v_rbac_canon_full_summary2 AS SELECT id, name, owner_id, log_id FROM rbac_canon;&quot;</span></span><span>
+</span><span id="line-236"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE VIEW v_rbac_canon_roles_full_summary2 AS SELECT canon_id, role, log_id FROM rbac_canon_roles;&quot;</span></span><span>
+</span><span id="line-237"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; DSL
+</span><a href="Surypus.Infra.SqlGen.DSL.html#DSL"><span class="hs-identifier hs-var">DSL</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;CREATE VIEW v_rbac_canon_perms_full_summary2 AS SELECT canon_id, permission, log_id FROM rbac_canon_perms;&quot;</span></span><span>
+</span><span id="line-238"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-239"></span></pre></body></html>

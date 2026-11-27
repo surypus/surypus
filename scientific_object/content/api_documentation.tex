@@ -1,0 +1,352 @@
+\chapter{Surypus ERP API
+Documentation}\label{surypus-erp-api-documentation}
+
+\section{Overview}\label{overview}
+
+The Surypus ERP system provides a RESTful API for managing accounting,
+inventory, tax, and reports. The API is built using Scotty and provides
+endpoints for core ERP functionality.
+
+\section{Base URL}\label{base-url}
+
+\begin{verbatim}
+http://localhost:8080
+\end{verbatim}
+
+\section{Authentication}\label{authentication}
+
+The API uses JWT-based authentication. Include the JWT token in the
+\texttt{Authorization} header:
+
+\begin{verbatim}
+Authorization: Bearer <token>
+\end{verbatim}
+
+\section{Endpoints}\label{endpoints}
+
+\subsection{Health Check}\label{health-check}
+
+\subsubsection{GET /health}\label{get-health}
+
+Health check endpoint to verify the API is running.
+
+\textbf{Response:}
+
+\begin{verbatim}
+OK
+\end{verbatim}
+
+\subsection{Accounting API}\label{accounting-api}
+
+\subsubsection{GET
+/api/v1/accounting/ledgers}\label{get-apiv1accountingledgers}
+
+Retrieve all ledgers.
+
+\textbf{Response:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"operational"}\FunctionTok{,}
+  \DataTypeTok{"ledgers"}\FunctionTok{:} \OtherTok{[]}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{POST
+/api/v1/accounting/transactions}\label{post-apiv1accountingtransactions}
+
+Create a new accounting transaction.
+
+\textbf{Response:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"success"}\FunctionTok{,}
+  \DataTypeTok{"message"}\FunctionTok{:} \StringTok{"Transaction created (stub)"}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{GET
+/api/v1/accounting/balance/:accountId}\label{get-apiv1accountingbalanceaccountid}
+
+Get the balance for a specific account.
+
+\textbf{Parameters:} - \texttt{accountId} (path parameter): Account ID
+
+\textbf{Response:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"accountId"}\FunctionTok{:} \StringTok{"123"}\FunctionTok{,}
+  \DataTypeTok{"balance"}\FunctionTok{:} \DecValTok{0}\FunctionTok{,}
+  \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"operational"}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Inventory API}\label{inventory-api}
+
+\subsubsection{GET
+/api/v1/inventory/goods}\label{get-apiv1inventorygoods}
+
+Retrieve all goods in inventory.
+
+\textbf{Response:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"operational"}\FunctionTok{,}
+  \DataTypeTok{"goods"}\FunctionTok{:} \OtherTok{[]}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{POST
+/api/v1/inventory/goods}\label{post-apiv1inventorygoods}
+
+Create a new goods item.
+
+\textbf{Response:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"success"}\FunctionTok{,}
+  \DataTypeTok{"message"}\FunctionTok{:} \StringTok{"Goods created (stub)"}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{GET
+/api/v1/inventory/stock/:goodsId}\label{get-apiv1inventorystockgoodsid}
+
+Get stock level for a specific goods item.
+
+\textbf{Parameters:} - \texttt{goodsId} (path parameter): Goods ID
+
+\textbf{Response:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"goodsId"}\FunctionTok{:} \StringTok{"456"}\FunctionTok{,}
+  \DataTypeTok{"quantity"}\FunctionTok{:} \DecValTok{0}\FunctionTok{,}
+  \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"operational"}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{POST
+/api/v1/inventory/stock/movement}\label{post-apiv1inventorystockmovement}
+
+Record a stock movement (in/out).
+
+\textbf{Response:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"success"}\FunctionTok{,}
+  \DataTypeTok{"message"}\FunctionTok{:} \StringTok{"Stock movement recorded (stub)"}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Tax API}\label{tax-api}
+
+\subsubsection{GET /api/v1/tax/rates}\label{get-apiv1taxrates}
+
+Retrieve all tax rates.
+
+\textbf{Response:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"operational"}\FunctionTok{,}
+  \DataTypeTok{"rates"}\FunctionTok{:} \OtherTok{[]}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{POST /api/v1/tax/calculate}\label{post-apiv1taxcalculate}
+
+Calculate tax for a given amount.
+
+\textbf{Response:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"success"}\FunctionTok{,}
+  \DataTypeTok{"taxAmount"}\FunctionTok{:} \DecValTok{0}\FunctionTok{,}
+  \DataTypeTok{"message"}\FunctionTok{:} \StringTok{"Tax calculated (stub)"}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Reports API}\label{reports-api}
+
+\subsubsection{GET
+/api/v1/reports/balance-sheet}\label{get-apiv1reportsbalance-sheet}
+
+Generate a balance sheet report.
+
+\textbf{Response:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"operational"}\FunctionTok{,}
+  \DataTypeTok{"message"}\FunctionTok{:} \StringTok{"Balance sheet report (stub)"}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{GET
+/api/v1/reports/income-statement}\label{get-apiv1reportsincome-statement}
+
+Generate an income statement report.
+
+\textbf{Response:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"operational"}\FunctionTok{,}
+  \DataTypeTok{"message"}\FunctionTok{:} \StringTok{"Income statement report (stub)"}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{GET
+/api/v1/reports/inventory}\label{get-apiv1reportsinventory}
+
+Generate an inventory report.
+
+\textbf{Response:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"operational"}\FunctionTok{,}
+  \DataTypeTok{"message"}\FunctionTok{:} \StringTok{"Inventory report (stub)"}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Integration API}\label{integration-api}
+
+\subsubsection{POST
+/api/v1/integrations/bank-statement/upload}\label{post-apiv1integrationsbank-statementupload}
+
+Upload a bank statement (OFX or ISO20022 format).
+
+\textbf{Request Body:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"content"}\FunctionTok{:} \StringTok{"bank statement content"}\FunctionTok{,}
+  \DataTypeTok{"format"}\FunctionTok{:} \StringTok{"OFX"}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Response:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"importId"}\FunctionTok{:} \StringTok{"import{-}tenant{-}id"}\FunctionTok{,}
+  \DataTypeTok{"rowCount"}\FunctionTok{:} \DecValTok{0}\FunctionTok{,}
+  \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"success"}\FunctionTok{,}
+  \DataTypeTok{"transactions"}\FunctionTok{:} \OtherTok{[]}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{GET
+/api/v1/integrations/health}\label{get-apiv1integrationshealth}
+
+Get health status of the integration system.
+
+\textbf{Response:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"healthy"}\FunctionTok{,}
+  \DataTypeTok{"tenantId"}\FunctionTok{:} \StringTok{"default{-}tenant"}\FunctionTok{,}
+  \DataTypeTok{"healthData"}\FunctionTok{:} \FunctionTok{\{\}}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{GET
+/api/v1/integrations/status}\label{get-apiv1integrationsstatus}
+
+Get the operational status of integration endpoints.
+
+\textbf{Response:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"operational"}\FunctionTok{,}
+  \DataTypeTok{"tenantId"}\FunctionTok{:} \StringTok{"default{-}tenant"}\FunctionTok{,}
+  \DataTypeTok{"endpoints"}\FunctionTok{:} \OtherTok{[}
+    \FunctionTok{\{}
+      \DataTypeTok{"path"}\FunctionTok{:} \StringTok{"/api/v1/integrations/bank{-}statement/upload"}\FunctionTok{,}
+      \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"available"}
+    \FunctionTok{\}}\OtherTok{,}
+    \FunctionTok{\{}
+      \DataTypeTok{"path"}\FunctionTok{:} \StringTok{"/api/v1/integrations/health"}\FunctionTok{,}
+      \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"available"}
+    \FunctionTok{\}}\OtherTok{,}
+    \FunctionTok{\{}
+      \DataTypeTok{"path"}\FunctionTok{:} \StringTok{"/api/v1/integrations/status"}\FunctionTok{,}
+      \DataTypeTok{"status"}\FunctionTok{:} \StringTok{"available"}
+    \FunctionTok{\}}
+  \OtherTok{]}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Running the Server}\label{running-the-server}
+
+To start the API server:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{stack}\NormalTok{ run}
+\end{Highlighting}
+\end{Shaded}
+
+The server will start on port 8080 by default.
+
+\section{Testing}\label{testing}
+
+Run the test suite:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{stack}\NormalTok{ test}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Status}\label{status}
+
+Current implementation status: - ✓ Accounting API (stub endpoints) - ✓
+Inventory API (stub endpoints) - ✓ Tax API (stub endpoints) - ✓ Reports
+API (stub endpoints) - ✓ Integration API (functional) - ✓ Scotty Web
+Server
+
+Note: Most endpoints are currently stub implementations and return
+placeholder data. Full implementation is planned for future phases.
