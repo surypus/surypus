@@ -15,7 +15,7 @@
 `stack test` → **1258 examples, 0 failures, 3 pending**, exit 0.
 
 ### Outstanding
-S-10 (live DB verification of the permission query), then S-03/S-04/S-05.
+S-10 (partially verified via psql; Haskell-pool integration still needed), then S-03/S-04/S-05.
 
 ## Cycle 2 (2026-11-27) — persistent mode resumed
 

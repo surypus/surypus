@@ -8,6 +8,7 @@ All commands in the clean worktree at
 | Command | Exit | Result |
 |---|---|---|
 | `stack test` (after S-09) | 0 | **1258 examples, 0 failures, 3 pending** |
+| `sudo -u postgres psql -d surypus` permission-SQL probe | 0 | viewer + `read:persons` → `t`; viewer + `delete:persons` → `f`; unknown user → `f`. All inserts rolled back. |
 
 First attempt failed to compile (`putMVar resume` missing its unit argument);
 fixed and re-run. The two-thread interleaving test asserts tenant 1 and tenant
