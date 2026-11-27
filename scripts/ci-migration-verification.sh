@@ -7,29 +7,9 @@ echo "Migration Verification Suite: starting"
 echo "Running dry-run migration validation..."
 bash scripts/ci-dry-run-mig.sh
 
-# Optional: DB dry-run if a test DB connection is provided via env var
-if [ -n "${TEST_PG_CONN:-}" ]; then
-  if command -v psql > /dev/null 2>&1; then
-    echo "Running database migration dry-run against: $TEST_PG_CONN"
-    TMP=/tmp/migrate_all.sql
-    rm -f "$TMP"
-    echo "BEGIN;" > "$TMP"
-    for f in sql/migrations/V*.generated.sql; do
-      if [ -f "$f" ]; then
-        echo "-- apply $f" >> "$TMP"
-        cat "$f" >> "$TMP"
-        echo ";" >> "$TMP"
-      fi
-    done
-    echo "ROLLBACK;" >> "$TMP"
-    psql "$TEST_PG_CONN" -f "$TMP" || { echo "DB migrations dry-run failed"; exit 1; }
-    echo "DB migrations dry-run completed (rolled back)."
-  else
-    echo "psql not installed in CI image; skipping DB dry-run."
-  fi
-else
-  echo "TEST_PG_CONN not set; skipping DB dry-run."
-fi
+# Canonical preflight: file names, paths and deterministic order.
+# The real DB load is performed above by ci-dry-run-mig.sh using the same list.
+bash scripts/migrate.sh --check-only
 
 # Basic static checks (if hlint is available in CI, do not fail if not present)
 if command -v hlint > /dev/null 2>&1; then
@@ -39,6 +19,6 @@ fi
 
 # Run targeted tests for migrations (MigrationDryRun and DSL tests)
 echo "Running test suite for migrations..."
-stack test --test-arguments "-m MigrationDryRun|RBACCanon.Migrations" --color
+stack test --test-arguments="--match MigrationDryRun --match RBACCanon"
 
 echo "Migration Verification Suite: completed"

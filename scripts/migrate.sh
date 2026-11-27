@@ -20,26 +20,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-mapfile -t FILES < <(
-  cat <(ls sql/migrations/V*.sql 2>/dev/null || true) \
-      <(ls sql/event/V*.sql 2>/dev/null || true) \
-      <(ls sql/projection/V*.sql 2>/dev/null || true) \
-      <(ls sql/aggregate/V*.sql 2>/dev/null || true) \
-  | while read -r f; do
-      base=$(basename "$f")
-      version=$(printf '%s' "$base" | sed -En 's/^V([0-9]+)[^_]*__.*/\1/p')
-      if [ -z "$version" ]; then
-        echo "invalid migration name: $f" >&2
-        exit 1
-      fi
-      case "$f" in
-        sql/migrations/*) g=0 ;; sql/event/*) g=1 ;; sql/projection/*) g=2 ;; sql/aggregate/*) g=3 ;; *) g=4 ;;
-      esac
-      printf '%s %s %s\n' "$g" "$version" "$f"
-    done \
-  | sort -k2,2n -k1,1n -k3,3 \
-  | cut -d' ' -f3-
-)
+mapfile -t FILES < <(bash "$ROOT/scripts/migration-files.sh")
 
 [ "${#FILES[@]}" -gt 0 ] || { echo "no migration files found" >&2; exit 1; }
 

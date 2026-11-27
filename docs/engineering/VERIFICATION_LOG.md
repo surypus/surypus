@@ -1,5 +1,20 @@
 # Verification log
 
+## Cycle 8 (2026-11-27)
+
+| Command | Exit | Result |
+|---|---|---|
+| `bash scripts/migrate.sh --check-only` | 0 | 373 files |
+| `bash scripts/ci-dry-run-mig.sh` (fresh DB) | 1 (before fix) | `relation "bills" does not exist` — locale sort placed V001b before V001__core_schema |
+| same after `LC_ALL=C` | 0 | `ALL_MIGRATIONS_LOAD_OK`, 374 files including procedures.sql |
+| `TEST_PG_CONN=... bash scripts/ci-migration-verification.sh` | 1 → 0 | two CI flag errors fixed (`-m`, `--color`); final run: 10 examples, 0 failures |
+| `stack test` | 0 | 1272 examples, 0 failures, 4 pending |
+
+Throwaway database `surypus_mig_probe` was created and dropped; no user data
+was touched. HLint reports 2 pre-existing parse errors in unrelated files; the
+script records them and continues, as before.
+
+
 ## Cycle 7 (2026-11-27)
 
 | Command | Exit | Result |

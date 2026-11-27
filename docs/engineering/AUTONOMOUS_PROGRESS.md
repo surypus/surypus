@@ -1,5 +1,25 @@
 # Autonomous progress
 
+## Cycle 8 (2026-11-27) — one authoritative migration order
+
+- Claimed and closed Beads `Surypus-bnj` (P2). Added
+  `scripts/migration-files.sh` as the single ordered list; `scripts/migrate.sh`,
+  `scripts/ci-dry-run-mig.sh` and `scripts/ci-migration-verification.sh` now
+  consume it. `sql/MIGRATIONS.md` documents the four applied groups and the
+  deliberate exclusions (`sql/core` legacy RBAC variant, policy, service,
+  archive, test, seeds).
+- Root cause of ordering failure: locale-dependent `sort` put
+  `V001b__tenant_scoping.sql` before `V001__core_schema.sql` → `relation "bills"
+  does not exist`. Fixed with `LC_ALL=C`; chain now loads cleanly.
+- Removed a false CI check: the old script globbed `V*.generated.sql` (0 files)
+  and applied nothing; removed a duplicate DB dry-run and fixed unsupported
+  `stack test -m` / `--color` flags.
+- Verification: `bash scripts/ci-migration-verification.sh` with a throwaway
+  PostgreSQL DB → `ALL_MIGRATIONS_LOAD_OK`, `MIGRATION_PREFLIGHT_OK: 373 files`,
+  10 targeted examples, exit 0. Full suite **1272 examples, 0 failures,
+  4 pending**. Five new corpus tests. Probe DB dropped afterwards.
+
+
 ## Cycle 7 (2026-11-27) — permission check on live PostgreSQL
 
 - Claimed and closed Beads `Surypus-38p` (P1). Added

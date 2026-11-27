@@ -13,27 +13,10 @@ echo "Migration verification: loading the full chain against Postgres (if availa
 # Sort by the numeric V<version> prefix first, then by path. Sorting the full
 # path numerically treated every file as version 0, which loaded aggregate
 # V012 before event V001 and made event_type_register missing.
-mapfile -t FILES < <(cat <(ls sql/migrations/V*.sql 2>/dev/null) \
-                          <(ls sql/event/V*.sql 2>/dev/null) \
-                          <(ls sql/projection/V*.sql 2>/dev/null) \
-                          <(ls sql/aggregate/V*.sql 2>/dev/null) \
-                          <(ls sql/procedures.sql 2>/dev/null) \
-                          | while read -r f; do
-                              v=$(basename "$f" | sed -E 's/^V([0-9]+)[^_]*__.*/\1/')
-                              if [ "$f" = "sql/procedures.sql" ]; then
-                                v=9999
-                              fi
-                              case "$f" in
-                                sql/migrations/*) g=0 ;;
-                                sql/event/*)      g=1 ;;
-                                sql/projection/*) g=2 ;;
-                                sql/aggregate/*)  g=3 ;;
-                                *)                g=4 ;;
-                              esac
-                              printf '%s %s %s\n' "$g" "$v" "$f"
-                            done \
-                          | sort -k2,2n -k1,1n -k3,3 \
-                          | cut -d' ' -f3-)
+# Single authoritative order from migration-files.sh; the legacy procedures
+# file is loaded last because DAL.Procedures depends on the canonical schema.
+mapfile -t FILES < <(bash scripts/migration-files.sh)
+[ -f sql/procedures.sql ] && FILES+=("sql/procedures.sql")
 
 if [ -z "${TEST_PG_CONN:-}" ]; then
   if command -v psql >/dev/null 2>&1 && [ -n "${PGHOST:-}" ]; then
