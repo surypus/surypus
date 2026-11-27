@@ -1,5 +1,14 @@
 # Verification log
 
+## Cycle 11 (2026-11-27)
+
+| Command | Exit | Result |
+|---|---|---|
+| `stack test --test-arguments='--match "tenant-scoped runDb"'` (DB URL) | 0 | 2 examples, 0 failures |
+| `stack test` with DB URL | 0 | **1282 examples, 0 failures, 2 pending** |
+| `stack test` without DB URL | 0 | 1274 examples, 0 failures, 6 pending |
+
+
 ## Cycle 10 (2026-11-27)
 
 | Command | Exit | Result |

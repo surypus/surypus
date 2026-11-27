@@ -1,5 +1,15 @@
 # Autonomous progress
 
+## Cycle 11 (2026-11-27) — regression test for tenant-scoped SQL
+
+- Created and claimed Beads `Surypus-cxr` (P1). Added
+  `test/DAL/TenantScopedDbSpec.hs`: asserts `app.tenant_id`/`app.user_id` are
+  set by `withTenantContext` + `runDb`, and by `runDbWithTenant`, against a
+  live PostgreSQL. Pending without `SURYPUS_TEST_DATABASE_URL`.
+- Verification: targeted 2/0; full suite **1282 examples, 0 failures,
+  2 pending** with DB and 1274/0/6 without. Both passed.
+
+
 ## Cycle 10 (2026-11-27) — bill slice unblocked; tenant-scoped queries fixed
 
 - Claimed Beads `Surypus-2a5` (P1). Root causes found and fixed:
