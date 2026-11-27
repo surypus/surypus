@@ -6,7 +6,7 @@ import Control.Monad (forever, when)
 import qualified Data.Text as T
 import Data.Time.Clock (UTCTime)
 import qualified Data.UUID as UUID
--- import Data.UUID (nextRandom)
+import Data.UUID.V4 (nextRandom)
 
 -- | Event types
 data EventType
@@ -73,6 +73,5 @@ publishEvent processor event = atomically $ do
 -- | Generate event ID
 generateEventId :: IO T.Text
 generateEventId = do
-  -- uuid <- UUID.nextRandom
-  -- return $ T.pack $ UUID.toString uuid
-  return (T.pack "event-id-placeholder")
+  uuid <- nextRandom
+  pure $ T.pack $ UUID.toString uuid

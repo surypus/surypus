@@ -42,7 +42,7 @@ that false-confidence gap.
 | S-09 | P0 | Tenant context was one global `unsafePerformIO` IORef; concurrent requests could read another tenant's context | **FIXED** cycle 3 (ThreadId-keyed context, exception-safe restoration, 4 tests) |
 | S-03 | P1 | `DAL.Queue.processJob` reports success without doing work | OPEN (module unreferenced by executable) |
 | S-04 | P1 | `System.Secrets.storeSecret` stores plaintext under an "encrypted store" name | OPEN |
-| S-05 | P2 | `EventProcessor.generateEventId` returns a constant, breaking idempotency/dedup | OPEN |
+| S-05 | P2 | `EventProcessor.generateEventId` returned a constant, breaking idempotency/dedup | **FIXED** cycle 4 (UUID v4, 2 tests) |
 | S-06 | P2 | `EmailSender.sendEmail` simulates delivery and reports success | OPEN |
 | S-07 | — | Tenant RLS enforced by `scripts/check-tenant-rls.sh`; script not executed here (needs PostgreSQL) | UNVERIFIED |
 

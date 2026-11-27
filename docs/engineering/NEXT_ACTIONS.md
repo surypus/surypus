@@ -10,10 +10,8 @@
    Replace with real handlers or remove the module from exported surfaces.
 3. **S-04 (P1)** — `System.Secrets` stores plaintext; implement encryption at
    rest or rename the module to state its real behaviour.
-4. **S-05 (P2)** — `EventProcessor.generateEventId` returns a constant; use
-   `Data.UUID.V4` (import already present but commented out).
-5. **Migrations** — reconcile competing `V001`/`V002` files across
+4. **Migrations** — reconcile competing `V001`/`V002` files across
    `sql/migrations`, `sql/core`, `sql/event`, `sql/aggregate`; define one
    deterministic order and validate against PostgreSQL.
-6. **Docs** — regenerate `STATE.md`/`ROADMAP.md` from measured facts once the
+5. **Docs** — regenerate `STATE.md`/`ROADMAP.md` from measured facts once the
    tenant-context fix and DB integration are done. Keep superseded notices.

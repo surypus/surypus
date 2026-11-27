@@ -3,6 +3,12 @@
 All commands in the clean worktree at
 `/home/dominicusin/.hermes/cache/scratch/surypus-audit`.
 
+## Cycle 4 (2026-11-27)
+
+| Command | Exit | Result |
+|---|---|---|
+| `stack test` (after S-05) | 0 | **1260 examples, 0 failures, 3 pending** |
+
 ## Cycle 3 (2026-11-27)
 
 | Command | Exit | Result |

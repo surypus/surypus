@@ -88,6 +88,7 @@ import qualified DAL.RBACRepositorySpec
 import qualified DAL.ConnectionConfigSpec
 import qualified ServerWiringSpec
 import qualified MultiTenancy.TenantContextSpec
+import qualified EventProcessorSpec
 import qualified DAL.EventStoreIntegration
 import qualified Infrastructure.Redis.EventStreamSpec
 import qualified Infrastructure.EventStore.AccountingIntegration
@@ -178,6 +179,7 @@ main = hspec $ do
   DAL.ConnectionConfigSpec.spec
   ServerWiringSpec.spec
   MultiTenancy.TenantContextSpec.spec
+  EventProcessorSpec.spec
   DAL.EventStoreIntegration.spec
   Infrastructure.Redis.EventStreamSpec.spec
   Infrastructure.EventStore.AccountingIntegration.spec

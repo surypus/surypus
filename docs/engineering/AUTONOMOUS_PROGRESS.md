@@ -1,5 +1,12 @@
 # Autonomous progress
 
+## Cycle 4 (2026-11-27) — event id stub
+
+- **S-05 (P2)**: `generateEventId` returned the constant
+  `event-id-placeholder`; it now uses `Data.UUID.V4.nextRandom`. Added two
+  tests (non-empty, 64 unique IDs).
+- `stack test` → **1260 examples, 0 failures, 3 pending**, exit 0.
+
 ## Cycle 3 (2026-11-27) — tenant isolation
 
 ### Implemented
