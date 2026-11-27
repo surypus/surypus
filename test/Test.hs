@@ -6,6 +6,8 @@ module Main where
 import Test.Hspec
 import qualified App.TxSpec
 import qualified Surypus.API.NoStubsSpec
+import qualified AuthMiddlewareDecisionSpec
+import qualified AuthMiddlewareSpec
 import qualified Finance.ExchangeRateSpec
 import qualified Finance.CanonSpec
 import qualified Finance.CurrencySpec
@@ -93,6 +95,8 @@ main :: IO ()
 main = hspec $ do
   App.TxSpec.spec
   Surypus.API.NoStubsSpec.spec
+  AuthMiddlewareDecisionSpec.spec
+  AuthMiddlewareSpec.spec
   Finance.ExchangeRateSpec.spec
   Finance.CanonSpec.spec
   Finance.CurrencySpec.spec

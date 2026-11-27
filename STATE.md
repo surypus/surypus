@@ -1,3 +1,5 @@
+> **SUPERSEDED (2026-11-27).** This document describes an earlier v1.0 completion claim and is retained as a historical record. Current measured state: `docs/engineering/audit/BASELINE.md`. Next actions: `docs/engineering/NEXT_ACTIONS.md`.
+
 # Surypus Project State
 
 **Milestone**: v1.0 - Production-ready ERP System
