@@ -7,6 +7,7 @@ import Test.Hspec
 import qualified App.TxSpec
 import qualified Surypus.API.NoStubsSpec
 import qualified Finance.ExchangeRateSpec
+import qualified Finance.CanonSpec
 import qualified Finance.CurrencySpec
 import qualified Finance.AccMaskSpec
 import qualified Finance.AccountSpec
@@ -93,6 +94,7 @@ main = hspec $ do
   App.TxSpec.spec
   Surypus.API.NoStubsSpec.spec
   Finance.ExchangeRateSpec.spec
+  Finance.CanonSpec.spec
   Finance.CurrencySpec.spec
   Finance.AccMaskSpec.spec
   Finance.AccountSpec.spec
