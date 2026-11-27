@@ -1,6 +1,24 @@
-> **SUPERSEDED (2026-11-27).** This document describes an earlier v1.0 completion claim and is retained as a historical record. Current measured state: `docs/engineering/audit/BASELINE.md`. Next actions: `docs/engineering/NEXT_ACTIONS.md`.
+> **SUPERSEDED (2026-11-27).** The v1.0 completion roadmap below is a
+> historical record; the current plan is the measured section below.
 
 # Surypus ERP/CRM - Project Roadmap
+
+## Current roadmap — 2026-11-27 (measured)
+
+| Milestone | Status | Acceptance criteria | Verification |
+|---|---|---|---|
+| M0 Persistent operating mode | COMPLETE | `HERMES.md`, bootstrap, recovery files, healthy Beads tracker | `bd ready --json`, progress files |
+| M1 Security perimeter | PARTIAL | fail-closed auth, DB permissions, tenant isolation, encrypted secrets | 16 auth + 13 permission + 4 tenant + 4 DB permission tests |
+| M1b Migration determinism | COMPLETE | one ordered list, checksums, real PostgreSQL load | `scripts/ci-migration-verification.sh` → ALL_MIGRATIONS_LOAD_OK |
+| M2 Bill vertical slice | UNVERIFIED | create→post→accounting→inventory→events→audit through the running server | integration test against real PostgreSQL, not yet written |
+| M3 Verification matrix | NOT STARTED | invariant → predicate → property test → integration → CI | none |
+| M4 Release engineering | UNVERIFIED | reproducible image, CI gates, backup/restore/upgrade | CI not queried; no image build claimed |
+
+Prioritisation: correctness, financial integrity, tenant isolation, database
+integrity, critical API behaviour, reliability, tests, then features. Tasks live
+in Beads; Markdown files are recovery records only.
+
+## Historical v1.0 roadmap (retained unchanged)
 
 ## Milestone: v1.0 - Production-ready ERP System
 

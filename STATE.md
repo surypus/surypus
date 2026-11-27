@@ -1,6 +1,32 @@
-> **SUPERSEDED (2026-11-27).** This document describes an earlier v1.0 completion claim and is retained as a historical record. Current measured state: `docs/engineering/audit/BASELINE.md`. Next actions: `docs/engineering/NEXT_ACTIONS.md`.
+> **SUPERSEDED (2026-11-27).** The v1.0 "production-ready / 8 of 8 complete"
+> claim below is a historical record, not the current state. It is retained
+> verbatim after the measured section.
 
 # Surypus Project State
+
+## Current state — 2026-11-27 (measured)
+
+- Branch `autonomous/audit-2026-11-27` at `88ee79e`; not merged to
+  `origin/main` (`0a20715`). Worktree was clean before this update.
+- 387 library modules, 95 test modules.
+- `stack test`: **1272 examples, 0 failures, 4 pending** without a database;
+  **1278 examples, 0 failures, 2 pending** with `SURYPUS_TEST_DATABASE_URL`.
+- Beads is healthy; all registered issues are closed; `bd dolt push` works.
+- VERIFIED in this branch: fail-closed authorization, DB-backed permission
+  checks (live PostgreSQL), real `apiServer` in the executable, per-thread
+  tenant context, AES-GCM-SIV secret storage, unique event IDs, fail-closed
+  job processing, one authoritative migration order (373 files load cleanly
+  against PostgreSQL in a rolled-back transaction).
+- UNVERIFIED: bill lifecycle end-to-end through the running executable;
+  GraphQL compliance; workflow engine reliability; GitHub CI status;
+  `check-tenant-rls.sh`; LiquidHaskell proof coverage.
+- Milestones: M0 persistent operating mode — complete; M1 security perimeter —
+  substantial, not complete; M2 core vertical slice — unverified.
+- Authoritative pointers: `docs/engineering/AUTONOMOUS_PROGRESS.md`,
+  `docs/engineering/NEXT_ACTIONS.md`, `docs/engineering/VERIFICATION_LOG.md`,
+  `docs/engineering/audit/BASELINE.md`, `sql/MIGRATIONS.md`.
+
+## Historical v1.0 document (retained unchanged)
 
 **Milestone**: v1.0 - Production-ready ERP System
 **Last Updated**: 2026-06-12

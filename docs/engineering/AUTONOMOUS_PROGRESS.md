@@ -1,5 +1,17 @@
 # Autonomous progress
 
+## Cycle 9 (2026-11-27) — authoritative state restored
+
+- Claimed Beads `Surypus-1vn` (P2). Rewrote the top of `STATE.md` and
+  `ROADMAP.md` from measured facts; the original v1.0 completion claims are
+  retained verbatim below a HISTORICAL heading.
+- Current facts recorded: branch `88ee79e` (not merged to `origin/main`),
+  387 library / 95 test modules, 1272/0/4 without DB and 1278/0/2 with
+  `SURYPUS_TEST_DATABASE_URL`, M0 complete, M1 partial, M2 unverified.
+- Beads tracker will be closed after this change; `bd dolt push` pending.
+- Build/test not affected (documentation only).
+
+
 ## Cycle 8 (2026-11-27) — one authoritative migration order
 
 - Claimed and closed Beads `Surypus-bnj` (P2). Added

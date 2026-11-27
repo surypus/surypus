@@ -1,5 +1,17 @@
 # Verification log
 
+## Cycle 9 (2026-11-27)
+
+| Command | Exit | Result |
+|---|---|---|
+| `SURYPUS_TEST_DATABASE_URL=... stack test` | 0 | 1278 examples, 0 failures, 2 pending |
+| `bd ready --json` | 0 | only `Surypus-1vn` open before this cycle |
+| `bd update Surypus-1vn --claim` | 0 | status `in_progress` |
+
+Documentation-only change; the code suite was re-run with the DB URL to avoid
+carrying stale counts into `STATE.md`.
+
+
 ## Cycle 8 (2026-11-27)
 
 | Command | Exit | Result |

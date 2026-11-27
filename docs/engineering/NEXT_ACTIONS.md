@@ -11,7 +11,7 @@ must be created as Beads issues once Beads is healthy.
 - HEAD: cycle 5 commit (after merge `696c412` adopting main's canonical `HERMES.md`)
 - Working tree: clean at last check
 - Verification: `stack test` → 1272 examples, 0 failures, 4 pending
-(with `SURYPUS_TEST_DATABASE_URL` in cycle 7: 1273 / 0 / 2; not re-run after cycle 8)
+(with `SURYPUS_TEST_DATABASE_URL`: 1278 examples, 0 failures, 2 pending)
 
 ## Beads status
 
@@ -29,5 +29,5 @@ Details and evidence are in `AUTONOMOUS_PROGRESS.md` and `VERIFICATION_LOG.md`.
 
 ## Next action
 
-Claim the remaining Beads issue `Surypus-1vn` (P2, state docs). No other
-issues are open. Do not duplicate it in this file.
+All registered Beads issues are closed. New work must start by registering a
+new issue in Beads; do not create a Markdown backlog.
