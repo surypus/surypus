@@ -5,6 +5,7 @@ module Main where
 
 import Test.Hspec
 import qualified Finance.ExchangeRateSpec
+import qualified Finance.CanonSpec
 import qualified Finance.CurrencySpec
 import qualified Finance.AccMaskSpec
 import qualified Finance.AccountSpec
@@ -89,6 +90,7 @@ import qualified Production.TypesSpec
 main :: IO ()
 main = hspec $ do
   Finance.ExchangeRateSpec.spec
+  Finance.CanonSpec.spec
   Finance.CurrencySpec.spec
   Finance.AccMaskSpec.spec
   Finance.AccountSpec.spec
