@@ -262,61 +262,31 @@ runWorkerPool pool config processJobFn = do
   forM_ [1..queueWorkerCount config] $ \_ ->
     runWorker pool config processJobFn
 
--- | Process a job (placeholder - implement based on job type)
+-- | Process a job.
+--
+-- A job may only report success when a real handler exists. Until a handler
+-- is registered, every job fails explicitly; a success-shaped placeholder
+-- would let the queue silently discard work.
 processJob :: ConnectionPool -> Job -> IO JobResult
-processJob pool job = do
-  result <- try $ case jobType job of
-    BillPosting -> processBillPosting pool (jobPayload job)
-    InventoryReceipt -> processInventoryReceipt pool (jobPayload job)
-    InventoryIssue -> processInventoryIssue pool (jobPayload job)
-    ReportGeneration -> processReportGeneration pool (jobPayload job)
-    DataExport -> processDataExport pool (jobPayload job)
-    DataImport -> processDataImport pool (jobPayload job)
-    EmailNotification -> processEmailNotification pool (jobPayload job)
-    CustomJob name -> processCustomJob name pool (jobPayload job)
-  case result of
-    Left (e :: SomeException) -> return $ JobResult JobFailed Nothing (Just $ T.pack $ show e) Nothing
-    Right val -> return $ JobResult JobCompleted (Just val) Nothing Nothing
+processJob pool job =
+  case realHandler (jobType job) of
+    Nothing ->
+      pure $
+        JobResult
+          JobFailed
+          Nothing
+          (Just $ "no real handler for job type: " <> jobTypeToText (jobType job))
+          Nothing
+    Just handler -> do
+      result <- try (handler pool (jobPayload job))
+      pure $ case result of
+        Left (e :: SomeException) -> JobResult JobFailed Nothing (Just $ T.pack $ show e) Nothing
+        Right val -> JobResult JobCompleted (Just val) Nothing Nothing
 
--- | Process bill posting
-processBillPosting :: ConnectionPool -> Value -> IO Value
-processBillPosting pool payload = do
-  return $ object ["status" .= ("posted" :: Text), "payload" .= payload]
-
--- | Process inventory receipt
-processInventoryReceipt :: ConnectionPool -> Value -> IO Value
-processInventoryReceipt pool payload = do
-  return $ object ["status" .= ("received" :: Text), "payload" .= payload]
-
--- | Process inventory issue
-processInventoryIssue :: ConnectionPool -> Value -> IO Value
-processInventoryIssue pool payload = do
-  return $ object ["status" .= ("issued" :: Text), "payload" .= payload]
-
--- | Process report generation
-processReportGeneration :: ConnectionPool -> Value -> IO Value
-processReportGeneration pool payload = do
-  return $ object ["status" .= ("generated" :: Text), "payload" .= payload]
-
--- | Process data export
-processDataExport :: ConnectionPool -> Value -> IO Value
-processDataExport pool payload = do
-  return $ object ["status" .= ("exported" :: Text), "payload" .= payload]
-
--- | Process data import
-processDataImport :: ConnectionPool -> Value -> IO Value
-processDataImport pool payload = do
-  return $ object ["status" .= ("imported" :: Text), "payload" .= payload]
-
--- | Process email notification
-processEmailNotification :: ConnectionPool -> Value -> IO Value
-processEmailNotification pool payload = do
-  return $ object ["status" .= ("sent" :: Text), "payload" .= payload]
-
--- | Process custom job
-processCustomJob :: Text -> ConnectionPool -> Value -> IO Value
-processCustomJob name pool payload = do
-  return $ object ["status" .= ("completed" :: Text), "name" .= name, "payload" .= payload]
+-- | Real job handlers. This table is intentionally empty: adding a handler
+-- here is the only way a job can report 'JobCompleted'.
+realHandler :: JobType -> Maybe (ConnectionPool -> Value -> IO Value)
+realHandler _ = Nothing
 
 -- | Convert job type to text
 jobTypeToText :: JobType -> Text

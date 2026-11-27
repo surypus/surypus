@@ -1,5 +1,21 @@
 # Autonomous progress
 
+## Cycle 5 (2026-11-27) — Beads restored, maintenance resumed
+
+- **Beads repaired without destructive reinit.** Direct clone via
+  `dolt clone https://doltremoteapi.dolthub.com/dominicusin/Surypus-bd`
+  succeeded; the cloned DB was placed at `.beads/dolt/Surypus`. `bd ready`
+  works, 104 issues are visible. `bd dolt push` completed — DEC-005's blocker
+  is resolved without `--discard-remote`.
+- Created Beads issues: `Surypus-9c2` (queue stubs, P1), `Surypus-6ob`
+  (plaintext secrets, P1), `Surypus-38p` (DB permission check, P1),
+  `Surypus-bnj` (migration corpora, P2), `Surypus-1vn` (state docs, P2).
+- **Claimed and closed `Surypus-9c2`**: `processJob` no longer reports success
+  for unimplemented job types. `realHandler` is the only source of
+  `JobCompleted`; all current types return `JobFailed` with an explicit reason.
+  Removed eight success-shaped `process*` stubs. Three tests added.
+- `stack test` → **1263 examples, 0 failures, 3 pending**, exit 0.
+
 ## Bootstrap import (2026-11-27)
 
 Imported `.hermes/BOOTSTRAP.md`, `DEBT_REGISTER.md` and `DECISIONS.md` from

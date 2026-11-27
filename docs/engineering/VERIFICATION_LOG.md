@@ -1,5 +1,23 @@
 # Verification log
 
+## Cycle 5 (2026-11-27)
+
+| Command | Exit | Result |
+|---|---|---|
+| `dolt clone https://doltremoteapi.dolthub.com/dominicusin/Surypus-bd` | 0 | 5297 chunks, 104 issues, schema v66 |
+| `bd ready --json` (after DB placed in `.beads/dolt/Surypus`) | 0 | works; stale Dolt servers had to be stopped first |
+| `bd migrate schema` | 0 | `Schema already at v66` |
+| `bd create` ×5 | 0 | issues `9c2`, `6ob`, `38p`, `bnj`, `1vn` created |
+| `bd update Surypus-9c2 --claim` | 0 | status `in_progress` |
+| `stack test` | 0 | **1263 examples, 0 failures, 3 pending** |
+| `bd close Surypus-9c2` | 0 | status `closed` |
+| `bd dolt push` | 0 | `Push complete.` |
+
+Note: `bd bootstrap` still fails because it uses the DoltHub web URL with the
+old dolt 2.4.2 client (`rpc error: code = Unimplemented`). The API endpoint
+`doltremoteapi.dolthub.com` works; this is the recovery procedure.
+
+
 ## Bootstrap import (2026-11-27)
 
 - Archive `surypus-hermes-bootstrap.zip`: integrity verified with `unzip -t`

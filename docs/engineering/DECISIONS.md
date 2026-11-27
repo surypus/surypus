@@ -60,4 +60,5 @@
 - **Alternatives:** discard remote history (destructive, externally
   consequential) — requires owner approval; wait for DoltHub access to recover.
 - **Evidence:** command output in `VERIFICATION_LOG.md`.
-- **Status:** BLOCKED — needs owner decision or restored DoltHub access.
+- **Status:** RESOLVED cycle 5 — no destructive reinit was needed. The
+  DoltHub API endpoint clone succeeded and `bd dolt push` completed.
