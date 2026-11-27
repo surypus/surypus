@@ -1,5 +1,15 @@
 # Autonomous progress
 
+## Cycle 12 (2026-11-27) — last hardcoded pool removed
+
+- Registered and claimed Beads `Surypus-8dr` (P1). `DAL.ORMPool.createPool`
+  still hardcoded a localhost connection string with a placeholder password;
+  it now delegates to `DAL.Database.createPool`. Added a source-level guard in
+  `ConnectionConfigSpec` so the literal cannot return.
+- Verification: `stack test` 1275/0/6 without DB; 1283/0/2 with
+  `SURYPUS_TEST_DATABASE_URL`. Both passed.
+
+
 ## Cycle 11 (2026-11-27) — regression test for tenant-scoped SQL
 
 - Created and claimed Beads `Surypus-cxr` (P1). Added
