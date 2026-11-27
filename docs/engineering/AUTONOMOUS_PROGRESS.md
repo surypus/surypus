@@ -1,5 +1,20 @@
 # Autonomous progress
 
+## Cycle 6 (2026-11-27) — secrets encrypted at rest
+
+- Claimed and closed Beads `Surypus-6ob` (P1). `System.Secrets` no longer
+  stores plaintext: values are sealed with AES-256-GCM-SIV (nonce + tag +
+  ciphertext, 28-byte overhead). Key comes from `SURYPUS_SECRETS_KEY` (padded
+  to 32 bytes) or a fresh random key when unset; an ephemeral key means no
+  cross-restart recovery, which is documented in the module.
+- `rotateSecret` seals the new value; `retrieveSecret` fails closed on
+  authentication failure; audit entries record key names, never values.
+  `generateSecret` now uses `getRandomBytes` instead of `System.Random`.
+- Added three tests: no plaintext in store, tampered ciphertext rejected,
+  fresh nonce for equal values. `stack test` → **1266 examples, 0 failures,
+  3 pending**, exit 0. `bd dolt push` → Push complete.
+
+
 ## Cycle 5 (2026-11-27) — Beads restored, maintenance resumed
 
 - **Beads repaired without destructive reinit.** Direct clone via

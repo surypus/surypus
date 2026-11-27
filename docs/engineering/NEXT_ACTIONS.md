@@ -10,7 +10,7 @@ must be created as Beads issues once Beads is healthy.
 - Branch: `autonomous/audit-2026-11-27`
 - HEAD: cycle 5 commit (after merge `696c412` adopting main's canonical `HERMES.md`)
 - Working tree: clean at last check
-- Verification: `stack test` → 1263 examples, 0 failures, 3 pending
+- Verification: `stack test` → 1266 examples, 0 failures, 3 pending
 
 ## Beads status
 
@@ -28,7 +28,6 @@ Details and evidence are in `AUTONOMOUS_PROGRESS.md` and `VERIFICATION_LOG.md`.
 
 ## Next action
 
-Claim the next P1 Beads issue: `Surypus-6ob` (plaintext secrets) or
-`Surypus-38p` (DB permission check; needs a DB role or
-`SURYPUS_TEST_DATABASE_URL`). Remaining registered issues: `Surypus-bnj`,
+Claim the remaining P1 Beads issue `Surypus-38p` (DB permission check; needs
+a DB role or `SURYPUS_TEST_DATABASE_URL`), then P2 `Surypus-bnj` and
 `Surypus-1vn`. Do not duplicate them in this file.

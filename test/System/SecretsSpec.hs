@@ -2,6 +2,7 @@
 
 module System.SecretsSpec (spec) where
 
+import Control.Concurrent.STM (atomically, modifyTVar', readTVarIO)
 import Test.Hspec
 import qualified Data.ByteString as BS
 import qualified Data.Map.Strict as Map
@@ -18,6 +19,9 @@ mkMeta cat ver = SecretMetadata
   , secretVersion = ver
   , secretTags = []
   }
+
+tamper :: (BS.ByteString, SecretMetadata) -> (BS.ByteString, SecretMetadata)
+tamper (blob, meta) = (BS.snoc (BS.init blob) (BS.last blob + 1), meta)
 
 spec :: Spec
 spec = describe "System.Secrets" $ do
@@ -40,6 +44,33 @@ spec = describe "System.Secrets" $ do
       storeSecret store "key1" "value1" (mkMeta APIKeys 1)
       result <- retrieveSecret store "key2"
       result `shouldBe` (Nothing :: Maybe BS.ByteString)
+
+    it "does not keep plaintext in the store" $ do
+      store <- initSecretStore
+      storeSecret store "db-password" "s3cr3t" (mkMeta DatabaseCredentials 1)
+      entries <- readTVarIO (secretMap store)
+      let (sealed, _) = entries Map.! "db-password"
+      BS.isInfixOf "s3cr3t" sealed `shouldBe` False
+      BS.length sealed `shouldBe` 28 + BS.length "s3cr3t"
+
+    it "refuses to return a tampered ciphertext" $ do
+      store <- initSecretStore
+      storeSecret store "k" "value" (mkMeta APIKeys 1)
+      atomically $ modifyTVar' (secretMap store) (Map.adjust tamper "k")
+      retrieveSecret store "k" `shouldReturn` Nothing
+
+    it "uses a fresh nonce for equal values" $ do
+      store <- initSecretStore
+      storeSecret store "a" "same" (mkMeta APIKeys 1)
+      storeSecret store "b" "same" (mkMeta APIKeys 1)
+      entries <- readTVarIO (secretMap store)
+      let (blobA, _) = entries Map.! "a"
+          (blobB, _) = entries Map.! "b"
+      blobA `shouldNotBe` blobB
+      ra <- retrieveSecret store "a"
+      rb <- retrieveSecret store "b"
+      ra `shouldBe` Just "same"
+      rb `shouldBe` Just "same"
 
     it "overwrites an existing secret" $ do
       store <- initSecretStore

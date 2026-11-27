@@ -1,5 +1,19 @@
 # Verification log
 
+## Cycle 6 (2026-11-27)
+
+| Command | Exit | Result |
+|---|---|---|
+| `bd update Surypus-6ob --claim` | 0 | status `in_progress` |
+| `stack test` | 0 | **1266 examples, 0 failures, 3 pending** |
+| `bd close Surypus-6ob` | 0 | status `closed` |
+| `bd dolt push` | 0 | `Push complete.` |
+
+Build errors during implementation (fixed and re-run): hidden modules
+`Crypto.Hash.SHA256` / `Data.ByteArray` (added `memory`, removed SHA import),
+and `AuthTag` requiring `BA.Bytes` rather than strict `ByteString`.
+
+
 ## Cycle 5 (2026-11-27)
 
 | Command | Exit | Result |
