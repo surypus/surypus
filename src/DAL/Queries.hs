@@ -7,6 +7,11 @@
 -- list-style queries are implemented in 'DAL.QueriesORM'.
 module DAL.Queries
   ( getLowStockGoods
+  , getAllGoods
+  , getGoodById
+  , getAllPersons
+  , getPersonById
+  , searchPersonsByName
   , getEmployeeById
   , getSalaryByEmployee
   ) where
@@ -20,7 +25,7 @@ import Database.Persist.Postgresql (ConnectionPool)
 import qualified Database.Persist as P
 import qualified Surypus.DB.Schema as DBS
 import Surypus.DB.Schema (SalaryEntity(..))
-import DAL.Types
+import DAL.Types (Employee (..), Goods (..), Person (..), QueryResult (..), Salary (..))
 
 -- | Goods whose stock is at or below the minimum level
 getLowStockGoods :: ConnectionPool -> IO (QueryResult [Goods])
@@ -52,6 +57,73 @@ goodsFromRow (Single gid, Single gcode, Single gname, Single gmin) = Goods
   , goodsCreatedAt = Nothing
   , goodsUpdatedAt = Nothing
   }
+
+-- | Every goods row, ordered by id. Used by the API list handler.
+getAllGoods :: ConnectionPool -> IO (QueryResult [Goods])
+getAllGoods pool = do
+  rows <- liftIO $ runSqlPool
+    (rawSql "SELECT id, code, name, min_stock FROM goods ORDER BY id" [])
+    pool
+  return $ QuerySuccess (map goodsFromRow rows)
+
+-- | One goods row by id.
+getGoodById :: ConnectionPool -> Int64 -> IO (QueryResult Goods)
+getGoodById pool gid = do
+  rows <- liftIO $ runSqlPool
+    (rawSql "SELECT id, code, name, min_stock FROM goods WHERE id = ?" [PersistInt64 gid])
+    pool
+  return $ case rows of
+    (row : _) -> QuerySuccess (goodsFromRow row)
+    [] -> QueryError "Good not found"
+
+type PersonRow =
+  ( Single Int64
+  , Single (Maybe T.Text)
+  , Single T.Text
+  , Single (Maybe T.Text)
+  , Single (Maybe T.Text)
+  , Single (Maybe Int)
+  , Single (Maybe Int)
+  )
+
+personFromRow :: PersonRow -> Person
+personFromRow (Single pid, Single code, Single name, Single inn, Single kpp, Single ptype, Single status) =
+  Person
+    { personId = fromIntegral pid
+    , personCode = code
+    , personName = name
+    , personINN = inn
+    , personKPP = kpp
+    , personType = ptype
+    , personStatus = status
+    }
+
+-- | Every person row, ordered by id.
+getAllPersons :: ConnectionPool -> IO (QueryResult [Person])
+getAllPersons pool = do
+  rows <- liftIO $ runSqlPool
+    (rawSql "SELECT id, code, name, inn, kpp, type, status FROM persons ORDER BY id" [])
+    pool
+  return $ QuerySuccess (map personFromRow rows)
+
+-- | One person by id.
+getPersonById :: ConnectionPool -> Int64 -> IO (QueryResult Person)
+getPersonById pool pid = do
+  rows <- liftIO $ runSqlPool
+    (rawSql "SELECT id, code, name, inn, kpp, type, status FROM persons WHERE id = ?" [PersistInt64 pid])
+    pool
+  return $ case rows of
+    (row : _) -> QuerySuccess (personFromRow row)
+    [] -> QueryError "Person not found"
+
+-- | Persons whose name matches a substring.
+searchPersonsByName :: ConnectionPool -> T.Text -> IO (QueryResult [Person])
+searchPersonsByName pool needle = do
+  rows <- liftIO $ runSqlPool
+    (rawSql "SELECT id, code, name, inn, kpp, type, status FROM persons WHERE name ILIKE ? ORDER BY id"
+      [PersistText (T.concat ["%", needle, "%"])])
+    pool
+  return $ QuerySuccess (map personFromRow rows)
 
 -- | One employee by id
 getEmployeeById :: ConnectionPool -> Int64 -> IO (QueryResult Employee)
