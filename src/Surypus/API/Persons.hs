@@ -1,6 +1,5 @@
-
 {-# LANGUAGE OverloadedStrings #-}
--- | Surypus API Persons (Phase 1: stub)
+-- | Surypus API Persons — DAL-backed handlers.
 module Surypus.API.Persons
   ( listPersons
   , createPerson
@@ -10,31 +9,53 @@ module Surypus.API.Persons
   , searchPersons
   ) where
 
-import DAL.Types (Person(..), QueryResult(..))
+import DAL.Queries (getAllPersons, getPersonById, searchPersonsByName)
+import DAL.Types (Person (..), QueryResult (..), mrId)
+import qualified DAL.Mutations as Mutations
 import Data.Int (Int64)
 import Data.Text (Text)
+import qualified Data.Text as T
 import Database.Persist.Postgresql (ConnectionPool)
 
--- | List persons (stub)
 listPersons :: ConnectionPool -> Maybe Text -> Maybe Text -> Maybe Int -> Maybe Int -> Maybe Int -> IO (QueryResult [Person])
-listPersons _pool _ _ _ _ _ = return $ QueryResults [] 0
+listPersons pool mcode mname _mtype _mstatus mlimit = do
+  result <- getAllPersons pool
+  pure $ case result of
+    QueryError e -> QueryError e
+    QueryResults xs n -> QueryResults xs n
+    QuerySuccess xs ->
+      let filtered = filterPersons xs
+          paged = maybe filtered (\lim -> take lim filtered) mlimit
+      in QuerySuccess paged
+  where
+    filterPersons :: [Person] -> [Person]
+    filterPersons = filter $ \p ->
+      maybe True (\c -> personCode p == Just c) mcode
+        && maybe True (\n -> n `T.isInfixOf` personName p) mname
 
--- | Create person (stub)
-createPerson :: Person -> IO (QueryResult Int64)
-createPerson _ = return $ QuerySuccess 0
+createPerson :: ConnectionPool -> Person -> IO (QueryResult Int64)
+createPerson pool person = mapId <$> Mutations.createPerson pool person
+  where
+    mapId (QuerySuccess mr) = QuerySuccess (maybe 0 id (mrId mr))
+    mapId (QueryError e) = QueryError e
+    mapId (QueryResults xs n) = QueryResults (maybe 0 id . mrId <$> xs) n
 
--- | Get person (stub)
-getPerson :: Int64 -> IO (QueryResult Person)
-getPerson _ = return $ QueryError "Not found"
+getPerson :: ConnectionPool -> Int64 -> IO (QueryResult Person)
+getPerson = getPersonById
 
--- | Update person (stub)
-updatePerson :: Person -> IO (QueryResult ())
-updatePerson _ = return $ QuerySuccess ()
+updatePerson :: ConnectionPool -> Int64 -> Person -> IO (QueryResult ())
+updatePerson pool pid person = toUnit <$> Mutations.updatePerson pool pid person
+  where
+    toUnit (QuerySuccess _) = QuerySuccess ()
+    toUnit (QueryError e) = QueryError e
+    toUnit (QueryResults _ n) = QueryResults [] n
 
--- | Delete person (stub)
-deletePerson :: Int64 -> IO (QueryResult ())
-deletePerson _ = return $ QuerySuccess ()
+deletePerson :: ConnectionPool -> Int64 -> IO (QueryResult ())
+deletePerson pool pid = toUnit <$> Mutations.deletePerson pool pid
+  where
+    toUnit (QuerySuccess _) = QuerySuccess ()
+    toUnit (QueryError e) = QueryError e
+    toUnit (QueryResults _ n) = QueryResults [] n
 
--- | Search persons (stub)
-searchPersons :: Text -> IO (QueryResult [Person])
-searchPersons _ = return $ QueryResults [] 0
+searchPersons :: ConnectionPool -> Text -> IO (QueryResult [Person])
+searchPersons = searchPersonsByName
