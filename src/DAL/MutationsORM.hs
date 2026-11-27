@@ -176,23 +176,16 @@ deleteGoods pool id' = do
 -- | Create a bill
 createBill :: ConnectionPool -> Bill -> IO (QueryResult Int64)
 createBill pool bill = do
-  now <- getCurrentTime
-  let sql = "INSERT INTO bills (bill_number, bill_date, customer_id, vendor_id, warehouse_id, currency_id, bill_status, bill_type, subtotal, tax_amount, total_amount, paid_amount, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id"
+  -- Canonical schema uses number/date/currency/total_amount/status/vat_sum.
+  let sql = "INSERT INTO bills (number, date, currency, total_amount, status, vat_sum, obj_type) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id"
   rows <- runDb pool $ rawSql sql
     [ maybe PersistNull PersistText (billCode bill)
-    , maybe PersistNull PersistDay (Just (billDate bill))
-    , maybe PersistNull (PersistInt64 . fromIntegral) (billPersonId bill)
-    , PersistInt64 0
-    , maybe PersistNull (PersistInt64 . fromIntegral) (billLocationId bill)
-    , PersistInt64 0
-    , maybe PersistNull PersistText (billStatus bill)
-    , maybe PersistNull PersistText (billType bill)
-    , maybe PersistNull PersistDouble (Just (billTotal bill))
-    , maybe PersistNull PersistDouble (Just (billTaxAmount bill))
-    , PersistDouble 0
+    , PersistDay (billDate bill)
     , PersistNull
-    , PersistUTCTime now
-    , PersistUTCTime now
+    , PersistDouble (billTotal bill)
+    , maybe PersistNull PersistText (billStatus bill)
+    , PersistDouble (billTaxAmount bill)
+    , maybe PersistNull PersistText (billType bill)
     ]
   case rows of
     (Single (PersistInt64 id') : _) -> return $ QuerySuccess id'
@@ -201,22 +194,14 @@ createBill pool bill = do
 -- | Update a bill
 updateBill :: ConnectionPool -> Bill -> IO (QueryResult ())
 updateBill pool bill = do
-  now <- getCurrentTime
-  let sql = "UPDATE bills SET bill_number = ?, bill_date = ?, customer_id = ?, vendor_id = ?, warehouse_id = ?, currency_id = ?, bill_status = ?, bill_type = ?, subtotal = ?, tax_amount = ?, total_amount = ?, paid_amount = ?, notes = ?, updated_at = ? WHERE id = ?"
+  let sql = "UPDATE bills SET number = ?, date = ?, currency = NULL, total_amount = ?, status = ?, vat_sum = ?, obj_type = ? WHERE id = ?"
   runDb pool $ rawExecute sql
     [ maybe PersistNull PersistText (billCode bill)
-    , maybe PersistNull PersistDay (Just (billDate bill))
-    , maybe PersistNull (PersistInt64 . fromIntegral) (billPersonId bill)
-    , PersistInt64 0
-    , maybe PersistNull (PersistInt64 . fromIntegral) (billLocationId bill)
-    , PersistInt64 0
+    , PersistDay (billDate bill)
+    , PersistDouble (billTotal bill)
     , maybe PersistNull PersistText (billStatus bill)
+    , PersistDouble (billTaxAmount bill)
     , maybe PersistNull PersistText (billType bill)
-    , maybe PersistNull PersistDouble (Just (billTotal bill))
-    , maybe PersistNull PersistDouble (Just (billTaxAmount bill))
-    , PersistDouble 0
-    , PersistNull
-    , PersistUTCTime now
     , PersistInt64 (fromIntegral (billId bill))
     ]
   return $ QuerySuccess ()
@@ -224,25 +209,22 @@ updateBill pool bill = do
 -- | Update bill status
 updateBillStatus :: ConnectionPool -> Int64 -> Text -> IO (QueryResult ())
 updateBillStatus pool id' status = do
-  now <- getCurrentTime
-  let sql = "UPDATE bills SET bill_status = ?, updated_at = ? WHERE id = ?"
-  runDb pool $ rawExecute sql [PersistText status, PersistUTCTime now, PersistInt64 id']
+  let sql = "UPDATE bills SET status = ? WHERE id = ?"
+  runDb pool $ rawExecute sql [PersistText status, PersistInt64 id']
   return $ QuerySuccess ()
 
 -- | Post a bill
 postBill :: ConnectionPool -> Int64 -> IO (QueryResult ())
 postBill pool id' = do
-  now <- getCurrentTime
-  let sql = "UPDATE bills SET bill_status = 'posted', updated_at = ? WHERE id = ?"
-  runDb pool $ rawExecute sql [PersistUTCTime now, PersistInt64 id']
+  let sql = "UPDATE bills SET status = 'posted' WHERE id = ?"
+  runDb pool $ rawExecute sql [PersistInt64 id']
   return $ QuerySuccess ()
 
 -- | Post a bill with accounting
 postBillWithAcc :: ConnectionPool -> Int64 -> IO (QueryResult ())
 postBillWithAcc pool id' = do
-  now <- getCurrentTime
-  let sql = "UPDATE bills SET bill_status = 'posted', updated_at = ? WHERE id = ?"
-  runDb pool $ rawExecute sql [PersistUTCTime now, PersistInt64 id']
+  let sql = "UPDATE bills SET status = 'posted' WHERE id = ?"
+  runDb pool $ rawExecute sql [PersistInt64 id']
   return $ QuerySuccess ()
 
 -- | Add a bill line

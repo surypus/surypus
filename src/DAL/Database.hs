@@ -23,7 +23,7 @@ import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import qualified Data.Text as T
 import Database.Persist.Postgresql (ConnectionPool, createPostgresqlPool)
-import Database.Persist.Sql (SqlPersistT, runSqlPool, PersistValue(..), rawExecute)
+import Database.Persist.Sql (SqlPersistT, runSqlPool, PersistValue(..), rawExecute, rawSql, Single(..))
 import Control.Monad.Logger (runNoLoggingT)
 import Data.ByteString.Char8 (pack)
 import Data.Pool (destroyAllResources)
@@ -120,13 +120,11 @@ runDb pool action = do
   case mCtx of
     Just (tenantId, userId) ->
       runSqlPool (do
-        rawExecute "SELECT set_config('app.tenant_id', ?, TRUE)"
-          [PersistText (T.pack $ show tenantId)]
-        rawExecute "SELECT set_config('app.user_id', ?, TRUE)"
-          [PersistText (T.pack $ show userId)]
+        _ <- rawSql "SELECT set_config('app.tenant_id', ?, TRUE)" [PersistText (T.pack $ show tenantId)] :: SqlPersistT IO [Single Text]
+        _ <- rawSql "SELECT set_config('app.user_id', ?, TRUE)" [PersistText (T.pack $ show userId)] :: SqlPersistT IO [Single Text]
         result <- action
-        rawExecute "SELECT set_config('app.tenant_id', '', TRUE)" []
-        rawExecute "SET SESSION app.tenant_id = ''" []
+        _ <- rawSql "SELECT set_config('app.tenant_id', '', TRUE)" [] :: SqlPersistT IO [Single Text]
+        _ <- rawSql "SELECT set_config('app.user_id', '', TRUE)" [] :: SqlPersistT IO [Single Text]
         pure result
         ) pool
     Nothing ->
@@ -137,12 +135,10 @@ runDb pool action = do
 runDbWithTenant :: Int64 -> Int64 -> ConnectionPool -> SqlPersistT IO a -> IO a
 runDbWithTenant tenantId userId pool action =
   runSqlPool (do
-    rawExecute "SELECT set_config('app.tenant_id', ?, TRUE)"
-      [PersistText (T.pack $ show tenantId)]
-    rawExecute "SELECT set_config('app.user_id', ?, TRUE)"
-      [PersistText (T.pack $ show userId)]
+    _ <- rawSql "SELECT set_config('app.tenant_id', ?, TRUE)" [PersistText (T.pack $ show tenantId)] :: SqlPersistT IO [Single Text]
+    _ <- rawSql "SELECT set_config('app.user_id', ?, TRUE)" [PersistText (T.pack $ show userId)] :: SqlPersistT IO [Single Text]
     result <- action
-    rawExecute "SELECT set_config('app.tenant_id', '', TRUE)" []
-    rawExecute "SELECT set_config('app.user_id', '', TRUE)" []
+    _ <- rawSql "SELECT set_config('app.tenant_id', '', TRUE)" [] :: SqlPersistT IO [Single Text]
+    _ <- rawSql "SELECT set_config('app.user_id', '', TRUE)" [] :: SqlPersistT IO [Single Text]
     pure result
     ) pool

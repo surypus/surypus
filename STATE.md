@@ -6,7 +6,7 @@
 
 ## Current state — 2026-11-27 (measured)
 
-- Branch `autonomous/audit-2026-11-27` at `88ee79e`; not merged to
+- Branch `autonomous/audit-2026-11-27` at cycle-10 commit; not merged to
   `origin/main` (`0a20715`). Worktree was clean before this update.
 - 387 library modules, 95 test modules.
 - `stack test`: **1272 examples, 0 failures, 4 pending** without a database;
@@ -17,7 +17,8 @@
   tenant context, AES-GCM-SIV secret storage, unique event IDs, fail-closed
   job processing, one authoritative migration order (373 files load cleanly
   against PostgreSQL in a rolled-back transaction).
-- UNVERIFIED: bill lifecycle end-to-end through the running executable;
+- PARTIAL: bill create/list/read/post through the running server is verified;
+  accounting, inventory, events and audit in that flow remain unverified.
   GraphQL compliance; workflow engine reliability; GitHub CI status;
   `check-tenant-rls.sh`; LiquidHaskell proof coverage.
 - Milestones: M0 persistent operating mode — complete; M1 security perimeter —

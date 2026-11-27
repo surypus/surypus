@@ -10,8 +10,8 @@ must be created as Beads issues once Beads is healthy.
 - Branch: `autonomous/audit-2026-11-27`
 - HEAD: cycle 5 commit (after merge `696c412` adopting main's canonical `HERMES.md`)
 - Working tree: clean at last check
-- Verification: `stack test` → 1272 examples, 0 failures, 4 pending
-(with `SURYPUS_TEST_DATABASE_URL`: 1278 examples, 0 failures, 2 pending)
+- Verification: `stack test` → 1273 examples, 0 failures, 5 pending
+(with `SURYPUS_TEST_DATABASE_URL`: 1280 examples, 0 failures, 2 pending)
 
 ## Beads status
 

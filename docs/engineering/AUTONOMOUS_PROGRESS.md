@@ -1,5 +1,25 @@
 # Autonomous progress
 
+## Cycle 10 (2026-11-27) — bill slice unblocked; tenant-scoped queries fixed
+
+- Claimed Beads `Surypus-2a5` (P1). Root causes found and fixed:
+  1. `DAL.Database.runDb`/`runDbWithTenant` called `rawExecute` on
+     `SELECT set_config(...)`, which always throws
+     `execute resulted in Col 1-column result`. Every tenant-scoped query
+     failed and the permission store silently denied (P0).
+  2. `DAL.MutationsORM` bill functions wrote to non-existent columns
+     (`bill_number`, `bill_date`, `bill_status`, `updated_at`, ...). Rewritten
+     against the canonical columns (`number`, `date`, `status`, `total_amount`,
+     `vat_sum`, `obj_type`) with bound parameters.
+  3. `Surypus.API.Bills.listBills` returned `QuerySuccess []` and `getBill`
+     always `QueryError "Not found"`. Now backed by `DAL.QueriesORM.getBills`
+     and `getBillById`.
+- Added `test/BillLifecycleIntegration.hs`: create → list → read → post through
+  the real Servant app with JWT/admin role and PostgreSQL; cleanup in `finally`.
+- Verification: with DB **1280 examples, 0 failures, 2 pending**; without DB
+  1273 examples, 0 failures, 5 pending. Both suites passed.
+
+
 ## Cycle 9 (2026-11-27) — authoritative state restored
 
 - Claimed Beads `Surypus-1vn` (P2). Rewrote the top of `STATE.md` and

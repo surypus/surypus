@@ -6,6 +6,8 @@ module DAL.QueriesORM
   ( personKey
   , goodsKey
   , billKey
+  , getBills
+  , getBillById
   , locationKey
   , lotKey
   , tenantKey
@@ -37,7 +39,8 @@ module DAL.QueriesORM
 
 import Data.Int (Int64)
 import Data.Text (Text)
-import Data.Time (UTCTime, Day)
+import Data.Time (UTCTime, Day, utctDay, fromGregorian)
+import Data.Maybe (fromMaybe)
 import qualified Database.Persist.Sql as P (Entity(..), toSqlKey, Single(..), PersistValue(..), Key)
 import Database.Persist.Sql (rawSql, PersistValue(PersistInt64))
 import Database.Persist.Postgresql (ConnectionPool)
@@ -47,6 +50,49 @@ import DAL.Schema hiding (Entity, BillLineEntity, DocumentTypeEntity, OrderHeadE
 import qualified DAL.Schema as S (BillLineEntity(..), DocumentTypeEntity(..), OrderHeadEntity(..), GoodsPriceEntity(..), CurrencyEntity(..), EmployeeEntity(..))
 import DAL.Types hiding (PersonEntity, BillEntity, TaxEntity)
 import DAL.Conversion hiding (keyToInt)
+
+-- | Rows read from the canonical bills table.
+type BillRow =
+  ( P.Single Int64
+  , P.Single (Maybe Text)
+  , P.Single (Maybe UTCTime)
+  , P.Single (Maybe Text)
+  , P.Single (Maybe Double)
+  , P.Single (Maybe Double)
+  , P.Single (Maybe Text)
+  )
+
+billFromRow :: BillRow -> Bill
+billFromRow (P.Single ident, P.Single number, P.Single date, P.Single status, P.Single total, P.Single vat, P.Single kind) =
+  Bill
+    { billId = fromIntegral ident
+    , billCode = number
+    , billType = kind
+    , billStatus = status
+    , billDate = maybe (fromGregorian 1970 1 1) utctDay date
+    , billPersonId = Nothing
+    , billLocationId = Nothing
+    , billTotal = fromMaybe 0 total
+    , billDiscount = 0
+    , billTaxAmount = fromMaybe 0 vat
+    }
+
+billSelect :: Text
+billSelect = "SELECT id, number, date, status, total_amount, vat_sum, obj_type FROM bills"
+
+-- | List bills from PostgreSQL (no hardcoded empty result).
+getBills :: ConnectionPool -> IO (QueryResult [Bill])
+getBills pool = do
+  rows <- runDb pool (rawSql (billSelect <> " ORDER BY id") []) :: IO [BillRow]
+  pure $ QuerySuccess (map billFromRow rows)
+
+-- | Read one bill by id.
+getBillById :: ConnectionPool -> Int64 -> IO (QueryResult Bill)
+getBillById pool ident = do
+  rows <- runDb pool (rawSql (billSelect <> " WHERE id = ?") [PersistInt64 ident]) :: IO [BillRow]
+  pure $ case rows of
+    (row : _) -> QuerySuccess (billFromRow row)
+    [] -> QueryError "Bill not found"
 
 -- | Key helpers
 personKey :: Int64 -> Int64

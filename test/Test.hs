@@ -92,6 +92,7 @@ import qualified EventProcessorSpec
 import qualified DAL.QueueSpec
 import qualified DAL.RBACRepositoryIntegration
 import qualified MigrationCorpusSpec
+import qualified BillLifecycleIntegration
 import qualified DAL.EventStoreIntegration
 import qualified Infrastructure.Redis.EventStreamSpec
 import qualified Infrastructure.EventStore.AccountingIntegration
@@ -186,6 +187,7 @@ main = hspec $ do
   DAL.QueueSpec.spec
   DAL.RBACRepositoryIntegration.spec
   MigrationCorpusSpec.spec
+  BillLifecycleIntegration.spec
   DAL.EventStoreIntegration.spec
   Infrastructure.Redis.EventStreamSpec.spec
   Infrastructure.EventStore.AccountingIntegration.spec

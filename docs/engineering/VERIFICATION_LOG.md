@@ -1,5 +1,20 @@
 # Verification log
 
+## Cycle 10 (2026-11-27)
+
+| Command | Exit | Result |
+|---|---|---|
+| `stack test` with `SURYPUS_TEST_DATABASE_URL` | 0 | **1280 examples, 0 failures, 2 pending** |
+| `stack test` without DB URL | 0 | 1273 examples, 0 failures, 5 pending |
+| `stack test --test-arguments='--match "bill lifecycle"'` | 0 | 2 examples, 0 failures |
+
+Debug trail (fixed): 403 from authz was traced to `runDb` throwing on
+`rawExecute "SELECT set_config(...)"`; 404 was caused by WAI `pathInfo` not
+being set in the test request; 400 was caused by using `request` instead of
+`srequest`, which dropped the JSON body. All three were reproduced with real
+output before fixing.
+
+
 ## Cycle 9 (2026-11-27)
 
 | Command | Exit | Result |

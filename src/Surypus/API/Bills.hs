@@ -16,10 +16,11 @@ import qualified Data.Text as T
 import Database.Persist.Postgresql (ConnectionPool)
 import DAL.Types (Bill(..), MutationResult(..), QueryResult(..))
 import qualified DAL.MutationsORM as ORM
+import qualified DAL.QueriesORM as Q
 
 -- | List bills
 listBills :: ConnectionPool -> IO (QueryResult [Bill])
-listBills _pool = return $ QuerySuccess []
+listBills pool = Q.getBills pool
 
 -- | Create a bill
 createBill :: ConnectionPool -> Bill -> IO (QueryResult MutationResult)
@@ -32,7 +33,7 @@ createBill pool bill = do
 
 -- | Get one bill by id
 getBill :: ConnectionPool -> Int64 -> IO (QueryResult Bill)
-getBill _pool _id = return $ QueryError "Not found"
+getBill pool bid = Q.getBillById pool bid
 
 -- | Update a bill
 updateBill :: ConnectionPool -> Int64 -> Bill -> IO (QueryResult ())
