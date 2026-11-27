@@ -1,5 +1,17 @@
 # Verification log
 
+## Bootstrap import (2026-11-27)
+
+- Archive `surypus-hermes-bootstrap.zip`: integrity verified with `unzip -t`
+  (9 entries, no errors); files listed above were imported.
+- The archive claims a GitHub integration write returned HTTP 403. That is the
+  archive author's record; I did not reproduce it and make no claim about it.
+- `bd ready --json` → error: `database "Surypus" not found on Dolt server at
+  127.0.0.1:38891`. `bd doctor` → 71 passed, 13 warnings, 3 errors. Beads was
+  therefore unusable as the task tracker in this session.
+- `git merge origin/main` → conflict in `HERMES.md` (add/add); resolved by
+  taking main's version, commit `696c412`.
+
 All commands in the clean worktree at
 `/home/dominicusin/.hermes/cache/scratch/surypus-audit`.
 

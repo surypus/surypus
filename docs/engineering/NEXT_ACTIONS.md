@@ -1,5 +1,9 @@
 # Next actions (ordered)
 
+Handoff/evidence record per `HERMES.md` §16. Beads is the system of record per
+`AGENTS.md`; it was unavailable this session (`cd ... && bd ready --json`
+failed: Dolt database not found). No Beads issue IDs are claimed here.
+
 1. **S-10 (P1, partially verified)** — The exact permission SQL was executed
    against the live `surypus` schema via peer auth: viewer/read allowed,
    viewer/delete denied, unknown user denied (transaction rolled back).

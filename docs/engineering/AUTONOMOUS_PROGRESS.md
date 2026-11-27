@@ -1,5 +1,24 @@
 # Autonomous progress
 
+## Bootstrap import (2026-11-27)
+
+Imported `.hermes/BOOTSTRAP.md`, `DEBT_REGISTER.md` and `DECISIONS.md` from
+`surypus-hermes-bootstrap.zip`. The archive's own progress/log snapshots say
+"INITIALIZED" and "no tests executed" — that describes the archive author's
+setup step only. The verified cycles 1–4 below supersede those statements for
+this repository: `stack test` reached 1260 examples / 0 failures / 3 pending.
+
+Upstream `main` gained commit `0a20715` (canonical 1133-line `HERMES.md`) while
+this branch was in flight. Merged at `696c412`, adopting main's policy file;
+the shorter local policy was discarded, not kept as a competing document.
+
+Beads (`bd`) is broken in this worktree: `bd ready --json` fails with
+`database "Surypus" not found on Dolt server`; `bd doctor` reports 3 errors,
+including database and Dolt permission failures, and still points at
+`/home/dominicusin/surypus/.beads`. No task IDs were invented or claimed.
+`NEXT_ACTIONS.md` remains a handoff record required by `HERMES.md` §16, not a
+replacement for Beads.
+
 ## Cycle 4 (2026-11-27) — event id stub
 
 - **S-05 (P2)**: `generateEventId` returned the constant
