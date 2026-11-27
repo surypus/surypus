@@ -1,5 +1,18 @@
 # Verification log
 
+## Cycle 13 (2026-11-27)
+
+| Command | Exit | Result |
+|---|---|---|
+| `stack test --test-arguments='--match "bill lifecycle"'` (DB URL) | 0 | 2 examples, 0 failures |
+| `stack test` with DB URL | 0 | **1283 examples, 0 failures, 2 pending** |
+| `stack test` without DB URL | 0 | 1275 examples, 0 failures, 6 pending |
+
+Build error fixed during implementation: `Control.Exception.try` is IO-only;
+switched to `Control.Monad.Catch.try` (added `exceptions` dependency) so the
+rollback can catch inside `SqlPersistT IO`.
+
+
 ## Cycle 12 (2026-11-27)
 
 | Command | Exit | Result |

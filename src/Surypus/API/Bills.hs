@@ -17,6 +17,7 @@ import Database.Persist.Postgresql (ConnectionPool)
 import DAL.Types (Bill(..), MutationResult(..), QueryResult(..))
 import qualified DAL.MutationsORM as ORM
 import qualified DAL.QueriesORM as Q
+import qualified Service.BillPosting as Posting
 
 -- | List bills
 listBills :: ConnectionPool -> IO (QueryResult [Bill])
@@ -45,7 +46,7 @@ deleteBill pool bid = ORM.deleteBill pool bid
 
 -- | Post a bill
 postBill :: ConnectionPool -> Int64 -> IO (QueryResult ())
-postBill pool bid = ORM.postBill pool bid
+postBill pool bid = Posting.postBillWithEffects pool bid
 
 -- | Update bill status
 updateBillStatus :: ConnectionPool -> Int64 -> Int -> IO (QueryResult ())

@@ -10,13 +10,14 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text.Encoding as TE
+import qualified Data.Text as T
 import Data.Int (Int64)
 import Data.Time.Calendar (fromGregorian)
 import qualified DAL.Pool as Pool
 import DAL.Repository.RBAC (checkUserAppPermissionRepo, mkRBACRepository)
 import DAL.Types (Bill (..), User (..))
 import qualified Database.Persist.Sql as P
-import Database.Persist.Sql (rawExecute, runSqlPool)
+import Database.Persist.Sql (PersistValue (..), Single (..), SqlPersistT, rawExecute, rawSql, runSqlPool)
 import Database.Persist.Postgresql (createPostgresqlPool)
 import Network.HTTP.Types (Header, status200, status401)
 import Network.Wai (Application, defaultRequest, pathInfo, rawPathInfo, requestHeaders, requestMethod)
@@ -81,9 +82,26 @@ setupProbe pool = do
   where
     uid = P.PersistInt64 probeUserId
 
+countRows :: Pool.ConnectionPool -> String -> [PersistValue] -> IO Int64
+countRows pool sql params = do
+  rows <- (runSqlPool (rawSql (T.pack sql) params) pool :: IO [Single Int64])
+  pure $ case rows of
+    (Single value : _) -> value
+    [] -> 0
+
+journalTotals :: Pool.ConnectionPool -> String -> IO (Double, Double, Int64)
+journalTotals pool description = do
+  rows <- (runSqlPool (rawSql "SELECT COALESCE(SUM(debit),0), COALESCE(SUM(credit),0), COUNT(*) FROM journal_entries WHERE description = ?" [PersistText (T.pack description)]) pool :: IO [(Single Double, Single Double, Single Int64)])
+  pure $ case rows of
+    ((Single debit, Single credit, Single count) : _) -> (debit, credit, count)
+    [] -> (0, 0, 0)
+
 cleanupProbe :: Pool.ConnectionPool -> IO ()
 cleanupProbe pool = do
   runSqlPool (rawExecute "DELETE FROM bills WHERE number = ?" [P.PersistText (TE.decodeUtf8 probeNumber)]) pool
+  runSqlPool (rawExecute "DELETE FROM journal_entries WHERE description LIKE 'bill-post:%'" []) pool
+  runSqlPool (rawExecute "DELETE FROM event_store WHERE aggregate_type = 'bill' AND event_type = 'bill_posted'" []) pool
+  runSqlPool (rawExecute "DELETE FROM audit_log WHERE entity_type = 'bill' AND action = 'POST_BILL'" []) pool
   runSqlPool (rawExecute "DELETE FROM user_role WHERE user_id = ?" [P.PersistInt64 probeUserId]) pool
   runSqlPool (rawExecute "DELETE FROM users WHERE id = ?" [P.PersistInt64 probeUserId]) pool
 
@@ -130,6 +148,25 @@ spec = do
                  simpleStatus fetched `shouldBe` status200
                  posted <- perform app "POST" (path <> "/post") auth BS.empty
                  simpleStatus posted `shouldBe` status200
+                 let description = "bill-post:" ++ show createdId
+                     billPid = P.PersistInt64 (fromIntegral createdId)
+                 (debit, credit, linesCount) <- journalTotals pool description
+                 linesCount `shouldBe` 2
+                 debit `shouldBe` credit
+                 credit `shouldBe` billTotal probeBill
+                 events <- countRows pool "SELECT COUNT(*) FROM event_store WHERE aggregate_id = ? AND aggregate_type = 'bill' AND event_type = 'bill_posted'" [billPid]
+                 events `shouldBe` 1
+                 audits <- countRows pool "SELECT COUNT(*) FROM audit_log WHERE entity_type = 'bill' AND entity_id = ? AND action = 'POST_BILL'" [billPid]
+                 audits `shouldBe` 1
+                 repeated <- perform app "POST" (path <> "/post") auth BS.empty
+                 simpleStatus repeated `shouldBe` status200
+                 (debit2, credit2, linesCount2) <- journalTotals pool description
+                 (debit2, credit2, linesCount2) `shouldBe` (debit, credit, linesCount)
+                 countRows pool "SELECT COUNT(*) FROM event_store WHERE aggregate_id = ? AND aggregate_type = 'bill' AND event_type = 'bill_posted'" [billPid] `shouldReturn` 1
+                 countRows pool "SELECT COUNT(*) FROM audit_log WHERE entity_type = 'bill' AND entity_id = ? AND action = 'POST_BILL'" [billPid] `shouldReturn` 1
+                 missing <- perform app "POST" "/api/v1/bills/999999999/post" auth BS.empty
+                 simpleStatus missing `shouldSatisfy` (/= status200)
+                 countRows pool "SELECT COUNT(*) FROM event_store WHERE aggregate_id = ? AND aggregate_type = 'bill' AND event_type = 'bill_posted'" [P.PersistInt64 999999999] `shouldReturn` 0
                  after <- perform app "GET" "/api/v1/bills" auth BS.empty
                  BL.toStrict (simpleBody after) `shouldSatisfy` ("posted" `BC.isInfixOf`)
               )

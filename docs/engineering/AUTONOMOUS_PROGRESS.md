@@ -1,5 +1,21 @@
 # Autonomous progress
 
+## Cycle 13 (2026-11-27) — bill posting side effects
+
+- Claimed Beads `Surypus-878` (P1). Added `Service.BillPosting.postBillWithEffects`
+  and wired the API `postBill` to it. One explicit transaction inserts two
+  balanced `journal_entries`, a `bill_posted` `event_store` row, an
+  `audit_log` row and marks the bill posted; failure rolls back, and an
+  already-posted bill is a no-op.
+- Extended `BillLifecycleIntegration`: asserts debit == credit == bill total,
+  exactly one event and one audit row, repeated POST creates no duplicates,
+  and a missing bill produces no event.
+- Inventory is NOT implemented: the canonical schema has no stock-movement or
+  inventory table. Registered as a follow-up Beads issue instead of faking it.
+- Verification: targeted 2/0; full suite **1283 examples, 0 failures, 2 pending**
+  with DB and 1275/0/6 without. Both passed.
+
+
 ## Cycle 12 (2026-11-27) — last hardcoded pool removed
 
 - Registered and claimed Beads `Surypus-8dr` (P1). `DAL.ORMPool.createPool`

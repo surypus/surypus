@@ -10,7 +10,7 @@
 | M0 Persistent operating mode | COMPLETE | `HERMES.md`, bootstrap, recovery files, healthy Beads tracker | `bd ready --json`, progress files |
 | M1 Security perimeter | PARTIAL | fail-closed auth, DB permissions, tenant isolation, encrypted secrets | 16 auth + 13 permission + 4 tenant + 4 DB permission tests |
 | M1b Migration determinism | COMPLETE | one ordered list, checksums, real PostgreSQL load | `scripts/ci-migration-verification.sh` → ALL_MIGRATIONS_LOAD_OK |
-| M2 Bill vertical slice | PARTIAL | create→post→accounting→inventory→events→audit through the running server | create→list→read→post verified by BillLifecycleIntegration; accounting/inventory/events/audit still unverified |
+| M2 Bill vertical slice | PARTIAL | create→post→accounting→inventory→events→audit through the running server | create/list/read/post plus accounting, events and audit verified; inventory blocked (no schema table) |
 | M3 Verification matrix | NOT STARTED | invariant → predicate → property test → integration → CI | none |
 | M4 Release engineering | UNVERIFIED | reproducible image, CI gates, backup/restore/upgrade | CI not queried; no image build claimed |
 

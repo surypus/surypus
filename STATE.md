@@ -18,7 +18,8 @@
   job processing, one authoritative migration order (373 files load cleanly
   against PostgreSQL in a rolled-back transaction).
 - PARTIAL: bill create/list/read/post through the running server is verified;
-  accounting, inventory, events and audit in that flow remain unverified.
+  accounting, events and audit are verified; inventory remains unimplemented
+  (no stock-movement table in the canonical schema).
   GraphQL compliance; workflow engine reliability; GitHub CI status;
   `check-tenant-rls.sh`; LiquidHaskell proof coverage.
 - Milestones: M0 persistent operating mode — complete; M1 security perimeter —
