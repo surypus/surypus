@@ -1,5 +1,15 @@
 # Autonomous progress
 
+## Cycle 15 (2026-11-27) — posting invariants as properties
+
+- Registered and claimed Beads `Surypus-7oo` (P1). Extracted pure
+  `Service.BillPosting.balancedEntries`; production posting now inserts the
+  entries from that function. Added QuickCheck properties for two entries,
+  debit == credit, non-negative amounts and rejection of negative totals.
+- Verification: `stack test` 1279/0/6 without DB; **1287 examples,
+  0 failures, 2 pending** with `SURYPUS_TEST_DATABASE_URL`.
+
+
 ## Cycle 14 (2026-11-27) — inventory movements completed
 
 - Claimed Beads `Surypus-px3` (P2). Added migration

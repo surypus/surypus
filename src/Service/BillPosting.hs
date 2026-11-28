@@ -6,7 +6,7 @@
 -- All writes happen on one PostgreSQL connection inside an explicit
 -- transaction. A failure rolls back the entire posting; a second posting of
 -- an already-posted bill is a no-op.
-module Service.BillPosting (postBillWithEffects) where
+module Service.BillPosting (postBillWithEffects, balancedEntries) where
 
 import Control.Exception (SomeException)
 import Control.Monad.Catch (throwM, try)
@@ -21,6 +21,12 @@ import Database.Persist.Sql (PersistValue (..), Single (..), SqlPersistT, rawExe
 
 billNotFound :: Text
 billNotFound = "Bill not found"
+
+-- | Pure double-entry plan for a bill total.
+balancedEntries :: Double -> [(Double, Double)]
+balancedEntries total
+  | total < 0 = []
+  | otherwise = [(total, 0), (0, total)]
 
 postBillWithEffects :: ConnectionPool -> Int64 -> IO (QueryResult ())
 postBillWithEffects pool billId = do
@@ -56,12 +62,10 @@ postInside billId = do
             (Single amount : _) -> amount
             [] -> 0
           description = "bill-post:" <> T.pack (show billId)
-      rawExecute
-        "INSERT INTO journal_entries (debit, credit, amount, posted, description) VALUES (?, 0, ?, TRUE, ?)"
-        [PersistDouble total, PersistDouble total, PersistText description]
-      rawExecute
-        "INSERT INTO journal_entries (debit, credit, amount, posted, description) VALUES (0, ?, ?, TRUE, ?)"
-        [PersistDouble total, PersistDouble total, PersistText description]
+      forM_ (balancedEntries total) $ \(debit, credit) ->
+        rawExecute
+          "INSERT INTO journal_entries (debit, credit, amount, posted, description) VALUES (?, ?, ?, TRUE, ?)"
+          [PersistDouble debit, PersistDouble credit, PersistDouble total, PersistText description]
       sequences <-
         rawSql
           "SELECT COALESCE(MAX(sequence_number), 0) + 1 FROM event_store WHERE aggregate_id = ? AND aggregate_type = 'bill'"
