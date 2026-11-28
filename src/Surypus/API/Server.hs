@@ -7,8 +7,9 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 
-module Surypus.API.Server (apiServer) where
+module Surypus.API.Server (apiServer, healthEndpoint) where
 
+import Control.Exception (SomeException, try)
 import Control.Monad.IO.Class (liftIO)
 import qualified DAL.Mutations
 import qualified DAL.QueriesORM
@@ -207,16 +208,18 @@ apiServer connPool logger metrics publicPaths checkPermission = do
         baseApp = healthEndpoint connPool servantApp
     return baseApp
 
+-- | Readiness endpoint. Both routes probe the pool; failure is reported as
+-- 503 with a constant JSON body that never includes the exception or a DSN.
 healthEndpoint :: ConnectionPool -> Application -> Application
 healthEndpoint connPool app req respond =
     case W.rawPathInfo req of
-        "/api/v1/health" -> do
-            respond $ W.responseLBS status200 [("Content-Type", "text/plain")] "OK"
-        "/api/v1/health/db" -> do
-            result <- runSqlPool (rawSql "SELECT 1 as health" []) connPool
+        path | path == "/api/v1/health" || path == "/api/v1/health/db" -> do
+            result <- try (runSqlPool (rawSql "SELECT 1 as health" []) connPool) :: IO (Either SomeException [Single Int64])
             case result of
-                [Single (1 :: Int64)] -> respond $ W.responseLBS status200 [("Content-Type", "text/plain")] "DB OK"
-                _ -> respond $ W.responseLBS status503 [("Content-Type", "text/plain")] "DB ERROR"
+                Right [Single 1] ->
+                    respond $ W.responseLBS status200 [("Content-Type", "application/json")] "{\"status\":\"ok\",\"db\":\"ok\"}"
+                _ ->
+                    respond $ W.responseLBS status503 [("Content-Type", "application/json")] "{\"status\":\"error\",\"db\":\"down\"}"
         path -> do
             let pathStr = TE.decodeUtf8 path
             if "/api/v1/reports/download/" `DT.isPrefixOf` pathStr

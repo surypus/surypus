@@ -7,7 +7,7 @@ module ServerWiringSpec (spec) where
 import qualified Data.ByteString.Char8 as BS
 import qualified DAL.Pool as Pool
 import DAL.Repository.RBAC (checkUserAppPermissionRepo, mkRBACRepository)
-import Network.HTTP.Types (Status, status200, status401)
+import Network.HTTP.Types (Status, status401, status503)
 import Network.Wai (Application, defaultRequest, rawPathInfo, requestMethod)
 import Network.Wai.Test (request, runSession, simpleStatus)
 import qualified Surypus.API.Logger as Log
@@ -37,8 +37,8 @@ withApp action = do
 
 spec :: Spec
 spec = describe "real server wiring" $ do
-  it "serves /api/v1/health without a database" $
-    withApp $ \app -> perform app "/api/v1/health" `shouldReturn` status200
+  it "reports 503 for /api/v1/health when the pool is dead" $
+    withApp $ \app -> perform app "/api/v1/health" `shouldReturn` status503
 
   it "rejects an unauthenticated protected route" $
     withApp $ \app -> perform app "/api/v1/persons" `shouldReturn` status401
