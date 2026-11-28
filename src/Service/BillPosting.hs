@@ -10,6 +10,7 @@ module Service.BillPosting (postBillWithEffects) where
 
 import Control.Exception (SomeException)
 import Control.Monad.Catch (throwM, try)
+import Control.Monad (forM_)
 import Control.Monad.IO.Class (liftIO)
 import Data.Int (Int64)
 import Data.Text (Text)
@@ -70,6 +71,15 @@ postInside billId = do
             (Single value : _) -> value
             [] -> 1
           eventData = "{\"bill_id\":" <> T.pack (show billId) <> "}" :: Text
+      lineRows <-
+        rawSql
+          "SELECT goods_id, quantity FROM bill_posting_lines WHERE bill_id = ?"
+          [PersistInt64 billId] ::
+          SqlPersistT IO [(Single Int64, Single Double)]
+      forM_ lineRows $ \(Single goodsId, Single quantity) ->
+        rawExecute
+          "INSERT INTO inventory_movements (bill_id, goods_id, movement_type, quantity) VALUES (?, ?, 'issue', ?)"
+          [PersistInt64 billId, PersistInt64 goodsId, PersistDouble quantity]
       rawExecute
         "INSERT INTO event_store (id, aggregate_id, aggregate_type, event_type, event_version, event_schema_version, event_data, event_metadata, sequence_number, occurred_at, created_at) VALUES (gen_random_uuid(), ?, 'bill', 'bill_posted', 1, 1, ?::jsonb, '{}'::jsonb, ?, NOW(), NOW())"
         [PersistInt64 billId, PersistText eventData, PersistInt64 sequenceNumber]

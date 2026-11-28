@@ -15,11 +15,11 @@
 - VERIFIED in this branch: fail-closed authorization, DB-backed permission
   checks (live PostgreSQL), real `apiServer` in the executable, per-thread
   tenant context, AES-GCM-SIV secret storage, unique event IDs, fail-closed
-  job processing, one authoritative migration order (373 files load cleanly
-  against PostgreSQL in a rolled-back transaction).
+  job processing, one authoritative migration order (374 files; full chain
+  loads cleanly against PostgreSQL in a rolled-back transaction).
 - PARTIAL: bill create/list/read/post through the running server is verified;
-  accounting, events and audit are verified; inventory remains unimplemented
-  (no stock-movement table in the canonical schema).
+  accounting, inventory movements, events and audit are now verified in the
+  same integration test.
   GraphQL compliance; workflow engine reliability; GitHub CI status;
   `check-tenant-rls.sh`; LiquidHaskell proof coverage.
 - Milestones: M0 persistent operating mode — complete; M1 security perimeter —

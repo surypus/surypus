@@ -34,7 +34,7 @@ Consumers of the list:
 ## Verification
 
 ```bash
-bash scripts/migration-files.sh | wc -l          # 373
+bash scripts/migration-files.sh | wc -l          # 374
 bash scripts/migrate.sh --check-only             # preflight
 TEST_PG_CONN=... bash scripts/ci-dry-run-mig.sh  # real load, rolled back
 ```

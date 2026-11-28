@@ -1,5 +1,18 @@
 # Verification log
 
+## Cycle 14 (2026-11-27)
+
+| Command | Exit | Result |
+|---|---|---|
+| fresh-DB `bash scripts/ci-dry-run-mig.sh` | 0 | `ALL_MIGRATIONS_LOAD_OK`, 375 files |
+| `stack test --test-arguments='--match "bill lifecycle"'` (DB URL) | 0 | 2 examples, 0 failures |
+| `stack test` with DB URL | 0 | **1283 examples, 0 failures, 2 pending** |
+| `stack test` without DB URL | 0 | 1275 examples, 0 failures, 6 pending |
+
+V017 was applied to the local `surypus` development DB and privileges granted
+to the test role; the throwaway chain DB was dropped afterwards.
+
+
 ## Cycle 13 (2026-11-27)
 
 | Command | Exit | Result |

@@ -31,7 +31,6 @@ spec = describe "migration corpus" $ do
     files <- migrationFiles
     expected <- canonicalCount
     length files `shouldBe` expected
-    length files `shouldBe` 373
 
   it "puts the core schema before tenant scoping" $ do
     files <- migrationFiles

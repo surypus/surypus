@@ -99,6 +99,8 @@ journalTotals pool description = do
 cleanupProbe :: Pool.ConnectionPool -> IO ()
 cleanupProbe pool = do
   runSqlPool (rawExecute "DELETE FROM bills WHERE number = ?" [P.PersistText (TE.decodeUtf8 probeNumber)]) pool
+  runSqlPool (rawExecute "DELETE FROM inventory_movements WHERE bill_id IN (SELECT id FROM bills WHERE number = ?)" [P.PersistText (TE.decodeUtf8 probeNumber)]) pool
+  runSqlPool (rawExecute "DELETE FROM bill_posting_lines WHERE bill_id IN (SELECT id FROM bills WHERE number = ?)" [P.PersistText (TE.decodeUtf8 probeNumber)]) pool
   runSqlPool (rawExecute "DELETE FROM journal_entries WHERE description LIKE 'bill-post:%'" []) pool
   runSqlPool (rawExecute "DELETE FROM event_store WHERE aggregate_type = 'bill' AND event_type = 'bill_posted'" []) pool
   runSqlPool (rawExecute "DELETE FROM audit_log WHERE entity_type = 'bill' AND action = 'POST_BILL'" []) pool
@@ -141,6 +143,7 @@ spec = do
                    Just bill -> billId bill `shouldSatisfy` (> 0)
                  let createdId = maybe 0 billId (decode (simpleBody created) :: Maybe Bill)
                      path = BC.pack ("/api/v1/bills/" ++ show createdId)
+                 runSqlPool (rawExecute "INSERT INTO bill_posting_lines (bill_id, goods_id, quantity) VALUES (?, 1, 2.5)" [P.PersistInt64 (fromIntegral createdId)]) pool
                  listed <- perform app "GET" "/api/v1/bills" auth BS.empty
                  simpleStatus listed `shouldBe` status200
                  BL.toStrict (simpleBody listed) `shouldSatisfy` (probeNumber `BC.isInfixOf`)
@@ -158,12 +161,15 @@ spec = do
                  events `shouldBe` 1
                  audits <- countRows pool "SELECT COUNT(*) FROM audit_log WHERE entity_type = 'bill' AND entity_id = ? AND action = 'POST_BILL'" [billPid]
                  audits `shouldBe` 1
+                 movements <- countRows pool "SELECT COUNT(*) FROM inventory_movements WHERE bill_id = ? AND goods_id = 1 AND movement_type = 'issue' AND quantity = 2.5" [billPid]
+                 movements `shouldBe` 1
                  repeated <- perform app "POST" (path <> "/post") auth BS.empty
                  simpleStatus repeated `shouldBe` status200
                  (debit2, credit2, linesCount2) <- journalTotals pool description
                  (debit2, credit2, linesCount2) `shouldBe` (debit, credit, linesCount)
                  countRows pool "SELECT COUNT(*) FROM event_store WHERE aggregate_id = ? AND aggregate_type = 'bill' AND event_type = 'bill_posted'" [billPid] `shouldReturn` 1
                  countRows pool "SELECT COUNT(*) FROM audit_log WHERE entity_type = 'bill' AND entity_id = ? AND action = 'POST_BILL'" [billPid] `shouldReturn` 1
+                 countRows pool "SELECT COUNT(*) FROM inventory_movements WHERE bill_id = ?" [billPid] `shouldReturn` 1
                  missing <- perform app "POST" "/api/v1/bills/999999999/post" auth BS.empty
                  simpleStatus missing `shouldSatisfy` (/= status200)
                  countRows pool "SELECT COUNT(*) FROM event_store WHERE aggregate_id = ? AND aggregate_type = 'bill' AND event_type = 'bill_posted'" [P.PersistInt64 999999999] `shouldReturn` 0

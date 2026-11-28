@@ -1,5 +1,21 @@
 # Autonomous progress
 
+## Cycle 14 (2026-11-27) — inventory movements completed
+
+- Claimed Beads `Surypus-px3` (P2). Added migration
+  `sql/migrations/V017__inventory_movements.sql` with `bill_posting_lines`
+  (BIGINT bill id, the legacy `bill_lines` uses UUID and cannot be joined)
+  and `inventory_movements` with a UNIQUE(bill, goods, type) constraint.
+  `Service.BillPosting` now issues `issue` movements from lines inside the
+  same transaction; bills without lines produce no movement (no fake data).
+- `BillLifecycleIntegration` now inserts a line and asserts exactly one stock
+  movement, no duplicates on repeated posting, and none for a missing bill.
+- `MigrationCorpusSpec` no longer hardcodes the file count; the chain loads
+  cleanly on a fresh PostgreSQL (375 files including procedures.sql).
+- Verification: 2/0 targeted; full suite **1283 examples, 0 failures,
+  2 pending** with DB and 1275/0/6 without.
+
+
 ## Cycle 13 (2026-11-27) — bill posting side effects
 
 - Claimed Beads `Surypus-878` (P1). Added `Service.BillPosting.postBillWithEffects`
